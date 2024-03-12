@@ -71,6 +71,7 @@
     "typescript": "^3.9.7"
   },
   "dependencies": {
+    "@elife/pm2": "^3.6.1",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "debug": "^4.1.1",

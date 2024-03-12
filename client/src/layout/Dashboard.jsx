@@ -1,6 +1,7 @@
 import { Box, Button, IconButton, Typography, useTheme } from '@mui/material'
 import { tokens } from '../theme'
 import InputIcon from '@mui/icons-material/Input'
+import greenLight from 'images/green.png'
 import {
   Container,
   Table,
@@ -41,6 +42,7 @@ const Dashboard = () => {
                 </IconButton>
               </TableCell>
               <TableCell>Start New Node</TableCell>
+              <TableCell></TableCell>
             </TableRow>
             <TableRow>
               <TableCell>
@@ -49,6 +51,7 @@ const Dashboard = () => {
                 </IconButton>
               </TableCell>
               <TableCell>Connect to Existing Node</TableCell>
+              <TableCell></TableCell>
             </TableRow>
             <TableRow>
               <TableCell>
@@ -57,6 +60,24 @@ const Dashboard = () => {
                 </IconButton>
               </TableCell>
               <TableCell>Load Configuration</TableCell>
+              <TableCell></TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell></TableCell>
+              <TableCell></TableCell>
+              <TableCell>
+                <Table>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell>
+                        <img src={greenLight} alt="connected" width="16" />
+                      </TableCell>
+                      <TableCell>localhost</TableCell>
+                      <TableCell>grateful-terminator</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </TableCell>
             </TableRow>
           </TableBody>
         </Table>
