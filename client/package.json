@@ -1,9 +1,9 @@
 {
   "name": "robotlab-x",
   "version": "0.9.0",
-  "description": "A boilerplate to generate an Electron app with a React Front end and an Express BackEnd embedded. (React Side)",
-  "author": "Pablo Martinez",
-  "license": "ISC",
+  "description": "A cross platform desktop application for creating and running robots (UI side)",
+  "author": "GroG",
+  "license": "MPL-2.0",
   "scripts": {
     "react-start": "react-scripts start",
     "move-client": "mv build ../server/dist/client || move build ../server/dist/client",

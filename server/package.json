@@ -1,12 +1,11 @@
 {
-  "name": "react-express-electron-boilerplate",
-  "version": "1.0.0",
-  "description": "A boilerplate to generate an Electron app with a React Front end and an Express BackEnd embedded. (Server side)",
+  "name": "robotlab-x",
+  "version": "0.9.0",
+  "description": "A cross platform desktop application for creating and running robots (Server side)",
   "main": "./dist/electron/ElectronStarter.js",
   "build": {
-    "appId": "com.example-full.app",
-    "productName": "Example Full App",
-    "copyright": "Copyright © 2020 Pablo Martinez",
+    "appId": "org.robotlab-x.app",
+    "productName": "RobotLab-X",
     "extends": null,
     "files": [
       "dist/**/*"
@@ -45,8 +44,8 @@
     "test": "mocha",
     "test-coverage": "nyc yarn run test"
   },
-  "author": "Pablo Martinez",
-  "license": "ISC",
+  "author": "GroG",
+  "license": "MPL-2.0",
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
     "@types/body-parser": "^1.19.0",
