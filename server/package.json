@@ -56,7 +56,6 @@
     "@types/electron-devtools-installer": "^2.2.0",
     "@types/express": "^4.17.7",
     "@types/mocha": "^8.0.2",
-    "@types/morgan": "^1.9.1",
     "@types/node": "^12.12.6",
     "chai": "^4.2.0",
     "chai-http": "^4.3.0",
@@ -76,7 +75,6 @@
     "cors": "^2.8.5",
     "debug": "^4.1.1",
     "electron-is-dev": "^1.2.0",
-    "express": "^4.17.1",
-    "morgan": "^1.10.0"
+    "express": "^4.17.1"
   }
 }

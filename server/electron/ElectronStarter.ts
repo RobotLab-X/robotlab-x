@@ -43,7 +43,6 @@ export default class Main {
             height: 600,
             webPreferences: {
                 nodeIntegration: false,
-                worldSafeExecuteJavaScript: true,
                 contextIsolation: true,
                 preload: path.join(__dirname, 'Preload.js')
             }
