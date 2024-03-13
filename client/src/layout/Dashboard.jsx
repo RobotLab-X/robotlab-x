@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react'
 import { Box, Button, IconButton, Typography, useTheme } from '@mui/material'
 import { tokens } from '../theme'
 import InputIcon from '@mui/icons-material/Input'
@@ -28,6 +29,37 @@ const Dashboard = () => {
   const handleLoad = () => {
     console.log('Loading...')
   }
+
+  const [nodes, setNodes] = useState([])
+
+  useEffect(() => {
+    const fetchNodes = async () => {
+      try {
+        // Replace 'your-api-endpoint' with the actual endpoint
+        const response = await fetch('http://localhost:3001/nodes')
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        const data = await response.json()
+        data.nodes['browser'] = {
+          id: 'browser-angry-robot-323924',
+          host: {
+            hostname: 'browser',
+            platform: navigator.userAgent,
+            architecture: navigator.platform
+          }
+        }
+        setNodes(data.nodes)
+      } catch (error) {
+        console.error('Error fetching nodes:', error)
+        // Handle error appropriately
+      }
+    }
+
+    fetchNodes()
+  }, []) // This effect runs once after the initial render
+
+  const nodesArray = Object.values(nodes)
 
   return (
     <Box sx={{ maxWidth: 'fit-content', overflowX: 'auto', ml: 2 }}>
@@ -68,13 +100,18 @@ const Dashboard = () => {
               <TableCell>
                 <Table>
                   <TableBody>
-                    <TableRow>
-                      <TableCell>
-                        <img src={greenLight} alt="connected" width="16" />
-                      </TableCell>
-                      <TableCell>localhost</TableCell>
-                      <TableCell>grateful-terminator</TableCell>
-                    </TableRow>
+                    {nodesArray.map((node, index) => (
+                      <TableRow key={index}>
+                        <TableCell>
+                          <img src={greenLight} alt="connected" width="16" />
+                        </TableCell>
+                        <TableCell>{node.host.hostname}</TableCell>
+                        <TableCell>{node.id}</TableCell>
+                        <TableCell>
+                          {node.host.platform}.{node.host.architecture}
+                        </TableCell>
+                      </TableRow>
+                    ))}
                   </TableBody>
                 </Table>
               </TableCell>

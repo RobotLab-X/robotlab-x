@@ -17,3 +17,4 @@ server/dist
 # test coverage
 server/coverage
 client/coverage
+server/package-lock.json

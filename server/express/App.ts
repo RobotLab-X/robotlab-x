@@ -4,20 +4,51 @@ import cors from 'cors';
 import path from 'path';
 import products from './data/products.json';
 import os from 'os';
+import NameGenerator from './framework/NameGenerator'
+import {NodeData, HostData} from './models/NodeData'
 
 const pm2 = require('@elife/pm2')
+
+class AppData {
+    public id : string;
+    private nodes: { [id: string]: NodeData } = {};
+
+    /**
+     * Adds a new NodeData instance to the collection.
+     * @param {string} id - The unique identifier for the node.
+     * @param {NodeData} node - The NodeData instance to add.
+     */
+    public addNode( id: string, node: NodeData) {
+        this.nodes[id] = node;
+    }
+
+    /**
+     * Retrieves a NodeData instance by its ID.
+     * @param {string} id - The ID of the node to retrieve.
+     * @returns {NodeData} The NodeData instance.
+     */
+    public getNode( id: string) {
+        return this.nodes[id];
+    }
+}
 
 // Creates and configures an ExpressJS web server2.
 class App {
 
     // ref to Express instance
     public express: express.Application;
+    protected data: AppData;
 
     // Run configuration methods on the Express instance.
     constructor() {
         this.express = express();
         this.middleware();
         this.routes();
+        this.data = new AppData();
+        this.data.id = NameGenerator.getName();
+        let thisNode = new NodeData(this.data.id);
+        thisNode.host = HostData.getLocalHostData(os);
+        this.data.addNode(this.data.id, thisNode);
     }
 
     // Configure Express middleware.
@@ -39,6 +70,10 @@ class App {
         router.get("/products", (req, res, next) => {
             console.log(process.env)
             res.json(products);
+        });
+
+        router.get("/nodes", (req, res, next) => {
+            res.json(this.data);
         });
 
         router.get('/os-info', (req, res) => {
@@ -85,8 +120,8 @@ class App {
             // blocking vs non blocking process
             process = pm2.start({
                 name: 'nc',
-                // script: 'hello_world.py',
-                script: '/bin/nc.openbsd',
+                script: 'hello_world.py',
+                // script: '/bin/nc.openbsd',
                 restartAt:[],
                 log: 'nc.log',
                 cwd: './'
