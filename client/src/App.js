@@ -1,13 +1,14 @@
-import { useState } from 'react'
-import { Routes, Route } from 'react-router-dom'
-import Topbar from './layout/global/Topbar'
-import AppSidebar from './layout/global/AppSidebar'
-import Dashboard from './layout/Dashboard'
-import TabLayout from './layout/TabLayout'
-import Network from './layout/Network'
 import { CssBaseline, ThemeProvider } from '@mui/material'
-import { ColorModeContext, useMode } from './theme'
+import { useState } from 'react'
+import { Route, Routes } from 'react-router-dom'
+import Dashboard from './layout/Dashboard'
+import Network from './layout/Network'
+import Nodes from './layout/Nodes'
+import TabLayout from './layout/TabLayout'
 import WebXR from './layout/WebXR'
+import AppSidebar from './layout/global/AppSidebar'
+import Topbar from './layout/global/Topbar'
+import { ColorModeContext, useMode } from './theme'
 
 function App() {
   // log all environment variables that start with REACT_APP_
@@ -33,6 +34,7 @@ function App() {
               <Route path="/" element={<Dashboard />} />
               <Route path="/tabs" element={<TabLayout tabName="" />} />
               <Route path="/tabs/:tabName" element={<TabLayout />} />
+              <Route path="/nodes/:nodeName" element={<Nodes />} />
               <Route path="/network" element={<Network />} />
               <Route path="/webxr/:tabName" element={<WebXR />} />
             </Routes>
