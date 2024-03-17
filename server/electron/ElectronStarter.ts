@@ -1,7 +1,5 @@
 import debug from 'debug'
 import Electron from 'electron'
-import isDev from 'electron-is-dev'
-import http from 'http'
 import path from 'path'
 
 import App from '../express/App'
@@ -9,42 +7,28 @@ import App from '../express/App'
 let logger: debug.Debugger
 
 export default class Main {
-  private static application: Electron.App
+  private static app: Electron.App
   private static BrowserWindow: typeof Electron.BrowserWindow
   private static mainWindow: Electron.BrowserWindow
   private static port: string | number | boolean
-  private static server: http.Server
 
   // if this variable is set to true in the main constructor, the app will quit when closing it in macOS
   private static quitOnCloseOSX: boolean
 
   public static main(
-    app: Electron.App,
+    electronApp: Electron.App,
     browserWindow: typeof Electron.BrowserWindow
   ) {
     Main.BrowserWindow = browserWindow
-    Main.application = app
-    Main.application.on('window-all-closed', Main.onWindowAllClosed)
-    Main.application.on('ready', Main.onReady)
-    Main.application.on('activate', Main.onActivate)
+    Main.app = electronApp
+    Main.app.on('window-all-closed', Main.onWindowAllClosed)
+    Main.app.on('ready', Main.onReady)
+    Main.app.on('activate', Main.onActivate)
     Main.quitOnCloseOSX = true
     Main.bootServer()
   }
 
   private static onReady() {
-    // development
-    if (isDev) {
-      const {
-        default: installExtension,
-        REACT_DEVELOPER_TOOLS,
-        REDUX_DEVTOOLS
-      } = require('electron-devtools-installer')
-      // extensions
-      installExtension([REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS])
-        .then((name: string) => logger.log(`Added Extension: ${name}`))
-        .catch((err: any) => logger.log('An error occurred: ', err))
-    }
-
     Main.mainWindow = new Main.BrowserWindow({
       width: 800,
       height: 600,
@@ -69,7 +53,7 @@ export default class Main {
 
   private static onWindowAllClosed() {
     if (process.platform !== 'darwin' || Main.quitOnCloseOSX) {
-      Main.application.quit()
+      Main.app.quit()
     }
   }
 
@@ -89,17 +73,17 @@ export default class Main {
     logger = debug('server')
     logger.log = console.log.bind(console)
 
-    if (isDev) {
-      debug.enable('server')
-    }
+    // if (isDev) {
+    debug.enable('server')
+    // }
 
     Main.port = Main.normalizePort(process.env.PORT || 3001)
-    App.set('port', Main.port)
+    App.express.set('port', Main.port)
 
-    Main.server = http.createServer(App)
-    Main.server.listen(Main.port)
-    Main.server.on('error', Main.onError)
-    Main.server.on('listening', Main.onListening)
+    // Main.server = http.createServer(App)
+    App.http.listen(Main.port)
+    App.http.on('error', Main.onError)
+    App.http.on('listening', Main.onListening)
   }
 
   private static normalizePort(
@@ -138,7 +122,7 @@ export default class Main {
   }
 
   private static onListening(): void {
-    const addr = Main.server.address()
+    const addr = App.http.address()
     const bind = typeof addr === 'string' ? `pipe ${addr}` : `port ${addr.port}`
     logger.log(`Listening on ${bind}`)
   }

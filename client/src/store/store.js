@@ -41,7 +41,7 @@ const store = (set, get) => ({
     //   return wsUrl
     // }
 
-    return 'ws://localhost:8888/api/messages?user=root&pwd=pwd&session_id=2309adf3dlkdk&id=blah'
+    return 'ws://localhost:3001/api/messages?user=root&pwd=pwd&session_id=2309adf3dlkdk&id=blah'
   },
 
   /**

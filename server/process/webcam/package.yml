@@ -1,0 +1,14 @@
+platform: python
+platform_version: 3
+description: "Webcam to WebRTC"
+categories: 
+  - webcam
+  - video
+  - webrtc
+  - python
+script: start.py
+# TODO - list all requirements to run this process
+# ProcessType Python Java Docker Other ..
+# HostData
+# PlatformData
+# other ...

@@ -1,13 +1,20 @@
 import bodyParser from 'body-parser'
 import cors from 'cors'
-import express from 'express'
+// import { Server } from 'http'
 import os from 'os'
 import path from 'path'
 import NameGenerator from './framework/NameGenerator'
 import { HostData, NodeData, ProcessData } from './models/NodeData'
 import { Status } from './models/Status'
 
-const pm2 = require('@elife/pm2')
+import express from 'express'
+import { Server as HTTPServer } from 'http'
+import { Server } from 'ws'
+
+const { spawn } = require('child_process')
+const http = require('http')
+
+const apiPrefix = '/api/v1'
 
 class AppData {
   public id: string
@@ -36,11 +43,16 @@ class AppData {
 class App {
   // ref to Express instance
   public express: express.Application
+  public http: HTTPServer
+  public ws: Server
   protected data: AppData
 
   // Run configuration methods on the Express instance.
   constructor() {
     this.express = express()
+    // this.http = new HTTPServer(this.express) // Create an HTTP server from the Express app
+    this.http = http.createServer(this.express)
+    this.ws = new Server({ server: this.http })
     this.middleware()
     this.routes()
     this.data = new AppData()
@@ -57,6 +69,19 @@ class App {
       version: '0.0.1'
     }
     this.data.putNode(this.data.id, thisNode)
+
+    // Handle a connection request from clients
+    this.ws.on('connection', function connection(ws: any) {
+      console.log('A client connected')
+
+      ws.on('message', function incoming(message: any) {
+        console.log('received: %s', message)
+
+        // WORKS !!!
+        // Echo the received message back to the client
+        // ws.send(`Server received: ${message}`)
+      })
+    })
   }
 
   // Configure Express middleware.
@@ -78,7 +103,7 @@ class App {
      * API endpoints */
     const router = express.Router()
     // placeholder route handler
-    router.put('/api/v1/register', (req, res, next) => {
+    router.put(`${apiPrefix}/register`, (req, res, next) => {
       console.log(req.body)
       this.data.putNode(req.body.id, req.body)
       let status = new Status()
@@ -89,11 +114,11 @@ class App {
       res.json(status)
     })
 
-    router.get('/api/v1/nodes', (req, res, next) => {
+    router.get(`${apiPrefix}/nodes`, (req, res, next) => {
       res.json(this.data)
     })
 
-    router.get('/os-info', (req, res) => {
+    router.get(`${apiPrefix}/os-info`, (req, res) => {
       const osInfo = {
         hostname: os.hostname(),
         platform: os.platform(),
@@ -110,33 +135,16 @@ class App {
       res.json(osInfo)
     })
 
-    router.get('/stop', (req, res, next) => {
-      process = pm2.stop(
-        {
-          name: 'nc'
-        },
-        (err: any, pid: any) => {
-          console.info(`stopping process ${err} ${pid}`)
-        }
-      )
+    router.get(`${apiPrefix}/stop/:process`, (req, res, next) => {
+      const decoded = decodeURIComponent(req.params.process)
+      const processModule = JSON.parse(decoded)
 
-      // res.json({ message: json });
-      // res.json({ message: "stopped nc" });
-      console.info(`process ${process}`)
+      console.info(`stop process ${process}`)
+
       res.json(process)
     })
 
-    router.get('/start/:process', (req, res, next) => {
-      // TODO - add optional arguments, and start executable, blocking non-blocking etc...
-
-      // process = pm2.start({
-      //     name: 'nc',
-      //     script: '/usr/bin/nc',
-      //     args: ['-l','7070'],
-      //     log: 'nc.log'
-
-      // })
-
+    router.get(`${apiPrefix}/start/:process`, (req, res, next) => {
       const decoded = decodeURIComponent(req.params.process)
       const processModule = JSON.parse(decoded)
 
@@ -145,66 +153,25 @@ class App {
 
       console.info(`starting process ${cwd}/${processModule}`)
 
-      // TODO get requirements.json from processModule - check if
+      // TODO get package.yml from processModule - check if
       // dependencies are met
       // host check
       // platform check - python version, pip installed, venv etc.
       // pip libraries and versions installed
       const pd: ProcessData = new ProcessData()
 
-      // blocking vs non blocking process
-      pm2.start(
-        {
-          name: `${processModule}-43908543`,
-          script: 'start.py',
-          // script: '/bin/nc.openbsd',
-          restartAt: [],
-          log: `./process/${processModule}/${processModule}.log`,
-          cwd: cwd
-        },
-        (err: any, app: any) => {
-          console.info(`process ${err} ${app.child.pid}`)
-          console.info(`process ${err} ${JSON.stringify(app)}`)
+      console.info(`Starting process ${cwd}/${script}`)
 
-          if (err) {
-            console.error('Error starting app:', err)
-            //pm2.disconnect();
-            res.json({ message: 'error starting process' })
-            return
-          }
+      // spawn the process
+      const childProcess = spawn('python', [script], { cwd })
 
-          console.info('launching bus')
-          pm2.launchBus(function (err: any, bus: any) {
-            bus.on('log:out', function (packet: any) {
-              // STDOUT stream
-              console.log(`[App:${packet.process.name}]`, packet.data)
-            })
-
-            bus.on('log:err', function (packet: any) {
-              // STDERR stream
-              console.error(`[App:${packet.process.name} ERROR]`, packet.data)
-            })
-          })
-        }
-      )
-
-      // console.error(`process ${json}`)
-
-      // console.error(`process ${json}`)
-
-      // , (str: err, pid) => {
-      //     console.error(err, pid)
-      // })
-
-      // let result = pm2.start({ script: 'server/express/App.j' }, function (err, apps) { });
-
-      // res.json({ message: "started nc" });
-      console.info(`process ${pd}`)
-      res.json(pd)
+      console.info(`process ${JSON.stringify(childProcess)}`)
+      res.json(childProcess)
     })
 
     this.express.use('/', router)
   }
 }
 
-export default new App().express
+// export default new App().express
+export default new App()
