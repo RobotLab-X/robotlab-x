@@ -2,6 +2,7 @@
   "name": "robotlab-x",
   "version": "0.9.0",
   "description": "A cross platform desktop application for creating and running robots (Server side)",
+  "liscense": "MPL-2.0",
   "main": "./dist/electron/ElectronStarter.js",
   "build": {
     "appId": "org.robotlab-x.app",
@@ -40,7 +41,7 @@
     "electron-build-mac": "electron-builder -m && yarn run move-packages",
     "electron-build-win": "electron-builder -w && yarn run move-packages",
     "electron-build-linux": "electron-builder -l && yarn run move-packages",
-    "electron-dev": "yarn run build && cross-env ELECTRON_START_URL=http://localhost:3000 electron --inspect ./dist/electron/ElectronStarter.js",
+    "electron-dev": "nodemon --exec 'yarn run build && cross-env ELECTRON_START_URL=http://localhost:3000 electron --inspect ./dist/electron/ElectronStarter.js'",
     "test": "mocha",
     "test-coverage": "nyc yarn run test"
   },
@@ -48,16 +49,21 @@
   "license": "MPL-2.0",
   "devDependencies": {
     "@types/cors": "^2.8.17",
-    "@types/ws": "^8.5.10",
     "@types/express": "^4.17.21",
+    "@types/ws": "^8.5.10",
     "cross-env": "^7.0.3",
     "electron-builder": "^24.13.3",
-    "electron-devtools-installer": "^3.2.0"
+    "electron-devtools-installer": "^3.2.0",
+    "electron-reload": "^2.0.0-alpha.1",
+    "nodemon": "^3.1.0"
   },
   "dependencies": {
     "cors": "^2.8.5",
     "electron": "^29.1.4",
+    "electron-builder-squirrel-windows": "24.13.3",
     "express": "^4.18.3",
-    "ws": "^8.16.0"
+    "flatten": "^1.0.3",
+    "ws": "^8.16.0",
+    "yaml": "^2.4.1"
   }
 }

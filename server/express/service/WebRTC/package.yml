@@ -1,0 +1,19 @@
+platform: python
+platform_version: 3
+venv: true
+description: "Python webrtc server"
+categories: 
+  - webcam
+  - video
+  - webrtc
+  - python
+script: start.py
+interfaces: []
+msg_types: []
+singleton: true
+# TODO definition in swagger
+# TODO - list all requirements to run this process
+# ProcessType Python Java Docker Other ..
+# HostData
+# PlatformData
+# other ...

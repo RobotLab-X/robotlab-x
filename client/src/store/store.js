@@ -1,9 +1,9 @@
 // store.js
-import { create } from 'zustand'
+import { create } from "zustand"
 
 const store = (set, get) => ({
   // id of this process
-  id: 'robot-x-ui', // NameGenerator.getName(),
+  id: "robot-x-ui", // NameGenerator.getName(),
 
   defaultRemoteId: null,
 
@@ -41,7 +41,7 @@ const store = (set, get) => ({
     //   return wsUrl
     // }
 
-    return 'ws://localhost:3001/api/messages?user=root&pwd=pwd&session_id=2309adf3dlkdk&id=blah'
+    return "ws://localhost:3001/api/messages?user=root&pwd=pwd&session_id=2309adf3dlkdk&id=blah"
   },
 
   /**
@@ -64,11 +64,12 @@ const store = (set, get) => ({
    */
   connecting: false,
 
+  data: {},
+
   /**
    * @type {Message} messages - A dictonary of the latest messages received from the server,
    * keyed by the message name and method.
    */
-  data: {},
   messages: {},
   connect: (url) => {
     if (!url) {
@@ -80,7 +81,7 @@ const store = (set, get) => ({
     // running in dev mode has a irritating habit of trying to connect
     // twice - this will prevent that
     if (get().connected || get().connecting) {
-      console.log('already connected or connecting.')
+      console.log("already connected or connecting.")
       return
     }
 
@@ -90,7 +91,7 @@ const store = (set, get) => ({
     const socket = new WebSocket(url)
 
     socket.onopen = () => {
-      console.info('websocket opened')
+      console.info("websocket opened")
       set({
         socket: socket
       })
@@ -107,13 +108,13 @@ const store = (set, get) => ({
       // connected to a runtime instance
 
       // subscribe and prepare to query myrobotlab instance
-      get().subscribeTo('runtime', 'getServiceNames')
-      get().subscribeTo('runtime', 'getService')
-      get().sendTo('runtime', 'getServiceNames')
+      get().subscribeTo("runtime", "getServiceNames")
+      get().subscribeTo("runtime", "getService")
+      get().sendTo("runtime", "getServiceNames")
     }
 
     socket.onclose = () => {
-      console.info('websocket closed')
+      console.info("websocket closed")
       set({
         socket: null
       })
@@ -126,11 +127,11 @@ const store = (set, get) => ({
     }
 
     socket.onerror = (error) => {
-      console.error('websocket error:', error)
+      console.error("websocket error:", error)
     }
 
     socket.onmessage = (event) => {
-      if (event.data === 'X') {
+      if (event.data === "X") {
         // atmosphere protocol ping
         return
       }
@@ -145,12 +146,12 @@ const store = (set, get) => ({
       }
 
       try {
-        let key = msg.name + '.' + msg.method
+        let key = msg.name + "." + msg.method
 
         // handle the initial query of services
         if (key === `runtime@${get().id}.onServiceNames`) {
           // first message returned - make it the defaultRemoteId
-          const atIndex = msg.sender.indexOf('@')
+          const atIndex = msg.sender.indexOf("@")
           if (atIndex !== -1) {
             set({ defaultRemoteId: msg.sender.substring(atIndex + 1) })
           }
@@ -158,13 +159,13 @@ const store = (set, get) => ({
           // ask for each service
           for (const serviceName of msg.data[0]) {
             console.info(serviceName)
-            get().sendTo('runtime', 'getService', serviceName)
+            get().sendTo("runtime", "getService", serviceName)
           }
         }
 
         // populate the registry
         if (key === `runtime@${get().id}.onService`) {
-          get().registry[msg.data[0].name + '@' + msg.data[0].id] = msg.data[0]
+          get().registry[msg.data[0].name + "@" + msg.data[0].id] = msg.data[0]
         }
 
         // store the message
@@ -183,7 +184,7 @@ const store = (set, get) => ({
     }
   },
   getMsg: (name, method) => {
-    let key = name + '.' + method
+    let key = name + "." + method
     const messages = get().messages
 
     if (messages.hasOwnProperty(key)) {
@@ -197,14 +198,14 @@ const store = (set, get) => ({
     if (socket) {
       socket.send(json)
     } else {
-      console.error('no socket connection.')
+      console.error("no socket connection.")
     }
   },
 
   sendMessage: (msg) => {
     // GOOD DEBUGGING
     // console.info('out-msg <-- ' + msg.name + '.' + msg.method)
-    msg.encoding = 'json'
+    msg.encoding = "json"
     if (msg.data) {
       for (let i = 0; i < msg.data.length; i++) {
         msg.data[i] = JSON.stringify(msg.data[i])
@@ -218,18 +219,18 @@ const store = (set, get) => ({
   sendTo: function (name, method) {
     var args = Array.prototype.slice.call(arguments, 2)
     var msg = get().createMessage(name, method, args)
-    msg.sendingMethod = 'sendTo'
+    msg.sendingMethod = "sendTo"
     get().sendMessage(msg)
   },
 
   subscribeTo: function (name, method) {
     // FIXME- merge more args
     var args = Array.prototype.slice.call(arguments, 1)
-    var msg = get().createMessage(name, 'addListener', [
+    var msg = get().createMessage(name, "addListener", [
       method,
-      'runtime' + '@' + get().id
+      "runtime" + "@" + get().id
     ])
-    msg.sendingMethod = 'subscribeTo'
+    msg.sendingMethod = "subscribeTo"
     get().sendMessage(msg)
   },
 
@@ -241,25 +242,25 @@ const store = (set, get) => ({
   createMessage: (inName, inMethod, inParams) => {
     // TODO: consider a different way to pass inParams for a no arg method.
     // rather than an array with a single null element.
-    const remoteId = 'mrl-id'
-    const id = 'react-app-id'
+    const remoteId = "mrl-id"
+    const id = "react-app-id"
 
     var msg = {
       msgId: new Date().getTime(),
       name: get().getFullName(inName),
       method: inMethod,
-      sender: 'runtime@' + id,
+      sender: "runtime@" + id,
       sendingMethod: null
     }
 
     if (inParams || (inParams.length === 1 && inParams[0])) {
-      msg['data'] = inParams
+      msg["data"] = inParams
     }
     return msg
   },
 
   disconnect: () => {
-    console.info('disconnecting')
+    console.info("disconnecting")
     const { socket } = get().socket
     if (socket) {
       socket.close()

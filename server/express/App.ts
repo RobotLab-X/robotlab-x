@@ -1,43 +1,24 @@
-import bodyParser from 'body-parser'
-import cors from 'cors'
-// import { Server } from 'http'
-import os from 'os'
-import path from 'path'
-import NameGenerator from './framework/NameGenerator'
-import { HostData, NodeData, ProcessData } from './models/NodeData'
-import { Status } from './models/Status'
+import bodyParser from "body-parser"
+import cors from "cors"
+import os from "os"
+import path from "path"
+import NameGenerator from "./framework/NameGenerator"
+import { AppData } from "./models/AppData"
+import { ProcessData } from "./models/ProcessData"
 
-import express from 'express'
-import { Server as HTTPServer } from 'http'
-import { Server } from 'ws'
+import express from "express"
+import { Server as HTTPServer } from "http"
+import { Server } from "ws"
 
-const { spawn } = require('child_process')
-const http = require('http')
+import { spawn } from "child_process"
+import fs from "fs"
+import http from "http"
+import YAML from "yaml"
+import { HostData } from "./models/HostData"
+import { ServiceData } from "./models/ServiceData"
+import { ServiceTypeData } from "./models/ServiceTypeData"
 
-const apiPrefix = '/api/v1'
-
-class AppData {
-  public id: string
-  private nodes: { [id: string]: NodeData } = {}
-
-  /**
-   * Adds a new NodeData instance to the collection.
-   * @param {string} id - The unique identifier for the node.
-   * @param {NodeData} node - The NodeData instance to add.
-   */
-  public putNode(id: string, node: NodeData) {
-    this.nodes[id] = node
-  }
-
-  /**
-   * Retrieves a NodeData instance by its ID.
-   * @param {string} id - The ID of the node to retrieve.
-   * @returns {NodeData} The NodeData instance.
-   */
-  public getNode(id: string) {
-    return this.nodes[id]
-  }
-}
+const apiPrefix = "/api/v1/services"
 
 // Creates and configures an ExpressJS web server2.
 class App {
@@ -45,6 +26,8 @@ class App {
   public express: express.Application
   public http: HTTPServer
   public ws: Server
+
+  // all application data
   protected data: AppData
 
   // Run configuration methods on the Express instance.
@@ -55,27 +38,50 @@ class App {
     this.ws = new Server({ server: this.http })
     this.middleware()
     this.routes()
-    this.data = new AppData()
-    this.data.id = NameGenerator.getName()
-    let thisNode = new NodeData(this.data.id)
-    thisNode.name = 'runtime'
-    thisNode.host = HostData.getLocalHostData(os)
-    // TODO getTypeInfo(this)
-    thisNode.process = ProcessData.getProcessData(process)
-    thisNode.process.platform = 'node'
-    thisNode.type = {
-      name: 'RobotLabXManager',
-      description: 'RobotLab-X Service Manager API',
-      version: '0.0.1'
-    }
-    this.data.putNode(this.data.id, thisNode)
 
+    // initialize the application data
+
+    this.data = new AppData("runtime", NameGenerator.getName(), os.hostname())
+    let data = this.data
+
+    // register the host
+    let host = HostData.getLocalHostData(os)
+    data.registerHost(host)
+
+    // register process
+    let process: ProcessData = this.getLocalProcessData()
+    process.host = host.hostname
+    data.registerProcess(process)
+
+    // register type
+    let type = new ServiceTypeData("RobotLabXRuntime")
+    type.description = "RobotLabX Runtime"
+    type.version = "0.0.1"
+    type.author = "GroG"
+    type.license = "MJIT-1.0"
+    type.language = "JavaScript"
+    type.title = "Robot Lab X Server"
+    type.platform = "node"
+    type.platformVersion = process.platformVersion
+    data.registerType(type)
+
+    // register service
+    let service = new ServiceData(
+      this.data.getId(),
+      "runtime",
+      "RobotLabXRuntime",
+      "0.0.1"
+    )
+    // this.data.register("runtime", "RobotLabXRuntime", this.data.getId())
+    data.register(service)
+
+    // TODO add my service
     // Handle a connection request from clients
-    this.ws.on('connection', function connection(ws: any) {
-      console.log('A client connected')
+    this.ws.on("connection", function connection(ws: any) {
+      console.log("A client connected")
 
-      ws.on('message', function incoming(message: any) {
-        console.log('received: %s', message)
+      ws.on("message", function incoming(message: any) {
+        console.log("received: %s", message)
 
         // WORKS !!!
         // Echo the received message back to the client
@@ -89,8 +95,8 @@ class App {
     // this.express.use(logger("dev"));
     this.express.use(cors())
     this.express.use(
-      '/images',
-      express.static(path.join(__dirname, 'public/images'))
+      "/images",
+      express.static(path.join(__dirname, "public/images"))
     )
     this.express.use(bodyParser.json())
     this.express.use(bodyParser.urlencoded({ extended: false }))
@@ -103,73 +109,112 @@ class App {
      * API endpoints */
     const router = express.Router()
     // placeholder route handler
-    router.put(`${apiPrefix}/register`, (req, res, next) => {
+    router.put(`${apiPrefix}/runtime/register`, (req, res, next) => {
       console.log(req.body)
-      this.data.putNode(req.body.id, req.body)
-      let status = new Status()
-      status.id = this.data.id
-      status.source = 'runtime'
-      status.level = 'info'
-      status.detail = 'registered'
-      res.json(status)
+      const serviceData = req.body
+      this.data.register(serviceData)
+      res.json(serviceData)
     })
 
-    router.get(`${apiPrefix}/nodes`, (req, res, next) => {
+    router.put(`${apiPrefix}/runtime/registerType`, (req, res, next) => {
+      console.log(req.body)
+      const serviceDataType = req.body
+      this.data.registerType(serviceDataType)
+      res.json(serviceDataType)
+    })
+
+    router.get(`${apiPrefix}/runtime`, (req, res, next) => {
       res.json(this.data)
     })
 
-    router.get(`${apiPrefix}/os-info`, (req, res) => {
-      const osInfo = {
-        hostname: os.hostname(),
-        platform: os.platform(),
-        architecture: os.arch(),
-        numberOfCPUs: os.cpus().length,
-        networkInterfaces: os.networkInterfaces(),
-        uptime: os.uptime(),
-        freeMemory: os.freemem(),
-        totalMemory: os.totalmem(),
-        loadAverage: os.loadavg(),
-        currentUser: os.userInfo()
+    router.get(`${apiPrefix}/runtime/host`, (req, res) => {
+      res.json(this.data.getHost())
+    })
+
+    router.get(`${apiPrefix}/stop/:name`, (req, res, next) => {
+      console.info(`release process ${req.params.name}`)
+      const name = JSON.parse(decodeURIComponent(req.params.name))
+      res.json(name)
+    })
+
+    router.get(`${apiPrefix}/release/:name`, (req, res, next) => {
+      console.info(`release process ${req.params.name}`)
+      const name = JSON.parse(decodeURIComponent(req.params.name))
+      res.json(name)
+    })
+
+    router.get(`${apiPrefix}/start/:name/:type`, (req, res, next) => {
+      try {
+        const serviceName = JSON.parse(decodeURIComponent(req.params.name))
+        const serviceType = JSON.parse(decodeURIComponent(req.params.type))
+        const pkgPath = `./service/${serviceType}`
+        const pkgYmlFile = `${pkgPath}}/package.yml`
+
+        // loading type info
+        console.info(`loading type data from ${pkgYmlFile}`)
+
+        const file = fs.readFileSync(pkgYmlFile, "utf8")
+        const pkg = YAML.parse(file)
+
+        // determine necessary platform python, node, docker, java
+        // yes | no -> install -> yes | no
+
+        if (pkg.platform === "python") {
+          console.info(`python package ${pkg}`)
+        }
+
+        // resolve if package.yml dependencies are met
+
+        console.info(`yaml ${JSON.stringify(pkg)}`)
+
+        // creating instance config from type if it does not exist
+
+        // preparing to start the process
+
+        const script = "start.py"
+
+        // register
+
+        // TODO get package.yml from processModule - check if
+        // dependencies are met
+        // host check
+        // platform check - python version, pip installed, venv etc.
+        // pip libraries and versions installed
+        const pd: ProcessData = new ProcessData(
+          serviceName,
+          process.pid,
+          this.data.getHostname(),
+          "python",
+          "3.8.5"
+        )
+        this.data.registerProcess(pd)
+
+        // TODO register the service
+
+        console.info(`Starting process ${pkgPath}/${script}`)
+
+        // spawn the process
+        const childProcess = spawn("python", [script], { cwd: pkgPath })
+
+        console.info(`process ${JSON.stringify(childProcess)}`)
+        res.json(childProcess)
+      } catch (e) {
+        console.error(e)
       }
-
-      res.json(osInfo)
     })
 
-    router.get(`${apiPrefix}/stop/:process`, (req, res, next) => {
-      const decoded = decodeURIComponent(req.params.process)
-      const processModule = JSON.parse(decoded)
+    this.express.use("/", router)
+  }
 
-      console.info(`stop process ${process}`)
-
-      res.json(process)
-    })
-
-    router.get(`${apiPrefix}/start/:process`, (req, res, next) => {
-      const decoded = decodeURIComponent(req.params.process)
-      const processModule = JSON.parse(decoded)
-
-      const script = 'start.py'
-      const cwd = `./process/${processModule}`
-
-      console.info(`starting process ${cwd}/${processModule}`)
-
-      // TODO get package.yml from processModule - check if
-      // dependencies are met
-      // host check
-      // platform check - python version, pip installed, venv etc.
-      // pip libraries and versions installed
-      const pd: ProcessData = new ProcessData()
-
-      console.info(`Starting process ${cwd}/${script}`)
-
-      // spawn the process
-      const childProcess = spawn('python', [script], { cwd })
-
-      console.info(`process ${JSON.stringify(childProcess)}`)
-      res.json(childProcess)
-    })
-
-    this.express.use('/', router)
+  public getLocalProcessData(): ProcessData {
+    let pd: ProcessData = new ProcessData(
+      this.data.getId(),
+      process.pid,
+      this.data.getHostname(),
+      "node",
+      process.version
+    )
+    return pd
   }
 }
 
