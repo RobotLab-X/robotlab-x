@@ -1,33 +1,18 @@
-import React, { useState, useEffect } from "react"
+import React, { useEffect, useState } from "react"
 // import { ProSidebar, Menu, MenuItem } from "react-pro-sidebar"
-import { Sidebar, Menu, MenuItem, SubMenu } from "react-pro-sidebar"
 import { Box, IconButton, Typography, useTheme } from "@mui/material"
-import Stack from "@mui/material/Stack"
-import Button from "@mui/material/Button"
+import { Menu, MenuItem, Sidebar } from "react-pro-sidebar"
 
 import { Link } from "react-router-dom"
 // import "react-pro-sidebar/dist/css/styles.css"
 import { tokens } from "../../theme"
 
 // icons
-import TabOutlinedIcon from "@mui/icons-material/TabOutlined"
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined"
-import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined"
-import PeopleOutlinedIcon from "@mui/icons-material/PeopleOutlined"
 import HubOutlinedIcon from "@mui/icons-material/HubOutlined"
-import ContactsOutlinedIcon from "@mui/icons-material/ContactsOutlined"
-import ReceiptOutlinedIcon from "@mui/icons-material/ReceiptOutlined"
-import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined"
-import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined"
-import HelpOutlineOutlinedIcon from "@mui/icons-material/HelpOutlineOutlined"
-import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined"
-import PieChartOutlineOutlinedIcon from "@mui/icons-material/PieChartOutlineOutlined"
-import TimelineOutlinedIcon from "@mui/icons-material/TimelineOutlined"
-
-import vrIcon from "./vr-lite.png"
+import TabOutlinedIcon from "@mui/icons-material/TabOutlined"
 
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined"
-import MapOutlinedIcon from "@mui/icons-material/MapOutlined"
 import TroubleshootOutlinedIcon from "@mui/icons-material/TroubleshootOutlined"
 import { useStore } from "../../store/store"
 
@@ -38,7 +23,7 @@ const Item = ({ title, to, icon, selected, setSelected }) => {
     <MenuItem
       active={selected === title}
       style={{
-        color: colors.grey[100],
+        color: colors.grey[100]
       }}
       onClick={() => setSelected(title)}
       icon={icon}
@@ -64,20 +49,20 @@ const AppSidebar = () => {
     <Box
       sx={{
         "& .pro-sidebar-inner": {
-          background: `${colors.primary[400]} !important`,
+          background: `${colors.primary[400]} !important`
         },
         "& .pro-icon-wrapper": {
-          backgroundColor: "transparent !important",
+          backgroundColor: "transparent !important"
         },
         "& .pro-inner-item": {
-          padding: "5px 35px 5px 20px !important",
+          padding: "5px 35px 5px 20px !important"
         },
         "& .pro-inner-item:hover": {
-          color: "#868dfb !important",
+          color: "#868dfb !important"
         },
         "& .pro-menu-item.active": {
-          color: "#6870fa !important",
-        },
+          color: "#6870fa !important"
+        }
       }}
     >
       <Sidebar collapsed={isCollapsed}>
@@ -87,9 +72,9 @@ const AppSidebar = () => {
               alt={connected ? `connected` : `disconnected`}
               style={{
                 width: "22px",
-                alighn: "center",
+                alighn: "center"
               }}
-              src={connected ? `assets/green.png` : `assets/red.png`}
+              src={connected ? `green.png` : `red.png`}
             />
           </Box>
 
@@ -99,11 +84,16 @@ const AppSidebar = () => {
             icon={isCollapsed ? <MenuOutlinedIcon /> : undefined}
             style={{
               margin: "10px 0 20px 0",
-              color: colors.grey[100],
+              color: colors.grey[100]
             }}
           >
             {!isCollapsed && (
-              <Box display="flex" justifyContent="space-between" alignItems="center" ml="15px">
+              <Box
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+                ml="15px"
+              >
                 <Typography variant="h3" color={colors.grey[100]}>
                   ADMINIS
                 </Typography>
@@ -126,7 +116,12 @@ const AppSidebar = () => {
                 />
               </Box>
               <Box textAlign="center">
-                <Typography variant="h2" color={colors.grey[100]} fontWeight="bold" sx={{ m: "10px 0 0 0" }}>
+                <Typography
+                  variant="h2"
+                  color={colors.grey[100]}
+                  fontWeight="bold"
+                  sx={{ m: "10px 0 0 0" }}
+                >
                   RobotLab-X
                 </Typography>
                 <Typography variant="h5" color={colors.greenAccent[500]}>
@@ -136,7 +131,10 @@ const AppSidebar = () => {
             </Box>
           )}
 
-          <MenuItem component={<Link to="/" />} icon={<DashboardOutlinedIcon />}>
+          <MenuItem
+            component={<Link to="/" />}
+            icon={<DashboardOutlinedIcon />}
+          >
             Dashboard
           </MenuItem>
 
@@ -148,16 +146,20 @@ const AppSidebar = () => {
             Graph
           </MenuItem>
 
-          <MenuItem component={<Link to="/network" />} icon={<TroubleshootOutlinedIcon />}>
+          <MenuItem
+            component={<Link to="/network" />}
+            icon={<TroubleshootOutlinedIcon />}
+          >
             Network and Diagnostics
           </MenuItem>
 
-          <MenuItem component={<Link to="/webxr" />} icon={<TroubleshootOutlinedIcon />}>
+          <MenuItem
+            component={<Link to="/webxr" />}
+            icon={<TroubleshootOutlinedIcon />}
+          >
             <img src={`assets/vr-lite.png`} alt="WebXR" width="22" />
             WebXR
           </MenuItem>
-
-         
         </Menu>
       </Sidebar>
     </Box>

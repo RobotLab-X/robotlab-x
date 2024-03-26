@@ -3,8 +3,8 @@ import cors from "cors"
 import os from "os"
 import path from "path"
 import NameGenerator from "./framework/NameGenerator"
+import { ProcessData } from "./models//ProcessData"
 import { AppData } from "./models/AppData"
-import { ProcessData } from "./models/ProcessData"
 
 import express from "express"
 import { Server as HTTPServer } from "http"
@@ -14,9 +14,9 @@ import { spawn } from "child_process"
 import fs from "fs"
 import http from "http"
 import YAML from "yaml"
-import { HostData } from "./models/HostData"
-import { ServiceData } from "./models/ServiceData"
-import { ServiceTypeData } from "./models/ServiceTypeData"
+import { HostData } from "./models//HostData"
+import { ServiceData } from "./models//ServiceData"
+import { ServiceTypeData } from "./models//ServiceTypeData"
 
 const apiPrefix = "/api/v1/services"
 
@@ -55,12 +55,13 @@ class App {
 
     // register type
     let type = new ServiceTypeData("RobotLabXRuntime")
-    type.description = "RobotLabX Runtime"
+    type.description =
+      "The RobotLab X Server service acts as a foundation for creating additional services tailored for robots, such as vision, text-to-speech, speech-to-text, and chat interfaces. It allows users to easily expand their robot's capabilities by adding new functionalities as needed."
     type.version = "0.0.1"
     type.author = "GroG"
-    type.license = "MJIT-1.0"
+    type.license = "MPL-2.0"
     type.language = "JavaScript"
-    type.title = "Robot Lab X Server"
+    type.title = "RobotLab X Server"
     type.platform = "node"
     type.platformVersion = process.platformVersion
     data.registerType(type)

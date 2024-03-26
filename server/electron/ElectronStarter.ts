@@ -69,7 +69,7 @@ export default class Main {
 
   private static onClose() {
     // Dereference the window object.
-    Main.mainWindow = null
+   //  Main.mainWindow = null
   }
 
   private static bootServer() {
@@ -127,8 +127,12 @@ export default class Main {
 
   private static onListening(): void {
     const addr = App.http.address()
+    if (addr === null) {
+      console.error("Server listening address is null")
+    } else {
     const bind = typeof addr === "string" ? `pipe ${addr}` : `port ${addr.port}`
     logger.log(`Listening on ${bind}`)
+    }
   }
 }
 

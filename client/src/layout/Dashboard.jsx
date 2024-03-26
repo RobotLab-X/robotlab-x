@@ -1,31 +1,20 @@
 import InputOutlinedIcon from "@mui/icons-material/InputOutlined"
 import PlaylistAddIcon from "@mui/icons-material/PlaylistAddOutlined"
 import UploadFileOutlinedIcon from "@mui/icons-material/UploadFileOutlined"
-
-import HubIcon from "@mui/icons-material/Hub"
-import MonitorIcon from "@mui/icons-material/Monitor"
-
 import {
-  Box,
-  IconButton,
   Paper,
   Table,
   TableBody,
   TableCell,
   TableHead,
-  TableRow,
-  useTheme
+  TableRow
 } from "@mui/material"
+
+import HubIcon from "@mui/icons-material/Hub"
+import MonitorIcon from "@mui/icons-material/Monitor"
+
+import { Box, IconButton, useTheme } from "@mui/material"
 import Tooltip from "@mui/material/Tooltip"
-import greenLight from "images/green.png"
-import imagesTypesElectron from "images/types/Electron.png"
-import imagesTypesNodeJS from "images/types/NodeJS.png"
-import imagesTypesRobotLabX from "images/types/RobotLabX.png"
-import imagesTypesRobotLabXExpress from "images/types/RobotLabXExpress.png"
-import imagesTypesRobotLabXJS from "images/types/RobotLabXJS.png"
-import imagesTypesRobotLabXRuntime from "images/types/RobotLabXRuntime.png"
-import imagesTypesRobotLabXUI from "images/types/RobotLabXUI.png"
-import imagesTypesUnknown from "images/types/Unknown.png"
 import { ServiceData } from "models/ServiceData"
 import { ServiceTypeData } from "models/ServiceTypeData"
 import React, { useEffect, useState } from "react"
@@ -34,24 +23,14 @@ import { tokens } from "../theme"
 
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown"
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp"
-import { Collapse, Typography } from "@mui/material"
-
-// Map of image names to imported images
-const imagesTypes = {
-  Electron: imagesTypesElectron,
-  NodeJS: imagesTypesNodeJS,
-  RobotLabX: imagesTypesRobotLabX,
-  RobotLabXExpress: imagesTypesRobotLabXExpress,
-  RobotLabXJS: imagesTypesRobotLabXJS,
-  RobotLabXRuntime: imagesTypesRobotLabXRuntime,
-  RobotLabXUI: imagesTypesRobotLabXUI,
-  Unknown: imagesTypesUnknown
-}
+import { Collapse } from "@mui/material"
+import ServiceDialog from "components/ServiceDialog"
 
 const Dashboard = () => {
   const theme = useTheme()
   const colors = tokens(theme.palette.mode)
   const iconSize = 32
+  const [open, setOpen] = useState(false)
 
   const [isLoading, setIsLoading] = useState(true)
 
@@ -60,13 +39,18 @@ const Dashboard = () => {
   const { id } = useStore()
 
   const handleStartNewNode = () => {
-    console.log("Starting new node...")
+    console.info("Starting new node...")
+    setOpen(true) // Open the modal dialog
   }
   const handleConnect = () => {
-    console.log("Connect to Existing Node...")
+    console.info("Connect to Existing Node...")
   }
   const handleLoad = () => {
-    console.log("Loading...")
+    console.info("Loading...")
+  }
+
+  const handleClose = () => {
+    setOpen(false)
   }
 
   // should be store
@@ -133,15 +117,6 @@ const Dashboard = () => {
     [id] /*[appData]*/
   ) // re-fetch when appData change - too many you mod it above here !
 
-  function getNodeTypeImage(typeName) {
-    let ImageToShow = imagesTypes[typeName]
-    if (!ImageToShow) {
-      ImageToShow = imagesTypes["Unknown"]
-    }
-
-    return <img src={ImageToShow} alt={typeName} sx={{ fontSize: iconSize }} />
-  }
-
   function getNodeTypeIcon(node) {
     if (node?.type?.name) {
       let type = node?.type?.name
@@ -158,7 +133,8 @@ const Dashboard = () => {
     const [open, setOpen] = useState(false)
     const typeVersionKey = `${sd?.typeKey}@${sd?.version}`
     const type = appData?.types[typeVersionKey]
-
+    const imagePath = `${process.env.PUBLIC_URL}/service/${sd.typeKey}/${sd.typeKey}.png`
+    const connectedPath = `${process.env.PUBLIC_URL}/green.png`
     return (
       <>
         <TableRow sx={{ "& > *": { borderBottom: "unset", border: 1 } }}>
@@ -173,7 +149,7 @@ const Dashboard = () => {
                 </span>
               }
             >
-              <img src={greenLight} alt="connected" width="16" />
+              <img src={connectedPath} alt="connected" width="16" />
             </Tooltip>
           </TableCell>
           <TableCell>
@@ -181,7 +157,9 @@ const Dashboard = () => {
               {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
             </IconButton>
           </TableCell>
-          <TableCell></TableCell>
+          <TableCell>
+            <img src={imagePath} alt={sd.typeKey} />
+          </TableCell>
           <TableCell component="th" scope="row">
             {type.title}
           </TableCell>
@@ -191,12 +169,30 @@ const Dashboard = () => {
           <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
             <Collapse in={open} timeout="auto" unmountOnExit>
               <Box margin={1}>
-                <Typography variant="h6" gutterBottom component="div">
-                  {sd.typeKey} {getNodeTypeImage(sd.typeKey)} {type.version}
-                  {sd.name}@{sd.id}
-                </Typography>
-                <Typography>Details about {sd.name}</Typography>
-
+                <Table sx={{ width: 300 }}>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell>Version</TableCell>
+                      <TableCell>{type.version}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>Language</TableCell>
+                      <TableCell>{type.language}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>Platform</TableCell>
+                      <TableCell>{type.platform}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>Platform Version</TableCell>
+                      <TableCell>{type.platformVersion}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>Description</TableCell>
+                      <TableCell>{type.description}</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
                 <IconButton type="button" onClick={handleStartNewNode}>
                   {getNodeTypeIcon(sd.typeKey)}
                 </IconButton>
@@ -209,6 +205,29 @@ const Dashboard = () => {
   }
 
   const nodesArray = Object.values(appData?.registry ?? {})
+  const packages = {
+    RobotLabXRuntime: {
+      typeKey: "RobotLabXRuntime",
+      title: "Robot Lab X UI",
+      platform: "node",
+      platformVersion: "20",
+      description:
+        "The RobotLab X Server service acts as a foundation for creating additional services tailored for robots, such as vision, text-to-speech, speech-to-text, and chat interfaces. It allows users to easily expand their robot's capabilities by adding new functionalities as needed.",
+      version: "0.0.1",
+      interfaces: null,
+      language: "JavaScript"
+    },
+    RobotLabXUI: {
+      typeKey: "RobotLabXUI",
+      title: "Robot Lab X UI",
+      platform: "electron",
+      platformVersion: "29.1.4",
+      description: "Robot Lab X UI",
+      version: "0.0.1",
+      interfaces: null,
+      language: "JavaScript"
+    }
+  }
 
   return (
     <>
@@ -223,7 +242,7 @@ const Dashboard = () => {
                     <PlaylistAddIcon sx={{ fontSize: iconSize }} />
                   </IconButton>
                 </TableCell>
-                <TableCell>Start New Node</TableCell>
+                <TableCell>Start New Service</TableCell>
                 <TableCell></TableCell>
               </TableRow>
               <TableRow>
@@ -261,6 +280,9 @@ const Dashboard = () => {
           </Table>
         </Paper>
       </Box>
+
+      <ServiceDialog packages={packages} />
+
       <br />
     </>
   )

@@ -1,6 +1,6 @@
 {
   "ignore": ["dist/*", "some/other/directory/*"],
-  "watch": ["src/**/*", "express/**/*"],
+  "watch": ["src/**/*", "express/**/*", "electron/**/*"],
   "ext": "js,mjs,cjs,json,ts,tsx",
   "exec": "yarn run build && cross-env ELECTRON_START_URL=http://localhost:3000 electron --inspect ./dist/electron/ElectronStarter.js"
 }

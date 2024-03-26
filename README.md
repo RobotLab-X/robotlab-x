@@ -53,3 +53,10 @@ To run a production build, you have several options:
 ### NOTE
 The packages will be generated in the `dist` folder.<br />
 You can also find the compiled files in the `build` directory (In case you want to use the React Build in another project or only for reviewing what will Electron use for the package).
+
+
+## Find Other edits
+
+```
+./node_modules/.bin/tsc -p tsconfig-build.json
+```
