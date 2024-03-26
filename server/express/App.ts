@@ -71,7 +71,8 @@ class App {
       this.data.getId(),
       "runtime",
       "RobotLabXRuntime",
-      "0.0.1"
+      "0.0.1",
+      os.hostname()
     )
     // this.data.register("runtime", "RobotLabXRuntime", this.data.getId())
     data.register(service)

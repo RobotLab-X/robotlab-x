@@ -65,6 +65,7 @@
     "electron-builder-squirrel-windows": "24.13.3",
     "express": "^4.19.2",
     "flatten": "^1.0.3",
+    "semver": "^7.6.0",
     "ws": "^8.16.0",
     "yaml": "^2.4.1"
   }

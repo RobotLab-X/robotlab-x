@@ -77,15 +77,24 @@ const Dashboard = () => {
     () => {
       const fetchNodes = async () => {
         try {
+          const UAParser = require("ua-parser-js")
+          const parser = new UAParser()
+
+          const browser = parser.getBrowser()
+
           // register service
-          let service = new ServiceData(id, "runtime", "RobotLabXUI", "0.0.1")
+          let service = new ServiceData(
+            id,
+            "runtime",
+            "RobotLabXUI",
+            "0.0.1",
+            browser.name.toLowerCase()
+          )
           let response = await put("/runtime/register", service)
 
           // cannot register process except for id
 
-          // register type
-          const UAParser = require("ua-parser-js")
-          const parser = new UAParser()
+          // register type - should be static ?
 
           let type = new ServiceTypeData("RobotLabXUI")
           type.version = "0.0.1"
@@ -93,7 +102,6 @@ const Dashboard = () => {
           type.description = "Robot Lab X UI"
           type.version = "0.0.1"
           type.title = "Robot Lab X UI"
-          const browser = parser.getBrowser()
           type.platform = browser.name.toLowerCase()
           type.platformVersion = browser.version
 
@@ -204,6 +212,7 @@ const Dashboard = () => {
     )
   }
 
+  // FIXME - put in store in App.js
   const nodesArray = Object.values(appData?.registry ?? {})
   const packages = {
     RobotLabXRuntime: {

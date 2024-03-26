@@ -1,0 +1,18 @@
+typeKey: "RobotLabXUI"
+title: "Robot Lab X UI"
+platform: "browser"
+platformVersion: null
+description: "Web front end for RobotLab-X"
+version: "0.0.1"
+interfaces:
+  restAPI:
+    - endpoint: "/api/v1/resource"
+      method: "GET"
+      description: "Retrieves list of resources."
+author: "GroG"
+license: "MIT"
+language: "JavaScript"
+categories:
+- "web"
+- "ui"
+dependencies: null
