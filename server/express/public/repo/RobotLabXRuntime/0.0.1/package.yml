@@ -1,0 +1,20 @@
+typeKey: "RobotLabXRuntime"
+title: "Robot Lab X Server"
+platform: "node"
+platformVersion: null
+description: "The RobotLab X Server service acts as a foundation for creating additional services tailored for robots, such as vision, text-to-speech, speech-to-text, and chat interfaces. It allows users to easily expand their robot's capabilities by adding new functionalities as needed."
+version: "0.0.1"
+interfaces:
+  restAPI:
+    - endpoint: "/api/v1/resource"
+      method: "GET"
+      description: "Retrieves list of resources."
+author: "GroG"
+license: "MPL-2.0"
+language: "JavaScript"
+categories:
+- "web"
+- "http"
+- "service manager"
+- "framework"
+dependencies: null

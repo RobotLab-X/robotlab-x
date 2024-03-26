@@ -10,7 +10,7 @@ interfaces:
       method: "GET"
       description: "Retrieves list of resources."
 author: "GroG"
-license: "MIT"
+license: "MPL-2.0"
 language: "JavaScript"
 categories:
 - "web"

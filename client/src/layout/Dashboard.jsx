@@ -16,7 +16,6 @@ import MonitorIcon from "@mui/icons-material/Monitor"
 import { Box, IconButton, useTheme } from "@mui/material"
 import Tooltip from "@mui/material/Tooltip"
 import { ServiceData } from "models/ServiceData"
-import { ServiceTypeData } from "models/ServiceTypeData"
 import React, { useEffect, useState } from "react"
 import { useStore } from "store/store"
 import { tokens } from "../theme"
@@ -33,6 +32,9 @@ const Dashboard = () => {
   const [open, setOpen] = useState(false)
 
   const [isLoading, setIsLoading] = useState(true)
+
+  const updateRepo = useStore((state) => state.updateRepo)
+  const repo = useStore((state) => state.repo)
 
   const baseUrl = "http://localhost:3001/api/v1/services"
 
@@ -96,16 +98,16 @@ const Dashboard = () => {
 
           // register type - should be static ?
 
-          let type = new ServiceTypeData("RobotLabXUI")
-          type.version = "0.0.1"
-          type.language = "JavaScript"
-          type.description = "Robot Lab X UI"
-          type.version = "0.0.1"
-          type.title = "Robot Lab X UI"
-          type.platform = browser.name.toLowerCase()
-          type.platformVersion = browser.version
+          // let type = new ServiceTypeData("RobotLabXUI")
+          // type.version = "0.0.1"
+          // type.language = "JavaScript"
+          // type.description = "Robot Lab X UI"
+          // type.version = "0.0.1"
+          // type.title = "Robot Lab X UI"
+          // type.platform = browser.name.toLowerCase()
+          // type.platformVersion = browser.version
 
-          response = await put("/runtime/registerType", type)
+          // response = await put("/runtime/registerType", type)
 
           // cannot register host
 
@@ -114,6 +116,10 @@ const Dashboard = () => {
           console.info("json", json)
           // should be AppData.ts
           setAppData(json)
+
+          const repo = await get("/runtime/repo")
+          const repoJson = await repo.json()
+          updateRepo(repoJson)
         } catch (error) {
           console.error("Error fetching runtime:", error)
           // Handle error appropriately
@@ -140,7 +146,7 @@ const Dashboard = () => {
   function ServceDataRow({ sd }) {
     const [open, setOpen] = useState(false)
     const typeVersionKey = `${sd?.typeKey}@${sd?.version}`
-    const type = appData?.types[typeVersionKey]
+    const type = repo[typeVersionKey]
     const imagePath = `${process.env.PUBLIC_URL}/service/${sd.typeKey}/${sd.typeKey}.png`
     const connectedPath = `${process.env.PUBLIC_URL}/green.png`
     return (
@@ -214,30 +220,6 @@ const Dashboard = () => {
 
   // FIXME - put in store in App.js
   const nodesArray = Object.values(appData?.registry ?? {})
-  const packages = {
-    RobotLabXRuntime: {
-      typeKey: "RobotLabXRuntime",
-      title: "Robot Lab X UI",
-      platform: "node",
-      platformVersion: "20",
-      description:
-        "The RobotLab X Server service acts as a foundation for creating additional services tailored for robots, such as vision, text-to-speech, speech-to-text, and chat interfaces. It allows users to easily expand their robot's capabilities by adding new functionalities as needed.",
-      version: "0.0.1",
-      interfaces: null,
-      language: "JavaScript"
-    },
-    RobotLabXUI: {
-      typeKey: "RobotLabXUI",
-      title: "Robot Lab X UI",
-      platform: "electron",
-      platformVersion: "29.1.4",
-      description: "Robot Lab X UI",
-      version: "0.0.1",
-      interfaces: null,
-      language: "JavaScript"
-    }
-  }
-
   return (
     <>
       <Box sx={{ maxWidth: "fit-content", overflowX: "auto", ml: 2 }}>
@@ -290,7 +272,7 @@ const Dashboard = () => {
         </Paper>
       </Box>
 
-      <ServiceDialog packages={packages} />
+      <ServiceDialog packages={repo} />
 
       <br />
     </>

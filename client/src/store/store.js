@@ -50,6 +50,12 @@ const store = (set, get) => ({
   registry: {},
 
   /**
+   * @type {Service} repo - The service repository of types
+   * @description This is a dictionary of service types, keyed by the simple name of the service. typeKey@version
+   */
+  repo: {},
+
+  /**
    * @type {WebSocket} socket - The websocket connection
    */
   socket: null,
@@ -71,6 +77,14 @@ const store = (set, get) => ({
    * keyed by the message name and method.
    */
   messages: {},
+
+  updateRepo: (newRepo) => set({ repo: newRepo }),
+
+  addToRepo: (key, value) =>
+    set((state) => ({
+      repo: { ...state.repo, [key]: value }
+    })),
+
   connect: (url) => {
     if (!url) {
       // if url is not explicitly set

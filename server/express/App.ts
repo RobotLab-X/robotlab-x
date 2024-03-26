@@ -3,8 +3,9 @@ import cors from "cors"
 import os from "os"
 import path from "path"
 import NameGenerator from "./framework/NameGenerator"
-import { ProcessData } from "./models//ProcessData"
+import { Repo } from "./framework/Repo"
 import { AppData } from "./models/AppData"
+import { ProcessData } from "./models/ProcessData"
 
 import express from "express"
 import { Server as HTTPServer } from "http"
@@ -14,9 +15,9 @@ import { spawn } from "child_process"
 import fs from "fs"
 import http from "http"
 import YAML from "yaml"
-import { HostData } from "./models//HostData"
-import { ServiceData } from "./models//ServiceData"
-import { ServiceTypeData } from "./models//ServiceTypeData"
+import { HostData } from "./models/HostData"
+import { ServiceData } from "./models/ServiceData"
+import { ServiceTypeData } from "./models/ServiceTypeData"
 
 const apiPrefix = "/api/v1/services"
 
@@ -123,6 +124,16 @@ class App {
       const serviceDataType = req.body
       this.data.registerType(serviceDataType)
       res.json(serviceDataType)
+    })
+
+    router.get(`${apiPrefix}/runtime/repo`, async (req, res, next) => {
+      const repoBasePath = path.join(__dirname, "public/repo")
+      const repo = new Repo() // Create an instance of Repo class
+      const repoMap = await repo.processRepoDirectory(repoBasePath)
+
+      // Convert the Map to an Object to send as JSON
+      const repoObject = Object.fromEntries(repoMap)
+      res.json(repoObject)
     })
 
     router.get(`${apiPrefix}/runtime`, (req, res, next) => {
