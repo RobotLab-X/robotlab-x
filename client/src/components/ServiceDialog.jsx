@@ -3,6 +3,7 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
+  Grid,
   Paper,
   Table,
   TableBody,
@@ -12,15 +13,20 @@ import {
   TableRow,
   TextField
 } from "@mui/material"
+import { fetchGetJson } from "framework/fetchUtil"
 import React, { useEffect, useState } from "react"
+import { useStore } from "store/store"
 
-// Assuming ServiceTypeData is imported elsewhere and used to create the packages prop
-
-const ServiceDialog = ({ packages }) => {
+const ServiceDialog = ({ packages, open, setOpen }) => {
   console.info("ServiceDialog", packages)
-  const [open, setOpen] = useState(false)
+
   const [filterText, setFilterText] = useState("")
   const [filteredPackages, setFilteredPackages] = useState([])
+  const [isStartingService, setIsStartingService] = useState(false)
+  const [newServiceName, setNewServiceName] = useState("")
+  const [selectedServiceType, setSelectedServiceType] = useState("")
+  const [selectedVersion, setSelectedVersion] = useState("")
+  const repoUrl = useStore((state) => state.repoUrl)
 
   useEffect(() => {
     const filterPackages = () => {
@@ -33,55 +39,105 @@ const ServiceDialog = ({ packages }) => {
     filterPackages()
   }, [filterText, packages])
 
-  const handleStartNewNode = () => {
-    console.log("Starting new node...")
-    setOpen(true) // Open the modal dialog
+  const handleSelectServiceType = (typeKey, version) => {
+    console.info("selecting service type...")
+    setSelectedServiceType(typeKey)
+    setSelectedVersion(version)
+    setIsStartingService(true)
+  }
+
+  const handleStartNewService = () => {
+    console.info("starting new service...")
+    // error check ${newServiceName} ${selectedServiceType}
+    // valid characters not empty etc
+    fetchGetJson(
+      `/start/${JSON.stringify(newServiceName)}/${JSON.stringify(selectedServiceType)}/${JSON.stringify(selectedVersion)}`
+    )
+    handleClose() // Close the dialog
   }
 
   const handleClose = () => {
-    setOpen(false)
+    setOpen(false) // Close the dialog
+    setNewServiceName("") // Reset the new service name
+    setFilterText("") // Assuming you want to reset this as well
+    // Reset any other state variables you have that should be cleared when the dialog closes
+    setIsStartingService(false) // Reset the starting service state
   }
 
   return (
     <div>
-      <Button variant="outlined" onClick={handleStartNewNode}>
-        Start New Node
-      </Button>
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md">
-        <DialogTitle>New Node Details</DialogTitle>
+        <DialogTitle>New Service Details</DialogTitle>
         <DialogContent>
-          <TextField
-            fullWidth
-            label="Search by Description"
-            variant="outlined"
-            value={filterText}
-            onChange={(e) => setFilterText(e.target.value)}
-            margin="normal"
-          />
-          <TableContainer component={Paper}>
-            <Table aria-label="service types table">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Type Key</TableCell>
-                  <TableCell>Title</TableCell>
-                  <TableCell>Platform</TableCell>
-                  <TableCell>Description</TableCell>
-                  {/* Add more columns as needed */}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredPackages.map((pkg) => (
-                  <TableRow key={pkg.typeKey}>
-                    <TableCell>{pkg.typeKey}</TableCell>
-                    <TableCell>{pkg.title}</TableCell>
-                    <TableCell>{`${pkg.platform} ${pkg.platformVersion}`}</TableCell>
-                    <TableCell>{pkg.description}</TableCell>
-                    {/* Add more cells as needed */}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+          {isStartingService ? (
+            <Grid container spacing={2} alignItems="center">
+              <Grid item xs={true}>
+                <TextField
+                  fullWidth
+                  label="New Service Name"
+                  placeholder="New Service Name"
+                  variant="outlined"
+                  value={newServiceName}
+                  onChange={(e) => setNewServiceName(e.target.value)}
+                />
+              </Grid>
+              <Grid item>
+                <Button
+                  onClick={handleStartNewService}
+                  variant="contained"
+                >
+                  Start
+                </Button>
+              </Grid>
+            </Grid>
+          ) : (
+            <>
+              <TextField
+                fullWidth
+                label="Search by Description"
+                variant="outlined"
+                value={filterText}
+                onChange={(e) => setFilterText(e.target.value)}
+                margin="normal"
+              />
+              <TableContainer component={Paper}>
+                <Table aria-label="service types table">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell></TableCell>
+                      <TableCell>Title</TableCell>
+                      <TableCell>Platform</TableCell>
+                      <TableCell>Description</TableCell>
+                      <TableCell></TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {filteredPackages.map((pkg) => (
+                      <TableRow key={pkg.typeKey}>
+                        <TableCell>
+                          <img
+                            src={`${repoUrl}/${pkg.typeKey}/${pkg.typeKey}.png`}
+                            alt={pkg.typeKey}
+                          />
+                        </TableCell>
+                        <TableCell>{pkg.title}</TableCell>
+                        <TableCell>{`${pkg.platform} ${pkg.platformVersion}`}</TableCell>
+                        <TableCell>{pkg.description}</TableCell>
+                        <TableCell>
+                          <Button
+                            onClick={() => handleSelectServiceType(pkg.typeKey, pkg.version)} 
+                            variant="contained"
+                          >
+                            Select
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </div>

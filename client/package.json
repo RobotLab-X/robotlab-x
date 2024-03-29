@@ -116,6 +116,7 @@
     "@loadable/component": "^5.15.3",
     "axios": "^0.21.1",
     "ua-parser-js": "^1.0.37",
-    "uuid": "^9.0.1"
+    "uuid": "^9.0.1",
+    "xterm-for-react": "^1.0.4"
   }
 }

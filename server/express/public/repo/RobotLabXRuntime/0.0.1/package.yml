@@ -1,7 +1,7 @@
 typeKey: "RobotLabXRuntime"
-title: "Robot Lab X Server"
+title: "RobotLab X Server"
 platform: "node"
-platformVersion: null
+platformVersion: "v20.9.0"
 description: "The RobotLab X Server service acts as a foundation for creating additional services tailored for robots, such as vision, text-to-speech, speech-to-text, and chat interfaces. It allows users to easily expand their robot's capabilities by adding new functionalities as needed."
 version: "0.0.1"
 interfaces:

@@ -1,16 +1,19 @@
-typeKey: "RobotLabXUI"
-title: "RobotLab X UI"
-platform: "browser"
+typeKey: "OakD"
+title: "OakD DepthAI"
+platform: "python"
 platformVersion: null
-description: "Web front end for RobotLab-X"
+description: "OakD depth camera for depth and object detection."
 version: "0.0.1"
+cmd: "python"
+args: ["/home/perry/Luxonis/depthai/depthai_demo.py"]
+cwd: null
 interfaces:
   restAPI:
     - endpoint: "/api/v1/resource"
       method: "GET"
       description: "Retrieves list of resources."
 author: "GroG"
-license: "MPL-2.0"
+license: "MIT"
 language: "JavaScript"
 categories:
 - "web"

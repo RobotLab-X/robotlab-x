@@ -1,9 +1,12 @@
 typeKey: "WebRTC"
 title: "WebRTC Server"
-platform: "browser"
+platform: "python"
 platformVersion: null
 description: "WebRTC server for video streaming from webcam"
 version: "0.0.1"
+cmd: "python"
+args: ["start.py"]
+cwd: null
 interfaces:
   restAPI:
     - endpoint: "/api/v1/resource"

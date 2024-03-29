@@ -1,8 +1,8 @@
-typeKey: "RobotLabXUI"
-title: "RobotLab X UI"
-platform: "browser"
-platformVersion: null
-description: "Web front end for RobotLab-X"
+typeKey: "MyRobotLab"
+title: "My Robot Lab"
+platform: "java"
+platformVersion: "11"
+description: "My Robot Lab Runtime"
 version: "0.0.1"
 interfaces:
   restAPI:
@@ -10,9 +10,11 @@ interfaces:
       method: "GET"
       description: "Retrieves list of resources."
 author: "GroG"
-license: "MPL-2.0"
-language: "JavaScript"
+license: "MIT"
+language: "Java"
 categories:
 - "web"
-- "ui"
+- "http"
+- "service manager"
+- "framework"
 dependencies: null

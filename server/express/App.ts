@@ -17,7 +17,6 @@ import http from "http"
 import YAML from "yaml"
 import { HostData } from "./models/HostData"
 import { ServiceData } from "./models/ServiceData"
-import { ServiceTypeData } from "./models/ServiceTypeData"
 
 const apiPrefix = "/api/v1/services"
 
@@ -31,8 +30,16 @@ class App {
   // all application data
   protected data: AppData
 
+  protected id: string = NameGenerator.getName()
+  protected name: string = "runtime"
+  protected typeKey: string = "RobotLabXRuntime"
+  protected version: string = "0.0.1"
+
   // Run configuration methods on the Express instance.
   constructor() {
+    console.info(
+      `starting RobotLabXRuntime ${this.version} on node ${process.version}`
+    )
     this.express = express()
     // this.http = new HTTPServer(this.express) // Create an HTTP server from the Express app
     this.http = http.createServer(this.express)
@@ -40,9 +47,8 @@ class App {
     this.middleware()
     this.routes()
 
-    // initialize the application data
-
-    this.data = new AppData("runtime", NameGenerator.getName(), os.hostname())
+    // initialize the application data - FIXME DEPRECATE
+    this.data = new AppData(this.name, this.id, os.hostname())
     let data = this.data
 
     // register the host
@@ -50,29 +56,16 @@ class App {
     data.registerHost(host)
 
     // register process
-    let process: ProcessData = this.getLocalProcessData()
-    process.host = host.hostname
-    data.registerProcess(process)
-
-    // register type
-    let type = new ServiceTypeData("RobotLabXRuntime")
-    type.description =
-      "The RobotLab X Server service acts as a foundation for creating additional services tailored for robots, such as vision, text-to-speech, speech-to-text, and chat interfaces. It allows users to easily expand their robot's capabilities by adding new functionalities as needed."
-    type.version = "0.0.1"
-    type.author = "GroG"
-    type.license = "MPL-2.0"
-    type.language = "JavaScript"
-    type.title = "RobotLab X Server"
-    type.platform = "node"
-    type.platformVersion = process.platformVersion
-    data.registerType(type)
+    let pd: ProcessData = this.getLocalProcessData()
+    pd.host = host.hostname
+    data.registerProcess(pd)
 
     // register service
     let service = new ServiceData(
-      this.data.getId(),
-      "runtime",
-      "RobotLabXRuntime",
-      "0.0.1",
+      this.id,
+      this.name,
+      this.typeKey,
+      this.version,
       os.hostname()
     )
     // this.data.register("runtime", "RobotLabXRuntime", this.data.getId())
@@ -101,6 +94,10 @@ class App {
       "/images",
       express.static(path.join(__dirname, "public/images"))
     )
+    this.express.use(
+      "/repo",
+      express.static(path.join(__dirname, "public/repo"))
+    )
     this.express.use(bodyParser.json())
     this.express.use(bodyParser.urlencoded({ extended: false }))
   }
@@ -128,7 +125,7 @@ class App {
 
     router.get(`${apiPrefix}/runtime/repo`, async (req, res, next) => {
       const repoBasePath = path.join(__dirname, "public/repo")
-      const repo = new Repo() // Create an instance of Repo class
+      const repo = new Repo()
       const repoMap = await repo.processRepoDirectory(repoBasePath)
 
       // Convert the Map to an Object to send as JSON
@@ -156,25 +153,38 @@ class App {
       res.json(name)
     })
 
-    router.get(`${apiPrefix}/start/:name/:type`, (req, res, next) => {
+    // version
+    router.get(`${apiPrefix}/start/:name/:type/:version`, (req, res, next) => {
       try {
         const serviceName = JSON.parse(decodeURIComponent(req.params.name))
         const serviceType = JSON.parse(decodeURIComponent(req.params.type))
-        const pkgPath = `./service/${serviceType}`
-        const pkgYmlFile = `${pkgPath}}/package.yml`
+        const version = JSON.parse(decodeURIComponent(req.params.version))
+
+        console.log(process.cwd())
+
+        // repo should be immutable - make a copy to service/{name} if one doesn't already exist
+        const pkgPath = `./express/public/service/${serviceName}`
+        const repo = new Repo()
+        const successful = repo.copyPackage(serviceName, serviceType, version)
+        console.info(`successful ${successful}`)
+
+        const pkgYmlFile = `${pkgPath}/package.yml`
 
         // loading type info
         console.info(`loading type data from ${pkgYmlFile}`)
-
         const file = fs.readFileSync(pkgYmlFile, "utf8")
         const pkg = YAML.parse(file)
+        console.info(`package.yml ${pkg}`)
+
+        // TODO - if service request to add a service
+        // and mrl and process exists - then /runtime/start
 
         // determine necessary platform python, node, docker, java
         // yes | no -> install -> yes | no
 
-        if (pkg.platform === "python") {
-          console.info(`python package ${pkg}`)
-        }
+        // TODO - way to set cmd line args
+
+        console.info(`python package ${pkg}`)
 
         // resolve if package.yml dependencies are met
 
@@ -184,10 +194,10 @@ class App {
 
         // preparing to start the process
 
-        const script = "start.py"
-
+        // const script = "start.py"
         // register
 
+        // TODO - only if you need a new process
         // TODO get package.yml from processModule - check if
         // dependencies are met
         // host check
@@ -202,12 +212,22 @@ class App {
         )
         this.data.registerProcess(pd)
 
-        // TODO register the service
-
-        console.info(`Starting process ${pkgPath}/${script}`)
+        console.info(`starting process ${pkgPath}/${pkg.cmd} ${pkg.args}`)
 
         // spawn the process
-        const childProcess = spawn("python", [script], { cwd: pkgPath })
+        const childProcess = spawn(pkg.cmd, pkg.args, { cwd: pkgPath })
+
+        // register the service
+        const service: ServiceData = new ServiceData(
+          childProcess.pid.toString(),
+          serviceName,
+          serviceType,
+          version,
+          this.data.getHostname()
+        )
+
+        // TODO register the service
+        this.data.register(service)
 
         console.info(`process ${JSON.stringify(childProcess)}`)
         res.json(childProcess)

@@ -74,13 +74,6 @@ export class AppData {
 
   public registerType(type: ServiceTypeData) {
     this.types[`${type.typeKey}@${type.version}`] = type
-
-    // let type: ServiceTypeData = new ServiceTypeData(name)
-    // type.platform = "node"
-    // type.platformVersion = process.version
-    // type.version = "1.0.0"
-    // type.interfaces = {}
-    // this.types["RobotLabXRuntime"] = type
   }
 
   // public register(name: string, typeKey: string, id: string, version: string) {

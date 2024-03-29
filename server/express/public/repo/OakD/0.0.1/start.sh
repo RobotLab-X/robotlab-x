@@ -1,0 +1,1 @@
+python3 {{path}}/depthai_demo.py

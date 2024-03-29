@@ -19,3 +19,6 @@ server/coverage
 client/coverage
 server/package-lock.json
 server/express/service/WebRTC/webcam.log
+
+# runtime files
+server/express/public/service/*

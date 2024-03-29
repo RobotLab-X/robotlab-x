@@ -1,8 +1,8 @@
-typeKey: "RobotLabXUI"
-title: "RobotLab X UI"
+typeKey: "WebXR"
+title: "WebXR Interface"
 platform: "browser"
 platformVersion: null
-description: "Web front end for RobotLab-X"
+description: "WebXR interface for virtual reality and augmented reality."
 version: "0.0.1"
 interfaces:
   restAPI:
@@ -10,9 +10,11 @@ interfaces:
       method: "GET"
       description: "Retrieves list of resources."
 author: "GroG"
-license: "MPL-2.0"
+license: "MIT"
 language: "JavaScript"
 categories:
 - "web"
 - "ui"
+- "vr"
+- "headset"
 dependencies: null

@@ -7,6 +7,12 @@ const store = (set, get) => ({
 
   defaultRemoteId: null,
 
+  apiUrl: "http://localhost:3001/api/v1/services", // Initial base URL value
+  setApiUrl: (url) => set({ apiUrl: url }), // Setter for baseUrl
+
+  repoUrl: "http://localhost:3001/repo", // Initial base URL value
+  setRepoUrl: (url) => set({ repoUrl: url }), // Setter for baseUrl
+
   getMessageApiUrl: () => {
     // if (process.env.REACT_APP_MESSAGE_BASE_URL) {
     //   return process.env.REACT_APP_MESSAGE_BASE_URL
@@ -283,3 +289,4 @@ const store = (set, get) => ({
 })
 
 export const useStore = create(store)
+export const direct = useStore
