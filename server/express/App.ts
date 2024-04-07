@@ -18,6 +18,9 @@ import YAML from "yaml"
 import { HostData } from "./models/HostData"
 import { ServiceData } from "./models/ServiceData"
 
+const session = require("express-session")
+const FileStore = require("session-file-store")(session)
+
 const apiPrefix = "/api/v1/services"
 
 // Creates and configures an ExpressJS web server2.
@@ -78,7 +81,8 @@ class App {
 
       ws.on("message", function incoming(message: any) {
         console.log("received: %s", message)
-
+        let msg = JSON.parse(message)
+        console.log(msg.name)
         // WORKS !!!
         // Echo the received message back to the client
         // ws.send(`Server received: ${message}`)
@@ -89,6 +93,17 @@ class App {
   // Configure Express middleware.
   private middleware(): void {
     // this.express.use(logger("dev"));
+
+    this.express.use(
+      session({
+        store: new FileStore(), // options is optional
+        secret: "your secret",
+        resave: false,
+        saveUninitialized: true,
+        cookie: { secure: true }
+      })
+    )
+
     this.express.use(cors())
     this.express.use(
       "/images",

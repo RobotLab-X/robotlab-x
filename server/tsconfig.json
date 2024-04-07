@@ -8,7 +8,11 @@
     "esModuleInterop": true,
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".", // The base directory to resolve non-relative module names
+    "paths": {
+      "*": ["./*"] // Resolve all modules relative to the project root
+    }
   },
   "include": [
     "**/*.ts"
