@@ -1,0 +1,22 @@
+typeKey: "Test"
+title: "Test Service"
+platform: "python"
+platformVersion: null
+description: "Test service for testing!"
+version: "0.0.1"
+cmd: "python"
+args: ["start.py"]
+cwd: null
+interfaces:
+  restAPI:
+    - endpoint: "/api/v1/resource"
+      method: "GET"
+      description: "Retrieves list of resources."
+author: "GroG"
+license: "MIT"
+language: "Python"
+categories:
+- "web"
+- "testing"
+- "ui"
+dependencies: null

@@ -171,11 +171,13 @@ class App {
     // version
     router.get(`${apiPrefix}/start/:name/:type/:version`, (req, res, next) => {
       try {
+        console.info(`start params ${JSON.stringify(req.params)}`)
+
         const serviceName = JSON.parse(decodeURIComponent(req.params.name))
         const serviceType = JSON.parse(decodeURIComponent(req.params.type))
         const version = JSON.parse(decodeURIComponent(req.params.version))
 
-        console.log(process.cwd())
+        console.info(process.cwd())
 
         // repo should be immutable - make a copy to service/{name} if one doesn't already exist
         const pkgPath = `./express/public/service/${serviceName}`
@@ -220,7 +222,7 @@ class App {
         // pip libraries and versions installed
         const pd: ProcessData = new ProcessData(
           serviceName,
-          process.pid,
+          "123456", // process.pid,
           this.data.getHostname(),
           "python",
           "3.8.5"
@@ -232,6 +234,11 @@ class App {
         // spawn the process
         const childProcess = spawn(pkg.cmd, pkg.args, { cwd: pkgPath })
 
+        childProcess.on('error', (err) => {
+          console.error(`failed to start subprocess. ${err}`);
+        })
+
+        if (childProcess.pid){
         // register the service
         const service: ServiceData = new ServiceData(
           childProcess.pid.toString(),
@@ -243,6 +250,7 @@ class App {
 
         // TODO register the service
         this.data.register(service)
+      }
 
         console.info(`process ${JSON.stringify(childProcess)}`)
         res.json(childProcess)

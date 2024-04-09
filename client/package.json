@@ -86,7 +86,7 @@
     "chart.js": "^3.9.1",
     "classnames": "latest",
     "connected-react-router": "latest",
-    "cross-env": "latest",
+    "cross-env": "^7.0.3",
     "debug": "latest",
     "formik": "^2.2.9",
     "history": "latest",

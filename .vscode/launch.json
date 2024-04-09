@@ -1,0 +1,16 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Debug Electron Main Process",
+        "type": "node",
+        "request": "launch",
+        "runtimeExecutable": "${workspaceFolder}/server/node_modules/.bin/electron",
+        "program": "${workspaceFolder}/server/dist/electron/ElectronStarter.js",
+        "outFiles": ["${workspaceFolder}/server/dist/**/*.js"],
+        "sourceMaps": true,
+        "console": "integratedTerminal",
+        "internalConsoleOptions": "neverOpen"
+      }
+    ]
+  }

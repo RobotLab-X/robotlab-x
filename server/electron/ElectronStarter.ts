@@ -1,3 +1,4 @@
+import 'source-map-support/register';
 import debug from "debug"
 import Electron from "electron"
 import path from "path"
