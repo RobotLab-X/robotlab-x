@@ -1,7 +1,7 @@
 # project
-.git
+# .git
 .idea
-.vscode
+# .vscode
 .DS_Store
 
 # node-modules

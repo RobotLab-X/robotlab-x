@@ -1,0 +1,29 @@
+{
+  "terminal.integrated.scrollback": 9999,
+  "jest.rootPath": "app",
+  "jest.jestCommandLine": "npx jest --runInBand --verbose",
+  "jest.runMode": "on-demand",
+  "jest.monitorLongRun": 120000,
+  "jest.coverageFormatter": "GutterFormatter",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "always",
+    "source.fixAll.eslint": "always"
+  },
+  "typescript.tsdk": "./app/node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "editor.tabSize": 2,
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  } 
+  
+}
