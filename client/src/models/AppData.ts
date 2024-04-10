@@ -1,6 +1,6 @@
+import { Service } from "../framework/Service"
 import { HostData } from "./HostData"
 import { ProcessData } from "./ProcessData"
-import { ServiceData } from "./ServiceData"
 import { ServiceTypeData } from "./ServiceTypeData"
 
 export class AppData {
@@ -45,7 +45,7 @@ export class AppData {
   // maybe {service}@{process}@{fqdn}.{method}/{params ... }  ?
 
   // servo@raspi4  - {serviceName}@{processName}
-  protected registry: { [id: string]: ServiceData } = {}
+  protected registry: { [id: string]: Service } = {}
 
   // must be pid or userdefined {pid/id}
   protected processes: { [id: string]: ProcessData } = {}
@@ -77,11 +77,11 @@ export class AppData {
   }
 
   // public register(name: string, typeKey: string, id: string, version: string) {
-  //   this.registry[`${name}@${id}`] = new ServiceData(name, typeKey, id, version)
+  //   this.registry[`${name}@${id}`] = new Service(name, typeKey, id, version)
   //   // TODO - merge type info, or register minimally required type info
   // }
 
-  public register(service: ServiceData) {
+  public register(service: Service) {
     this.registry[`${service.name}@${service.id}`] = service
     // TODO - merge type info, or register minimally required type info
   }

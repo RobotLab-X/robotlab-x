@@ -1,6 +1,6 @@
 // store.js
 import { create } from "zustand"
-
+import Message from "../models/Message"
 const store = (set, get) => ({
   // id of this process
   id: "robot-x-ui", // NameGenerator.getName(),
@@ -222,15 +222,16 @@ const store = (set, get) => ({
     }
   },
 
+  // FIXME no need to double encode
   sendMessage: (msg) => {
     // GOOD DEBUGGING
     // console.info('out-msg <-- ' + msg.name + '.' + msg.method)
-    msg.encoding = "json"
-    if (msg.data) {
-      for (let i = 0; i < msg.data.length; i++) {
-        msg.data[i] = JSON.stringify(msg.data[i])
-      }
-    }
+    // msg.encoding = "json"
+    // if (msg.data) {
+    //   for (let i = 0; i < msg.data.length; i++) {
+    //     msg.data[i] = JSON.stringify(msg.data[i])
+    //   }
+    // }
 
     var json = JSON.stringify(msg)
     get().sendJsonMessage(json)
@@ -239,7 +240,7 @@ const store = (set, get) => ({
   sendTo: function (name, method) {
     var args = Array.prototype.slice.call(arguments, 2)
     var msg = get().createMessage(name, method, args)
-    msg.sendingMethod = "sendTo"
+    // msg.sendingMethod = "sendTo"
     get().sendMessage(msg)
   },
 
@@ -250,7 +251,7 @@ const store = (set, get) => ({
       method,
       "runtime" + "@" + get().id
     ])
-    msg.sendingMethod = "subscribeTo"
+    // msg.sendingMethod = "subscribeTo"
     get().sendMessage(msg)
   },
 
@@ -265,14 +266,18 @@ const store = (set, get) => ({
     const remoteId = "mrl-id"
     const id = "react-app-id"
 
-    var msg = {
-      msgId: new Date().getTime(),
-      name: get().getFullName(inName),
-      method: inMethod,
-      sender: "runtime@" + id,
-      sendingMethod: null
-    }
+    // var msg = {
+    //   msgId: new Date().getTime(),
+    //   name: get().getFullName(inName),
+    //   method: inMethod,
+    //   sender: "runtime@" + id,
+    //   sendingMethod: null
+    // }
+    let msg = new Message()
 
+    msg.name = get().getFullName(inName)
+    msg.method = inMethod
+    
     if (inParams || (inParams.length === 1 && inParams[0])) {
       msg["data"] = inParams
     }

@@ -9,14 +9,16 @@ import {
   TableHead,
   TableRow
 } from "@mui/material"
+import Button from "@mui/material/Button"
+import TextField from "@mui/material/TextField"
 
 import HubIcon from "@mui/icons-material/Hub"
 import MonitorIcon from "@mui/icons-material/Monitor"
 
 import { Box, IconButton, useTheme } from "@mui/material"
 import Tooltip from "@mui/material/Tooltip"
+import { Service } from "framework/Service"
 import { fetchGetJson } from "framework/fetchUtil"
-import { ServiceData } from "models/ServiceData"
 import React, { useEffect, useState } from "react"
 import { useStore } from "store/store"
 import { tokens } from "../theme"
@@ -36,11 +38,17 @@ const Dashboard = () => {
   const version = "0.0.1"
   const typeKey = "RobotLabXUI"
 
+  // should be store
+  const [appData, setAppData] = useState([])
+  const [msgTxt, setMsgTxt] = useState(
+    '{"name":"runtime","method":"getUptime"}'
+  )
   const [isLoading, setIsLoading] = useState(true)
   const [open, setOpen] = useState(false)
 
   const updateRepo = useStore((state) => state.updateRepo)
   const repo = useStore((state) => state.repo)
+  const sendJsonMessage = useStore((state) => state.sendJsonMessage)
 
   const baseUrl = "http://localhost:3001/api/v1/services"
   const repoUrl = "http://localhost:3001/repo"
@@ -57,13 +65,16 @@ const Dashboard = () => {
   const handleLoad = () => {
     console.info("Loading...")
   }
-
   const handleClose = () => {
     setOpen(false)
   }
-
-  // should be store
-  const [appData, setAppData] = useState([])
+  const sendMsg = () => {
+    console.log(msgTxt)
+    sendJsonMessage(msgTxt)
+  }
+  const handleMsgTxtChange = (event) => {
+    setMsgTxt(event.target.value)
+  }
 
   async function put(url, data) {
     const response = await fetch(`${baseUrl}${url}`, {
@@ -108,7 +119,7 @@ const Dashboard = () => {
           const browser = parser.getBrowser()
 
           // register service
-          let service = new ServiceData(
+          let service = new Service(
             id,
             name,
             typeKey,
@@ -183,7 +194,8 @@ const Dashboard = () => {
             <img src={imagePath} alt={sd.typeKey} />
           </TableCell>
           <TableCell component="th" scope="row">
-            {type?.title}<br/>
+            {type?.title}
+            <br />
             {sd.name}
           </TableCell>
         </TableRow>
@@ -283,6 +295,22 @@ const Dashboard = () => {
       <ServiceDialog packages={repo} open={open} setOpen={setOpen} />
 
       <br />
+      <div>
+        <TextField
+          label="Message"
+          multiline
+          rows={4}
+          value={msgTxt}
+          onChange={handleMsgTxtChange}
+          variant="outlined"
+          fullWidth
+          margin="normal"
+        />
+        <Button onClick={sendMsg} variant="contained">
+          Send
+        </Button>
+      </div>
+
       {/*<XTerm ref={xtermRef}  />*/}
     </>
   )

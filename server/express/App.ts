@@ -5,18 +5,17 @@ import path from "path"
 import NameGenerator from "./framework/NameGenerator"
 import { Repo } from "./framework/Repo"
 import { AppData } from "./models/AppData"
+import Message from "./models/Message"
 import { ProcessData } from "./models/ProcessData"
 
-import express from "express"
-import { Server as HTTPServer } from "http"
-import { Server } from "ws"
-
 import { spawn } from "child_process"
+import express from "express"
 import fs from "fs"
-import http from "http"
+import http, { Server as HTTPServer } from "http"
+import { WebSocket, Server as WebSocketServer } from "ws"
 import YAML from "yaml"
+import Service from "./framework/Service"
 import { HostData } from "./models/HostData"
-import { ServiceData } from "./models/ServiceData"
 
 const session = require("express-session")
 const FileStore = require("session-file-store")(session)
@@ -28,7 +27,8 @@ class App {
   // ref to Express instance
   public express: express.Application
   public http: HTTPServer
-  public ws: Server
+  public wss: WebSocketServer
+  public clients: Set<WebSocket>
 
   // all application data
   protected data: AppData
@@ -46,7 +46,9 @@ class App {
     this.express = express()
     // this.http = new HTTPServer(this.express) // Create an HTTP server from the Express app
     this.http = http.createServer(this.express)
-    this.ws = new Server({ server: this.http })
+    this.wss = new WebSocketServer({ server: this.http })
+    this.clients = new Set()
+
     this.middleware()
     this.routes()
 
@@ -64,30 +66,67 @@ class App {
     data.registerProcess(pd)
 
     // register service
-    let service = new ServiceData(
+    let service = new Service(
       this.id,
       this.name,
       this.typeKey,
       this.version,
       os.hostname()
     )
-    // this.data.register("runtime", "RobotLabXRuntime", this.data.getId())
+
     data.register(service)
 
-    // TODO add my service
-    // Handle a connection request from clients
-    this.ws.on("connection", function connection(ws: any) {
+    this.initWebSocketServer()
+  } // end constructor "too big"
+
+  private initWebSocketServer() {
+    this.wss.on("connection", (ws) => {
       console.log("A client connected")
 
-      ws.on("message", function incoming(message: any) {
-        console.log("received: %s", message)
-        let msg = JSON.parse(message)
-        console.log(msg.name)
-        // WORKS !!!
-        // Echo the received message back to the client
-        // ws.send(`Server received: ${message}`)
+      this.clients.add(ws)
+
+      ws.on("message", this.handleWsMessage(ws))
+
+      // Use arrow functions to directly handle the events
+      ws.on("close", () => {
+        console.log("Connection closed")
+        // Use 'ws' here as needed
+      })
+
+      ws.on("error", (error) => {
+        console.error("WebSocket error:", error)
+        // 'ws' is also available here
+        this.clients.delete(ws)
       })
     })
+  }
+
+  public broadcastJsonMessage(message: string): void {
+    // Iterate over the set of clients and send the message to each
+    this.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(message)
+      }
+    })
+  }
+
+  public broadcast(message: Message): void {
+    let json = JSON.stringify(message)
+    this.broadcastJsonMessage(json)
+  }
+
+  /**
+   * Process incoming messages from the client
+   * @param ws
+   * @returns
+   */
+  private handleWsMessage(ws: WebSocket) {
+    return (message: any) => {
+      let msg = JSON.parse(message)
+      console.log(msg)
+      // Example of sending a message back to the client
+      // ws.send(`Server received: ${message}`);
+    }
   }
 
   // Configure Express middleware.
@@ -149,7 +188,7 @@ class App {
     })
 
     router.get(`${apiPrefix}/runtime`, (req, res, next) => {
-      res.json(this.data)
+      res.json(this)
     })
 
     router.get(`${apiPrefix}/runtime/host`, (req, res) => {
@@ -234,23 +273,23 @@ class App {
         // spawn the process
         const childProcess = spawn(pkg.cmd, pkg.args, { cwd: pkgPath })
 
-        childProcess.on('error', (err) => {
-          console.error(`failed to start subprocess. ${err}`);
+        childProcess.on("error", (err) => {
+          console.error(`failed to start subprocess. ${err}`)
         })
 
-        if (childProcess.pid){
-        // register the service
-        const service: ServiceData = new ServiceData(
-          childProcess.pid.toString(),
-          serviceName,
-          serviceType,
-          version,
-          this.data.getHostname()
-        )
+        if (childProcess.pid) {
+          // register the service
+          const service: Service = new Service(
+            childProcess.pid.toString(),
+            serviceName,
+            serviceType,
+            version,
+            this.data.getHostname()
+          )
 
-        // TODO register the service
-        this.data.register(service)
-      }
+          // TODO register the service
+          this.data.register(service)
+        }
 
         console.info(`process ${JSON.stringify(childProcess)}`)
         res.json(childProcess)
