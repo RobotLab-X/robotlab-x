@@ -1,8 +1,13 @@
 import Service from "express/framework/Service"
 
 class RobotLabXRuntime extends Service {
-  constructor() {
-    super("", "", "") // Call the base class constructor if needed
+  constructor(
+    public id: string,
+    public name: string,
+    public type: string,
+    public version: string
+  ) {
+    super(id, name, type, version) // Call the base class constructor if needed
   }
 
   start(name: string, type: string, version: string): void {

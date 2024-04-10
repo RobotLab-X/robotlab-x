@@ -3,6 +3,7 @@ export default class Service {
   protected startTime: Date | null = null
 
   constructor(
+    public id: string,
     public name: string,
     public type: string,
     public version: string

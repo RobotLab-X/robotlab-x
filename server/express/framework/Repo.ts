@@ -1,17 +1,17 @@
-import fs from "fs/promises"
+import fs from "fs"
 import path from "path"
 import yaml from "yaml"
 
 export class Repo {
-  public async processRepoDirectory(basePath: string) {
-    const repoMap = new Map()
+  processRepoDirectory(basePath: string): Map<string, any> {
+    const repoMap = new Map<string, any>()
     try {
-      const repoDirs = await fs.readdir(basePath, { withFileTypes: true })
+      const repoDirs = fs.readdirSync(basePath, { withFileTypes: true })
 
       for (const dir of repoDirs) {
         if (dir.isDirectory()) {
           const versionsPath = path.join(basePath, dir.name)
-          const versionDirs = await fs.readdir(versionsPath, {
+          const versionDirs = fs.readdirSync(versionsPath, {
             withFileTypes: true
           })
 
@@ -19,9 +19,9 @@ export class Repo {
             if (versionDir.isDirectory()) {
               const versionPath = path.join(versionsPath, versionDir.name)
               const packageFilePath = path.join(versionPath, "package.yml")
-              // console.info(`Reading package file: ${packageFilePath}`)
+              // console.info(`Reading package file: ${packageFilePath}`);
               try {
-                const packageFileContents = await fs.readFile(
+                const packageFileContents = fs.readFileSync(
                   packageFilePath,
                   "utf8"
                 )
@@ -43,102 +43,43 @@ export class Repo {
     return repoMap
   }
 
-  public async copyPackage(name: string, typeKey: string, version: string) {
-    // const source = path.join(
-    //   __dirname,
-    //   `./express/public/repo/${typeKey}/${version}/`
-    // )
-    // const target = path.join(__dirname, `./express/public/service/${name}`)
+  public copyPackage(name: string, typeKey: string, version: string) {
     const source = `./express/public/repo/${typeKey}/${version}/`
     const target = `./express/public/service/${name}`
 
     try {
-      await this.copyRecursiveAsync(source, target)
+      this.copyRecursiveSync(source, target)
       console.log("Copy operation completed successfully")
     } catch (error) {
       console.error("Copy operation failed:", error)
     }
   }
 
-  private async copyRecursiveAsync(src: string, dest: string) {
-    try {
-      console.info(`copying ${src} to ${dest}`)
+  private copyRecursiveSync(src: string, dest: string) {
+    console.info(`Copying ${src} to ${dest}`)
 
-      // Check if the source exists
-      const stats = await fs.stat(src).catch(() => null)
-      if (!stats) {
-        throw new Error("Source does not exist.")
+    // Check if the source exists
+    if (!fs.existsSync(src)) {
+      throw new Error("Source does not exist.")
+    }
+
+    const stats = fs.statSync(src)
+    const isDirectory = stats.isDirectory()
+
+    if (isDirectory) {
+      // Ensure the directory exists or create it
+      if (!fs.existsSync(dest)) {
+        fs.mkdirSync(dest, { recursive: true })
       }
-
-      const isDirectory = stats.isDirectory()
-
-      if (isDirectory) {
-        // Ensure the directory exists or create it
-        await fs.mkdir(dest, { recursive: true })
-        const children = await fs.readdir(src)
-        for (const child of children) {
-          const srcPath = path.join(src, child)
-          const destPath = path.join(dest, child)
-          await this.copyRecursiveAsync(srcPath, destPath)
-        }
-      } else {
-        // Copy file
-        await fs.copyFile(src, dest)
+      const children = fs.readdirSync(src)
+      for (const child of children) {
+        const srcPath = path.join(src, child)
+        const destPath = path.join(dest, child)
+        this.copyRecursiveSync(srcPath, destPath) // Recurse for nested directories
       }
-    } catch (error) {
-      // Handle errors, possibly re-throw or log
-      throw error
+    } else {
+      // Copy file
+      fs.copyFileSync(src, dest)
     }
   }
-
-  // public copyPackage(name: string, typeKey: string, version: string) {
-
-  //   const source = path.join(
-  //     __dirname,
-  //     `./express/public/repo/${typeKey}/${version}/`
-  //   )
-  //   const target = path.join(__dirname, `./express/public/service/${name}`)
-
-  //   // Check if the destination directory exists
-  //   if (fs.existsSync(dest)) {
-  //     console.log('Target directory already exists. Copy operation skipped.');
-  //     return; // Exit the function early if the target directory exists
-  //   }
-
-  //   const exists = fs.existsSync(src);
-  //   const stats = exists && fs.statSync(src);
-  //   const isDirectory = exists && stats.isDirectory();
-
-  //   if (isDirectory) {
-  //     fs.mkdirSync(dest, { recursive: true });
-  //     fs.readdirSync(src).forEach(function(childItemName) {
-  //       copyRecursiveSync(path.join(src, childItemName), path.join(dest, childItemName));
-  //     });
-  //   } else {
-  //     fs.copyFileSync(src, dest);
-  //   }
-  // }
-
-  // public async copyPackage(name: string, typeKey: string, version: string) {
-  //   const repoMap = new Map()
-  //   try {
-  //     const source = path.join(
-  //       __dirname,
-  //       `./express/public/repo/${typeKey}/${version}/`
-  //     )
-  //     const target = path.join(__dirname, `./express/public/service/${name}`)
-
-  //     if (fs.access(target)) {
-  //       console.log(`named service directory exists - not copying ${target}`)
-  //       return true
-  //     }
-
-  //     await fs.cp(source, target, { recursive: true })
-  //     console.log(`directory copied from ${source} to ${target}`)
-  //     return true
-  //   } catch (error) {
-  //     console.error("error copying directory:", error)
-  //   }
-  //   return repoMap
-  // }
 }
