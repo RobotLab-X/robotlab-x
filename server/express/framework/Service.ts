@@ -33,4 +33,16 @@ export default class Service {
     const uptime = now.getTime() - this.startTime.getTime()
     return `Uptime: ${uptime / 1000} seconds`
   }
+
+  public getId() {
+    return this.id
+  }
+
+  public getName() {
+    return this.name
+  }
+
+  public getHostname(): string | null {
+    return this.hostname
+  }
 }

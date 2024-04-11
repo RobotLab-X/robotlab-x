@@ -1,14 +1,7 @@
 import InputOutlinedIcon from "@mui/icons-material/InputOutlined"
 import PlaylistAddIcon from "@mui/icons-material/PlaylistAddOutlined"
 import UploadFileOutlinedIcon from "@mui/icons-material/UploadFileOutlined"
-import {
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow
-} from "@mui/material"
+import { Paper, Table, TableBody, TableCell, TableHead, TableRow } from "@mui/material"
 import Button from "@mui/material/Button"
 import TextField from "@mui/material/TextField"
 
@@ -40,14 +33,14 @@ const Dashboard = () => {
 
   // should be store
   const [appData, setAppData] = useState([])
-  const [msgTxt, setMsgTxt] = useState(
-    '{"name":"runtime","method":"getUptime"}'
-  )
+  const [msgTxt, setMsgTxt] = useState('{"name":"runtime","method":"getUptime"}')
   const [isLoading, setIsLoading] = useState(true)
   const [open, setOpen] = useState(false)
 
   const updateRepo = useStore((state) => state.updateRepo)
+  const updateRegistry = useStore((state) => state.updateRegistry)
   const repo = useStore((state) => state.repo)
+  const registry = useStore((state) => state.registry)
   const sendJsonMessage = useStore((state) => state.sendJsonMessage)
 
   const baseUrl = "http://localhost:3001/api/v1/services"
@@ -119,21 +112,16 @@ const Dashboard = () => {
           const browser = parser.getBrowser()
 
           // register service
-          let service = new Service(
-            id,
-            name,
-            typeKey,
-            version,
-            browser.name.toLowerCase()
-          )
+          let service = new Service(id, name, typeKey, version, browser.name.toLowerCase())
           let response = await put("/runtime/register", service)
 
           // FIXME - just runtime/registry
-          response = await fetchGetJson("/runtime")
+          response = await fetchGetJson("/runtime/getRegistry")
           // const json = await response.json()
           // console.info("json", json)
           // should be AppData.ts
-          setAppData(response)
+          // setAppData(response)
+          updateRegistry(response)
 
           const repoRequest = await fetchGetJson("/runtime/repo")
           // const repoJson = await repoRequest.json()
@@ -239,7 +227,7 @@ const Dashboard = () => {
   }
 
   // FIXME - put in store in App.js
-  const nodesArray = Object.values(appData?.registry ?? {})
+  const nodesArray = Object.values(registry)
   return (
     <>
       <Box sx={{ maxWidth: "fit-content", overflowX: "auto", ml: 2 }}>

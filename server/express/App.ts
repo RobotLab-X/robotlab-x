@@ -29,18 +29,17 @@ class App {
   // ref to Express instance
   public express: express.Application
   public http: HTTPServer
-  public wss: WebSocketServer
-  public clients: Set<WebSocket>
+  protected wss: WebSocketServer
+  protected clients: Set<WebSocket>
+  protected runtime: RobotLabXRuntime
 
   // all application data
-  protected data: AppData
+  protected datax: AppData
 
   protected id: string = NameGenerator.getName()
   protected name: string = "runtime"
   protected typeKey: string = "RobotLabXRuntime"
   protected version: string = "0.0.1"
-
-  protected runtime: RobotLabXRuntime = RobotLabXRuntime.createInstance(this.id, os.hostname())
 
   // Run configuration methods on the Express instance.
   constructor() {
@@ -49,27 +48,25 @@ class App {
     this.http = http.createServer(this.express)
     this.wss = new WebSocketServer({ server: this.http })
     this.clients = new Set()
+    this.runtime = RobotLabXRuntime.createInstance(this.id, os.hostname())
 
     this.middleware()
     this.routes()
 
     // initialize the application data - FIXME DEPRECATE
-    this.data = new AppData(this.name, this.id, os.hostname())
-    let data = this.data
+    // this.data = new AppData(this.name, this.id, os.hostname())
+    // let data = this.data
 
     // register the host
     let host = HostData.getLocalHostData(os)
-    data.registerHost(host)
+    this.runtime.registerHost(host)
 
     // register process
     let pd: ProcessData = this.getLocalProcessData()
     pd.host = host.hostname
-    data.registerProcess(pd)
 
-    // register service
-    let service = new Service(this.id, this.name, this.typeKey, this.version, os.hostname())
-
-    data.register(this.runtime)
+    this.runtime.registerProcess(pd)
+    this.runtime.register(this.runtime)
 
     this.initWebSocketServer()
   } // end constructor "too big"
@@ -152,14 +149,14 @@ class App {
     router.put(`${apiPrefix}/runtime/register`, (req, res, next) => {
       console.log(req.body)
       const serviceData = req.body
-      this.data.register(serviceData)
+      this.runtime.register(serviceData)
       res.json(serviceData)
     })
 
     router.put(`${apiPrefix}/runtime/registerType`, (req, res, next) => {
       console.log(req.body)
       const serviceDataType = req.body
-      this.data.registerType(serviceDataType)
+      this.runtime.registerType(serviceDataType)
       res.json(serviceDataType)
     })
 
@@ -174,11 +171,15 @@ class App {
     })
 
     router.get(`${apiPrefix}/runtime`, (req, res, next) => {
-      res.json(this.data)
+      res.json(this.runtime)
+    })
+
+    router.get(`${apiPrefix}/runtime/getRegistry`, (req, res, next) => {
+      res.json(this.runtime.getRegistry())
     })
 
     router.get(`${apiPrefix}/runtime/host`, (req, res) => {
-      res.json(this.data.getHost())
+      res.json(this.runtime.getHost())
     })
 
     router.get(`${apiPrefix}/stop/:name`, (req, res, next) => {
@@ -193,7 +194,7 @@ class App {
       res.json(name)
     })
 
-    // version
+    // version - FIXME - remove version
     router.get(`${apiPrefix}/start/:name/:type/:version`, (req, res, next) => {
       try {
         console.info(`start params ${JSON.stringify(req.params)}`)
@@ -248,11 +249,11 @@ class App {
         const pd: ProcessData = new ProcessData(
           serviceName,
           "123456", // process.pid,
-          this.data.getHostname(),
+          this.runtime.getHostname(),
           "python",
           "3.8.5"
         )
-        this.data.registerProcess(pd)
+        this.runtime.registerProcess(pd)
 
         console.info(`starting process ${pkgPath}/${pkg.cmd} ${pkg.args}`)
 
@@ -261,6 +262,7 @@ class App {
 
         childProcess.on("error", (err) => {
           console.error(`failed to start subprocess. ${err}`)
+          // send message with error to UI
         })
 
         if (childProcess.pid) {
@@ -270,11 +272,11 @@ class App {
             serviceName,
             serviceType,
             version,
-            this.data.getHostname()
+            this.runtime.getHostname()
           )
 
           // TODO register the service
-          this.data.register(service)
+          this.runtime.register(service)
         }
 
         console.info(`process ${JSON.stringify(childProcess)}`)
@@ -289,9 +291,9 @@ class App {
 
   public getLocalProcessData(): ProcessData {
     let pd: ProcessData = new ProcessData(
-      this.data.getId(),
+      this.runtime.getId(),
       process.pid,
-      this.data.getHostname(),
+      this.runtime.getHostname(),
       "node",
       process.version
     )

@@ -84,6 +84,8 @@ const store = (set, get) => ({
    */
   messages: {},
 
+  updateRegistry: (newRegistry) => set({ registry: newRegistry }),
+
   updateRepo: (newRepo) => set({ repo: newRepo }),
 
   addToRepo: (key, value) =>
@@ -247,10 +249,7 @@ const store = (set, get) => ({
   subscribeTo: function (name, method) {
     // FIXME- merge more args
     var args = Array.prototype.slice.call(arguments, 1)
-    var msg = get().createMessage(name, "addListener", [
-      method,
-      "runtime" + "@" + get().id
-    ])
+    var msg = get().createMessage(name, "addListener", [method, "runtime" + "@" + get().id])
     // msg.sendingMethod = "subscribeTo"
     get().sendMessage(msg)
   },
@@ -277,7 +276,7 @@ const store = (set, get) => ({
 
     msg.name = get().getFullName(inName)
     msg.method = inMethod
-    
+
     if (inParams || (inParams.length === 1 && inParams[0])) {
       msg["data"] = inParams
     }

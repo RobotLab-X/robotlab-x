@@ -1,6 +1,11 @@
 // import Service from "express/framework/Service"
 // FIXME - aliases don't appear to be work, neither does root reference path
+import { HostData } from "express/models/HostData"
+import { ProcessData } from "express/models/ProcessData"
+import { ServiceTypeData } from "express/models/ServiceTypeData"
 import Service from "../framework/Service"
+import Store from "../framework/Store"
+
 // import Service from "@framework/Service"
 export default class RobotLabXRuntime extends Service {
   private static instance: RobotLabXRuntime
@@ -17,6 +22,20 @@ export default class RobotLabXRuntime extends Service {
   public static getInstance(): RobotLabXRuntime {
     return RobotLabXRuntime.instance
   }
+
+  // servo@raspi4  - {serviceName}@{processName}
+  // protected registry: { [id: string]: Service } = {}
+
+  // must be pid or userdefined {pid/id}
+  protected processes: { [id: string]: ProcessData } = {}
+
+  // FIXME - how to organize fqdn, hostname, ip, mac, etc. user defined?
+  //  hostname or userdefined ? {hostname}
+  protected hosts: { [id: string]: HostData } = {}
+
+  // static meta data from both registered services and
+  // local packages
+  protected types: { [id: string]: ServiceTypeData } = {}
 
   constructor(
     public id: string,
@@ -43,5 +62,32 @@ export default class RobotLabXRuntime extends Service {
 
   getService(name: string): Service | null {
     return null
+  }
+
+  public registerHost(host: HostData) {
+    this.hosts[`${host.hostname}`] = host
+  }
+
+  public registerProcess(process: ProcessData) {
+    this.processes[`${process.id}@${process.host}`] = process
+  }
+
+  public registerType(type: ServiceTypeData) {
+    this.types[`${type.typeKey}@${type.version}`] = type
+  }
+
+  public register(service: Service) {
+    Store.getInstance().register(`${service.name}@${service.id}`, service)
+  }
+
+  public getHost() {
+    if (this.hostname == null) {
+      return null
+    }
+    return this.hosts[this.hostname]
+  }
+
+  public getRegistry(): Object {
+    return Store.getInstance().getRegistry()
   }
 }
