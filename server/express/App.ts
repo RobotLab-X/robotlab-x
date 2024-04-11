@@ -17,6 +17,8 @@ import YAML from "yaml"
 import Service from "./framework/Service"
 import { HostData } from "./models/HostData"
 
+import RobotLabXRuntime from "./service/RobotLabXRuntime"
+
 const session = require("express-session")
 const FileStore = require("session-file-store")(session)
 
@@ -38,13 +40,12 @@ class App {
   protected typeKey: string = "RobotLabXRuntime"
   protected version: string = "0.0.1"
 
+  protected runtime: RobotLabXRuntime = RobotLabXRuntime.createInstance(this.id, os.hostname())
+
   // Run configuration methods on the Express instance.
   constructor() {
-    console.info(
-      `starting RobotLabXRuntime ${this.version} on node ${process.version}`
-    )
+    console.info(`starting RobotLabXRuntime ${this.version} on node ${process.version}`)
     this.express = express()
-    // this.http = new HTTPServer(this.express) // Create an HTTP server from the Express app
     this.http = http.createServer(this.express)
     this.wss = new WebSocketServer({ server: this.http })
     this.clients = new Set()
@@ -66,15 +67,9 @@ class App {
     data.registerProcess(pd)
 
     // register service
-    let service = new Service(
-      this.id,
-      this.name,
-      this.typeKey,
-      this.version,
-      os.hostname()
-    )
+    let service = new Service(this.id, this.name, this.typeKey, this.version, os.hostname())
 
-    data.register(service)
+    data.register(this.runtime)
 
     this.initWebSocketServer()
   } // end constructor "too big"
@@ -87,15 +82,12 @@ class App {
 
       ws.on("message", this.handleWsMessage(ws))
 
-      // Use arrow functions to directly handle the events
       ws.on("close", () => {
         console.log("Connection closed")
-        // Use 'ws' here as needed
       })
 
       ws.on("error", (error) => {
         console.error("WebSocket error:", error)
-        // 'ws' is also available here
         this.clients.delete(ws)
       })
     })
@@ -144,14 +136,8 @@ class App {
     )
 
     this.express.use(cors())
-    this.express.use(
-      "/images",
-      express.static(path.join(__dirname, "public/images"))
-    )
-    this.express.use(
-      "/repo",
-      express.static(path.join(__dirname, "public/repo"))
-    )
+    this.express.use("/images", express.static(path.join(__dirname, "public/images")))
+    this.express.use("/repo", express.static(path.join(__dirname, "public/repo")))
     this.express.use(bodyParser.json())
     this.express.use(bodyParser.urlencoded({ extended: false }))
   }
@@ -188,7 +174,7 @@ class App {
     })
 
     router.get(`${apiPrefix}/runtime`, (req, res, next) => {
-      res.json(this)
+      res.json(this.data)
     })
 
     router.get(`${apiPrefix}/runtime/host`, (req, res) => {

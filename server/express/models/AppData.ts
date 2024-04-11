@@ -76,11 +76,6 @@ export class AppData {
     this.types[`${type.typeKey}@${type.version}`] = type
   }
 
-  // public register(name: string, typeKey: string, id: string, version: string) {
-  //   this.registry[`${name}@${id}`] = new Service(name, typeKey, id, version)
-  //   // TODO - merge type info, or register minimally required type info
-  // }
-
   public register(service: Service) {
     this.registry[`${service.name}@${service.id}`] = service
     // TODO - merge type info, or register minimally required type info

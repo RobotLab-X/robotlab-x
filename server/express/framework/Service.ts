@@ -8,13 +8,7 @@ export default class Service {
   version: string | null = null
   hostname: string | null = null
 
-  public constructor(
-    id: string,
-    name: string,
-    typeKey: string,
-    version: string,
-    hostname: string | null = null
-  ) {
+  public constructor(id: string, name: string, typeKey: string, version: string, hostname: string | null = null) {
     this.id = id
     this.name = name
     this.typeKey = typeKey
@@ -24,6 +18,10 @@ export default class Service {
   // Example of a shared method
   startService() {
     this.startTime = new Date()
+  }
+
+  isReady(): boolean {
+    return this.startTime !== null
   }
 
   // Example of calculating uptime

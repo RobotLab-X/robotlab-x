@@ -1,4 +1,4 @@
-import { Service } from "../framework/Service"
+import Service from "../framework/Service"
 import { HostData } from "./HostData"
 import { ProcessData } from "./ProcessData"
 import { ServiceTypeData } from "./ServiceTypeData"

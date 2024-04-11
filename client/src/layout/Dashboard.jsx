@@ -17,7 +17,7 @@ import MonitorIcon from "@mui/icons-material/Monitor"
 
 import { Box, IconButton, useTheme } from "@mui/material"
 import Tooltip from "@mui/material/Tooltip"
-import { Service } from "framework/Service"
+import Service from "framework/Service"
 import { fetchGetJson } from "framework/fetchUtil"
 import React, { useEffect, useState } from "react"
 import { useStore } from "store/store"

@@ -19,7 +19,8 @@ server/coverage
 client/coverage
 server/package-lock.json
 server/express/service/WebRTC/webcam.log
-server/sessions
+sessions
 
 # runtime files
 server/express/public/service/*
+yarn-error.log

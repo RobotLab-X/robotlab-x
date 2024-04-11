@@ -1,7 +1,8 @@
-import 'source-map-support/register';
 import debug from "debug"
 import Electron from "electron"
+import "module-alias/register"
 import path from "path"
+import "source-map-support/register"
 
 import App from "../express/App"
 
@@ -70,7 +71,7 @@ export default class Main {
 
   private static onClose() {
     // Dereference the window object.
-   //  Main.mainWindow = null
+    //  Main.mainWindow = null
   }
 
   private static bootServer() {
@@ -131,8 +132,9 @@ export default class Main {
     if (addr === null) {
       console.error("Server listening address is null")
     } else {
-    const bind = typeof addr === "string" ? `pipe ${addr}` : `port ${addr.port}`
-    logger.log(`Listening on ${bind}`)
+      const bind =
+        typeof addr === "string" ? `pipe ${addr}` : `port ${addr.port}`
+      logger.log(`Listening on ${bind}`)
     }
   }
 }
