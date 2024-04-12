@@ -19,13 +19,13 @@ export function getPose(name, position, orientation) {
     position: {
       x: position.x,
       y: position.y,
-      z: position.z,
+      z: position.z
     },
     orientation: {
       roll: orientation._z,
       pitch: orientation._x,
-      yaw: orientation._y,
-    },
+      yaw: orientation._y
+    }
   }
 }
 
@@ -35,8 +35,8 @@ export function getEvent(xrEvent) {
     type: xrEvent?.nativeEvent?.type,
     value: true,
     meta: {
-      handedness: xrEvent?.target?.inputSource.handedness,
-    },
+      handedness: xrEvent?.target?.inputSource.handedness
+    }
   }
   return event
 }

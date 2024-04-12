@@ -1,5 +1,5 @@
-import * as THREE from "three"
 import { useMemo } from "react"
+import * as THREE from "three"
 
 export default function CurvedPlane({ width, height, radius, children, ...props }) {
   const { geometry, heightMin, heightMax } = useMemo(

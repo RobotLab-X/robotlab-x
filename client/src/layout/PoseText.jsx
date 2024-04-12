@@ -1,5 +1,5 @@
-import React from "react"
 import { Text } from "@react-three/drei"
+import React from "react"
 
 export function PoseText(props) {
   const controllerData = props.controllerData

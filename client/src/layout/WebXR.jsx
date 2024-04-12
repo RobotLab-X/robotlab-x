@@ -1,9 +1,9 @@
-import * as THREE from "three"
-import { useState, Suspense, useMemo, useEffect } from "react"
+import { Center, Environment, Grid, RandomizedLight, useVideoTexture } from "@react-three/drei"
 import { Canvas, createPortal, useThree } from "@react-three/fiber"
-import { useVideoTexture, Grid, Center, RandomizedLight, Environment, CameraControls } from "@react-three/drei"
-import { VRButton, XR, Controllers, Hands, useXREvent, useController } from "@react-three/xr"
+import { Controllers, VRButton, XR } from "@react-three/xr"
+import { Suspense, useEffect, useMemo, useState } from "react"
 import { suspend } from "suspend-react"
+import * as THREE from "three"
 import { HUD2 } from "../components/webxr/HUD2"
 
 import CurvedPlane from "./CurvedPlane"
@@ -75,12 +75,12 @@ function Scene() {
         return fetch(`/offer`, {
           body: JSON.stringify({
             sdp: offer.sdp,
-            type: offer.type,
+            type: offer.type
           }),
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type": "application/json"
           },
-          method: "POST",
+          method: "POST"
         })
       })
       .then(function (response) {
@@ -97,7 +97,7 @@ function Scene() {
   function start() {
     console.info("starting webrtc peer connection negotiation")
     var config = {
-      sdpSemantics: "unified-plan",
+      sdpSemantics: "unified-plan"
     }
 
     // FIXME (menu) - stun
@@ -185,7 +185,7 @@ function Ground() {
     fadeDistance: 30,
     fadeStrength: 1,
     followCamera: false,
-    infiniteGrid: true,
+    infiniteGrid: true
   }
   return <Grid position={[0, -0.01, 0]} args={[10.5, 10.5]} {...gridConfig} />
 }

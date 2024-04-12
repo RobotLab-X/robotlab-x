@@ -1,14 +1,7 @@
-import React, { useState, useContext } from "react"
 import { Box, Typography, useTheme } from "@mui/material"
-import { DataGrid } from "@mui/x-data-grid"
-import { tokens } from "../theme"
-import { mockDataTeam } from "../data/mockData"
+import React, { useState } from "react"
 import ServiceTabs from "../components/ServiceTabs"
-import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettingsOutlined"
-import LockOpenOutlinedIcon from "@mui/icons-material/LockOpenOutlined"
-import SecurityOutlinedIcon from "@mui/icons-material/SecurityOutlined"
-import Header from "../components/Header"
-import { JSONTree } from "react-json-tree"
+import { tokens } from "../theme"
 
 const TabLayout = () => {
   const [value, setValue] = useState(0)
