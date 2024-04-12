@@ -4,7 +4,7 @@ import "module-alias/register"
 import path from "path"
 import "source-map-support/register"
 
-import App from "../express/App"
+import Store from "../express/Store"
 
 // require("electron-reload")(__dirname, {
 //   electron: require(`${__dirname}/node_modules/electron`)
@@ -17,6 +17,7 @@ export default class Main {
   private static BrowserWindow: typeof Electron.BrowserWindow
   private static mainWindow: Electron.BrowserWindow
   private static port: string | number | boolean
+  private static store: Store
 
   // if this variable is set to true in the main constructor, the app will quit when closing it in macOS
   private static quitOnCloseOSX: boolean
@@ -81,13 +82,13 @@ export default class Main {
     Main.port = Main.normalizePort(process.env.PORT || 3001)
 
     // App.main(["--port", Main.port.toString()])
-
-    App.express.set("port", Main.port)
+    Main.store = Store.createInstance(["--port", Main.port.toString()])
+    Main.store.express.set("port", Main.port)
 
     // Main.server = http.createServer(App)
-    App.http.listen(Main.port)
-    App.http.on("error", Main.onError)
-    App.http.on("listening", Main.onListening)
+    Main.store.http.listen(Main.port)
+    Main.store.http.on("error", Main.onError)
+    Main.store.http.on("listening", Main.onListening)
   }
 
   private static normalizePort(val: number | string): number | string | boolean {
@@ -123,7 +124,7 @@ export default class Main {
   }
 
   private static onListening(): void {
-    const addr = App.http.address()
+    const addr = Main.store.http.address()
     if (addr === null) {
       console.error("Server listening address is null")
     } else {

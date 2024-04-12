@@ -15,7 +15,6 @@ import http, { Server as HTTPServer } from "http"
 import { WebSocket, Server as WebSocketServer } from "ws"
 import YAML from "yaml"
 import Service from "./framework/Service"
-import Store from "./framework/Store"
 import { HostData } from "./models/HostData"
 import RobotLabXRuntime from "./service/RobotLabXRuntime"
 
@@ -24,63 +23,94 @@ const FileStore = require("session-file-store")(session)
 
 const apiPrefix = "/api/v1/services"
 
+type RegistryType = { [key: string]: any }
+
 // Creates and configures an ExpressJS web server2.
-class App {
+export default class Store {
+  private static instance: Store
+
+  private registry: RegistryType = {}
+
   // ref to Express instance
   public express: express.Application
   public http: HTTPServer
   protected wss: WebSocketServer
   protected clients: Set<WebSocket>
   protected runtime: RobotLabXRuntime
-  protected store: Store
+  // protected store: Store
 
   // all application data
   protected datax: AppData
 
   protected id: string = NameGenerator.getName()
   protected name: string = "runtime"
-  protected typeKey: string = "RobotLabXRuntime"
+  protected typeKey: string = "Store"
   protected version: string = "0.0.1"
+
+  public static getInstance(): Store {
+    if (!Store.instance) {
+      Store.instance = new Store()
+    }
+    return Store.instance
+  }
+
+  public static createInstance(args: string[]): Store {
+    if (!Store.instance) {
+      Store.instance = new Store()
+
+      console.info(`id ${Store.instance.id} initializing store`)
+      // FIXME probably should not set a reference ?
+      // this.store = Store.getInstance()
+
+      Store.instance.express = express()
+      Store.instance.http = http.createServer(Store.instance.express)
+      Store.instance.wss = new WebSocketServer({ server: Store.instance.http })
+      Store.instance.clients = new Set()
+      Store.instance.runtime = RobotLabXRuntime.createInstance(Store.instance.id, os.hostname())
+
+      Store.instance.middleware()
+      Store.instance.routes()
+
+      // initialize the application data - FIXME DEPRECATE
+      // Store.instance.data = new AppData(Store.instance.name, Store.instance.id, os.hostname())
+      // let data = Store.instance.data
+
+      // register the host
+      let host = HostData.getLocalHostData(os)
+      Store.instance.runtime.registerHost(host)
+
+      // register process
+      let pd: ProcessData = Store.instance.getLocalProcessData()
+      pd.host = host.hostname
+
+      Store.instance.runtime.registerProcess(pd)
+      Store.instance.runtime.register(Store.instance.runtime)
+
+      Store.instance.initWebSocketServer()
+    } else {
+      console.error("Store instance already exists")
+    }
+    return Store.instance
+  }
+
+  // Method to set a key-value pair in the registry
+  public register(key: string, value: any): void {
+    this.registry[key] = value
+  }
+
+  // Method to get a value by key from the registry
+  public getRegistry(): any {
+    return this.registry
+  }
+
+  public getService(key: string): any {
+    return this.registry[key]
+  }
 
   // Run configuration methods on the Express instance.
   constructor() {
-    console.info(`starting RobotLabXRuntime ${this.version} on node ${process.version}`)
-
-    console.info(`id ${this.id} initializing store`)
-    // FIXME probably should not set a reference ?
-    this.store = Store.getInstance()
-
-    this.express = express()
-    this.http = http.createServer(this.express)
-    this.wss = new WebSocketServer({ server: this.http })
-    this.clients = new Set()
-    this.runtime = RobotLabXRuntime.createInstance(this.id, os.hostname())
-
-    this.middleware()
-    this.routes()
-
-    // initialize the application data - FIXME DEPRECATE
-    // this.data = new AppData(this.name, this.id, os.hostname())
-    // let data = this.data
-
-    // register the host
-    let host = HostData.getLocalHostData(os)
-    this.runtime.registerHost(host)
-
-    // register process
-    let pd: ProcessData = this.getLocalProcessData()
-    pd.host = host.hostname
-
-    this.runtime.registerProcess(pd)
-    this.runtime.register(this.runtime)
-
-    this.initWebSocketServer()
+    console.info(`Store ${this.version} on node ${process.version}`)
   } // end constructor "too big"
-
-  public static main(args: string[]) {
-    let app = new App()
-    // app.http.listen(3000)
-  }
 
   private initWebSocketServer() {
     this.wss.on("connection", (ws) => {
@@ -115,11 +145,6 @@ class App {
     this.broadcastJsonMessage(json)
   }
 
-  /**
-   * Process incoming messages from the client
-   * @param ws
-   * @returns
-   */
   private handleWsMessage(ws: WebSocket) {
     return (message: any) => {
       let msg = JSON.parse(message)
@@ -135,7 +160,7 @@ class App {
 
     this.express.use(
       session({
-        store: new FileStore(), // options is optional
+        store: new FileStore(), // options iApps optional
         secret: "your secret",
         resave: false,
         saveUninitialized: true,
@@ -313,4 +338,4 @@ class App {
 }
 
 // export default new App().express
-export default new App()
+// export default new App()
