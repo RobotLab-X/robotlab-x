@@ -10,7 +10,6 @@ import YAML from "yaml"
 import NameGenerator from "./framework/NameGenerator"
 import { Repo } from "./framework/Repo"
 import Service from "./framework/Service"
-import { AppData } from "./models/AppData"
 import Message from "./models/Message"
 import { ProcessData } from "./models/ProcessData"
 import RobotLabXRuntime from "./service/RobotLabXRuntime"
@@ -22,10 +21,17 @@ const apiPrefix = "/api/v1/services"
 
 type RegistryType = { [key: string]: any }
 
-// Creates and configures an ExpressJS web server2.
+/**
+ * The Store class is a singleton class that acts as a central store for the
+ * application. It is used to store and retrieve data from the registry.
+ * It also acts as a central point for the WebSocket server and the Express
+ * server.
+ */
 export default class Store {
   private static instance: Store
+
   private static port: string | number | boolean
+
   private registry: RegistryType = {}
 
   // ref to Express instance
@@ -34,15 +40,8 @@ export default class Store {
   protected wss: WebSocketServer
   protected clients: Set<WebSocket>
   protected runtimex: RobotLabXRuntime
-  // protected store: Store
-
-  // all application data
-  protected datax: AppData
 
   protected id: string = NameGenerator.getName()
-  protected name: string = "runtime"
-  protected typeKey: string = "Store"
-  protected version: string = "0.0.1"
 
   public getId(): string {
     return this.id
@@ -139,8 +138,8 @@ export default class Store {
 
   // Run configuration methods on the Express instance.
   constructor() {
-    console.info(`Store ${this.version} on node ${process.version}`)
-  } // end constructor "too big"
+    console.info(`store initializing on node ${process.version}`)
+  }
 
   private initWebSocketServer() {
     this.wss.on("connection", (ws) => {
