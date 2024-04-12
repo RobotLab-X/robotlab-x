@@ -1,9 +1,9 @@
 // import Service from "express/framework/Service"
 // FIXME - aliases don't appear to be work, neither does root reference path
-import { HostData } from "express/models/HostData"
-import { ProcessData } from "express/models/ProcessData"
-import { ServiceTypeData } from "express/models/ServiceTypeData"
 import Service from "../framework/Service"
+import { HostData } from "../models/HostData"
+import { ProcessData } from "../models/ProcessData"
+import { ServiceTypeData } from "../models/ServiceTypeData"
 // import Store from "../framework/Store"
 import Store from "../../express/Store"
 
@@ -46,6 +46,11 @@ export default class RobotLabXRuntime extends Service {
     public hostname: string
   ) {
     super(id, name, type, version, hostname) // Call the base class constructor if needed
+  }
+
+  public getLocalProcessData(): ProcessData {
+    let pd: ProcessData = new ProcessData(this.getId(), process.pid, this.getHostname(), "node", process.version)
+    return pd
   }
 
   start(name: string, type: string, version: string): void {

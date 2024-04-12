@@ -1,10 +1,13 @@
 import debug from "debug"
 import Electron from "electron"
 import "module-alias/register"
+import os from "os"
 import path from "path"
 import "source-map-support/register"
-
 import Store from "../express/Store"
+import { HostData } from "../express/models/HostData"
+import { ProcessData } from "../express/models/ProcessData"
+import RobotLabXRuntime from "../express/service/RobotLabXRuntime"
 
 // require("electron-reload")(__dirname, {
 //   electron: require(`${__dirname}/node_modules/electron`)
@@ -79,58 +82,22 @@ export default class Main {
     debug.enable("server")
     // }
 
-    Main.port = Main.normalizePort(process.env.PORT || 3001)
+    // Main.port = Main.normalizePort(process.env.PORT || 3001)
+    // console.info(`Server port: ${JSON.stringify(process.env)}`)
+    // Main.store = Store.createInstance(["--port", Main.port.toString()])
+    Main.store = Store.createInstance()
+    let runtime: RobotLabXRuntime = RobotLabXRuntime.createInstance(Main.store.getId(), os.hostname())
 
-    // App.main(["--port", Main.port.toString()])
-    Main.store = Store.createInstance(["--port", Main.port.toString()])
-    Main.store.express.set("port", Main.port)
+    // register the host
+    let host = HostData.getLocalHostData(os)
 
-    // Main.server = http.createServer(App)
-    Main.store.http.listen(Main.port)
-    Main.store.http.on("error", Main.onError)
-    Main.store.http.on("listening", Main.onListening)
-  }
+    // register process
+    let pd: ProcessData = runtime.getLocalProcessData()
+    pd.host = host.hostname
 
-  private static normalizePort(val: number | string): number | string | boolean {
-    const port: number = typeof val === "string" ? parseInt(val, 10) : val
-    if (isNaN(port)) {
-      return val
-    } else if (port >= 0) {
-      return port
-    } else {
-      return false
-    }
-  }
-
-  private static onError(error: NodeJS.ErrnoException): void {
-    if (error.syscall !== "listen") {
-      throw error
-    }
-    const bind = typeof Main.port === "string" ? "Pipe " + Main.port : "Port " + Main.port
-    switch (error.code) {
-      case "EACCES":
-        // tslint:disable-next-line:no-console
-        console.error(`${bind} requires elevated privileges`)
-        process.exit(1)
-        break
-      case "EADDRINUSE":
-        // tslint:disable-next-line:no-console
-        console.error(`${bind} is already in use`)
-        process.exit(1)
-        break
-      default:
-        throw error
-    }
-  }
-
-  private static onListening(): void {
-    const addr = Main.store.http.address()
-    if (addr === null) {
-      console.error("Server listening address is null")
-    } else {
-      const bind = typeof addr === "string" ? `pipe ${addr}` : `port ${addr.port}`
-      logger.log(`Listening on ${bind}`)
-    }
+    runtime.registerHost(host)
+    runtime.registerProcess(pd)
+    runtime.register(runtime)
   }
 }
 

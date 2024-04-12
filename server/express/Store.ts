@@ -1,21 +1,18 @@
 import bodyParser from "body-parser"
-import cors from "cors"
-import os from "os"
-import path from "path"
-import NameGenerator from "./framework/NameGenerator"
-import { Repo } from "./framework/Repo"
-import { AppData } from "./models/AppData"
-import Message from "./models/Message"
-import { ProcessData } from "./models/ProcessData"
-
 import { spawn } from "child_process"
+import cors from "cors"
 import express from "express"
 import fs from "fs"
 import http, { Server as HTTPServer } from "http"
+import path from "path"
 import { WebSocket, Server as WebSocketServer } from "ws"
 import YAML from "yaml"
+import NameGenerator from "./framework/NameGenerator"
+import { Repo } from "./framework/Repo"
 import Service from "./framework/Service"
-import { HostData } from "./models/HostData"
+import { AppData } from "./models/AppData"
+import Message from "./models/Message"
+import { ProcessData } from "./models/ProcessData"
 import RobotLabXRuntime from "./service/RobotLabXRuntime"
 
 const session = require("express-session")
@@ -28,7 +25,7 @@ type RegistryType = { [key: string]: any }
 // Creates and configures an ExpressJS web server2.
 export default class Store {
   private static instance: Store
-
+  private static port: string | number | boolean
   private registry: RegistryType = {}
 
   // ref to Express instance
@@ -36,7 +33,7 @@ export default class Store {
   public http: HTTPServer
   protected wss: WebSocketServer
   protected clients: Set<WebSocket>
-  protected runtime: RobotLabXRuntime
+  protected runtimex: RobotLabXRuntime
   // protected store: Store
 
   // all application data
@@ -47,6 +44,10 @@ export default class Store {
   protected typeKey: string = "Store"
   protected version: string = "0.0.1"
 
+  public getId(): string {
+    return this.id
+  }
+
   public static getInstance(): Store {
     if (!Store.instance) {
       Store.instance = new Store()
@@ -54,43 +55,72 @@ export default class Store {
     return Store.instance
   }
 
-  public static createInstance(args: string[]): Store {
+  public static createInstance(): Store {
     if (!Store.instance) {
       Store.instance = new Store()
+      let store = Store.instance
+      console.info(`id ${store.id} initializing store`)
 
-      console.info(`id ${Store.instance.id} initializing store`)
-      // FIXME probably should not set a reference ?
-      // this.store = Store.getInstance()
+      store.express = express()
+      store.http = http.createServer(store.express)
+      store.wss = new WebSocketServer({ server: store.http })
+      store.clients = new Set()
+      store.middleware()
+      store.routes()
+      store.initWebSocketServer()
 
-      Store.instance.express = express()
-      Store.instance.http = http.createServer(Store.instance.express)
-      Store.instance.wss = new WebSocketServer({ server: Store.instance.http })
-      Store.instance.clients = new Set()
-      Store.instance.runtime = RobotLabXRuntime.createInstance(Store.instance.id, os.hostname())
-
-      Store.instance.middleware()
-      Store.instance.routes()
-
-      // initialize the application data - FIXME DEPRECATE
-      // Store.instance.data = new AppData(Store.instance.name, Store.instance.id, os.hostname())
-      // let data = Store.instance.data
-
-      // register the host
-      let host = HostData.getLocalHostData(os)
-      Store.instance.runtime.registerHost(host)
-
-      // register process
-      let pd: ProcessData = Store.instance.getLocalProcessData()
-      pd.host = host.hostname
-
-      Store.instance.runtime.registerProcess(pd)
-      Store.instance.runtime.register(Store.instance.runtime)
-
-      Store.instance.initWebSocketServer()
+      // FIXME - this is dumb - RuntimeXServer should have config
+      Store.port = Store.normalizePort(process.env.PORT || "3001")
+      store.express.set("port", Store.port)
+      store.http.listen(Store.port)
+      store.http.on("error", Store.onError)
+      store.http.on("listening", Store.onListening)
     } else {
       console.error("Store instance already exists")
     }
     return Store.instance
+  }
+
+  private static onError(error: NodeJS.ErrnoException): void {
+    if (error.syscall !== "listen") {
+      throw error
+    }
+    const bind = typeof Store.port === "string" ? "Pipe " + Store.port : "Port " + Store.port
+    switch (error.code) {
+      case "EACCES":
+        // tslint:disable-next-line:no-console
+        console.error(`${bind} requires elevated privileges`)
+        process.exit(1)
+        break
+      case "EADDRINUSE":
+        // tslint:disable-next-line:no-console
+        console.error(`${bind} is already in use`)
+        process.exit(1)
+        break
+      default:
+        throw error
+    }
+  }
+
+  private static onListening(): void {
+    const addr = Store.instance.http.address()
+    if (addr === null) {
+      console.error("Server listening address is null")
+    } else {
+      const bind = typeof addr === "string" ? `pipe ${addr}` : `port ${addr.port}`
+      console.info(`Listening on ${bind}`)
+    }
+  }
+
+  private static normalizePort(val: number | string): number | string | boolean {
+    const port: number = typeof val === "string" ? parseInt(val, 10) : val
+    if (isNaN(port)) {
+      return val
+    } else if (port >= 0) {
+      return port
+    } else {
+      return false
+    }
   }
 
   // Method to set a key-value pair in the registry
@@ -185,14 +215,16 @@ export default class Store {
     router.put(`${apiPrefix}/runtime/register`, (req, res, next) => {
       console.log(req.body)
       const serviceData = req.body
-      this.runtime.register(serviceData)
+      let runtime = RobotLabXRuntime.getInstance()
+      runtime.register(serviceData)
       res.json(serviceData)
     })
 
     router.put(`${apiPrefix}/runtime/registerType`, (req, res, next) => {
       console.log(req.body)
       const serviceDataType = req.body
-      this.runtime.registerType(serviceDataType)
+      let runtime = RobotLabXRuntime.getInstance()
+      runtime.registerType(serviceDataType)
       res.json(serviceDataType)
     })
 
@@ -207,15 +239,18 @@ export default class Store {
     })
 
     router.get(`${apiPrefix}/runtime`, (req, res, next) => {
-      res.json(this.runtime)
+      let runtime = RobotLabXRuntime.getInstance()
+      res.json(runtime)
     })
 
     router.get(`${apiPrefix}/runtime/getRegistry`, (req, res, next) => {
-      res.json(this.runtime.getRegistry())
+      let runtime = RobotLabXRuntime.getInstance()
+      res.json(runtime.getRegistry())
     })
 
     router.get(`${apiPrefix}/runtime/host`, (req, res) => {
-      res.json(this.runtime.getHost())
+      let runtime = RobotLabXRuntime.getInstance()
+      res.json(runtime.getHost())
     })
 
     router.get(`${apiPrefix}/stop/:name`, (req, res, next) => {
@@ -282,14 +317,16 @@ export default class Store {
         // host check
         // platform check - python version, pip installed, venv etc.
         // pip libraries and versions installed
+        let runtime = RobotLabXRuntime.getInstance()
+
         const pd: ProcessData = new ProcessData(
           serviceName,
           "123456", // process.pid,
-          this.runtime.getHostname(),
+          runtime.getHostname(),
           "python",
           "3.8.5"
         )
-        this.runtime.registerProcess(pd)
+        runtime.registerProcess(pd)
 
         console.info(`starting process ${pkgPath}/${pkg.cmd} ${pkg.args}`)
 
@@ -308,11 +345,11 @@ export default class Store {
             serviceName,
             serviceType,
             version,
-            this.runtime.getHostname()
+            runtime.getHostname()
           )
 
           // TODO register the service
-          this.runtime.register(service)
+          runtime.register(service)
         }
 
         console.info(`process ${JSON.stringify(childProcess)}`)
@@ -324,18 +361,8 @@ export default class Store {
 
     this.express.use("/", router)
   }
-
-  public getLocalProcessData(): ProcessData {
-    let pd: ProcessData = new ProcessData(
-      this.runtime.getId(),
-      process.pid,
-      this.runtime.getHostname(),
-      "node",
-      process.version
-    )
-    return pd
-  }
 }
 
+// easy singleton way
 // export default new App().express
 // export default new App()
