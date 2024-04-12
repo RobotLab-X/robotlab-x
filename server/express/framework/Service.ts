@@ -45,4 +45,9 @@ export default class Service {
   public getHostname(): string | null {
     return this.hostname
   }
+
+  public addListener(method: string, name: string) {
+    console.info(`added listener for ${name} on method ${method}`)
+    // Add listener code here
+  }
 }

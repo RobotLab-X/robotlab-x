@@ -7,7 +7,7 @@ import http, { Server as HTTPServer } from "http"
 import path from "path"
 import { WebSocket, Server as WebSocketServer } from "ws"
 import YAML from "yaml"
-import NameGenerator from "./framework/NameGenerator"
+import { CodecUtil } from "./framework/CodecUtil"
 import { Repo } from "./framework/Repo"
 import Service from "./framework/Service"
 import Message from "./models/Message"
@@ -30,22 +30,15 @@ type RegistryType = { [key: string]: any }
 export default class Store {
   private static instance: Store
 
+  // FIXME - remove
   private static port: string | number | boolean
 
   private registry: RegistryType = {}
 
-  // ref to Express instance
-  public express: express.Application
-  public http: HTTPServer
-  protected wss: WebSocketServer
-  protected clients: Set<WebSocket>
-  protected runtimex: RobotLabXRuntime
-
-  protected id: string = NameGenerator.getName()
-
-  public getId(): string {
-    return this.id
-  }
+  private express: express.Application
+  private http: HTTPServer
+  private wss: WebSocketServer
+  private clients: Set<WebSocket>
 
   public static getInstance(): Store {
     if (!Store.instance) {
@@ -54,12 +47,12 @@ export default class Store {
     return Store.instance
   }
 
+  // FIXME since express and wss are initialized here, need port passed in
   public static createInstance(): Store {
     if (!Store.instance) {
       Store.instance = new Store()
       let store = Store.instance
-      console.info(`id ${store.id} initializing store`)
-
+      console.info("initializing store")
       store.express = express()
       store.http = http.createServer(store.express)
       store.wss = new WebSocketServer({ server: store.http })
@@ -176,10 +169,39 @@ export default class Store {
 
   private handleWsMessage(ws: WebSocket) {
     return (message: any) => {
-      let msg = JSON.parse(message)
-      console.log(msg)
-      // Example of sending a message back to the client
-      // ws.send(`Server received: ${message}`);
+      try {
+        let msg = JSON.parse(message)
+        console.info(`${msg.sender} ==> ${msg.name}.${msg.method}(${msg.data})`)
+
+        // fully address name
+        let fullName = CodecUtil.getFullName(msg.name)
+        console.info(`full name ${fullName}`)
+
+        // find service in registry
+        let service = this.getService(fullName)
+
+        if (service === null) {
+          // ui error - user should be informed
+          console.error(`service ${fullName} not found`)
+          return
+        }
+
+        if (msg.method === null || service[msg.method] === null) {
+          // ui error - user should be informed
+          console.error(`method ${msg.method} not found`)
+          return
+        }
+
+        // execute method with parameters on service
+        let ret: Object = service[msg.method](msg.params)
+        console.info(`return ${ret}`)
+
+        // Example of sending a message back to the client
+        // ws.send(`Server received: ${message}`);
+      } catch (e) {
+        // ui error - user should be informed
+        console.error(e)
+      }
     }
   }
 

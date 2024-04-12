@@ -276,6 +276,7 @@ const store = (set, get) => ({
 
     msg.name = get().getFullName(inName)
     msg.method = inMethod
+    msg.sender = "runtime@" + id
 
     if (inParams || (inParams.length === 1 && inParams[0])) {
       msg["data"] = inParams

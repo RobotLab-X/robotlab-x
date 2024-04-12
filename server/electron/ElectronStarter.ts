@@ -5,6 +5,7 @@ import os from "os"
 import path from "path"
 import "source-map-support/register"
 import Store from "../express/Store"
+import NameGenerator from "../express/framework/NameGenerator"
 import { HostData } from "../express/models/HostData"
 import { ProcessData } from "../express/models/ProcessData"
 import RobotLabXRuntime from "../express/service/RobotLabXRuntime"
@@ -82,11 +83,13 @@ export default class Main {
     debug.enable("server")
     // }
 
-    // Main.port = Main.normalizePort(process.env.PORT || 3001)
-    // console.info(`Server port: ${JSON.stringify(process.env)}`)
-    // Main.store = Store.createInstance(["--port", Main.port.toString()])
+    // FIXME - do this in RobotLabXRuntime
     Main.store = Store.createInstance()
-    let runtime: RobotLabXRuntime = RobotLabXRuntime.createInstance(Main.store.getId(), os.hostname())
+
+    // TODO - allow id to be passed in or configured
+    let runtime: RobotLabXRuntime = RobotLabXRuntime.createInstance(NameGenerator.getName(), os.hostname())
+
+    // FIXME - do the following in RobotLabXRuntime
 
     // register the host
     let host = HostData.getLocalHostData(os)

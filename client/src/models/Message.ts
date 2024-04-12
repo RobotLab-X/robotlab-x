@@ -19,6 +19,12 @@ export default class Message {
   public method: string | null = null
 
   /**
+   * Sender - full name of the service that sent the message
+   * @type {string}
+   */
+  public sender: string | null = null
+
+  /**
    * Data - array of data to pass as arguments to the method
    * @type {any[]}
    */

@@ -1,16 +1,13 @@
 // TODO use a fastapi router project creator
-import React, { useRef, useEffect, useContext, useState, useMemo, Suspense } from "react"
+import { Text } from "@react-three/drei"
+import { createPortal, useFrame, useThree } from "@react-three/fiber"
+import { useController, useXR, useXREvent } from "@react-three/xr"
+import React, { useRef, useState } from "react"
+import { deltaPose, getEvent, getPose } from "../../framework/WebXrUtil"
 import { PoseText } from "../../layout/PoseText"
-import { useFrame, createPortal, useThree } from "@react-three/fiber"
-import { useXR } from "@react-three/xr"
-import { deltaPose, getEvent, getPose } from "../../framework/WebXrUtils"
-import { VRButton, ARButton, XR, Controllers, Hands, useXREvent, useController } from "@react-three/xr"
-import { Pane, Plane, useFBO, OrthographicCamera, Box, Text, Html } from "@react-three/drei"
 
 // FIXME - not sure I like absolute paths, this should probably be relative
-import OpenCV2 from "./service/OpenCV2"
 import { useStore } from "../../store/store"
-import CurvedPlane from "./CurvedPlane"
 
 export const HUD2 = (props) => {
   console.info("HUD2 start", props.name)
@@ -47,7 +44,7 @@ export const HUD2 = (props) => {
     // `XRSession` foveation. This can be configured as `foveation` on <XR>. Default is `0`
     foveation,
     // `XRSession` reference-space type. This can be configured as `referenceSpace` on <XR>. Default is `local-floor`
-    referenceSpace,
+    referenceSpace
   } = useXR()
 
   const left = useController("left")

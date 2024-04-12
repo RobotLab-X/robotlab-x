@@ -67,6 +67,7 @@ const AppSidebar = () => {
     >
       <Sidebar collapsed={isCollapsed}>
         <Menu iconShape="square">
+          <br />
           <Box align="center">
             <img
               alt={connected ? `connected` : `disconnected`}
@@ -88,12 +89,7 @@ const AppSidebar = () => {
             }}
           >
             {!isCollapsed && (
-              <Box
-                display="flex"
-                justifyContent="space-between"
-                alignItems="center"
-                ml="15px"
-              >
+              <Box display="flex" justifyContent="space-between" alignItems="center" ml="15px">
                 <Typography variant="h3" color={colors.grey[100]}>
                   ADMINIS
                 </Typography>
@@ -116,12 +112,7 @@ const AppSidebar = () => {
                 />
               </Box>
               <Box textAlign="center">
-                <Typography
-                  variant="h2"
-                  color={colors.grey[100]}
-                  fontWeight="bold"
-                  sx={{ m: "10px 0 0 0" }}
-                >
+                <Typography variant="h2" color={colors.grey[100]} fontWeight="bold" sx={{ m: "10px 0 0 0" }}>
                   RobotLab-X
                 </Typography>
                 <Typography variant="h5" color={colors.greenAccent[500]}>
@@ -131,10 +122,7 @@ const AppSidebar = () => {
             </Box>
           )}
 
-          <MenuItem
-            component={<Link to="/" />}
-            icon={<DashboardOutlinedIcon />}
-          >
+          <MenuItem component={<Link to="/" />} icon={<DashboardOutlinedIcon />}>
             Dashboard
           </MenuItem>
 
@@ -146,17 +134,11 @@ const AppSidebar = () => {
             Graph
           </MenuItem>
 
-          <MenuItem
-            component={<Link to="/network" />}
-            icon={<TroubleshootOutlinedIcon />}
-          >
+          <MenuItem component={<Link to="/network" />} icon={<TroubleshootOutlinedIcon />}>
             Network and Diagnostics
           </MenuItem>
 
-          <MenuItem
-            component={<Link to="/webxr" />}
-            icon={<TroubleshootOutlinedIcon />}
-          >
+          <MenuItem component={<Link to="/webxr" />} icon={<TroubleshootOutlinedIcon />}>
             <img src={`assets/vr-lite.png`} alt="WebXR" width="22" />
             WebXR
           </MenuItem>
