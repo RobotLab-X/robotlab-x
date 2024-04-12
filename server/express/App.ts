@@ -15,8 +15,8 @@ import http, { Server as HTTPServer } from "http"
 import { WebSocket, Server as WebSocketServer } from "ws"
 import YAML from "yaml"
 import Service from "./framework/Service"
+import Store from "./framework/Store"
 import { HostData } from "./models/HostData"
-
 import RobotLabXRuntime from "./service/RobotLabXRuntime"
 
 const session = require("express-session")
@@ -32,6 +32,7 @@ class App {
   protected wss: WebSocketServer
   protected clients: Set<WebSocket>
   protected runtime: RobotLabXRuntime
+  protected store: Store
 
   // all application data
   protected datax: AppData
@@ -44,6 +45,11 @@ class App {
   // Run configuration methods on the Express instance.
   constructor() {
     console.info(`starting RobotLabXRuntime ${this.version} on node ${process.version}`)
+
+    console.info(`id ${this.id} initializing store`)
+    // FIXME probably should not set a reference ?
+    this.store = Store.getInstance()
+
     this.express = express()
     this.http = http.createServer(this.express)
     this.wss = new WebSocketServer({ server: this.http })
@@ -70,6 +76,11 @@ class App {
 
     this.initWebSocketServer()
   } // end constructor "too big"
+
+  public static main(args: string[]) {
+    let app = new App()
+    // app.http.listen(3000)
+  }
 
   private initWebSocketServer() {
     this.wss.on("connection", (ws) => {

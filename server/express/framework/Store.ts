@@ -1,7 +1,11 @@
+import { Server as WebSocketServer } from "ws"
+
 type RegistryType = { [key: string]: any }
 
 export default class Store {
   private static instance: Store
+
+  protected wss: WebSocketServer
   private registry: RegistryType = {}
 
   // Private constructor to prevent external instantiation directly

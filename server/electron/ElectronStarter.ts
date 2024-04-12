@@ -21,10 +21,7 @@ export default class Main {
   // if this variable is set to true in the main constructor, the app will quit when closing it in macOS
   private static quitOnCloseOSX: boolean
 
-  public static main(
-    electronApp: Electron.App,
-    browserWindow: typeof Electron.BrowserWindow
-  ) {
+  public static main(electronApp: Electron.App, browserWindow: typeof Electron.BrowserWindow) {
     Main.BrowserWindow = browserWindow
     Main.app = electronApp
     Main.app.on("window-all-closed", Main.onWindowAllClosed)
@@ -44,9 +41,7 @@ export default class Main {
         preload: path.join(__dirname, "Preload.js")
       }
     })
-    const startUrl =
-      process.env.ELECTRON_START_URL ||
-      `file://${path.join(__dirname, "../client/index.html")}`
+    const startUrl = process.env.ELECTRON_START_URL || `file://${path.join(__dirname, "../client/index.html")}`
     Main.mainWindow.loadURL(startUrl)
 
     // development
@@ -84,6 +79,9 @@ export default class Main {
     // }
 
     Main.port = Main.normalizePort(process.env.PORT || 3001)
+
+    // App.main(["--port", Main.port.toString()])
+
     App.express.set("port", Main.port)
 
     // Main.server = http.createServer(App)
@@ -92,9 +90,7 @@ export default class Main {
     App.http.on("listening", Main.onListening)
   }
 
-  private static normalizePort(
-    val: number | string
-  ): number | string | boolean {
+  private static normalizePort(val: number | string): number | string | boolean {
     const port: number = typeof val === "string" ? parseInt(val, 10) : val
     if (isNaN(port)) {
       return val
@@ -109,8 +105,7 @@ export default class Main {
     if (error.syscall !== "listen") {
       throw error
     }
-    const bind =
-      typeof Main.port === "string" ? "Pipe " + Main.port : "Port " + Main.port
+    const bind = typeof Main.port === "string" ? "Pipe " + Main.port : "Port " + Main.port
     switch (error.code) {
       case "EACCES":
         // tslint:disable-next-line:no-console
@@ -132,8 +127,7 @@ export default class Main {
     if (addr === null) {
       console.error("Server listening address is null")
     } else {
-      const bind =
-        typeof addr === "string" ? `pipe ${addr}` : `port ${addr.port}`
+      const bind = typeof addr === "string" ? `pipe ${addr}` : `port ${addr.port}`
       logger.log(`Listening on ${bind}`)
     }
   }
