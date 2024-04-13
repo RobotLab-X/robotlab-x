@@ -167,41 +167,73 @@ export default class Store {
     this.broadcastJsonMessage(json)
   }
 
+  /**
+   * Decode the message
+   * @param ws
+   */
   private handleWsMessage(ws: WebSocket) {
     return (message: any) => {
       try {
-        let msg = JSON.parse(message)
-        console.info(`${msg.sender} ==> ${msg.name}.${msg.method}(${msg.data})`)
-
-        // fully address name
-        let fullName = CodecUtil.getFullName(msg.name)
-        console.info(`full name ${fullName}`)
-
-        // find service in registry
-        let service = this.getService(fullName)
-
-        if (service === null) {
-          // ui error - user should be informed
-          console.error(`service ${fullName} not found`)
-          return
-        }
-
-        if (msg.method === null || service[msg.method] === null) {
-          // ui error - user should be informed
-          console.error(`method ${msg.method} not found`)
-          return
-        }
-
-        // execute method with parameters on service
-        let ret: Object = service[msg.method](msg.params)
-        console.info(`return ${ret}`)
-
-        // Example of sending a message back to the client
-        // ws.send(`Server received: ${message}`);
+        this.handleMessage(JSON.parse(message))
       } catch (e) {
         // ui error - user should be informed
+        console.error("parsing message error")
         console.error(e)
       }
+    }
+  }
+
+  /**
+   * Handles all message processing
+   * @param msg
+   * @returns
+   */
+  private handleMessage(msg: Message) {
+    try {
+      if (msg.data) {
+        console.info(`${msg.sender} ==> ${msg.name}.${msg.method}(${msg.data})`)
+      } else {
+        console.info(`${msg.sender} ==> ${msg.name}.${msg.method}()`)
+      }
+
+      // fully address name
+      let fullName = CodecUtil.getFullName(msg.name)
+      console.info(`full name ${fullName}`)
+
+      // find service in registry
+      let service = this.getService(fullName)
+
+      if (service === null) {
+        // ui error - user should be informed
+        console.error(`service ${fullName} not found`)
+        return
+      }
+
+      if (msg.method === null || service[msg.method] === null) {
+        // ui error - user should be informed
+        console.error(`method ${msg.method} not found`)
+        return
+      }
+
+      // execute method with parameters on service
+      // TODO - should be done in a service.invoke(msg) method so that subscriptions
+      // can be processed
+      let ret: Object = service.invokeOn(false, service, msg.method, msg.data)
+
+      // if (msg.data) {
+      //   ret = service[msg.method](msg.data)
+      // } else {
+      //   ret = service[msg.method]()
+      // }
+      console.info(`return ${JSON.stringify(ret)}`)
+
+      //
+
+      // Example of sending a message back to the client
+      // ws.send(`Server received: ${message}`);
+    } catch (e) {
+      // ui error - user should be informed
+      console.error(e)
     }
   }
 
@@ -249,14 +281,9 @@ export default class Store {
       res.json(serviceDataType)
     })
 
-    router.get(`${apiPrefix}/runtime/repo`, async (req, res, next) => {
-      const repoBasePath = path.join(__dirname, "public/repo")
-      const repo = new Repo()
-      const repoMap = await repo.processRepoDirectory(repoBasePath)
-
-      // Convert the Map to an Object to send as JSON
-      const repoObject = Object.fromEntries(repoMap)
-      res.json(repoObject)
+    router.get(`${apiPrefix}/runtime/getRepo`, async (req, res, next) => {
+      let runtime = RobotLabXRuntime.getInstance()
+      res.json(runtime.getRepo())
     })
 
     router.get(`${apiPrefix}/runtime`, (req, res, next) => {
@@ -269,7 +296,7 @@ export default class Store {
       res.json(runtime.getRegistry())
     })
 
-    router.get(`${apiPrefix}/runtime/host`, (req, res) => {
+    router.get(`${apiPrefix}/runtime/getHost`, (req, res) => {
       let runtime = RobotLabXRuntime.getInstance()
       res.json(runtime.getHost())
     })

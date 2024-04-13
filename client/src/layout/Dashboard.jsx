@@ -123,7 +123,7 @@ const Dashboard = () => {
           // setAppData(response)
           updateRegistry(response)
 
-          const repoRequest = await fetchGetJson("/runtime/repo")
+          const repoRequest = await fetchGetJson("/runtime/getRepo")
           // const repoJson = await repoRequest.json()
           updateRepo(repoRequest)
         } catch (error) {

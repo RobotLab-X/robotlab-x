@@ -14,7 +14,7 @@ import RobotLabXRuntime from "../express/service/RobotLabXRuntime"
 //   electron: require(`${__dirname}/node_modules/electron`)
 // })
 
-let logger: debug.Debugger
+let log: debug.Debugger
 
 export default class Main {
   private static app: Electron.App
@@ -75,9 +75,9 @@ export default class Main {
   }
 
   private static bootServer() {
-    // logger
-    logger = debug("server")
-    logger.log = console.log.bind(console)
+    // log
+    log = debug("server")
+    log.log = console.log.bind(console)
 
     // if (isDev) {
     debug.enable("server")
@@ -97,6 +97,7 @@ export default class Main {
     // register process
     let pd: ProcessData = runtime.getLocalProcessData()
     pd.host = host.hostname
+    runtime.startService()
 
     runtime.registerHost(host)
     runtime.registerProcess(pd)

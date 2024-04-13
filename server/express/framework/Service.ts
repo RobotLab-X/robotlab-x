@@ -18,6 +18,7 @@ export default class Service {
   // Example of a shared method
   startService() {
     this.startTime = new Date()
+    console.info(`========= started service ${this.getUptime()} ===========`)
   }
 
   isReady(): boolean {
@@ -27,11 +28,11 @@ export default class Service {
   // Example of calculating uptime
   getUptime(): string {
     if (!this.startTime) {
-      return "Service not started"
+      return "service not started"
     }
     const now = new Date()
     const uptime = now.getTime() - this.startTime.getTime()
-    return `Uptime: ${uptime / 1000} seconds`
+    return `uptime: ${uptime / 1000} seconds`
   }
 
   public getId() {
@@ -49,5 +50,24 @@ export default class Service {
   public addListener(method: string, name: string) {
     console.info(`added listener for ${name} on method ${method}`)
     // Add listener code here
+  }
+
+  public removeListener(method: string, name: string) {
+    console.info(`removed listener for ${name} on method ${method}`)
+    // Remove listener code here
+  }
+
+  public invokeOn(block: boolean, obj: any, methodName: string, ...args: any[]) {
+    let ret: any = null
+
+    if (args && args.length > 0) {
+      ret = obj[methodName](args)
+    } else {
+      ret = obj[methodName]()
+    }
+
+    // TODO - process subscription
+
+    return ret
   }
 }

@@ -5,13 +5,15 @@ import { HostData } from "../models/HostData"
 import { ProcessData } from "../models/ProcessData"
 import { ServiceTypeData } from "../models/ServiceTypeData"
 // import Store from "../framework/Store"
+import path from "path"
 import Store from "../../express/Store"
+import { Repo } from "../framework/Repo"
 
 // import Service from "@framework/Service"
 export default class RobotLabXRuntime extends Service {
   private static instance: RobotLabXRuntime
 
-  public static createInstance(id: string, hostname: string): RobotLabXRuntime {
+  static createInstance(id: string, hostname: string): RobotLabXRuntime {
     if (!RobotLabXRuntime.instance) {
       RobotLabXRuntime.instance = new RobotLabXRuntime(id, "runtime", "RobotLabXRuntime", "0.0.1", hostname)
     } else {
@@ -20,7 +22,7 @@ export default class RobotLabXRuntime extends Service {
     return RobotLabXRuntime.instance
   }
 
-  public static getInstance(): RobotLabXRuntime {
+  static getInstance(): RobotLabXRuntime {
     return RobotLabXRuntime.instance
   }
 
@@ -48,11 +50,12 @@ export default class RobotLabXRuntime extends Service {
     super(id, name, type, version, hostname) // Call the base class constructor if needed
   }
 
-  public getLocalProcessData(): ProcessData {
+  getLocalProcessData(): ProcessData {
     let pd: ProcessData = new ProcessData(this.getId(), process.pid, this.getHostname(), "node", process.version)
     return pd
   }
 
+  // TODO - remove version
   start(name: string, type: string, version: string): void {
     console.log(`Started service: ${name}, Type: ${type}, Version: ${version}`)
     super.startService() // Optionally call a method from the base class
@@ -63,46 +66,63 @@ export default class RobotLabXRuntime extends Service {
   }
 
   getUptime(): string {
-    return super.getUptime()
+    let uptime: string = super.getUptime()
+    console.log(`Uptime: ${uptime}`)
+    return uptime
   }
 
   getService(name: string): Service | null {
     return null
   }
 
-  public registerHost(host: HostData) {
+  registerHost(host: HostData) {
     this.hosts[`${host.hostname}`] = host
   }
 
-  public registerProcess(process: ProcessData) {
+  registerProcess(process: ProcessData) {
     this.processes[`${process.id}@${process.host}`] = process
   }
 
-  public registerType(type: ServiceTypeData) {
+  registerType(type: ServiceTypeData) {
     this.types[`${type.typeKey}@${type.version}`] = type
   }
 
-  public register(service: Service) {
+  register(service: Service) {
+    console.log(`== registering service: ${typeof service} ==`)
     Store.getInstance().register(`${service.name}@${service.id}`, service)
   }
 
-  public getHost() {
+  getRepo() {
+    const repoBasePath = path.join(__dirname, "../public/repo")
+    console.log(`======== repo base path: ${repoBasePath} ========`)
+    const repo = new Repo()
+    const repoMap = repo.processRepoDirectory(repoBasePath)
+    // convert the Map to an Object to send as JSON
+    const repoObject = Object.fromEntries(repoMap)
+    return repoObject
+  }
+
+  getHost() {
     if (this.hostname == null) {
       return null
     }
     return this.hosts[this.hostname]
   }
 
-  public getRegistry(): Object {
+  getRegistry(): Object {
     return Store.getInstance().getRegistry()
   }
 
-  public getServiceNames(): string[] {
+  getServiceNames(): string[] {
     const localId = RobotLabXRuntime.instance.getId() // Assuming CodecUtil.getId() returns the local ID string
     const registry = Store.getInstance().getRegistry() // Assuming this returns a dictionary
 
     return Object.keys(registry)
       .filter((key) => key.endsWith(`@${localId}`)) // Filter keys that end with the local ID
       .map((key) => key.split("@")[0]) // Extract the name part from each key
+  }
+
+  publishInstallLog(msg: string): string {
+    return msg
   }
 }
