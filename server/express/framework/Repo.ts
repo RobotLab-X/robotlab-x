@@ -6,34 +6,23 @@ export class Repo {
   processRepoDirectory(basePath: string): Map<string, any> {
     const repoMap = new Map<string, any>()
     try {
+      // Read the directory containing the package definitions directly
       const repoDirs = fs.readdirSync(basePath, { withFileTypes: true })
 
       for (const dir of repoDirs) {
         if (dir.isDirectory()) {
-          const versionsPath = path.join(basePath, dir.name)
-          const versionDirs = fs.readdirSync(versionsPath, {
-            withFileTypes: true
-          })
+          const dirPath = path.join(basePath, dir.name)
+          const packageFilePath = path.join(dirPath, "package.yml")
 
-          for (const versionDir of versionDirs) {
-            if (versionDir.isDirectory()) {
-              const versionPath = path.join(versionsPath, versionDir.name)
-              const packageFilePath = path.join(versionPath, "package.yml")
-              // console.info(`Reading package file: ${packageFilePath}`);
-              try {
-                const packageFileContents = fs.readFileSync(
-                  packageFilePath,
-                  "utf8"
-                )
-                const packageObject = yaml.parse(packageFileContents)
-                const key = `${dir.name}@${versionDir.name}`
-                repoMap.set(key, packageObject)
-              } catch (err) {
-                console.error(
-                  `Error reading package file in ${versionPath}: ${err}`
-                )
-              }
-            }
+          // Try to read the package file in each directory
+          try {
+            const packageFileContents = fs.readFileSync(packageFilePath, "utf8")
+            const packageObject = yaml.parse(packageFileContents)
+
+            // Use the directory name as the key since there are no version subdirectories
+            repoMap.set(dir.name, packageObject)
+          } catch (err) {
+            console.error(`Error reading package file in ${dirPath}: ${err}`)
           }
         }
       }

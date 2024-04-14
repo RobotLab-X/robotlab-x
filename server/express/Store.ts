@@ -126,6 +126,7 @@ export default class Store {
   }
 
   public getService(key: string): any {
+    console.info(`Store.getService service ${key}`)
     return this.registry[key]
   }
 
@@ -264,7 +265,13 @@ export default class Store {
      * working so far. This function will change when we start to add more
      * API endpoints */
     const router = express.Router()
-    // placeholder route handler
+
+    router.put(`${apiPrefix}/*`, (req, res, next) => {
+      console.log(req.body)
+      const serviceData = req.body
+      res.json(serviceData)
+    })
+
     router.put(`${apiPrefix}/runtime/register`, (req, res, next) => {
       console.log(req.body)
       const serviceData = req.body
@@ -281,39 +288,61 @@ export default class Store {
       res.json(serviceDataType)
     })
 
-    router.get(`${apiPrefix}/runtime/getRepo`, async (req, res, next) => {
-      let runtime = RobotLabXRuntime.getInstance()
-      res.json(runtime.getRepo())
-    })
+    router.get(`${apiPrefix}/*`, (req, res, next) => {
+      console.info(`get ${req.originalUrl}`)
+      const pathSegments = req.originalUrl.split("/").filter((segment) => segment.length > 0)
+      if (pathSegments.length < 3) {
+        res.json({
+          error: `invalid path ${req.originalUrl} must follow pattern ${apiPrefix}/{serviceName}/{method}/"jsonParam1"/"jsonParam2"/...`
+        })
+        return
+      }
 
-    router.get(`${apiPrefix}/runtime`, (req, res, next) => {
       let runtime = RobotLabXRuntime.getInstance()
-      res.json(runtime)
-    })
 
-    router.get(`${apiPrefix}/runtime/getRegistry`, (req, res, next) => {
-      let runtime = RobotLabXRuntime.getInstance()
+      if (pathSegments.length == 4) {
+        // return service
+        const name = pathSegments[3]
+        console.info(`getting service ${name}`)
+        const service = runtime.getService(name)
+        res.json(service)
+        return
+      }
+
+      if (pathSegments.length > 4) {
+        // no parameter invoke
+        const name = pathSegments[3]
+        const methodName = pathSegments[4]
+        const service = runtime.getService(name)
+
+        const params: any = []
+        // parameters supplied
+        if (pathSegments.length > 5) {
+          for (let i = 5; i < pathSegments.length; i++) {
+            params.push(JSON.parse(decodeURIComponent(pathSegments[i])))
+          }
+        }
+
+        let ret = null
+        if (params.length > 0) {
+          console.info(`get - invoking ${name}.${methodName}(${params})`)
+          ret = service.invokeOn(false, service, methodName, ...params)
+        } else {
+          console.info(`get - invoking ${name}.${methodName}()`)
+          ret = service.invokeOn(false, service, methodName)
+        }
+        console.info(`get - return ${JSON.stringify(ret)}`)
+        res.json(ret)
+        return
+      }
+
+      console.info(`pathSegments ${pathSegments}`)
+
       res.json(runtime.getRegistry())
     })
 
-    router.get(`${apiPrefix}/runtime/getHost`, (req, res) => {
-      let runtime = RobotLabXRuntime.getInstance()
-      res.json(runtime.getHost())
-    })
-
-    router.get(`${apiPrefix}/stop/:name`, (req, res, next) => {
-      console.info(`release process ${req.params.name}`)
-      const name = JSON.parse(decodeURIComponent(req.params.name))
-      res.json(name)
-    })
-
-    router.get(`${apiPrefix}/release/:name`, (req, res, next) => {
-      console.info(`release process ${req.params.name}`)
-      const name = JSON.parse(decodeURIComponent(req.params.name))
-      res.json(name)
-    })
-
     // version - FIXME - remove version
+    // FIXME move to RobotLabXRuntime
     router.get(`${apiPrefix}/start/:name/:type/:version`, (req, res, next) => {
       try {
         console.info(`start params ${JSON.stringify(req.params)}`)

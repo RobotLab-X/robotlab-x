@@ -21,6 +21,17 @@ export default class Service {
     console.info(`========= started service ${this.getUptime()} ===========`)
   }
 
+  stopService() {
+    this.startTime = null
+    console.info(`========= stopped service ${this.getName()} ===========`)
+  }
+
+  // maybe purge is a good idea to purge the copy of the repo for an instance ?
+  // vs release which only frees the service from memory
+  releaseService() {
+    console.info(`========= released service ${this.getName()} ===========`)
+  }
+
   isReady(): boolean {
     return this.startTime !== null
   }
@@ -61,9 +72,14 @@ export default class Service {
     let ret: any = null
 
     if (args && args.length > 0) {
-      ret = obj[methodName](args)
+      ret = obj[methodName](...args)
     } else {
       ret = obj[methodName]()
+    }
+
+    // normalize undefined to null
+    if (ret === undefined) {
+      ret = null
     }
 
     // TODO - process subscription
