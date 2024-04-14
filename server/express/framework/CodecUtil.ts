@@ -36,6 +36,25 @@ class CodecUtil {
       return null
     }
   }
+
+  // typeScript method to get callback topic name based on topic method
+  static getCallbackTopicName(topicMethod: string): string {
+    // using template literals and custom method to handle string capitalization and formatting
+    if (topicMethod.startsWith("publish")) {
+      return `on${this.capitalize(topicMethod.substring("publish".length))}`
+    } else if (topicMethod.startsWith("get")) {
+      return `on${this.capitalize(topicMethod.substring("get".length))}`
+    }
+
+    // No replacement - just prefix and capitalize
+    // FIXME - subscribe to onMethod --- gets ---> onOnMethod :P
+    return `on${this.capitalize(topicMethod)}`
+  }
+
+  // Helper method to capitalize the first letter of a string
+  static capitalize(str: string): string {
+    return str.charAt(0).toUpperCase() + str.slice(1)
+  }
 }
 
 export { CodecUtil }

@@ -1,4 +1,6 @@
-// Service.ts
+import { SubscriptionListener } from "../models/SubscriptionListener"
+import { CodecUtil } from "./CodecUtil"
+
 export default class Service {
   protected startTime: Date | null = null
 
@@ -8,32 +10,43 @@ export default class Service {
   version: string | null = null
   hostname: string | null = null
 
-  public constructor(id: string, name: string, typeKey: string, version: string, hostname: string | null = null) {
+  notifyList = new Map<string, SubscriptionListener[]>()
+
+  constructor(id: string, name: string, typeKey: string, version: string, hostname: string | null = null) {
     this.id = id
     this.name = name
     this.typeKey = typeKey
     this.version = version
     this.hostname = hostname
   }
-  // Example of a shared method
-  startService() {
-    this.startTime = new Date()
-    console.info(`========= started service ${this.getUptime()} ===========`)
+
+  addListener(method: string, remoteName: string, remoteMethod: string) {
+    if (remoteMethod === null) {
+      remoteMethod = CodecUtil.getCallbackTopicName(method)
+    }
+    console.info(`adding listener ${this.name}.${method} --> ${remoteName}.${method}`)
+    if (!this.notifyList.has(method)) {
+      this.notifyList.set(method, [])
+    }
+    for (const listener of this.notifyList.get(method) || []) {
+      if (listener.callbackName === remoteName && listener.callbackMethod === remoteMethod) {
+        console.info(`listener on ${method} for -> ${remoteName}.${method} already exists`)
+        return
+      }
+    }
+    this.notifyList.get(method).push(new SubscriptionListener(method, remoteName, remoteMethod))
   }
 
-  stopService() {
-    this.startTime = null
-    console.info(`========= stopped service ${this.getName()} ===========`)
+  getHostname(): string | null {
+    return this.hostname
   }
 
-  // maybe purge is a good idea to purge the copy of the repo for an instance ?
-  // vs release which only frees the service from memory
-  releaseService() {
-    console.info(`========= released service ${this.getName()} ===========`)
+  getId() {
+    return this.id
   }
 
-  isReady(): boolean {
-    return this.startTime !== null
+  getName() {
+    return this.name
   }
 
   // Example of calculating uptime
@@ -46,29 +59,11 @@ export default class Service {
     return `uptime: ${uptime / 1000} seconds`
   }
 
-  public getId() {
-    return this.id
+  invoke(methodName: string, ...args: any[]): any {
+    return this.invokeOn(true, this, methodName, ...args)
   }
 
-  public getName() {
-    return this.name
-  }
-
-  public getHostname(): string | null {
-    return this.hostname
-  }
-
-  public addListener(method: string, name: string) {
-    console.info(`added listener for ${name} on method ${method}`)
-    // Add listener code here
-  }
-
-  public removeListener(method: string, name: string) {
-    console.info(`removed listener for ${name} on method ${method}`)
-    // Remove listener code here
-  }
-
-  public invokeOn(block: boolean, obj: any, methodName: string, ...args: any[]) {
+  invokeOn(block: boolean, obj: any, methodName: string, ...args: any[]): any {
     let ret: any = null
 
     if (args && args.length > 0) {
@@ -85,5 +80,44 @@ export default class Service {
     // TODO - process subscription
 
     return ret
+  }
+
+  isReady(): boolean {
+    return this.startTime !== null
+  }
+
+  // maybe purge is a good idea to purge the copy of the repo for an instance ?
+  // vs release which only frees the service from memory
+  releaseService() {
+    console.info(`========= released service ${this.getName()} ===========`)
+  }
+
+  removeListener(method: string, remoteName: string, remoteMethod: string) {
+    if (remoteMethod === null) {
+      remoteMethod = CodecUtil.getCallbackTopicName(method)
+    }
+
+    console.info(`removing listener ${this.name}.${method} --> ${remoteName}.${method}`)
+    if (!this.notifyList.has(method)) {
+      return
+    }
+
+    this.notifyList.get(method).forEach((listener, index) => {
+      if (listener.callbackName === remoteName && listener.callbackMethod === remoteMethod) {
+        this.notifyList.get(method)?.splice(index, 1)
+        return
+      }
+    })
+  }
+
+  // Example of a shared method
+  startService() {
+    this.startTime = new Date()
+    console.info(`========= started service ${this.getUptime()} ===========`)
+  }
+
+  stopService() {
+    this.startTime = null
+    console.info(`========= stopped service ${this.getName()} ===========`)
   }
 }

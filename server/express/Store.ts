@@ -268,7 +268,23 @@ export default class Store {
 
     router.put(`${apiPrefix}/*`, (req, res, next) => {
       console.log(req.body)
-      const serviceData = req.body
+      const serviceData = JSON.parse(req.body)
+
+      const pathSegments = req.originalUrl.split("/").filter((segment) => segment.length > 0)
+      if (pathSegments.length != 5) {
+        res.json({
+          error: `invalid path ${req.originalUrl} must follow pattern ${apiPrefix}/{serviceName}/{method}`
+        })
+        return
+      }
+
+      const runtime = RobotLabXRuntime.getInstance()
+      const name = pathSegments[3]
+      const methodName = pathSegments[4]
+      const service = runtime.getService(name)
+
+      const ret = service.invokeOn(false, service, methodName, ...serviceData)
+
       res.json(serviceData)
     })
 
