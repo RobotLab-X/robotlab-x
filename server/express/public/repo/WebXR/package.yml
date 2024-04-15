@@ -11,7 +11,6 @@ interfaces:
       description: "Retrieves list of resources."
 author: "GroG"
 license: "MIT"
-language: "JavaScript"
 categories:
 - "web"
 - "ui"

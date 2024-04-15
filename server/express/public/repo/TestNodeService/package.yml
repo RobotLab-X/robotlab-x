@@ -1,17 +1,21 @@
-typeKey: "RobotLabXUI"
-title: "RobotLab X UI"
-platform: "browser"
+typeKey: "TestNodeService"
+title: "Test Node Service"
+platform: "node"
 platformVersion: null
-description: "Web front end for RobotLab-X"
+description: "Node test service for testing!"
 version: "0.0.1"
+cmd:
+args:
+cwd: null
 interfaces:
   restAPI:
     - endpoint: "/api/v1/resource"
       method: "GET"
       description: "Retrieves list of resources."
 author: "GroG"
-license: "MPL-2.0"
+license: "MIT"
 categories:
 - "web"
+- "testing"
 - "ui"
 dependencies: null

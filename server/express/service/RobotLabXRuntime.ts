@@ -9,8 +9,10 @@ import { CodecUtil } from "../framework/CodecUtil"
 import { Repo } from "../framework/Repo"
 import Service from "../framework/Service"
 import { HostData } from "../models/HostData"
+import Package from "../models/Package"
 import { ProcessData } from "../models/ProcessData"
 import { ServiceTypeData } from "../models/ServiceTypeData"
+import TestNodeService from "./TestNodeService"
 
 // import Service from "@framework/Service"
 export default class RobotLabXRuntime extends Service {
@@ -65,17 +67,20 @@ export default class RobotLabXRuntime extends Service {
   }
 
   // TODO - remove version
-  start(serviceName: string, serviceType: string): any {
+  start(serviceName: string, serviceType: string): Service {
     try {
-      let version = "0.0.1"
-      console.log(`Started service: ${serviceName}, Type: ${serviceType}`)
+      const check = this.getService(serviceName)
+      if (check != null) {
+        console.info(`service ${check.getName()}@${check.getId()} already exists`)
+        return check
+      }
 
-      console.info(process.cwd())
+      console.log(`starting service: ${serviceName}, type: ${serviceType} in ${process.cwd()}`)
 
       // repo should be immutable - make a copy to service/{name} if one doesn't already exist
       const pkgPath = `./express/public/service/${serviceName}`
       const repo = new Repo()
-      const successful = repo.copyPackage(serviceName, serviceType, version)
+      const successful = repo.copyPackage(serviceName, serviceType)
       console.info(`successful ${successful}`)
 
       const pkgYmlFile = `${pkgPath}/package.yml`
@@ -83,8 +88,9 @@ export default class RobotLabXRuntime extends Service {
       // loading type info
       console.info(`loading type data from ${pkgYmlFile}`)
       const file = fs.readFileSync(pkgYmlFile, "utf8")
-      const pkg = YAML.parse(file)
-      console.info(`package.yml ${pkg}`)
+      const pkg: Package = YAML.parse(file)
+      let version = pkg.version
+      console.info(`package.yml ${JSON.stringify(pkg)}`)
 
       // TODO - if service request to add a service
       // and mrl and process exists - then /runtime/start
@@ -94,11 +100,7 @@ export default class RobotLabXRuntime extends Service {
 
       // TODO - way to set cmd line args
 
-      console.info(`python package ${pkg}`)
-
       // resolve if package.yml dependencies are met
-
-      console.info(`yaml ${JSON.stringify(pkg)}`)
 
       // creating instance config from type if it does not exist
 
@@ -113,43 +115,55 @@ export default class RobotLabXRuntime extends Service {
       // host check
       // platform check - python version, pip installed, venv etc.
       // pip libraries and versions installed
-      let runtime = RobotLabXRuntime.getInstance()
-
-      const pd: ProcessData = new ProcessData(
-        serviceName,
-        "123456", // process.pid,
-        runtime.getHostname(),
-        "python",
-        "3.8.5"
-      )
-      runtime.registerProcess(pd)
 
       console.info(`starting process ${pkgPath}/${pkg.cmd} ${pkg.args}`)
+      let service: Service = null
+      // spawn the process if none node process
+      if (pkg.platform === "node") {
+        // ================== dynamically load import works begin ==================
+        // dynamically load import TODO - promote
+        // const { default: ServiceClass } = import(`./${serviceType}`)
+        // instantiate service
+        // service = new ServiceClass(this.getId(), serviceName, serviceType, version, this.getHostname())
+        // ================== dynamically load import works end ==================
+        service = new TestNodeService(this.getId(), serviceName, serviceType, version, this.getHostname())
+      } else {
+        // spawn the process
+        const childProcess = spawn(pkg.cmd, pkg.args, { cwd: pkgPath })
 
-      // spawn the process
-      const childProcess = spawn(pkg.cmd, pkg.args, { cwd: pkgPath })
+        childProcess.on("error", (err) => {
+          console.error(`failed to start subprocess. ${err}`)
+          // send message with error to UI
+        })
 
-      childProcess.on("error", (err) => {
-        console.error(`failed to start subprocess. ${err}`)
-        // send message with error to UI
-      })
-
-      if (childProcess.pid) {
-        // register the service
-        const service: Service = new Service(
-          childProcess.pid.toString(),
+        if (childProcess.pid) {
+          // register the service
+          const service: Service = new Service(
+            childProcess.pid.toString(),
+            serviceName,
+            serviceType,
+            version,
+            this.getHostname()
+          )
+        }
+        // register the process
+        const pd: ProcessData = new ProcessData(
           serviceName,
-          serviceType,
-          version,
-          runtime.getHostname()
+          childProcess.pid.toString(),
+          this.getHostname(),
+          pkg.platform,
+          pkg.platformVersion
         )
+        this.registerProcess(pd)
 
-        // TODO register the service
-        runtime.register(service)
+        service = new Service(childProcess.pid.toString(), serviceName, serviceType, version, this.getHostname())
+
+        console.info(`process ${JSON.stringify(childProcess)}`)
       }
 
-      console.info(`process ${JSON.stringify(childProcess)}`)
-      return childProcess
+      // register and start the service
+      this.register(service)
+      return service
     } catch (e) {
       console.error(e)
     }

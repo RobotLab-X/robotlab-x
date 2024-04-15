@@ -10,7 +10,10 @@ export default class Service {
   version: string | null = null
   hostname: string | null = null
 
-  notifyList = new Map<string, SubscriptionListener[]>()
+  // notifyList = new Map<string, SubscriptionListener[]>()
+  notifyList = {} as any
+
+  config: any = {}
 
   constructor(id: string, name: string, typeKey: string, version: string, hostname: string | null = null) {
     this.id = id
@@ -21,20 +24,23 @@ export default class Service {
   }
 
   addListener(method: string, remoteName: string, remoteMethod: string) {
-    if (remoteMethod === null) {
+    if (remoteMethod === null || remoteMethod === "" || remoteMethod === undefined) {
       remoteMethod = CodecUtil.getCallbackTopicName(method)
     }
     console.info(`adding listener ${this.name}.${method} --> ${remoteName}.${method}`)
-    if (!this.notifyList.has(method)) {
-      this.notifyList.set(method, [])
+    if (!(method in this.notifyList)) {
+      this.notifyList[method] = []
     }
-    for (const listener of this.notifyList.get(method) || []) {
+    const listeners = this.notifyList[method] || []
+    for (const listener of listeners) {
       if (listener.callbackName === remoteName && listener.callbackMethod === remoteMethod) {
-        console.info(`listener on ${method} for -> ${remoteName}.${method} already exists`)
+        console.info(`listener on ${method} for -> ${remoteName}.${remoteMethod} already exists`)
         return
       }
     }
-    this.notifyList.get(method).push(new SubscriptionListener(method, remoteName, remoteMethod))
+    // this.notifyList.get(method).push(new SubscriptionListener(method, remoteName, remoteMethod))
+    this.notifyList[method].push(new SubscriptionListener(method, remoteName, remoteMethod))
+    console.info(`added listener ${this.name}.${method} --> ${remoteName}.${remoteMethod}`)
   }
 
   getHostname(): string | null {
@@ -102,7 +108,7 @@ export default class Service {
       return
     }
 
-    this.notifyList.get(method).forEach((listener, index) => {
+    this.notifyList.get(method).forEach((listener: any, index: any) => {
       if (listener.callbackName === remoteName && listener.callbackMethod === remoteMethod) {
         this.notifyList.get(method)?.splice(index, 1)
         return

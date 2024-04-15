@@ -1,17 +1,21 @@
-typeKey: "RobotLabXUI"
-title: "RobotLab X UI"
-platform: "browser"
+typeKey: "TestPythonService"
+title: "Test Python Service"
+platform: "python"
 platformVersion: null
-description: "Web front end for RobotLab-X"
+description: "Python service for testing!"
 version: "0.0.1"
+cmd: "python"
+args: ["start.py"]
+cwd: null
 interfaces:
   restAPI:
     - endpoint: "/api/v1/resource"
       method: "GET"
       description: "Retrieves list of resources."
 author: "GroG"
-license: "MPL-2.0"
+license: "MIT"
 categories:
 - "web"
+- "testing"
 - "ui"
 dependencies: null

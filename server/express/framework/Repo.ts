@@ -32,8 +32,8 @@ export class Repo {
     return repoMap
   }
 
-  public copyPackage(name: string, typeKey: string, version: string) {
-    const source = `./express/public/repo/${typeKey}/${version}/`
+  public copyPackage(name: string, typeKey: string) {
+    const source = `./express/public/repo/${typeKey}/`
     const target = `./express/public/service/${name}`
 
     try {
@@ -41,7 +41,9 @@ export class Repo {
       console.log("Copy operation completed successfully")
     } catch (error) {
       console.error("Copy operation failed:", error)
+      return false
     }
+    return true
   }
 
   private copyRecursiveSync(src: string, dest: string) {

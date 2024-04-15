@@ -1,11 +1,11 @@
-typeKey: "Test"
-title: "Test Service"
-platform: "python"
+typeKey: "TestRosService"
+title: "Test Ros Service"
+platform: "ros"
 platformVersion: null
-description: "Test service for testing!"
+description: "Ros test service for testing!"
 version: "0.0.1"
-cmd: "python"
-args: ["start.py"]
+cmd:
+args:
 cwd: null
 interfaces:
   restAPI:
@@ -14,7 +14,6 @@ interfaces:
       description: "Retrieves list of resources."
 author: "GroG"
 license: "MIT"
-language: "Python"
 categories:
 - "web"
 - "testing"

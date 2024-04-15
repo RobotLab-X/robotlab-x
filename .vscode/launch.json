@@ -2,7 +2,8 @@
     "version": "0.2.0",
     "configurations": [
       {
-        "name": "Debug Electron Main Process",
+        "name": "server",
+        "cwd":"${workspaceFolder}/server",
         "type": "node",
         "request": "launch",
         "runtimeExecutable": "${workspaceFolder}/server/node_modules/.bin/electron",

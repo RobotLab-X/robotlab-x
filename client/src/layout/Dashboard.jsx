@@ -76,13 +76,8 @@ const Dashboard = () => {
         "Content-Type": "application/json",
         "robotlab-x-id": id
       },
-      body: JSON.stringify(data)
+      body: JSON.stringify([data])
     })
-    return response
-  }
-
-  async function get(url) {
-    const response = await fetch(`${baseUrl}${url}`)
     return response
   }
 
@@ -151,8 +146,8 @@ const Dashboard = () => {
 
   function ServceDataRow({ sd }) {
     const [open, setOpen] = useState(false)
-    const typeVersionKey = `${sd?.typeKey}@${sd?.version}`
-    const type = repo[typeVersionKey]
+    const typeKey = sd?.typeKey // `${sd?.typeKey}@${sd?.version}`
+    const type = repo[typeKey]
     const imagePath = `${repoUrl}/${sd.typeKey}/${sd.typeKey}.png`
     const connectedPath = `${process.env.PUBLIC_URL}/green.png`
 
@@ -196,10 +191,6 @@ const Dashboard = () => {
                     <TableRow>
                       <TableCell>Version</TableCell>
                       <TableCell>{type?.version}</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>Language</TableCell>
-                      <TableCell>{type?.language}</TableCell>
                     </TableRow>
                     <TableRow>
                       <TableCell>Platform</TableCell>

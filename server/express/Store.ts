@@ -1,22 +1,15 @@
 import bodyParser from "body-parser"
-import { spawn } from "child_process"
 import cors from "cors"
 import express from "express"
-import fs from "fs"
 import http, { Server as HTTPServer } from "http"
 import path from "path"
 import { WebSocket, Server as WebSocketServer } from "ws"
-import YAML from "yaml"
 import { CodecUtil } from "./framework/CodecUtil"
-import { Repo } from "./framework/Repo"
-import Service from "./framework/Service"
 import Message from "./models/Message"
-import { ProcessData } from "./models/ProcessData"
 import RobotLabXRuntime from "./service/RobotLabXRuntime"
 
 const session = require("express-session")
 const FileStore = require("session-file-store")(session)
-
 const apiPrefix = "/api/v1/services"
 
 type RegistryType = { [key: string]: any }
@@ -36,8 +29,11 @@ export default class Store {
   private registry: RegistryType = {}
 
   private express: express.Application
+
   private http: HTTPServer
+
   private wss: WebSocketServer
+
   private clients: Set<WebSocket>
 
   public static getInstance(): Store {
@@ -228,6 +224,8 @@ export default class Store {
       // }
       console.info(`return ${JSON.stringify(ret)}`)
 
+      return ret
+
       //
 
       // Example of sending a message back to the client
@@ -236,6 +234,7 @@ export default class Store {
       // ui error - user should be informed
       console.error(e)
     }
+    return null
   }
 
   // Configure Express middleware.
@@ -267,8 +266,8 @@ export default class Store {
     const router = express.Router()
 
     router.put(`${apiPrefix}/*`, (req, res, next) => {
-      console.log(req.body)
-      const serviceData = JSON.parse(req.body)
+      console.log(`--> put ${req.originalUrl} ${JSON.stringify(req.body)}`)
+      const serviceData = req.body
 
       const pathSegments = req.originalUrl.split("/").filter((segment) => segment.length > 0)
       if (pathSegments.length != 5) {
@@ -305,7 +304,7 @@ export default class Store {
     })
 
     router.get(`${apiPrefix}/*`, (req, res, next) => {
-      console.info(`get ${req.originalUrl}`)
+      console.info(`--> get ${req.originalUrl}`)
       const pathSegments = req.originalUrl.split("/").filter((segment) => segment.length > 0)
       if (pathSegments.length < 3) {
         res.json({
@@ -357,105 +356,6 @@ export default class Store {
       res.json(runtime.getRegistry())
     })
 
-    // version - FIXME - remove version
-    // FIXME move to RobotLabXRuntime
-    router.get(`${apiPrefix}/start/:name/:type/:version`, (req, res, next) => {
-      try {
-        console.info(`start params ${JSON.stringify(req.params)}`)
-
-        const serviceName = JSON.parse(decodeURIComponent(req.params.name))
-        const serviceType = JSON.parse(decodeURIComponent(req.params.type))
-        const version = JSON.parse(decodeURIComponent(req.params.version))
-
-        console.info(process.cwd())
-
-        // repo should be immutable - make a copy to service/{name} if one doesn't already exist
-        const pkgPath = `./express/public/service/${serviceName}`
-        const repo = new Repo()
-        const successful = repo.copyPackage(serviceName, serviceType, version)
-        console.info(`successful ${successful}`)
-
-        const pkgYmlFile = `${pkgPath}/package.yml`
-
-        // loading type info
-        console.info(`loading type data from ${pkgYmlFile}`)
-        const file = fs.readFileSync(pkgYmlFile, "utf8")
-        const pkg = YAML.parse(file)
-        console.info(`package.yml ${pkg}`)
-
-        // TODO - if service request to add a service
-        // and mrl and process exists - then /runtime/start
-
-        // determine necessary platform python, node, docker, java
-        // yes | no -> install -> yes | no
-
-        // TODO - way to set cmd line args
-
-        console.info(`python package ${pkg}`)
-
-        // resolve if package.yml dependencies are met
-
-        console.info(`yaml ${JSON.stringify(pkg)}`)
-
-        // creating instance config from type if it does not exist
-
-        // preparing to start the process
-
-        // const script = "start.py"
-        // register
-
-        // TODO - only if you need a new process
-        // TODO get package.yml from processModule - check if
-        // dependencies are met
-        // host check
-        // platform check - python version, pip installed, venv etc.
-        // pip libraries and versions installed
-        let runtime = RobotLabXRuntime.getInstance()
-
-        const pd: ProcessData = new ProcessData(
-          serviceName,
-          "123456", // process.pid,
-          runtime.getHostname(),
-          "python",
-          "3.8.5"
-        )
-        runtime.registerProcess(pd)
-
-        console.info(`starting process ${pkgPath}/${pkg.cmd} ${pkg.args}`)
-
-        // spawn the process
-        const childProcess = spawn(pkg.cmd, pkg.args, { cwd: pkgPath })
-
-        childProcess.on("error", (err) => {
-          console.error(`failed to start subprocess. ${err}`)
-          // send message with error to UI
-        })
-
-        if (childProcess.pid) {
-          // register the service
-          const service: Service = new Service(
-            childProcess.pid.toString(),
-            serviceName,
-            serviceType,
-            version,
-            runtime.getHostname()
-          )
-
-          // TODO register the service
-          runtime.register(service)
-        }
-
-        console.info(`process ${JSON.stringify(childProcess)}`)
-        res.json(childProcess)
-      } catch (e) {
-        console.error(e)
-      }
-    })
-
     this.express.use("/", router)
   }
 }
-
-// easy singleton way
-// export default new App().express
-// export default new App()
