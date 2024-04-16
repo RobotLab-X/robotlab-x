@@ -8,22 +8,21 @@ import TextField from "@mui/material/TextField"
 import HubIcon from "@mui/icons-material/Hub"
 import MonitorIcon from "@mui/icons-material/Monitor"
 
-import { Box, IconButton, useTheme } from "@mui/material"
+import { Box, IconButton } from "@mui/material"
 import Tooltip from "@mui/material/Tooltip"
-import Service from "framework/Service"
 import { fetchGetJson } from "framework/fetchUtil"
+import Service from "models/Service"
 import React, { useEffect, useState } from "react"
 import { useStore } from "store/store"
-import { tokens } from "../theme"
 
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown"
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp"
 import { Collapse } from "@mui/material"
 import ServiceDialog from "components/ServiceDialog"
 
+import ServiceComponent from "framework/ServiceComponent"
+
 const Dashboard = () => {
-  const theme = useTheme()
-  const colors = tokens(theme.palette.mode)
   const iconSize = 32
 
   // FIXME put in store !!!
@@ -32,9 +31,7 @@ const Dashboard = () => {
   const typeKey = "RobotLabXUI"
 
   // should be store
-  const [appData, setAppData] = useState([])
   const [msgTxt, setMsgTxt] = useState('{"name":"runtime","method":"getUptime"}')
-  const [isLoading, setIsLoading] = useState(true)
   const [open, setOpen] = useState(false)
 
   const updateRepo = useStore((state) => state.updateRepo)
@@ -169,29 +166,26 @@ const Dashboard = () => {
             </Tooltip>
           </TableCell>
           <TableCell>
-            <IconButton size="small" onClick={() => setOpen(!open)}>
-              {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-            </IconButton>
-          </TableCell>
-          <TableCell>
-            <img src={imagePath} alt={sd.typeKey} />
+            <img src={imagePath} alt={sd.typeKey} width="32" />
           </TableCell>
           <TableCell component="th" scope="row">
             {type?.title}
             <br />
             {sd.name}
           </TableCell>
+          <TableCell>
+            <IconButton size="small" onClick={() => setOpen(!open)}>
+              {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+            </IconButton>
+          </TableCell>
         </TableRow>
         <TableRow>
           <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
             <Collapse in={open} timeout="auto" unmountOnExit>
               <Box margin={1}>
+                <ServiceComponent service={sd} />
                 <Table sx={{ width: 300 }}>
                   <TableBody>
-                    <TableRow>
-                      <TableCell>Version</TableCell>
-                      <TableCell>{type?.version}</TableCell>
-                    </TableRow>
                     <TableRow>
                       <TableCell>Platform</TableCell>
                       <TableCell>{type?.platform}</TableCell>

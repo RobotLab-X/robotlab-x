@@ -22,7 +22,8 @@ export class Repo {
             // Use the directory name as the key since there are no version subdirectories
             repoMap.set(dir.name, packageObject)
           } catch (err) {
-            console.error(`Error reading package file in ${dirPath}: ${err}`)
+            // console.error(`Error reading package file in ${dirPath}: ${err}`)
+            console.info(`skipping ${dirPath} no package file found`)
           }
         }
       }

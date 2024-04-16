@@ -18,6 +18,8 @@ export class ServiceTypeData {
   public author?: string
   public license?: string
   public language?: string
+  public dependencies?: string[]
+  public categories?: string[]
 
   constructor(typeKey: string) {
     this.typeKey = typeKey

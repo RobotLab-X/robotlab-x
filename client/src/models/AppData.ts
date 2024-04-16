@@ -1,6 +1,6 @@
-import Service from "../framework/Service"
 import { HostData } from "./HostData"
 import { ProcessData } from "./ProcessData"
+import Service from "./Service"
 import { ServiceTypeData } from "./ServiceTypeData"
 
 export class AppData {
@@ -75,11 +75,6 @@ export class AppData {
   public registerType(type: ServiceTypeData) {
     this.types[`${type.typeKey}@${type.version}`] = type
   }
-
-  // public register(name: string, typeKey: string, id: string, version: string) {
-  //   this.registry[`${name}@${id}`] = new Service(name, typeKey, id, version)
-  //   // TODO - merge type info, or register minimally required type info
-  // }
 
   public register(service: Service) {
     this.registry[`${service.name}@${service.id}`] = service

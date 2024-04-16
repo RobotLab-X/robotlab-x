@@ -171,7 +171,9 @@ export default class Store {
   private handleWsMessage(ws: WebSocket) {
     return (message: any) => {
       try {
-        this.handleMessage(JSON.parse(message))
+        const msg = JSON.parse(message)
+        console.info(`--> ws ${JSON.stringify(msg)}`)
+        this.handleMessage(msg)
       } catch (e) {
         // ui error - user should be informed
         console.error("parsing message error")
@@ -188,34 +190,32 @@ export default class Store {
   private handleMessage(msg: Message) {
     try {
       if (msg.data) {
-        console.info(`${msg.sender} ==> ${msg.name}.${msg.method}(${msg.data})`)
+        console.info(`${msg.sender} ==> ${msg.name}.${msg.method}(${JSON.stringify(msg.data)})`)
       } else {
         console.info(`${msg.sender} ==> ${msg.name}.${msg.method}()`)
       }
 
       // fully address name
       let fullName = CodecUtil.getFullName(msg.name)
-      console.info(`full name ${fullName}`)
-
       // find service in registry
       let service = this.getService(fullName)
 
       if (service === null) {
         // ui error - user should be informed
         console.error(`service ${fullName} not found`)
-        return
+        return null
       }
 
       if (msg.method === null || service[msg.method] === null) {
         // ui error - user should be informed
         console.error(`method ${msg.method} not found`)
-        return
+        return null
       }
 
       // execute method with parameters on service
       // TODO - should be done in a service.invoke(msg) method so that subscriptions
       // can be processed
-      let ret: Object = service.invokeOn(false, service, msg.method, msg.data)
+      let ret: Object = service.invokeMsg(msg)
 
       // if (msg.data) {
       //   ret = service[msg.method](msg.data)
@@ -277,14 +277,13 @@ export default class Store {
         return
       }
 
-      const runtime = RobotLabXRuntime.getInstance()
       const name = pathSegments[3]
       const methodName = pathSegments[4]
+      const runtime = RobotLabXRuntime.getInstance()
       const service = runtime.getService(name)
-
-      const ret = service.invokeOn(false, service, methodName, ...serviceData)
-
-      res.json(serviceData)
+      const msg = new Message(name, methodName, serviceData)
+      const ret = this.handleMessage(msg)
+      res.json(ret)
     })
 
     router.put(`${apiPrefix}/runtime/register`, (req, res, next) => {
@@ -338,14 +337,8 @@ export default class Store {
           }
         }
 
-        let ret = null
-        if (params.length > 0) {
-          console.info(`get - invoking ${name}.${methodName}(${params})`)
-          ret = service.invokeOn(false, service, methodName, ...params)
-        } else {
-          console.info(`get - invoking ${name}.${methodName}()`)
-          ret = service.invokeOn(false, service, methodName)
-        }
+        const msg: Message = new Message(name, methodName, params)
+        let ret = this.handleMessage(msg)
         console.info(`get - return ${JSON.stringify(ret)}`)
         res.json(ret)
         return

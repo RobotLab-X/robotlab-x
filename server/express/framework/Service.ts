@@ -1,3 +1,5 @@
+import Store from "../Store"
+import Message from "../models/Message"
 import { SubscriptionListener } from "../models/SubscriptionListener"
 import { CodecUtil } from "./CodecUtil"
 
@@ -24,6 +26,7 @@ export default class Service {
   }
 
   addListener(method: string, remoteName: string, remoteMethod: string) {
+    console.info(`======================= addListener ${method} ${remoteName} ${remoteMethod} ======================`)
     if (remoteMethod === null || remoteMethod === "" || remoteMethod === undefined) {
       remoteMethod = CodecUtil.getCallbackTopicName(method)
     }
@@ -35,12 +38,14 @@ export default class Service {
     for (const listener of listeners) {
       if (listener.callbackName === remoteName && listener.callbackMethod === remoteMethod) {
         console.info(`listener on ${method} for -> ${remoteName}.${remoteMethod} already exists`)
-        return
+        return listener
       }
     }
     // this.notifyList.get(method).push(new SubscriptionListener(method, remoteName, remoteMethod))
-    this.notifyList[method].push(new SubscriptionListener(method, remoteName, remoteMethod))
+    const listener = new SubscriptionListener(method, remoteName, remoteMethod)
+    this.notifyList[method].push(listener)
     console.info(`added listener ${this.name}.${method} --> ${remoteName}.${remoteMethod}`)
+    return listener
   }
 
   getHostname(): string | null {
@@ -66,26 +71,86 @@ export default class Service {
   }
 
   invoke(methodName: string, ...args: any[]): any {
-    return this.invokeOn(true, this, methodName, ...args)
+    let msg = new Message(this.name, methodName, args)
+    return this.invokeMsg(msg)
   }
 
-  invokeOn(block: boolean, obj: any, methodName: string, ...args: any[]): any {
+  getFullName(): string {
+    return CodecUtil.getFullName(this.name)
+  }
+
+  // invokeMsgOn(obj: any, msg: Message): any {}
+
+  invokeMsg(msg: Message) {
+    const fullName = this.getFullName()
+    const msgFullName = CodecUtil.getFullName(msg.name)
+    const msgId = CodecUtil.getId(msgFullName)
+    const id = this.getId()
     let ret: any = null
 
-    if (args && args.length > 0) {
-      ret = obj[methodName](...args)
-    } else {
-      ret = obj[methodName]()
+    // ==== REMOTE ====
+    // FIXME - check if blocking or non-blocking
+    // use gateway to send message to remote service
+    if (msgId !== id) {
+      // send message to remote service
+      // console.info(`sending message to ${msgFullName}.${msg.method}`)
+      // this.gateway.send(msg)
+      return null
     }
 
-    // normalize undefined to null
-    if (ret === undefined) {
-      ret = null
+    // ==== LOCAL PROCESS DIFFERENT SERVICE ====
+    // get the service - asynchronous buffered or synchronous non-buffered
+    // default synchronous non-buffered
+    if (msgFullName !== fullName) {
+      let service = Store.getInstance().getService(msgFullName)
+      if (service === null) {
+        console.error(`service ${msgFullName} not found`)
+        return null
+      } else {
+        // relay to correct service
+        // service.send(msg)
+        service.invokeMsg(msg)
+      }
+
+      // invoke the method on the service
+      // console.info(`sending message to ${msgFullName}.${msg.method}`)
+      // return service.invokeMsgOn(this, msg)
+      return null
     }
 
-    // TODO - process subscription
+    // ==== LOCAL ====
+    // FIXME - check if blocking or non-blocking
+    // is this the service to invoke the method on ?
+    if (fullName === msgFullName) {
+      let obj: any = this // cast away typescript
 
-    return ret
+      // invoke locally
+      console.info(`invoking ${this.name}.${msg.method}`)
+      try {
+        if (msg.data && msg.data.length > 0) {
+          ret = obj[msg.method](...msg.data)
+        } else {
+          ret = obj[msg.method]()
+        }
+      } catch (e) {
+        console.error(`failed to invoke ${this.name}.${msg.method} ${e}`)
+      }
+
+      // normalize undefined to null
+      if (ret === undefined) {
+        ret = null
+      }
+
+      // TODO - process subscription
+      if (this.notifyList[msg.method]) {
+        this.notifyList[msg.method].forEach((listener: any) => {
+          let subMsg = new Message(listener.callbackName, listener.callbackMethod, [ret])
+          subMsg.sender = this.getFullName()
+          this.invokeMsg(subMsg)
+        })
+      }
+      return ret
+    }
   }
 
   isReady(): boolean {

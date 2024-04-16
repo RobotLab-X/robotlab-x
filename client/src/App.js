@@ -2,6 +2,7 @@ import { CssBaseline, ThemeProvider } from "@mui/material"
 import { useState } from "react"
 import { Route, Routes } from "react-router-dom"
 import Dashboard from "./layout/Dashboard"
+import Home from "./layout/Home"
 import Network from "./layout/Network"
 import Nodes from "./layout/Nodes"
 import TabLayout from "./layout/TabLayout"
@@ -31,7 +32,8 @@ function App() {
           <main className="content">
             <Topbar setIsSidebar={setIsSidebar} />
             <Routes>
-              <Route path="/" element={<Dashboard />} />
+              <Route path="/" element={<Home />} />
+              <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/tabs" element={<TabLayout tabName="" />} />
               <Route path="/tabs/:tabName" element={<TabLayout />} />
               <Route path="/nodes/:nodeName" element={<Nodes />} />

@@ -13,7 +13,7 @@ export default class TestService extends Service {
   }
 
   onUptime(msg: string): string {
-    console.log(`onUptime called ${msg}`)
+    console.log(`WOOOHOOO !!! ${this.name}.onUptime called ${msg}`)
     return msg
   }
 }

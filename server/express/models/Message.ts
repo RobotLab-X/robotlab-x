@@ -38,4 +38,10 @@ export default class Message {
    * @type {any[]}
    */
   public data: any[] | null = null
+
+  constructor(name: string | null = null, method: string | null = null, data: any[]) {
+    this.name = name
+    this.method = method
+    this.data = data
+  }
 }

@@ -7,6 +7,15 @@ export default class Message {
   public msgId: string | null = null
 
   /**
+   * Message type - type of message (e.g. synchronous service call == service)
+   * @type {string}
+   * @default null
+   * @example
+   * service
+   */
+  public type: string | null = null
+
+  /**
    * Service name - name of the service the message is addressed to
    * @type {string}
    */
@@ -29,4 +38,10 @@ export default class Message {
    * @type {any[]}
    */
   public data: any[] | null = null
+
+  constructor(name: string | null = null, method: string | null = null, data: any[]) {
+    this.name = name
+    this.method = method
+    this.data = data
+  }
 }
