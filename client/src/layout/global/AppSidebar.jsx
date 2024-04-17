@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useState } from "react"
 // import { ProSidebar, Menu, MenuItem } from "react-pro-sidebar"
 import { Box, IconButton, Typography, useTheme } from "@mui/material"
 import { Menu, MenuItem, Sidebar } from "react-pro-sidebar"
@@ -9,6 +9,7 @@ import { tokens } from "../../theme"
 
 // icons
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined"
+import HomeIcon from "@mui/icons-material/Home"
 import HubOutlinedIcon from "@mui/icons-material/HubOutlined"
 import TabOutlinedIcon from "@mui/icons-material/TabOutlined"
 
@@ -35,15 +36,11 @@ const Item = ({ title, to, icon, selected, setSelected }) => {
 }
 
 const AppSidebar = () => {
-  const { connect, connected } = useStore()
+  const { connect, connected, sendTo, subscribeTo } = useStore()
   const theme = useTheme()
   const colors = tokens(theme.palette.mode)
   const [isCollapsed, setIsCollapsed] = useState(true)
   const [selected, setSelected] = useState("Dashboard")
-
-  useEffect(() => {
-    connect()
-  }, [connect])
 
   return (
     <Box
@@ -122,7 +119,11 @@ const AppSidebar = () => {
             </Box>
           )}
 
-          <MenuItem component={<Link to="/" />} icon={<DashboardOutlinedIcon />}>
+          <MenuItem component={<Link to="/" />} icon={<HomeIcon />}>
+            Home
+          </MenuItem>
+
+          <MenuItem component={<Link to="/dashboard" />} icon={<DashboardOutlinedIcon />}>
             Dashboard
           </MenuItem>
 

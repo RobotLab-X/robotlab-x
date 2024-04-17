@@ -36,9 +36,9 @@ const Dashboard = () => {
 
   const updateRepo = useStore((state) => state.updateRepo)
   const updateRegistry = useStore((state) => state.updateRegistry)
+  const sendJsonMessage = useStore((state) => state.sendJsonMessage)
   const repo = useStore((state) => state.repo)
   const registry = useStore((state) => state.registry)
-  const sendJsonMessage = useStore((state) => state.sendJsonMessage)
 
   const baseUrl = "http://localhost:3001/api/v1/services"
   const repoUrl = "http://localhost:3001/repo"

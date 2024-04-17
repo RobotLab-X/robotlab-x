@@ -2,6 +2,9 @@ import Store from "../Store"
 import Message from "../models/Message"
 import { SubscriptionListener } from "../models/SubscriptionListener"
 import { CodecUtil } from "./CodecUtil"
+import { getLogger } from "./Log"
+
+const log = getLogger("Service")
 
 export default class Service {
   protected startTime: Date | null = null
@@ -26,25 +29,23 @@ export default class Service {
   }
 
   addListener(method: string, remoteName: string, remoteMethod: string) {
-    console.info(`======================= addListener ${method} ${remoteName} ${remoteMethod} ======================`)
     if (remoteMethod === null || remoteMethod === "" || remoteMethod === undefined) {
       remoteMethod = CodecUtil.getCallbackTopicName(method)
     }
-    console.info(`adding listener ${this.name}.${method} --> ${remoteName}.${method}`)
+    log.info(`adding listener ${this.name}.${method} --> ${remoteName}.${method}`)
     if (!(method in this.notifyList)) {
       this.notifyList[method] = []
     }
     const listeners = this.notifyList[method] || []
     for (const listener of listeners) {
       if (listener.callbackName === remoteName && listener.callbackMethod === remoteMethod) {
-        console.info(`listener on ${method} for -> ${remoteName}.${remoteMethod} already exists`)
+        log.info(`listener on ${method} for -> ${remoteName}.${remoteMethod} already exists`)
         return listener
       }
     }
     // this.notifyList.get(method).push(new SubscriptionListener(method, remoteName, remoteMethod))
     const listener = new SubscriptionListener(method, remoteName, remoteMethod)
     this.notifyList[method].push(listener)
-    console.info(`added listener ${this.name}.${method} --> ${remoteName}.${remoteMethod}`)
     return listener
   }
 
@@ -79,8 +80,6 @@ export default class Service {
     return CodecUtil.getFullName(this.name)
   }
 
-  // invokeMsgOn(obj: any, msg: Message): any {}
-
   invokeMsg(msg: Message) {
     const fullName = this.getFullName()
     const msgFullName = CodecUtil.getFullName(msg.name)
@@ -93,8 +92,12 @@ export default class Service {
     // use gateway to send message to remote service
     if (msgId !== id) {
       // send message to remote service
-      // console.info(`sending message to ${msgFullName}.${msg.method}`)
+      // log.info(`sending message to ${msgFullName}.${msg.method}`)
       // this.gateway.send(msg)
+      log.error(`<-- ${msgFullName}.${msg.method}`)
+      log.error(`clients ${[...Store.getInstance().getClients().keys()]} `)
+      Store.getInstance().getClient(msgId)?.send(JSON.stringify(msg))
+      // FIXME !! - need to implement gateway
       return null
     }
 
@@ -113,7 +116,7 @@ export default class Service {
       }
 
       // invoke the method on the service
-      // console.info(`sending message to ${msgFullName}.${msg.method}`)
+      // log.info(`sending message to ${msgFullName}.${msg.method}`)
       // return service.invokeMsgOn(this, msg)
       return null
     }
@@ -125,7 +128,7 @@ export default class Service {
       let obj: any = this // cast away typescript
 
       // invoke locally
-      console.info(`invoking ${this.name}.${msg.method}`)
+      log.info(`invoking ${this.name}.${msg.method}`)
       try {
         if (msg.data && msg.data.length > 0) {
           ret = obj[msg.method](...msg.data)
@@ -146,6 +149,7 @@ export default class Service {
         this.notifyList[msg.method].forEach((listener: any) => {
           let subMsg = new Message(listener.callbackName, listener.callbackMethod, [ret])
           subMsg.sender = this.getFullName()
+          log.info(`---> notify ${listener.callbackName}.${listener.callbackMethod}`)
           this.invokeMsg(subMsg)
         })
       }
@@ -160,7 +164,7 @@ export default class Service {
   // maybe purge is a good idea to purge the copy of the repo for an instance ?
   // vs release which only frees the service from memory
   releaseService() {
-    console.info(`========= released service ${this.getName()} ===========`)
+    log.info(`========= released service ${this.getName()} ===========`)
   }
 
   removeListener(method: string, remoteName: string, remoteMethod: string) {
@@ -168,7 +172,7 @@ export default class Service {
       remoteMethod = CodecUtil.getCallbackTopicName(method)
     }
 
-    console.info(`removing listener ${this.name}.${method} --> ${remoteName}.${method}`)
+    log.info(`removing listener ${this.name}.${method} --> ${remoteName}.${method}`)
     if (!this.notifyList.has(method)) {
       return
     }
@@ -184,11 +188,11 @@ export default class Service {
   // Example of a shared method
   startService() {
     this.startTime = new Date()
-    console.info(`========= started service ${this.getUptime()} ===========`)
+    log.info(`========= started service ${this.getUptime()} ===========`)
   }
 
   stopService() {
     this.startTime = null
-    console.info(`========= stopped service ${this.getName()} ===========`)
+    log.info(`========= stopped service ${this.getName()} ===========`)
   }
 }

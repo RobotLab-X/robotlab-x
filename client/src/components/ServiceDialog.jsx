@@ -13,13 +13,13 @@ import {
   TableRow,
   TextField
 } from "@mui/material"
-import { fetchGetJson } from "framework/fetchUtil"
 import React, { useEffect, useState } from "react"
 import { useStore } from "store/store"
 
 const ServiceDialog = ({ packages, open, setOpen }) => {
   console.info("ServiceDialog", packages)
 
+  const sendTo = useStore((state) => state.sendTo)
   const [filterText, setFilterText] = useState("")
   const [filteredPackages, setFilteredPackages] = useState([])
   const [isStartingService, setIsStartingService] = useState(false)
@@ -50,9 +50,9 @@ const ServiceDialog = ({ packages, open, setOpen }) => {
     console.info("starting new service...")
     // error check ${newServiceName} ${selectedServiceType}
     // valid characters not empty etc
-    fetchGetJson(
-      `/start/${JSON.stringify(newServiceName)}/${JSON.stringify(selectedServiceType)}/${JSON.stringify(selectedVersion)}`
-    )
+
+    sendTo("runtime", "start", newServiceName, selectedServiceType, selectedVersion)
+
     handleClose() // Close the dialog
   }
 
@@ -82,10 +82,7 @@ const ServiceDialog = ({ packages, open, setOpen }) => {
                 />
               </Grid>
               <Grid item>
-                <Button
-                  onClick={handleStartNewService}
-                  variant="contained"
-                >
+                <Button onClick={handleStartNewService} variant="contained">
                   Start
                 </Button>
               </Grid>
@@ -115,19 +112,13 @@ const ServiceDialog = ({ packages, open, setOpen }) => {
                     {filteredPackages.map((pkg) => (
                       <TableRow key={pkg.typeKey}>
                         <TableCell>
-                          <img
-                            src={`${repoUrl}/${pkg.typeKey}/${pkg.typeKey}.png`}
-                            alt={pkg.typeKey}
-                          />
+                          <img src={`${repoUrl}/${pkg.typeKey}/${pkg.typeKey}.png`} alt={pkg.typeKey} />
                         </TableCell>
                         <TableCell>{pkg.title}</TableCell>
                         <TableCell>{`${pkg.platform} ${pkg.platformVersion}`}</TableCell>
                         <TableCell>{pkg.description}</TableCell>
                         <TableCell>
-                          <Button
-                            onClick={() => handleSelectServiceType(pkg.typeKey, pkg.version)} 
-                            variant="contained"
-                          >
+                          <Button onClick={() => handleSelectServiceType(pkg.typeKey, pkg.version)} variant="contained">
                             Select
                           </Button>
                         </TableCell>

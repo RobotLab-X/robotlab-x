@@ -1,9 +1,10 @@
 // store.js
 import { create } from "zustand"
+import NameGenerator from "../framework/NameGenerator"
 import Message from "../models/Message"
 const store = (set, get) => ({
   // id of this process
-  id: "robot-x-ui", // NameGenerator.getName(),
+  id: `robot-x-ui-${NameGenerator.getName()}`,
 
   defaultRemoteId: null,
 
@@ -47,7 +48,7 @@ const store = (set, get) => ({
     //   return wsUrl
     // }
 
-    return "ws://localhost:3001/api/messages?user=root&pwd=pwd&session_id=2309adf3dlkdk&id=blah"
+    return `ws://localhost:3001/api/messages?user=root&pwd=pwd&session_id=2309adf3dlkdk&id=${get().id}`
   },
 
   /**
@@ -160,12 +161,7 @@ const store = (set, get) => ({
 
       let msg = JSON.parse(event.data)
 
-      // DOUBLE DECODE DO WE HAVE TO ? - FIND OUT
-      if (msg.data) {
-        for (let x = 0; x < msg.data.length; ++x) {
-          msg.data[x] = JSON.parse(msg.data[x])
-        }
-      }
+      console.info(`in-msg --> ${msg.name}.${msg.method}`)
 
       try {
         let key = msg.name + "." + msg.method
@@ -188,6 +184,10 @@ const store = (set, get) => ({
         // populate the registry
         if (key === `runtime@${get().id}.onService`) {
           get().registry[msg.data[0].name + "@" + msg.data[0].id] = msg.data[0]
+        }
+
+        if (key === `runtime@${get().id}.onRegistry`) {
+          set({ registry: msg.data[0] })
         }
 
         // store the message

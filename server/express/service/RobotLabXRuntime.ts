@@ -6,6 +6,7 @@ import path from "path"
 import YAML from "yaml"
 import Store from "../../express/Store"
 import { CodecUtil } from "../framework/CodecUtil"
+import { getLogger } from "../framework/Log"
 import { Repo } from "../framework/Repo"
 import Service from "../framework/Service"
 import { HostData } from "../models/HostData"
@@ -13,6 +14,8 @@ import Package from "../models/Package"
 import { ProcessData } from "../models/ProcessData"
 import { ServiceTypeData } from "../models/ServiceTypeData"
 import TestNodeService from "./TestNodeService"
+
+const log = getLogger("RobotLabXRuntime")
 
 // import Service from "@framework/Service"
 export default class RobotLabXRuntime extends Service {
@@ -22,9 +25,13 @@ export default class RobotLabXRuntime extends Service {
     if (!RobotLabXRuntime.instance) {
       RobotLabXRuntime.instance = new RobotLabXRuntime(id, "runtime", "RobotLabXRuntime", "0.0.1", hostname)
     } else {
-      console.error("RobotLabXRuntime instance already exists")
+      log.error("RobotLabXRuntime instance already exists")
     }
     return RobotLabXRuntime.instance
+  }
+
+  getClientKeys() {
+    return [...Store.getInstance().getClients().keys()]
   }
 
   static getInstance(): RobotLabXRuntime {
@@ -71,26 +78,26 @@ export default class RobotLabXRuntime extends Service {
     try {
       const check = this.getService(serviceName)
       if (check != null) {
-        console.info(`service ${check.getName()}@${check.getId()} already exists`)
+        log.info(`service ${check.getName()}@${check.getId()} already exists`)
         return check
       }
 
-      console.log(`starting service: ${serviceName}, type: ${serviceType} in ${process.cwd()}`)
+      log.info(`starting service: ${serviceName}, type: ${serviceType} in ${process.cwd()}`)
 
       // repo should be immutable - make a copy to service/{name} if one doesn't already exist
       const pkgPath = `./express/public/service/${serviceName}`
       const repo = new Repo()
       const successful = repo.copyPackage(serviceName, serviceType)
-      console.info(`successful ${successful}`)
+      log.info(`successful ${successful}`)
 
       const pkgYmlFile = `${pkgPath}/package.yml`
 
       // loading type info
-      console.info(`loading type data from ${pkgYmlFile}`)
+      log.info(`loading type data from ${pkgYmlFile}`)
       const file = fs.readFileSync(pkgYmlFile, "utf8")
       const pkg: Package = YAML.parse(file)
       let version = pkg.version
-      console.info(`package.yml ${JSON.stringify(pkg)}`)
+      log.info(`package.yml ${JSON.stringify(pkg)}`)
 
       // TODO - if service request to add a service
       // and mrl and process exists - then /runtime/start
@@ -116,7 +123,7 @@ export default class RobotLabXRuntime extends Service {
       // platform check - python version, pip installed, venv etc.
       // pip libraries and versions installed
 
-      console.info(`starting process ${pkgPath}/${pkg.cmd} ${pkg.args}`)
+      log.info(`starting process ${pkgPath}/${pkg.cmd} ${pkg.args}`)
       let service: Service = null
       // spawn the process if none node process
       if (pkg.platform === "node") {
@@ -132,7 +139,7 @@ export default class RobotLabXRuntime extends Service {
         const childProcess = spawn(pkg.cmd, pkg.args, { cwd: pkgPath })
 
         childProcess.on("error", (err) => {
-          console.error(`failed to start subprocess. ${err}`)
+          log.error(`failed to start subprocess. ${err}`)
           // send message with error to UI
         })
 
@@ -158,24 +165,24 @@ export default class RobotLabXRuntime extends Service {
 
         service = new Service(childProcess.pid.toString(), serviceName, serviceType, version, this.getHostname())
 
-        console.info(`process ${JSON.stringify(childProcess)}`)
+        log.info(`process ${JSON.stringify(childProcess)}`)
       }
 
       // register and start the service
       this.register(service)
       return service
     } catch (e) {
-      console.error(e)
+      log.error(e)
     }
   }
 
   release(name: string): void {
-    console.log(`Released service: ${name}`)
+    log.info(`Released service: ${name}`)
   }
 
   getUptime(): string {
     let uptime: string = super.getUptime()
-    console.log(`Uptime: ${uptime}`)
+    log.info(`Uptime: ${uptime}`)
     return uptime
   }
 
@@ -197,13 +204,18 @@ export default class RobotLabXRuntime extends Service {
   }
 
   register(service: Service) {
-    console.log(`== registering service: ${typeof service} ==`)
+    log.info(`== registering service: ${typeof service} ==`)
     Store.getInstance().register(`${service.name}@${service.id}`, service)
+    this.invoke("registered", service)
+  }
+
+  registered(service: Service): Service {
+    return service
   }
 
   getRepo() {
     const repoBasePath = path.join(__dirname, "../public/repo")
-    console.log(`======== repo base path: ${repoBasePath} ========`)
+    log.info(`======== repo base path: ${repoBasePath} ========`)
     const repo = new Repo()
     const repoMap = repo.processRepoDirectory(repoBasePath)
     // convert the Map to an Object to send as JSON

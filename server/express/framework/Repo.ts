@@ -1,6 +1,9 @@
 import fs from "fs"
 import path from "path"
 import yaml from "yaml"
+import { getLogger } from "./Log"
+
+const log = getLogger("Repo")
 
 export class Repo {
   processRepoDirectory(basePath: string): Map<string, any> {
@@ -22,13 +25,13 @@ export class Repo {
             // Use the directory name as the key since there are no version subdirectories
             repoMap.set(dir.name, packageObject)
           } catch (err) {
-            // console.error(`Error reading package file in ${dirPath}: ${err}`)
-            console.info(`skipping ${dirPath} no package file found`)
+            // log.error(`Error reading package file in ${dirPath}: ${err}`)
+            log.info(`skipping ${dirPath} no package file found`)
           }
         }
       }
     } catch (err) {
-      console.error(`Error processing repository directory: ${err}`)
+      log.error(`Error processing repository directory: ${err}`)
     }
     return repoMap
   }
@@ -39,20 +42,20 @@ export class Repo {
 
     try {
       this.copyRecursiveSync(source, target)
-      console.log("Copy operation completed successfully")
+      log.info("copy operation completed successfully")
     } catch (error) {
-      console.error("Copy operation failed:", error)
+      log.error("copy operation failed:", error)
       return false
     }
     return true
   }
 
   private copyRecursiveSync(src: string, dest: string) {
-    console.info(`Copying ${src} to ${dest}`)
+    log.info(`copying ${src} to ${dest}`)
 
     // Check if the source exists
     if (!fs.existsSync(src)) {
-      throw new Error("Source does not exist.")
+      throw new Error("source does not exist")
     }
 
     const stats = fs.statSync(src)
@@ -70,7 +73,7 @@ export class Repo {
         this.copyRecursiveSync(srcPath, destPath) // Recurse for nested directories
       }
     } else {
-      // Copy file
+      // copy file
       fs.copyFileSync(src, dest)
     }
   }

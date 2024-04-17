@@ -1,16 +1,15 @@
-import React, { useEffect, useState } from "react"
-import Paper from "@mui/material/Paper"
-import Box from "@mui/material/Box"
-import Tabs from "@mui/material/Tabs"
-import Tab from "@mui/material/Tab"
-import { useTheme } from "@mui/material/styles"
-import Typography from "@mui/material/Typography"
-import { tokens } from "../theme"
-import { useStore } from "../store/store"
 import Autocomplete from "@mui/material/Autocomplete"
+import Box from "@mui/material/Box"
+import Tab from "@mui/material/Tab"
+import Tabs from "@mui/material/Tabs"
 import TextField from "@mui/material/TextField"
-import loadable from "@loadable/component"
-import { useHistory, useLocation } from "react-router-dom"
+import Typography from "@mui/material/Typography"
+import { useTheme } from "@mui/material/styles"
+import React, { useEffect, useState } from "react"
+import { useLocation } from "react-router-dom"
+import { useStore } from "../store/store"
+import { tokens } from "../theme"
+import ServicePage from "./ServicePage"
 
 function ServiceTabPanel(props) {
   const { children, value, index, ...other } = props
@@ -46,36 +45,6 @@ function ServiceTabLabel(props) {
     </div>
   )
 }
-// FIXME - put in own file
-function ServicePage(props) {
-  const { registry } = useStore()
-  let service = registry[props.service]
-
-  let type = service.simpleName
-  if (service.simpleName === "WebXR") {
-    type = "WebXR"
-  } else if (service.simpleName === "Runtime") {
-    type = "Runtime"
-  } else {
-    type = "Servo"
-  }
-
-  let AsyncPage = null
-
-  try {
-    // FIXME - test with throwable fetch and to determine if loadable is possible
-    AsyncPage = loadable(() => import(`../service/${type}`))
-  } catch (error) {
-    return <div>Service not found</div>
-  }
-
-  return (
-    <div className="service-content-div">
-      {service.name}
-      <AsyncPage page={type} name={props.service} service={service} />
-    </div>
-  )
-}
 
 export default function ServiceTabs() {
   const [activeTab, setActiveTab] = useState(0) // Initialize activeTab with the index of the first tab
@@ -106,7 +75,7 @@ export default function ServiceTabs() {
 
   const options = Object.keys(registry).map((key) => ({
     key: key,
-    ...registry[key],
+    ...registry[key]
   }))
 
   useEffect(() => {
@@ -137,7 +106,7 @@ export default function ServiceTabs() {
           flexGrow: 1,
           bgcolor: "background.paper",
           display: "flex",
-          "& .MuiTab-root": { alignItems: "flex-start" },
+          "& .MuiTab-root": { alignItems: "flex-start" }
         }}
       >
         <Tabs value={activeTab} onChange={changeTab} orientation="vertical" variant="scrollable" scrollButtons="auto">

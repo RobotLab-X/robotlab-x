@@ -4,6 +4,7 @@ import express from "express"
 import http, { Server as HTTPServer } from "http"
 import path from "path"
 import { WebSocket, Server as WebSocketServer } from "ws"
+import { getLogger } from "../express/framework/Log"
 import { CodecUtil } from "./framework/CodecUtil"
 import Message from "./models/Message"
 import RobotLabXRuntime from "./service/RobotLabXRuntime"
@@ -11,6 +12,8 @@ import RobotLabXRuntime from "./service/RobotLabXRuntime"
 const session = require("express-session")
 const FileStore = require("session-file-store")(session)
 const apiPrefix = "/api/v1/services"
+
+const log = getLogger("Store")
 
 type RegistryType = { [key: string]: any }
 
@@ -34,7 +37,7 @@ export default class Store {
 
   private wss: WebSocketServer
 
-  private clients: Set<WebSocket>
+  private clients: Map<string, WebSocket> = new Map()
 
   public static getInstance(): Store {
     if (!Store.instance) {
@@ -48,11 +51,10 @@ export default class Store {
     if (!Store.instance) {
       Store.instance = new Store()
       let store = Store.instance
-      console.info("initializing store")
+      log.info("initializing store")
       store.express = express()
       store.http = http.createServer(store.express)
       store.wss = new WebSocketServer({ server: store.http })
-      store.clients = new Set()
       store.middleware()
       store.routes()
       store.initWebSocketServer()
@@ -64,7 +66,7 @@ export default class Store {
       store.http.on("error", Store.onError)
       store.http.on("listening", Store.onListening)
     } else {
-      console.error("Store instance already exists")
+      console.error("store instance already exists")
     }
     return Store.instance
   }
@@ -96,7 +98,7 @@ export default class Store {
       console.error("Server listening address is null")
     } else {
       const bind = typeof addr === "string" ? `pipe ${addr}` : `port ${addr.port}`
-      console.info(`Listening on ${bind}`)
+      log.info(`listening on ${bind}`)
     }
   }
 
@@ -122,32 +124,87 @@ export default class Store {
   }
 
   public getService(key: string): any {
-    console.info(`Store.getService service ${key}`)
     return this.registry[key]
+  }
+
+  public releaseService(key: string): void {
+    delete this.registry[key]
   }
 
   // Run configuration methods on the Express instance.
   constructor() {
-    console.info(`store initializing on node ${process.version}`)
+    log.info(`store initializing on node ${process.version}`)
   }
 
   private initWebSocketServer() {
-    this.wss.on("connection", (ws) => {
-      console.log("A client connected")
+    this.wss.on("connection", (ws, request) => {
+      log.info("client connected")
 
-      this.clients.add(ws)
+      // Log the IP address of the client
+      const ip = request.socket.remoteAddress
+      const port = request.socket.remotePort
+      log.info(`client connected from ${ip}:${port}`)
+
+      // Access the URL the client connected to
+      const url = request.url
+      log.info(`connected to url: ${url}`)
+
+      // Retrieve a specific query parameter (e.g., id)
+      const urlParams = new URLSearchParams(url.split("?")[1]) // assuming your WS URL might contain query params
+      const clientId = urlParams.get("id") // Assuming 'id' is passed as a query parameter
+      if (clientId) {
+        log.info(`client id: ${clientId}`)
+      }
+
+      // FIXME - Web UIs should have a single client id and an array of ws connections
+      // unless the client id is associated with a "different" (non default) session
+      this.clients.set(clientId, ws)
 
       ws.on("message", this.handleWsMessage(ws))
 
       ws.on("close", () => {
-        console.log("Connection closed")
+        // TODO - disconnecting a client should be associated
+        // with a disconnection policy
+        // webclients for example should be removed completely
+        // while server to server should be marked as disconnected
+        // and disable services
+        log.info(`connection closed by client ${clientId}`)
+        if (this.clients.has(clientId)) {
+          // iterate through services in the registry looking for this id
+          // and remove these services
+          // Object.entries(this.getRegistry()).forEach(([key:string, value: Service]) => {
+          //   if (service.id === clientId) {
+          //     // remove service
+          //     log.info(`removing service ${service.id}`)
+          //     this.releaseService(`${service.name}@${service.id}`)
+          //   }
+          // })
+
+          Object.entries(this.registry).forEach(([key, service]) => {
+            console.log(key, service)
+            if (service.id === clientId) {
+              // remove service
+              log.info(`removing service ${service.id}`)
+              this.releaseService(`${service.name}@${service.id}`)
+            }
+          })
+
+          this.clients.delete(clientId)
+        }
       })
 
       ws.on("error", (error) => {
         console.error("WebSocket error:", error)
-        this.clients.delete(ws)
       })
     })
+  }
+
+  public getClient(clientId: string): WebSocket | undefined {
+    return this.clients.get(clientId)
+  }
+
+  public getClients(): Map<string, WebSocket> {
+    return this.clients
   }
 
   public broadcastJsonMessage(message: string): void {
@@ -172,7 +229,7 @@ export default class Store {
     return (message: any) => {
       try {
         const msg = JSON.parse(message)
-        console.info(`--> ws ${JSON.stringify(msg)}`)
+        log.info(`--> ws ${JSON.stringify(msg)}`)
         this.handleMessage(msg)
       } catch (e) {
         // ui error - user should be informed
@@ -189,10 +246,10 @@ export default class Store {
    */
   private handleMessage(msg: Message) {
     try {
-      if (msg.data) {
-        console.info(`${msg.sender} ==> ${msg.name}.${msg.method}(${JSON.stringify(msg.data)})`)
+      if (msg.data && msg.data.length > 0) {
+        log.info(`${msg.sender} ==> ${msg.name}.${msg.method}(${JSON.stringify(msg.data)})`)
       } else {
-        console.info(`${msg.sender} ==> ${msg.name}.${msg.method}()`)
+        log.info(`${msg.sender} ==> ${msg.name}.${msg.method}()`)
       }
 
       // fully address name
@@ -222,7 +279,7 @@ export default class Store {
       // } else {
       //   ret = service[msg.method]()
       // }
-      console.info(`return ${JSON.stringify(ret)}`)
+      log.debug(`return ${JSON.stringify(ret)}`)
 
       return ret
 
@@ -266,7 +323,7 @@ export default class Store {
     const router = express.Router()
 
     router.put(`${apiPrefix}/*`, (req, res, next) => {
-      console.log(`--> put ${req.originalUrl} ${JSON.stringify(req.body)}`)
+      log.info(`--> put ${req.originalUrl} ${JSON.stringify(req.body)}`)
       const serviceData = req.body
 
       const pathSegments = req.originalUrl.split("/").filter((segment) => segment.length > 0)
@@ -287,7 +344,7 @@ export default class Store {
     })
 
     router.put(`${apiPrefix}/runtime/register`, (req, res, next) => {
-      console.log(req.body)
+      log.info(req.body)
       const serviceData = req.body
       let runtime = RobotLabXRuntime.getInstance()
       runtime.register(serviceData)
@@ -295,7 +352,7 @@ export default class Store {
     })
 
     router.put(`${apiPrefix}/runtime/registerType`, (req, res, next) => {
-      console.log(req.body)
+      log.info(req.body)
       const serviceDataType = req.body
       let runtime = RobotLabXRuntime.getInstance()
       runtime.registerType(serviceDataType)
@@ -303,7 +360,7 @@ export default class Store {
     })
 
     router.get(`${apiPrefix}/*`, (req, res, next) => {
-      console.info(`--> get ${req.originalUrl}`)
+      log.info(`--> get ${req.originalUrl}`)
       const pathSegments = req.originalUrl.split("/").filter((segment) => segment.length > 0)
       if (pathSegments.length < 3) {
         res.json({
@@ -317,7 +374,7 @@ export default class Store {
       if (pathSegments.length == 4) {
         // return service
         const name = pathSegments[3]
-        console.info(`getting service ${name}`)
+        log.info(`getting service ${name}`)
         const service = runtime.getService(name)
         res.json(service)
         return
@@ -339,12 +396,12 @@ export default class Store {
 
         const msg: Message = new Message(name, methodName, params)
         let ret = this.handleMessage(msg)
-        console.info(`get - return ${JSON.stringify(ret)}`)
+        log.info(`--> get ${req.originalUrl} return ${JSON.stringify(ret)}`)
         res.json(ret)
         return
       }
 
-      console.info(`pathSegments ${pathSegments}`)
+      log.info(`pathSegments ${pathSegments}`)
 
       res.json(runtime.getRegistry())
     })
