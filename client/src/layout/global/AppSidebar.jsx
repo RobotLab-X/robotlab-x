@@ -36,7 +36,7 @@ const Item = ({ title, to, icon, selected, setSelected }) => {
 }
 
 const AppSidebar = () => {
-  const { connect, connected, sendTo, subscribeTo } = useStore()
+  const connected = useStore((state) => state.connected)
   const theme = useTheme()
   const colors = tokens(theme.palette.mode)
   const [isCollapsed, setIsCollapsed] = useState(true)

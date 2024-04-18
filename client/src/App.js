@@ -14,7 +14,13 @@ import Topbar from "./layout/global/Topbar"
 import { ColorModeContext, useMode } from "./theme"
 
 function App() {
-  const { connect, connected, sendTo, subscribeTo, id } = useStore()
+  // use approriate store selectors
+  const connect = useStore((state) => state.connect)
+  const sendTo = useStore((state) => state.sendTo)
+  const connected = useStore((state) => state.connected)
+  const subscribeTo = useStore((state) => state.subscribeTo)
+  const id = useStore((state) => state.id)
+
   const UAParser = require("ua-parser-js")
   const parser = new UAParser()
   const browser = parser.getBrowser()

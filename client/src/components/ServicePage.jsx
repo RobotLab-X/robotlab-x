@@ -2,8 +2,8 @@ import loadable from "@loadable/component"
 import { useStore } from "../store/store"
 
 export default function ServicePage(props) {
-  const { registry } = useStore()
-  let service = registry[props.service]
+  const registry = useStore((state) => state.registry)
+  let service = registry[props.fullname]
 
   let type = service.typeKey
   if (service.typeKey === "WebXR") {
@@ -27,7 +27,7 @@ export default function ServicePage(props) {
 
   return (
     <div className="service-content-div">
-      <AsyncPage page={type} name={props.service} service={service} />
+      <AsyncPage page={type} name={props.name} id={props.id} fullname={props.fullname} />
     </div>
   )
 }

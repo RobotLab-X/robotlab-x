@@ -1,6 +1,5 @@
 import {
   Box,
-  Button,
   Card,
   CardActionArea,
   CardActions,
@@ -19,7 +18,7 @@ import PlaylistAddIcon from "@mui/icons-material/PlaylistAddOutlined"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import { styled } from "@mui/material/styles"
 import ServiceDialog from "components/ServiceDialog"
-import ReactJson from "react-json-view"
+
 import { useStore } from "../store/store"
 
 // Props should put in "name"
@@ -28,15 +27,21 @@ import { useStore } from "../store/store"
 // to make a layout that has the appropriat "typed" component and injected prop name
 
 export default function RobotLabXRuntime(props) {
-  console.info("RobotLabXRuntime", props)
+  console.info("RobotLabXRuntime render start", props)
   const iconSize = 32
-  const registry = useStore((state) => state.registry)
+  let registry = useStore((state) => state.registry)
   const repo = useStore((state) => state.repo)
   const [open, setOpen] = useState(false)
-  const service = props.service
+  // const service = props.service
+  let service = registry[props.fullname]
   const type = repo[service.typeKey]
+  const defaultRemoteId = useStore((state) => state.defaultRemoteId)
+  const subscribeTo = useStore((state) => state.subscribeTo)
 
   const [activeTab, setActiveTab] = useState(0)
+
+  const message = useStore((state) => state.messages[`runtime@${defaultRemoteId}.onInstallLog`])
+  const messages = useStore((state) => state.messages)
 
   const handleChange = (event, newValue) => {
     setActiveTab(newValue)
@@ -48,19 +53,34 @@ export default function RobotLabXRuntime(props) {
   }
 
   useEffect(() => {
-    // Subscribe to changes in the 'registry' state
-    const unsubscribe = useStore.subscribe(
-      (newRegistry) => {
-        // Handle updates to the registry here
-        console.log("Updated Registry:", newRegistry)
-      },
-      (state) => state.registry
-    )
-    // Cleanup function when component unmounts
-    return () => {
-      unsubscribe() // Unsubscribe from the store
-    }
+    // // Subscribe to changes in the 'registry' state
+    // const unsubscribe = useStore.subscribe(
+    //   (newRegistry) => {
+    //     // Handle updates to the registry here
+    //     console.log("Updated Registry:", newRegistry)
+    //   },
+    //   (state) => state.registry
+    // )
+
+    subscribeTo("runtime", "publishInstallLog")
+
+    // // Cleanup function when component unmounts
+    // return () => {
+    //   unsubscribe() // Unsubscribe from the store
+    // }
   }, [])
+
+  // begin message log
+  const [messageLog, setMessageLog] = useState([])
+  useEffect(() => {
+    if (message) {
+      // Add the new message to the log
+      console.log("New message:", message)
+      setMessageLog((log) => [...log, message])
+    }
+  }, [JSON.stringify(message)]) // Dependency array includes message, so this runs only if message changes
+
+  // end message log
 
   const ExpandMore = styled((props) => {
     const { expand, ...other } = props
@@ -78,7 +98,7 @@ export default function RobotLabXRuntime(props) {
       <div role="tabpanel" hidden={value !== index}>
         {value === index && (
           <Box p={3}>
-            <Typography>{children}</Typography>
+            <Typography component="div">{children}</Typography>
           </Box>
         )}
       </div>
@@ -115,7 +135,7 @@ export default function RobotLabXRuntime(props) {
               <Card key={index} onClick={() => handleHostClick(host)} sx={{ margin: 1 }}>
                 <CardActionArea>
                   <CardContent>
-                    <Typography variant="h2">
+                    <Typography component="div" variant="h2">
                       <img src="os/linux.png" alt="linux" />
                       &nbsp;&nbsp;{host.hostname} {/**  {host.platform} {host.architecture} */}
                       {/**
@@ -123,7 +143,7 @@ export default function RobotLabXRuntime(props) {
                      */}
                       &nbsp;{host.name}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography component="div" variant="body2" color="text.secondary">
                       {host.platform} {host.architecture}
                     </Typography>
                   </CardContent>
@@ -143,7 +163,7 @@ export default function RobotLabXRuntime(props) {
                   <Typography variant="h5" component="div">
                     Header
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography component="div" variant="body2" color="text.secondary">
                     Click to expand more details.
                   </Typography>
                 </CardContent>
@@ -159,8 +179,8 @@ export default function RobotLabXRuntime(props) {
                 </CardActions>
                 <Collapse in={expanded} timeout="auto" unmountOnExit>
                   <CardContent>
-                    <Typography paragraph>Detail 1:</Typography>
-                    <Typography paragraph>
+                    <Typography component="div">Detail 1:</Typography>
+                    <Typography component="div">
                       More detailed information about the card that you can show or hide.
                     </Typography>
                   </CardContent>
@@ -177,7 +197,9 @@ export default function RobotLabXRuntime(props) {
               <IconButton type="button" onClick={handleStartNewService} sx={{ marginRight: 1 }}>
                 <PlaylistAddIcon sx={{ fontSize: iconSize }} />
               </IconButton>
-              <Typography variant="body1">Add a new service</Typography>
+              <Typography component="div" variant="body1">
+                Add a new service
+              </Typography>
             </Box>
             {/**
             <ServiceDialog packages={repo} open={open} setOpen={setOpen} />
@@ -194,15 +216,31 @@ export default function RobotLabXRuntime(props) {
       </Grid>
       <ServiceDialog packages={repo} open={open} setOpen={setOpen} />
       <br />
+      <h2>Message Log:</h2>
+      <ul>
+        {messageLog.map((msg, index) => (
+          <li key={index}>
+            {/** <pre>{JSON.stringify(msg, null, 2)}</pre> */}
+            {msg?.data[0]}
+          </li>
+        ))}
+      </ul>
+      <br />
       {/**
       <ReactJson src={registry} name="registry" />
       <ReactJson src={props} name="props" />
-       */}
       <ReactJson src={service} name="service" />
       <ReactJson src={type} name="type" />
+      <ReactJson src={messages} name="messages" />
+      <ReactJson src={message} name="log" />
+       */}
+      <br />
+      {/** message ? <pre>{JSON.stringify(message, null, 2)}</pre> : <p>No message yet</p> */}
+      {/**
       <Button onClick={handleStartNewService} variant="contained">
         Start
       </Button>
+        */}
     </>
   )
 }

@@ -17,7 +17,7 @@ import React, { useEffect, useState } from "react"
 import { useStore } from "store/store"
 
 const ServiceDialog = ({ packages, open, setOpen }) => {
-  console.info("ServiceDialog", packages)
+  // console.info("ServiceDialog", packages)
 
   const sendTo = useStore((state) => state.sendTo)
   const [filterText, setFilterText] = useState("")

@@ -21,7 +21,7 @@ function Home() {
   const [selectedCard, setSelectedCard] = useState(null)
   const [filter, setFilter] = useState("")
 
-  const { id } = useStore()
+  const id = useStore((state) => state.id)
   const repo = useStore((state) => state.repo)
   const registry = useStore((state) => state.registry)
   const serviceArray = Object.values(registry)
@@ -80,7 +80,11 @@ function Home() {
           {selectedCard ? (
             <div>
               <Typography variant="h4">{selectedCard.name}</Typography>
-              <ServicePage service={`${selectedCard.name}@${selectedCard.id}`} />
+              <ServicePage
+                fullname={`${selectedCard.name}@${selectedCard.id}`}
+                name={selectedCard.name}
+                id={selectedCard.id}
+              />
               <Typography>{selectedCard.detailContent}</Typography>
             </div>
           ) : (

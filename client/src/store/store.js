@@ -161,7 +161,7 @@ const store = (set, get) => ({
 
       let msg = JSON.parse(event.data)
 
-      console.info(`in-msg --> ${msg.name}.${msg.method}`)
+      console.info(`in-msg --> ${msg.name}.${msg.method} ${JSON.stringify(msg.data)}`)
 
       try {
         let key = msg.name + "." + msg.method
@@ -198,12 +198,28 @@ const store = (set, get) => ({
           set({ repo: msg.data[0] })
         }
 
+        let reflectedKey = msg.name + "." + msg.method
+
+        let remoteKey = null
+        if (msg.name.includes("@")) {
+          const prefix = msg.name.split("@")[0]
+          remoteKey = `${prefix}@${get().defaultRemoteId}.${msg.method}`
+        } else {
+          remoteKey = `${msg.name}@${get().defaultRemoteId}.${msg.method}`
+        }
+
         // equivalent of MQTT RETAIN
         // store the message
+        console.info(`storing message ${remoteKey} ${JSON.stringify(msg)}`)
+
+        // FIXME - need to consider how changing internal data from this store
+        // affect re-renders of the entire app ... possible to separate into
+        // distinct stores for different concerns
+
         set((state) => ({
           messages: {
             ...state.messages,
-            [key]: msg
+            [remoteKey]: { ...msg }
           }
         }))
 

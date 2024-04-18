@@ -39,11 +39,10 @@ const Dashboard = () => {
   const sendJsonMessage = useStore((state) => state.sendJsonMessage)
   const repo = useStore((state) => state.repo)
   const registry = useStore((state) => state.registry)
+  const id = useStore((state) => state.id)
 
   const baseUrl = "http://localhost:3001/api/v1/services"
   const repoUrl = "http://localhost:3001/repo"
-
-  const { id } = useStore()
 
   const handleStartNewService = () => {
     console.info("Starting new node...")

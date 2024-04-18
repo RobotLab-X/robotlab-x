@@ -48,7 +48,8 @@ function ServiceTabLabel(props) {
 
 export default function ServiceTabs() {
   const [activeTab, setActiveTab] = useState(0) // Initialize activeTab with the index of the first tab
-  const { registry, defaultRemoteId } = useStore()
+  let registry = useStore((state) => state.registry)
+  const defaultRemoteId = useStore((state) => state.defaultRemoteId)
   const theme = useTheme()
   const colors = tokens(theme.palette.mode)
 

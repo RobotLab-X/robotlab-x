@@ -24,14 +24,17 @@ export default class InstallerPython {
   }
 
   public checkPythonVersion() {
-    let versionOutput = null
+    let versionOutput = ""
+
     try {
-      let output = execSync("python --version")
+      versionOutput = execSync("python --version").toString()
+      this.pythonExe = "python"
     } catch (error) {
-      this.info("python not found trying python3")
+      this.info("python not found, trying python3")
       console.error(`exec error: ${error}`)
+
       try {
-        versionOutput = execSync("python3 --version")
+        versionOutput = execSync("python3 --version").toString()
         this.pythonExe = "python3"
       } catch (error) {
         this.info("giving up - send instructions to install python to user")
@@ -40,16 +43,14 @@ export default class InstallerPython {
       }
     }
 
-    // Python writes the version info to stderr if called with 'python --version'
-    // On some systems, it might be written to stdout
     this.info(`exec output: ${versionOutput}`)
 
-    // You can parse the version number if needed
+    // Correcting the parsing logic
     const versionMatch = versionOutput.match(/Python (\d+\.\d+\.\d+)/)
     if (versionMatch) {
-      this.info(`parsed Version: ${versionMatch[1]}`)
+      this.info(`Parsed Version: ${versionMatch[1]}`)
     } else {
-      this.info("python version could not be parsed.")
+      this.info("Python version could not be parsed.")
     }
   }
 
