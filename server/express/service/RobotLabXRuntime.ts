@@ -6,6 +6,7 @@ import path from "path"
 import YAML from "yaml"
 import Store from "../../express/Store"
 import { CodecUtil } from "../framework/CodecUtil"
+import InstallerPython from "../framework/InstallerPython"
 import { getLogger } from "../framework/Log"
 import { Repo } from "../framework/Repo"
 import Service from "../framework/Service"
@@ -101,9 +102,22 @@ export default class RobotLabXRuntime extends Service {
 
       // TODO - if service request to add a service
       // and mrl and process exists - then /runtime/start
+      log.info(`package.platform: ${pkg.platform}, type: ${serviceType} in ${process.cwd()}`)
+
+      let dependenciesMet = false
 
       // determine necessary platform python, node, docker, java
       // yes | no -> install -> yes | no
+      if (pkg.platform === "python") {
+        log.info(`python required for ${serviceType}`)
+        let installer = new InstallerPython()
+        installer.install()
+        // check if python is installed
+
+        // check if python version is correct
+      } else {
+        log.info(`platform [${pkg.platform}] not supported`)
+      }
 
       // TODO - way to set cmd line args
 
@@ -134,7 +148,7 @@ export default class RobotLabXRuntime extends Service {
         // service = new ServiceClass(this.getId(), serviceName, serviceType, version, this.getHostname())
         // ================== dynamically load import works end ==================
         service = new TestNodeService(this.getId(), serviceName, serviceType, version, this.getHostname())
-      } else {
+      } else if (dependenciesMet) {
         // spawn the process
         const childProcess = spawn(pkg.cmd, pkg.args, { cwd: pkgPath })
 
@@ -166,6 +180,9 @@ export default class RobotLabXRuntime extends Service {
         service = new Service(childProcess.pid.toString(), serviceName, serviceType, version, this.getHostname())
 
         log.info(`process ${JSON.stringify(childProcess)}`)
+      } else {
+        log.error(`dependencies not met for ${serviceName} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
+        return null
       }
 
       // register and start the service
@@ -204,7 +221,7 @@ export default class RobotLabXRuntime extends Service {
   }
 
   register(service: Service) {
-    log.info(`== registering service: ${typeof service} ==`)
+    log.info(`registering service: ${service.name} ${service.constructor.name}`)
     Store.getInstance().register(`${service.name}@${service.id}`, service)
     this.invoke("registered", service)
   }
@@ -215,7 +232,7 @@ export default class RobotLabXRuntime extends Service {
 
   getRepo() {
     const repoBasePath = path.join(__dirname, "../public/repo")
-    log.info(`======== repo base path: ${repoBasePath} ========`)
+    log.info(`getting repo with base path: ${repoBasePath}`)
     const repo = new Repo()
     const repoMap = repo.processRepoDirectory(repoBasePath)
     // convert the Map to an Object to send as JSON
@@ -244,6 +261,7 @@ export default class RobotLabXRuntime extends Service {
   }
 
   publishInstallLog(msg: string): string {
+    log.info(`publishInstallLog: ${msg}`)
     return msg
   }
 }

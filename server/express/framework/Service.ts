@@ -94,8 +94,8 @@ export default class Service {
       // send message to remote service
       // log.info(`sending message to ${msgFullName}.${msg.method}`)
       // this.gateway.send(msg)
-      log.error(`<-- ${msgFullName}.${msg.method}`)
-      log.error(`clients ${[...Store.getInstance().getClients().keys()]} `)
+      log.info(`<--- ${msgFullName}.${msg.method} <-- ${this.name}.${msg.method}`)
+      log.info(`clients ${[...Store.getInstance().getClients().keys()]} `)
       Store.getInstance().getClient(msgId)?.send(JSON.stringify(msg))
       // FIXME !! - need to implement gateway
       return null
@@ -188,11 +188,11 @@ export default class Service {
   // Example of a shared method
   startService() {
     this.startTime = new Date()
-    log.info(`========= started service ${this.getUptime()} ===========`)
+    log.info(`========= started service ${this.name} ===========`)
   }
 
   stopService() {
     this.startTime = null
-    log.info(`========= stopped service ${this.getName()} ===========`)
+    log.info(`========= stopped service ${this.name} ===========`)
   }
 }

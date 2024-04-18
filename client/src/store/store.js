@@ -186,10 +186,19 @@ const store = (set, get) => ({
           get().registry[msg.data[0].name + "@" + msg.data[0].id] = msg.data[0]
         }
 
+        if (key === `runtime@${get().id}.onRegistered`) {
+          get().registry[msg.data[0].name + "@" + msg.data[0].id] = msg.data[0]
+        }
+
         if (key === `runtime@${get().id}.onRegistry`) {
           set({ registry: msg.data[0] })
         }
 
+        if (key === `runtime@${get().id}.onRepo`) {
+          set({ repo: msg.data[0] })
+        }
+
+        // equivalent of MQTT RETAIN
         // store the message
         set((state) => ({
           messages: {

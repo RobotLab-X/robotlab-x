@@ -27,7 +27,6 @@ export default function ServicePage(props) {
 
   return (
     <div className="service-content-div">
-      {service.name}
       <AsyncPage page={type} name={props.service} service={service} />
     </div>
   )

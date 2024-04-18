@@ -15,13 +15,14 @@ import { ColorModeContext, useMode } from "./theme"
 
 function App() {
   const { connect, connected, sendTo, subscribeTo, id } = useStore()
-
   const UAParser = require("ua-parser-js")
   const parser = new UAParser()
   const browser = parser.getBrowser()
   const name = "runtime"
   const version = "0.0.1"
   const typeKey = "RobotLabXUI"
+  const [theme, colorMode] = useMode()
+  const [isSidebar, setIsSidebar] = useState(true)
 
   // log all environment variables that start with REACT_APP_
   console.info("Environment variables:")
@@ -31,9 +32,6 @@ function App() {
       console.log(`${key}: ${process.env[key]}`)
     })
 
-  const [theme, colorMode] = useMode()
-  const [isSidebar, setIsSidebar] = useState(true)
-
   // INIT ! Store, network connections, etc
   useEffect(() => {
     connect()
@@ -41,11 +39,14 @@ function App() {
 
   useEffect(() => {
     if (connected) {
+      // setup server runtime subscriptions, register this runtime, get repo
       subscribeTo("runtime", "getRegistry")
-      let service = new Service(id, name, typeKey, version, browser.name.toLowerCase())
-      sendTo("runtime", "registry", service)
+      subscribeTo("runtime", "getRepo")
       subscribeTo("runtime", "registered")
+      let service = new Service(id, name, typeKey, version, browser.name.toLowerCase())
+      sendTo("runtime", "register", service)
       sendTo("runtime", "getRegistry")
+      sendTo("runtime", "getRepo")
     }
   }, [connected, subscribeTo, sendTo])
 
@@ -58,6 +59,7 @@ function App() {
           <main className="content">
             <Topbar setIsSidebar={setIsSidebar} />
             <Routes>
+              {/** TODO splash screen with examples */}
               <Route path="/" element={<Home />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/tabs" element={<TabLayout tabName="" />} />
