@@ -1,10 +1,18 @@
 import RobotLabXRuntime from "../service/RobotLabXRuntime"
+import { getLogger } from "./Log"
 
 const os = require("os")
-const { exec } = require("child_process")
+// const { exec } = require("child_process") async
+const { execSync } = require("child_process")
+
+const log = getLogger("Service")
+
+// FIXME - way to set RobotLabXRuntime python command to python or python3
 
 export default class InstallerPython {
   private server: RobotLabXRuntime = RobotLabXRuntime.getInstance()
+
+  pythonExe = "python"
 
   public install() {
     this.info("Checking python version")
@@ -16,56 +24,33 @@ export default class InstallerPython {
   }
 
   public checkPythonVersion() {
-    exec("python --version", (error: Error | null, stdout: string, stderr: string) => {
-      this.info(`error: ${error} stdout: ${stdout} stderr: ${stderr}`)
-      if (error) {
-        this.info("python not found trying python3")
+    let versionOutput = null
+    try {
+      let output = execSync("python --version")
+    } catch (error) {
+      this.info("python not found trying python3")
+      console.error(`exec error: ${error}`)
+      try {
+        versionOutput = execSync("python3 --version")
+        this.pythonExe = "python3"
+      } catch (error) {
+        this.info("giving up - send instructions to install python to user")
         console.error(`exec error: ${error}`)
-        exec("python3 --version", (error: Error | null, stdout: string, stderr: string) => {
-          this.info(`error: ${error} stdout: ${stdout} stderr: ${stderr}`)
-          if (error) {
-            this.info("giving up - send instructions to install python to user")
-            console.error(`exec error: ${error}`)
-            return
-          }
-        })
+        return
       }
+    }
 
-      // Python writes the version info to stderr if called with 'python --version'
-      // On some systems, it might be written to stdout
-      const versionOutput = stderr || stdout
-      this.info(`python Version: ${versionOutput}`)
-      console.info(`python Version: ${versionOutput}`)
+    // Python writes the version info to stderr if called with 'python --version'
+    // On some systems, it might be written to stdout
+    this.info(`exec output: ${versionOutput}`)
 
-      // You can parse the version number if needed
-      const versionMatch = versionOutput.match(/Python (\d+\.\d+\.\d+)/)
-      if (versionMatch) {
-        console.log(`parsed Version: ${versionMatch[1]}`)
-      } else {
-        console.log("python version could not be parsed.")
-      }
-    })
-  }
-
-  public checkPythonInstallation(requiredVersion = "3.8.0") {
-    exec("python --version", (error: Error | null, stdout: string, stderr: string) => {
-      // Python version command output might be in stderr or stdout
-      const versionOutput = stdout || stderr
-      const versionMatch = versionOutput.match(/Python (\d+\.\d+\.\d+)/)
-      const currentVersion = versionMatch ? versionMatch[1] : null
-
-      if (error || !currentVersion) {
-        return this.provideInstallationSteps()
-      }
-
-      console.log(`Found Python version: ${currentVersion}`)
-      if (this.compareVersions(currentVersion, requiredVersion) < 0) {
-        console.log(`Python version ${requiredVersion} or newer is required.`)
-        this.provideInstallationSteps()
-      } else {
-        console.log("Python version meets the requirement.")
-      }
-    })
+    // You can parse the version number if needed
+    const versionMatch = versionOutput.match(/Python (\d+\.\d+\.\d+)/)
+    if (versionMatch) {
+      this.info(`parsed Version: ${versionMatch[1]}`)
+    } else {
+      this.info("python version could not be parsed.")
+    }
   }
 
   // FIXME - promote to general utilities
@@ -104,15 +89,16 @@ export default class InstallerPython {
   }
 
   public createVenv() {
-    const venvPath = "my_venv" // Path where the virtual environment should be created
-
-    exec(`python -m venv ${venvPath}`, (error: Error | null) => {
-      if (error) {
-        console.error("Failed to create a Python virtual environment.")
-        return
-      }
-      console.log(`Virtual environment created at ${venvPath}`)
-    })
+    const venvPath = "venv" // Path where the virtual environment should be created
+    try {
+      let cmd = `${this.pythonExe} -m venv ${venvPath}`
+      this.info(cmd)
+      execSync(cmd)
+    } catch (error) {
+      this.info("Failed to create a Python virtual environment.")
+      return
+    }
+    this.info(`Virtual environment created at ${venvPath}`)
   }
 
   public getVenvActivationCommand(venvPath: string) {
@@ -135,14 +121,18 @@ export default class InstallerPython {
 
     // Example of running a command using the venv's Python executable
     // Adjust the paths according to your setup
-    const pythonExecutable = os.platform() === "win32" ? `${venvPath}\\Scripts\\python` : `${venvPath}/bin/python`
+    const activate =
+      os.platform() === "win32" ? `${venvPath}\\Scripts\\${this.pythonExe}` : `${venvPath}/bin/${this.pythonExe}`
 
-    exec(`${pythonExecutable} --version`, (error: Error | null, stdout: string, stderr: string) => {
-      if (error) {
-        console.error("Failed to run python command using the virtual environment.")
-        return
-      }
-      console.log(`Python version (from venv): ${stdout || stderr}`)
-    })
+    let stdout = null
+    try {
+      this.info(activate)
+      stdout = execSync(activate)
+    } catch (error) {
+      console.error("Failed to run python command using the virtual environment.")
+      return
+    }
+
+    this.info(`Python version (from venv): ${stdout}`)
   }
 }

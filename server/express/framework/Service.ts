@@ -128,7 +128,7 @@ export default class Service {
       let obj: any = this // cast away typescript
 
       // invoke locally
-      log.info(`invoking ${this.name}.${msg.method}`)
+      log.debug(`invoking ${this.name}.${msg.method}`)
       try {
         if (msg.data && msg.data.length > 0) {
           ret = obj[msg.method](...msg.data)
