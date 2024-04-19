@@ -12,18 +12,43 @@ const log = getLogger("Service")
 export default class InstallerPython {
   private server: RobotLabXRuntime = RobotLabXRuntime.getInstance()
 
-  pythonExe = "python"
+  useVenv = true
+  pythonExe: string = "python"
+  pythonExeVersion: string = null
+  pipVersion: string = null
+
+  ready = false
 
   public install() {
     this.info("Checking python version")
-    this.checkPythonVersion()
+    this.getPythonVersion()
+    this.getPipVersion()
+    this.installVirtualEnvPackage()
+    this.createVenv()
+    this.createShell()
+    this.activateVenv("venv")
+    // pythonExe should be set and the version known
+    if (this.useVenv) {
+      this.createVenv()
+    }
+  }
+
+  installVirtualEnvPackage() {}
+
+  createShell() {}
+  /**
+   *
+   * @returns true if all dependencies are installed and ready
+   */
+  isReady() {
+    return this.ready
   }
 
   info(info: string) {
     this.server.invoke("publishInstallLog", info)
   }
 
-  public checkPythonVersion() {
+  public getPythonVersion() {
     let versionOutput = ""
 
     try {
@@ -49,10 +74,13 @@ export default class InstallerPython {
     const versionMatch = versionOutput.match(/Python (\d+\.\d+\.\d+)/)
     if (versionMatch) {
       this.info(`Parsed Version: ${versionMatch[1]}`)
+      this.pythonExeVersion = versionMatch[1]
     } else {
       this.info("Python version could not be parsed.")
     }
   }
+
+  public getPipVersion() {}
 
   // FIXME - promote to general utilities
   public compareVersions(v1: string, v2: string) {

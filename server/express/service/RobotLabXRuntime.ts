@@ -14,10 +14,12 @@ import { HostData } from "../models/HostData"
 import Package from "../models/Package"
 import { ProcessData } from "../models/ProcessData"
 import { ServiceTypeData } from "../models/ServiceTypeData"
-import TestNodeService from "./TestNodeService"
 
 const log = getLogger("RobotLabXRuntime")
 
+interface Error {
+  stack?: string | undefined
+}
 // import Service from "@framework/Service"
 export default class RobotLabXRuntime extends Service {
   private static instance: RobotLabXRuntime
@@ -141,14 +143,12 @@ export default class RobotLabXRuntime extends Service {
       let service: Service = null
       // spawn the process if none node process
       if (pkg.platform === "node") {
-        // ================== dynamically load import works begin ==================
-        // dynamically load import TODO - promote
-        // const { default: ServiceClass } = import(`./${serviceType}`)
-        // instantiate service
-        // service = new ServiceClass(this.getId(), serviceName, serviceType, version, this.getHostname())
-        // ================== dynamically load import works end ==================
-        service = new TestNodeService(this.getId(), serviceName, serviceType, version, this.getHostname())
+        log.info(`node process ${serviceName} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
+        service = repo.getService(this.getId(), serviceName, serviceType, version, this.getHostname())
+        log.info(`service ${JSON.stringify(service)}`)
+        this.register(service)
       } else if (dependenciesMet) {
+        log.info(`dependencies met for ${serviceName} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
         // spawn the process
         const childProcess = spawn(pkg.cmd, pkg.args, { cwd: pkgPath })
 
@@ -159,13 +159,7 @@ export default class RobotLabXRuntime extends Service {
 
         if (childProcess.pid) {
           // register the service
-          const service: Service = new Service(
-            childProcess.pid.toString(),
-            serviceName,
-            serviceType,
-            version,
-            this.getHostname()
-          )
+          service = new Service(childProcess.pid.toString(), serviceName, serviceType, version, this.getHostname())
         }
         // register the process
         const pd: ProcessData = new ProcessData(
@@ -188,8 +182,14 @@ export default class RobotLabXRuntime extends Service {
       // register and start the service
       this.register(service)
       return service
-    } catch (e) {
-      log.error(e)
+    } catch (e: any) {
+      const error = e as Error
+
+      // Get the file and line number where the error occurred
+      const file = e.stack.split("\n")[1].match(/\((?<file>.+):\d+\)/)?.groups?.file
+      const lineNumber = e.stack.split("\n")[1].match(/\((?<file>.+):(?<lineNumber>\d+)\)/)?.groups?.lineNumber
+
+      log.error(`e ${error} ${file} ${lineNumber}`)
     }
   }
 
@@ -221,7 +221,9 @@ export default class RobotLabXRuntime extends Service {
   }
 
   register(service: Service) {
-    log.info(`registering service: ${service.name} ${service.constructor.name}`)
+    // log.info(`registering service: ${service.name} ${service.constructor.name}`)
+    log.info(`registering service: ${JSON.stringify(service)}`)
+    log.info(`registering service: ${service.name}@${service.id}`)
     Store.getInstance().register(`${service.name}@${service.id}`, service)
     this.invoke("registered", service)
   }

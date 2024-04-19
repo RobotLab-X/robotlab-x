@@ -8,6 +8,8 @@ export default function ServicePage(props) {
   let type = service.typeKey
   if (service.typeKey === "WebXR") {
     type = "WebXR"
+  } else if (service.typeKey === "MyRobotLabConnector") {
+    type = "MyRobotLabConnector"
   } else if (service.typeKey === "Runtime") {
     type = "Runtime"
   } else if (service.typeKey === "RobotLabXRuntime") {

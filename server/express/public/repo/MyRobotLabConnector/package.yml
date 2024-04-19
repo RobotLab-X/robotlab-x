@@ -1,0 +1,19 @@
+typeKey: "MyRobotLabConnector"
+title: "MyRobotLab Connector"
+platform: "node"
+platformVersion: "v20.9.0"
+description: "A connector to a running instance of MyRobotLab"
+version: "0.0.1"
+interfaces:
+  restAPI:
+    - endpoint: "/api/v1/resource"
+      method: "GET"
+      description: "Retrieves list of resources."
+author: "GroG"
+license: "MPL-2.0"
+categories:
+- "web"
+- "http"
+- "service manager"
+- "framework"
+dependencies: null
