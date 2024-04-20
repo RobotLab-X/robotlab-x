@@ -85,6 +85,17 @@ const store = (set, get) => ({
    */
   messages: {},
 
+  updateRegistryOnRegistered: (data) =>
+    set((state) => {
+      const key = data.name + "@" + data.id
+      return {
+        registry: {
+          ...state.registry,
+          [key]: data
+        }
+      }
+    }),
+
   updateRegistry: (newRegistry) => set({ registry: newRegistry }),
 
   updateRepo: (newRepo) => set({ repo: newRepo }),
@@ -187,7 +198,8 @@ const store = (set, get) => ({
         }
 
         if (key === `runtime@${get().id}.onRegistered`) {
-          get().registry[msg.data[0].name + "@" + msg.data[0].id] = msg.data[0]
+          msg.data[0].id = get().defaultRemoteId
+          get().updateRegistryOnRegistered(msg.data[0])
         }
 
         if (key === `runtime@${get().id}.onRegistry`) {
@@ -211,10 +223,6 @@ const store = (set, get) => ({
         // equivalent of MQTT RETAIN
         // store the message
         console.info(`storing message ${remoteKey} ${JSON.stringify(msg)}`)
-
-        // FIXME - need to consider how changing internal data from this store
-        // affect re-renders of the entire app ... possible to separate into
-        // distinct stores for different concerns
 
         set((state) => ({
           messages: {

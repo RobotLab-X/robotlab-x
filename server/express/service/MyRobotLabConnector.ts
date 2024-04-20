@@ -1,6 +1,13 @@
+import Message from "express/models/Message"
+import WebSocket from "ws" // Import WebSocket module
+import { getLogger } from "../framework/Log"
+import { Repo } from "../framework/Repo"
 import Service from "../framework/Service"
+import RobotLabXRuntime from "../service/RobotLabXRuntime"
+
+const log = getLogger("MyRobotLabConnector")
 export default class MyRobotLabConnector extends Service {
-  public uniqueId = "WOOT!"
+  private webSocket?: WebSocket // Optional WebSocket object
 
   constructor(
     public id: string,
@@ -9,16 +16,148 @@ export default class MyRobotLabConnector extends Service {
     public version: string,
     public hostname: string
   ) {
-    super(id, name, type, version, hostname) // Call the base class constructor if needed
+    super(id, name, type, version, hostname) // Call the base class constructor
   }
 
-  onUptime(msg: string): string {
-    console.log(`WOOOHOOO !!! ${this.name}.onUptime called ${msg}`)
-    return msg
+  // Method to establish a WebSocket connection
+  connect(wsUrl: string): void {
+    log.info(`Attempting to connect to ${wsUrl}`)
+
+    // Initialize WebSocket connection
+    this.webSocket = new WebSocket(wsUrl)
+
+    // Event handler when connection is open
+    this.webSocket.on("open", () => {
+      log.info("Connection successful!")
+      const runtime: RobotLabXRuntime = RobotLabXRuntime.getInstance()
+      const addListenerOnServiceNamesMsg = {
+        name: "runtime",
+        method: "addListener",
+        data: [
+          '{"topicMethod":"getServiceNames","callbackName":"runtime@' +
+            runtime.getId() +
+            '","callbackMethod":"onServiceNames","class":"org.myrobotlab.framework.MRLListener"}'
+        ],
+        class: "org.myrobotlab.framework.Message"
+      }
+
+      const addListenerOnRegistered = {
+        name: "runtime",
+        method: "addListener",
+        data: [
+          '{"topicMethod":"registered","callbackName":"runtime@' +
+            runtime.getId() +
+            '","callbackMethod":"onRegistered","class":"org.myrobotlab.framework.MRLListener"}'
+        ],
+        class: "org.myrobotlab.framework.Message"
+      }
+
+      const addListenerOnReleased = {
+        name: "runtime",
+        method: "addListener",
+        data: [
+          '{"topicMethod":"released","callbackName":"runtime@' +
+            runtime.getId() +
+            '","callbackMethod":"onReleased","class":"org.myrobotlab.framework.MRLListener"}'
+        ],
+        class: "org.myrobotlab.framework.Message"
+      }
+
+      const addListenerOnService = {
+        name: "runtime",
+        method: "addListener",
+        data: [
+          '{"topicMethod":"getService","callbackName":"runtime@' +
+            runtime.getId() +
+            '","callbackMethod":"onService","class":"org.myrobotlab.framework.MRLListener"}'
+        ],
+        class: "org.myrobotlab.framework.Message"
+      }
+
+      const getServiceNamesMsg = {
+        name: "runtime",
+        method: "getServiceNames"
+      }
+
+      // could add all listeners here
+      this.webSocket?.send(JSON.stringify(addListenerOnServiceNamesMsg))
+      this.webSocket?.send(JSON.stringify(addListenerOnRegistered))
+      this.webSocket?.send(JSON.stringify(addListenerOnReleased))
+      this.webSocket?.send(JSON.stringify(addListenerOnService))
+
+      // fire off a request for the service names
+      // to get started
+      this.webSocket?.send(JSON.stringify(getServiceNamesMsg))
+    })
+
+    // Event handler for receiving messages
+    this.webSocket.on("message", (data) => {
+      let str = data.toString()
+      if (str == "X") {
+        log.info("Received Atmosphere X")
+        return
+      }
+      log.info("Received message:", str)
+      this.onMessageReceived(str)
+    })
+
+    // Handle errors
+    this.webSocket.on("error", (error) => {
+      console.error("WebSocket error:", error)
+    })
+
+    // Handle WebSocket closures
+    this.webSocket.on("close", () => {
+      log.info("WebSocket connection closed")
+      this.webSocket = undefined
+    })
   }
 
-  connect(wsUrl: string): string {
-    console.log(`WOOOHOOO !!! connect ${wsUrl} called`)
-    return "connected"
+  // Method to handle received messages
+  private onMessageReceived(message: string) {
+    try {
+      let msg = JSON.parse(message)
+      // double pars :(
+      if (msg.data) {
+        msg.data[0] = JSON.parse(msg.data[0])
+      }
+      if (msg.method == "onServiceNames") {
+        this.onServiceNames(msg)
+      } else if (msg.method == "onService") {
+        const repo = new Repo()
+        let mrlService = msg.data[0]
+        let service = repo.getService(mrlService.id, mrlService.name, "MyRobotLabProxy", "0.0.1", "unknown")
+        RobotLabXRuntime.getInstance().register(service)
+        this.onServiceNames(msg)
+      } else {
+        log.error(`Unhandled message: ${message}`)
+      }
+    } catch (error) {
+      console.error("Failed to parse message:", error, message)
+      return
+    }
+  }
+
+  // Example method that could be triggered by an incoming message
+  onServiceNames(msg: Message): void {
+    log.info(`onServiceNames`)
+    let serviceNames = msg.data[0]
+    serviceNames.forEach((serviceName: string) => {
+      log.info(`service name: ${serviceName}`)
+      this.sendMessage({
+        name: "runtime",
+        method: "getService",
+        data: ['"' + serviceName + '"']
+      })
+    })
+  }
+
+  // Method to send a message
+  sendMessage(message: object) {
+    if (this.webSocket && this.webSocket.readyState === WebSocket.OPEN) {
+      this.webSocket.send(JSON.stringify(message))
+    } else {
+      console.error("WebSocket is not connected.")
+    }
   }
 }

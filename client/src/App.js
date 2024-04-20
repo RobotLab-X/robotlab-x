@@ -45,6 +45,8 @@ function App() {
 
   useEffect(() => {
     if (connected) {
+      // TODO make these "service" calls ??? or at least one shot calls
+      // that future callbacks are not needed
       // setup server runtime subscriptions, register this runtime, get repo
       subscribeTo("runtime", "getRegistry")
       subscribeTo("runtime", "getRepo")

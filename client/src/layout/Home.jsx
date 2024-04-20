@@ -16,6 +16,7 @@ import React, { useState } from "react"
 import { useStore } from "store/store"
 
 const repoUrl = "http://localhost:3001/repo"
+const imageUrl = "http://localhost:3001/images"
 
 function Home() {
   const [selectedCard, setSelectedCard] = useState(null)
@@ -55,20 +56,29 @@ function Home() {
           {filteredCards.map((card, index) => (
             <Card key={index} onClick={() => handleCardClick(card)} sx={{ margin: 1 }}>
               <CardActionArea>
-                {/*
-              <CardMedia
-                component="img"
-                height="32" 
-                image={`${repoUrl}/${card.typeKey}/${card.typeKey}.png`}
-                alt={card.name}
-        /> */}
                 <CardContent>
                   <Typography variant="h5">
-                    <img src={`${repoUrl}/${card.typeKey}/${card.typeKey}.png`} alt={card.name} width="32" />
+                    <img
+                      src={`${repoUrl}/${card.typeKey}/${card.typeKey}.png`}
+                      alt={card.name}
+                      width="32"
+                      style={{ verticalAlign: "middle" }}
+                    />{" "}
+                    <img
+                      src={`${imageUrl}/platform/${repo[card.typeKey]?.platform}.png`}
+                      alt={card.typeKey}
+                      width="16"
+                    />{" "}
+                    <img
+                      src={`${imageUrl}/os/linux.png`}
+                      alt={card.typeKey}
+                      width="16"
+                    />
+                    
                     &nbsp;{card.name}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    {card.typeKey} {card.id}
+                    {repo[card.typeKey]?.title} {card.id}
                   </Typography>
                 </CardContent>
               </CardActionArea>

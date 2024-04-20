@@ -60,3 +60,56 @@ You can also find the compiled files in the `build` directory (In case you want 
 ```
 ./node_modules/.bin/tsc -p tsconfig-build.json
 ```
+
+MRL Add Listener and getServiceNames to for inquiry
+```json
+{
+  "name": "runtime",
+  "method": "addListener",
+  "data": [
+    "{\"topicMethod\":\"getServiceNames\",\"callbackName\":\"runtime@caring-hector\",\"callbackMethod\":\"onServiceNames\",\"class\":\"org.myrobotlab.framework.MRLListener\"}"
+  ],
+  "class": "org.myrobotlab.framework.Message"
+}
+```
+```json
+{
+  "name": "runtime",
+  "method": "getServiceNames"
+}
+```
+
+```bash
+curl http://192.168.0.6:11434/v1/images/generations   -H "Content-Type: application/json"     -d '{
+    "model": "lama3",
+    "prompt": "A cute baby sea otter",
+    "n": 1,
+    "size": "1024x1024"
+  }'
+
+
+curl http://192.168.0.6:11434/v1/images/generations   -H "Content-Type: application/json"     -d '{
+    "model": "lama3",
+    "prompt": "A cute baby sea otter",
+    "n": 1,
+    "size": "1024x1024"
+  }'
+
+
+
+
+curl   http://192.168.0.6:11434/v1/chat/completions -d '{
+     "model": "llama3",
+     "messages": [{"role": "user", "content": "hi there !"}],
+     "temperature": 0.7
+   }'
+
+
+curl   http://192.168.0.6:11434/v1/images/generations -d '{
+     "model": "llama3",
+     "prompt": "A cute baby sea otter",
+     "n": 1,
+    "size": "1024x1024"
+   }'
+
+```

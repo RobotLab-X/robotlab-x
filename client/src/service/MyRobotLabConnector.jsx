@@ -10,7 +10,8 @@ import { useStore } from "../store/store"
 import useService from "framework/useService"
 
 export default function MyRobotLabConnector(props) {
-  const [wsUrl, setWsUrl] = useState("ws://localhost:8888/api/messages")
+  const id = useStore((state) => state.id)
+  const [wsUrl, setWsUrl] = useState(`ws://localhost:8888/api/messages?id=${id}`)
   const [connected, setConnected] = useState(false)
   const [loading, setLoading] = useState(false)
   const [stats, setStats] = useState({ version: "", numberOfServices: 0 })

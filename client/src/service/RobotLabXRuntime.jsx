@@ -122,12 +122,12 @@ export default function RobotLabXRuntime(props) {
   return (
     <>
       <Tabs value={activeTab} onChange={handleChange} aria-label="stats tabs">
-        <Tab label={`Hosts ${hostArray.length}`} />
-        <Tab label={`Processes ${processArray.length}`} />
         <Tab label={`Services ${Object.keys(registry).length}`} />
+        <Tab label={`Processes ${processArray.length}`} />
+        <Tab label={`Hosts ${hostArray.length}`} />
         <Tab label={`Connections ${processArray.length}`} />
       </Tabs>
-      <TabPanel value={activeTab} index={0}>
+      <TabPanel value={activeTab} index={2}>
         <Grid container justifyContent="left">
           <Grid item xs={12} sm={8} md={6} lg={4}>
             Detailed view for Hosts
@@ -190,7 +190,7 @@ export default function RobotLabXRuntime(props) {
           </Grid>
         </Grid>
       </TabPanel>
-      <TabPanel value={activeTab} index={2}>
+      <TabPanel value={activeTab} index={0}>
         <Grid container justifyContent="flex-start">
           <Grid item xs={12} sm={8} md={6} lg={4}>
             <Box display="flex" alignItems="center">
@@ -207,16 +207,9 @@ export default function RobotLabXRuntime(props) {
           </Grid>
         </Grid>{" "}
       </TabPanel>
-      hosts {Object.keys(service.hosts).length} processes {Object.keys(service.processes).length} services{" "}
-      {Object.keys(registry).length}
-      <Grid item xs={12}>
-        <IconButton type="button" onClick={handleStartNewService}>
-          <PlaylistAddIcon sx={{ fontSize: iconSize }} />
-        </IconButton>
-      </Grid>
       <ServiceDialog packages={repo} open={open} setOpen={setOpen} />
       <br />
-      <h2>Message Log:</h2>
+      Message Log:
       <ul>
         {messageLog.map((msg, index) => (
           <li key={index}>

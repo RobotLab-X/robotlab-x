@@ -76,6 +76,11 @@ export default class RobotLabXRuntime extends Service {
     super.releaseService()
   }
 
+  installInfo(msg: string) {
+    log.info(msg)
+    this.invoke("publishInstallLog", msg)
+  }
+
   // TODO - remove version
   start(serviceName: string, serviceType: string): Service {
     try {
@@ -111,7 +116,7 @@ export default class RobotLabXRuntime extends Service {
       // determine necessary platform python, node, docker, java
       // yes | no -> install -> yes | no
       if (pkg.platform === "python") {
-        log.info(`python required for ${serviceType}`)
+        this.installInfo(`python required for ${serviceType}`)
         let installer = new InstallerPython()
         installer.install()
         // check if python is installed
@@ -143,10 +148,12 @@ export default class RobotLabXRuntime extends Service {
       let service: Service = null
       // spawn the process if none node process
       if (pkg.platform === "node") {
-        log.info(`node process ${serviceName} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
+        this.installInfo(`node process ${serviceName} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
         service = repo.getService(this.getId(), serviceName, serviceType, version, this.getHostname())
         log.info(`service ${JSON.stringify(service)}`)
+        this.installInfo(`platform is ok`)
         this.register(service)
+        this.installInfo(`registered service ${serviceName}`)
       } else if (dependenciesMet) {
         log.info(`dependencies met for ${serviceName} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
         // spawn the process
