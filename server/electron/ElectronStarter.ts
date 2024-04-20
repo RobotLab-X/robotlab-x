@@ -87,7 +87,9 @@ export default class Main {
     Main.store = Store.createInstance()
 
     // TODO - allow id to be passed in or configured
-    let runtime: RobotLabXRuntime = RobotLabXRuntime.createInstance(NameGenerator.getName(), os.hostname())
+    //    let runtime: RobotLabXRuntime = RobotLabXRuntime.createInstance(NameGenerator.getName(), os.hostname())
+    NameGenerator.getName()
+    let runtime: RobotLabXRuntime = RobotLabXRuntime.createInstance("robotlab-x", os.hostname())
 
     // FIXME - do the following in RobotLabXRuntime
 

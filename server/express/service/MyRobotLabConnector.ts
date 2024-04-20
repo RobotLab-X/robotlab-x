@@ -9,6 +9,9 @@ const log = getLogger("MyRobotLabConnector")
 export default class MyRobotLabConnector extends Service {
   private webSocket?: WebSocket // Optional WebSocket object
 
+  connecting = false
+  connected = false
+
   constructor(
     public id: string,
     public name: string,
@@ -23,11 +26,20 @@ export default class MyRobotLabConnector extends Service {
   connect(wsUrl: string): void {
     log.info(`Attempting to connect to ${wsUrl}`)
 
+    if (this.connecting || this.connected) {
+      log.error("Already connected or connecting")
+      return
+    }
+    this.connected = false
+    this.connecting = true
+
     // Initialize WebSocket connection
     this.webSocket = new WebSocket(wsUrl)
 
     // Event handler when connection is open
     this.webSocket.on("open", () => {
+      this.connecting = false
+      this.connected = true
       log.info("Connection successful!")
       const runtime: RobotLabXRuntime = RobotLabXRuntime.getInstance()
       const addListenerOnServiceNamesMsg = {
@@ -97,7 +109,7 @@ export default class MyRobotLabConnector extends Service {
         log.info("Received Atmosphere X")
         return
       }
-      log.info("Received message:", str)
+      log.info(`mrl --> ${this.name} ${str}`)
       this.onMessageReceived(str)
     })
 
@@ -109,6 +121,8 @@ export default class MyRobotLabConnector extends Service {
     // Handle WebSocket closures
     this.webSocket.on("close", () => {
       log.info("WebSocket connection closed")
+      this.connected = false
+      this.connecting = false
       this.webSocket = undefined
     })
   }
@@ -123,12 +137,15 @@ export default class MyRobotLabConnector extends Service {
       }
       if (msg.method == "onServiceNames") {
         this.onServiceNames(msg)
+      } else if (msg.method == "describe") {
+        log.info("describe message")
+      } else if (msg.method == "addListener") {
+        log.info("addListener message")
       } else if (msg.method == "onService") {
         const repo = new Repo()
         let mrlService = msg.data[0]
         let service = repo.getService(mrlService.id, mrlService.name, "MyRobotLabProxy", "0.0.1", "unknown")
         RobotLabXRuntime.getInstance().register(service)
-        this.onServiceNames(msg)
       } else {
         log.error(`Unhandled message: ${message}`)
       }

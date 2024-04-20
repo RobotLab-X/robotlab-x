@@ -1,3 +1,5 @@
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
+import PlaylistAddIcon from "@mui/icons-material/PlaylistAddOutlined"
 import {
   Box,
   Card,
@@ -11,15 +13,12 @@ import {
   Tabs,
   Typography
 } from "@mui/material"
-import React, { useEffect, useState } from "react"
-
-import PlaylistAddIcon from "@mui/icons-material/PlaylistAddOutlined"
-// import { Grid, IconButton } from "@mui/material" // Import MUI components
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import { styled } from "@mui/material/styles"
 import ServiceDialog from "components/ServiceDialog"
-
+import React, { useEffect, useState } from "react"
 import { useStore } from "../store/store"
+
+const imagesUrl = "http://localhost:3001/images"
 
 // Props should put in "name"
 // and all service types defined here
@@ -136,7 +135,7 @@ export default function RobotLabXRuntime(props) {
                 <CardActionArea>
                   <CardContent>
                     <Typography component="div" variant="h2">
-                      <img src="os/linux.png" alt="linux" />
+                      <img src={`${imagesUrl}/os/linux.png`} alt="linux" />
                       &nbsp;&nbsp;{host.hostname} {/**  {host.platform} {host.architecture} */}
                       {/**
                     <img src={`${repoUrl}/${host.typeKey}/${host.typeKey}.png`} alt={host.name} width="32" />

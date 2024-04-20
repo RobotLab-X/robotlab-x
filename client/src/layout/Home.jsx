@@ -16,7 +16,7 @@ import React, { useState } from "react"
 import { useStore } from "store/store"
 
 const repoUrl = "http://localhost:3001/repo"
-const imageUrl = "http://localhost:3001/images"
+const imagesUrl = "http://localhost:3001/images"
 
 function Home() {
   const [selectedCard, setSelectedCard] = useState(null)
@@ -65,16 +65,11 @@ function Home() {
                       style={{ verticalAlign: "middle" }}
                     />{" "}
                     <img
-                      src={`${imageUrl}/platform/${repo[card.typeKey]?.platform}.png`}
+                      src={`${imagesUrl}/platform/${repo[card.typeKey]?.platform}.png`}
                       alt={card.typeKey}
                       width="16"
                     />{" "}
-                    <img
-                      src={`${imageUrl}/os/linux.png`}
-                      alt={card.typeKey}
-                      width="16"
-                    />
-                    
+                    <img src={`${imagesUrl}/os/linux.png`} alt={card.typeKey} width="16" />
                     &nbsp;{card.name}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">

@@ -50,6 +50,7 @@
   },
   "homepage": "./",
   "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@babel/plugin-transform-private-property-in-object": "^7.24.1",
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.10.4",
