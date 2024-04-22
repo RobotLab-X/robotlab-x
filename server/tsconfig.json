@@ -17,7 +17,7 @@
   },
   "include": [
     "**/*.ts"
-  ],
+, "config/Default.js", "express/framework/LaunchDescription.js"  ],
   "exclude": [
     "node_modules"
   ]

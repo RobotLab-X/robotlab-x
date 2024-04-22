@@ -14,6 +14,38 @@ export class Repo {
     this.loadServices()
   }
 
+  loadConfigurations() {
+    const configDir = path.join(__dirname, "..", "config")
+    const files = fs.readdirSync(configDir)
+    files.forEach((file) => {
+      try {
+        if (file.endsWith(".js")) {
+          const configPath = path.join(configDir, file)
+          log.info(`attempting to load:[${configPath}]`)
+          // const ServiceClass = require(servicePath)
+
+          const importedModule = require(configPath)
+          const ConfigClass = importedModule.default // Accessing the default export
+
+          const configName = file.replace(".js", "")
+
+          if (typeof ConfigClass !== "function") {
+            log.error(`Loaded module from ${configPath} is not a constructor: ${typeof ConfigClass}`)
+          } else {
+            log.info(`Registering config type: ${configName}`)
+            this.services.set(configName, ConfigClass)
+          }
+
+          // Register each service with the filename (minus the extension) as key
+          log.info(`=======registering config type: ${configName}`)
+          this.services.set(configName, ConfigClass)
+        }
+      } catch (error) {
+        log.error(`Error loading config: ${error}`)
+      }
+    })
+  }
+
   loadServices() {
     const serviceDir = path.join(__dirname, "..", "service")
     const files = fs.readdirSync(serviceDir)

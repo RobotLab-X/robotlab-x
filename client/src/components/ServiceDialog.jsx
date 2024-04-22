@@ -51,7 +51,7 @@ const ServiceDialog = ({ packages, open, setOpen }) => {
     // error check ${newServiceName} ${selectedServiceType}
     // valid characters not empty etc
 
-    sendTo("runtime", "start", newServiceName, selectedServiceType, selectedVersion)
+    sendTo("runtime", "startServiceType", newServiceName, selectedServiceType, selectedVersion)
 
     handleClose() // Close the dialog
   }

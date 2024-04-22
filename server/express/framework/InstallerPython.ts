@@ -2,10 +2,14 @@ import RobotLabXRuntime from "../service/RobotLabXRuntime"
 import { getLogger } from "./Log"
 
 const os = require("os")
-// const { exec } = require("child_process") async
 const { execSync } = require("child_process")
 
 const log = getLogger("Service")
+
+interface ExecException extends Error {
+  stderr?: Buffer
+  stdout?: Buffer
+}
 
 // FIXME - way to set RobotLabXRuntime python command to python or python3
 
@@ -18,6 +22,10 @@ export default class InstallerPython {
   pipVersion: string = null
 
   ready = false
+
+  optons = {
+    cwd: "/path/to/directory"
+  }
 
   public install() {
     this.info("Checking python version")
@@ -44,31 +52,42 @@ export default class InstallerPython {
     return this.ready
   }
 
-  info(info: string) {
-    this.server.invoke("publishInstallLog", info)
+  info(msg: string | null) {
+    log.info(msg)
+    this.server.invoke("publishInstallLog", `info: ${msg}`)
+  }
+
+  warn(msg: string | null) {
+    log.warn(msg)
+    this.server.invoke("publishInstallLog", `warn: ${msg}`)
+  }
+
+  error(msg: string | null) {
+    log.error(msg)
+    this.server.invoke("publishInstallLog", `error: ${msg}`)
   }
 
   public getPythonVersion() {
     let versionOutput = ""
 
     try {
-      versionOutput = execSync("python --version").toString()
+      versionOutput = execSync("python --version", this.optons).toString()
+      this.info(`python found ${versionOutput}`)
       this.pythonExe = "python"
     } catch (error) {
       this.info("python not found, trying python3")
       console.error(`exec error: ${error}`)
 
       try {
-        versionOutput = execSync("python3 --version").toString()
+        versionOutput = execSync("python3 --version", this.optons).toString()
+        this.info(`python3 found ${versionOutput}`)
         this.pythonExe = "python3"
       } catch (error) {
         this.info("giving up - send instructions to install python to user")
-        console.error(`exec error: ${error}`)
+        console.error(`${error}`)
         return
       }
     }
-
-    this.info(`exec output: ${versionOutput}`)
 
     // Correcting the parsing logic
     const versionMatch = versionOutput.match(/Python (\d+\.\d+\.\d+)/)
@@ -122,9 +141,20 @@ export default class InstallerPython {
     try {
       let cmd = `${this.pythonExe} -m venv ${venvPath}`
       this.info(cmd)
-      execSync(cmd)
-    } catch (error) {
-      this.info("Failed to create a Python virtual environment.")
+      this.info(execSync(cmd, this.optons))
+    } catch (error: unknown) {
+      // TODO standard error format for robotlab-x
+      this.error(`Failed to create a Python virtual environment.`)
+      this.error(`${error}`)
+
+      if (typeof error === "object" && error !== null) {
+        const execError = error as ExecException
+        this.error(`message: ${execError.message}`) // `message` is part of `Error`
+        this.error(`stderr: ${execError.stderr?.toString()}`) // Convert Buffer to string if it exists
+        this.error(`stdout: ${execError.stdout?.toString()}`) // Convert Buffer to string if it exists
+      } else {
+        console.error("An unexpected error occurred:", error)
+      }
       return
     }
     this.info(`Virtual environment created at ${venvPath}`)
@@ -156,9 +186,10 @@ export default class InstallerPython {
     let stdout = null
     try {
       this.info(activate)
-      stdout = execSync(activate)
+      this.info(execSync(activate, this.optons))
     } catch (error) {
-      console.error("Failed to run python command using the virtual environment.")
+      this.error(`Failed to run python command using the virtual environment.`)
+      this.error(`${error}`)
       return
     }
 

@@ -1,6 +1,7 @@
 // import Service from "express/framework/Service"
 // FIXME - aliases don't appear to be work, neither does root reference path
 import { spawn } from "child_process"
+import { LaunchAction } from "express/framework/LaunchDescription"
 import fs from "fs"
 import path from "path"
 import YAML from "yaml"
@@ -14,6 +15,8 @@ import { HostData } from "../models/HostData"
 import Package from "../models/Package"
 import { ProcessData } from "../models/ProcessData"
 import { ServiceTypeData } from "../models/ServiceTypeData"
+// import LaunchDescription from "express/framework/LaunchDescription"
+// const LaunchDescription = require("express/framework/LaunchDescription").default
 
 const log = getLogger("RobotLabXRuntime")
 
@@ -23,6 +26,43 @@ interface Error {
 // import Service from "@framework/Service"
 export default class RobotLabXRuntime extends Service {
   private static instance: RobotLabXRuntime
+
+  protected dataDir = "./data"
+  protected configDir = "./config"
+
+  config = {
+    config: "default",
+    registry: [] as string[]
+  }
+
+  save() {
+    const filePath = path.join(this.dataDir, this.config.config, "runtime.yml")
+    try {
+      const yamlStr = YAML.stringify(this.config)
+      fs.mkdirSync(path.dirname(filePath), { recursive: true })
+      fs.writeFileSync(filePath, yamlStr, "utf8")
+      console.log("Config saved to", filePath)
+    } catch (error) {
+      this.error(`Failed to save config: ${error}`)
+    }
+  }
+
+  apply(config: any) {
+    this.config = config
+    this.save()
+  }
+
+  readConfig() {
+    const filePath = path.join(this.dataDir, this.config.config, "runtime.yml")
+    try {
+      const file = fs.readFileSync(filePath, "utf8")
+      const config = YAML.parse(file)
+      this.config = config
+      console.log("Config loaded from", filePath)
+    } catch (error) {
+      this.error(`Failed to load config: ${error}`)
+    }
+  }
 
   static createInstance(id: string, hostname: string): RobotLabXRuntime {
     if (!RobotLabXRuntime.instance) {
@@ -63,6 +103,16 @@ export default class RobotLabXRuntime extends Service {
     public hostname: string
   ) {
     super(id, name, type, version, hostname) // Call the base class constructor if needed
+    fs.mkdir(this.dataDir, { recursive: true }, (err) => {
+      if (err) {
+        log.error(`Error creating data directory: ${err}`)
+      }
+    })
+    fs.mkdir(path.join(this.configDir, this.config.config), { recursive: true }, (err) => {
+      if (err) {
+        log.error(`Error creating data directory: ${err}`)
+      }
+    })
   }
 
   getLocalProcessData(): ProcessData {
@@ -81,8 +131,38 @@ export default class RobotLabXRuntime extends Service {
     this.invoke("publishInstallLog", msg)
   }
 
+  async start(launcher: string) {
+    log.info(`Starting launcher: ${launcher}`)
+
+    try {
+      log.info(`cwd ${process.cwd()}`)
+      // Dynamically import the Default configuration based on the launcher name
+      const modulePath = `../../config/${launcher}` // Construct the module path dynamically
+      const configModule = await import(modulePath)
+      const DefaultConfig = configModule.default
+
+      // Create an instance of the dynamically loaded configuration
+      const configInstance = new DefaultConfig()
+
+      // Process the configuration - this example just logs the loaded configuration
+      log.info(`Loaded configuration with ${configInstance.getLaunchActions().length} actions.`)
+
+      // You might want to do more here, such as applying the configuration or starting nodes
+      configInstance.getLaunchActions().forEach((action: LaunchAction) => {
+        log.info(`Would start ${action.package}/${action.executable} named ${action.name}`)
+        // Here you would add logic to actually start these actions/nodes
+      })
+    } catch (error) {
+      if (error instanceof Error) {
+        log.error(`Error loading configuration for ${launcher}: ${error.message}`)
+      } else {
+        log.error(`An unknown error occurred while loading configuration for ${launcher}`)
+      }
+    }
+  }
+
   // TODO - remove version
-  start(serviceName: string, serviceType: string): Service {
+  startServiceType(serviceName: string, serviceType: string): Service {
     try {
       const check = this.getService(serviceName)
       if (check != null) {

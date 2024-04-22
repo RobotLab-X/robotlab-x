@@ -208,15 +208,42 @@ export default function RobotLabXRuntime(props) {
       </TabPanel>
       <ServiceDialog packages={repo} open={open} setOpen={setOpen} />
       <br />
-      Message Log:
-      <ul>
-        {messageLog.map((msg, index) => (
-          <li key={index}>
-            {/** <pre>{JSON.stringify(msg, null, 2)}</pre> */}
-            {msg?.data[0]}
-          </li>
-        ))}
-      </ul>
+
+      <Grid container spacing={2} alignItems="flex-start">
+        <Grid item xs={12} sm={8} md={6} lg={4}>
+          Message Log:
+          <div>
+            {messageLog.map((msg, index) => {
+              // Extract the prefix and the rest of the message
+              const prefixPattern = /^(info:|warn:|error:)/
+              const matches = msg?.data[0].match(prefixPattern)
+              let prefix = ""
+              let message = msg?.data[0]
+
+              if (matches) {
+                prefix = matches[0] // The matched prefix
+                message = msg?.data[0].substring(prefix.length) // The rest of the message
+              }
+
+              let style = {}
+              if (prefix === "info:") {
+                style = { color: "green" }
+              } else if (prefix === "warn:") {
+                style = { color: "yellow" }
+              } else if (prefix === "error:") {
+                style = { color: "red" }
+              }
+
+              return (
+                <div key={index} style={{ display: "flex", alignItems: "baseline", fontFamily: "monospace" }}>
+                  <small style={{ ...style, marginRight: "0.5rem" }}>{prefix}</small>
+                  <pre style={{ margin: 0 }}>{message}</pre>
+                </div>
+              )
+            })}
+          </div>
+        </Grid>
+      </Grid>
       <br />
       {/**
       <ReactJson src={registry} name="registry" />

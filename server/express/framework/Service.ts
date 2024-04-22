@@ -1,5 +1,6 @@
 import Store from "../Store"
 import Message from "../models/Message"
+import Status from "../models/Status"
 import { SubscriptionListener } from "../models/SubscriptionListener"
 import { CodecUtil } from "./CodecUtil"
 import { getLogger } from "./Log"
@@ -185,6 +186,10 @@ export default class Service {
     })
   }
 
+  publishStatus(status: Status) {
+    return status
+  }
+
   // Example of a shared method
   startService() {
     this.startTime = new Date()
@@ -194,5 +199,17 @@ export default class Service {
   stopService() {
     this.startTime = null
     log.info(`========= stopped service ${this.name} ===========`)
+  }
+
+  info(msg: string | null) {
+    this.invoke("publishStatus", new Status("info", msg, this.name))
+  }
+
+  warn(msg: string | null) {
+    this.invoke("publishStatus", new Status("warn", msg, this.name))
+  }
+
+  error(msg: string | null) {
+    this.invoke("publishStatus", new Status("error", msg, this.name))
   }
 }
