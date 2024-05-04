@@ -50,6 +50,10 @@ export default class Service {
     return listener
   }
 
+  getNotifyList() {
+    return this.notifyList
+  }
+
   getHostname(): string | null {
     return this.hostname
   }
@@ -108,7 +112,7 @@ export default class Service {
     if (msgFullName !== fullName) {
       let service = Store.getInstance().getService(msgFullName)
       if (service === null) {
-        console.error(`service ${msgFullName} not found`)
+        log.error(`service ${msgFullName} not found`)
         return null
       } else {
         // relay to correct service
@@ -137,7 +141,7 @@ export default class Service {
           ret = obj[msg.method]()
         }
       } catch (e) {
-        console.error(`failed to invoke ${this.name}.${msg.method} ${e}`)
+        log.error(`failed to invoke ${this.name}.${msg.method} because ${e}`)
       }
 
       // normalize undefined to null

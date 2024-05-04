@@ -1,5 +1,10 @@
 ## TODO
 
+* HATEOS - ability to query from top / non "cenralized" / and get all info regarding interfaces
+* for repo package.yml for node services "same-process" should be an option, or shared process an option in both
+  node and all platform stuff ... default for node would be true, default for python would be false ?
+* need an "alias" table  ... which can condense a service@host@pid down to a single unique service name
+
 ### From ROS ROS2
 * remapping - defaults are root names e.g. service@id@host/someOutput - how to remap and to what ? 
 never needed to remap because root names change with names of services - my topic heirarchy is very flat.

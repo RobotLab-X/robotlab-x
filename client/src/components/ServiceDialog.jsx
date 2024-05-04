@@ -73,8 +73,8 @@ const ServiceDialog = ({ packages, open, setOpen }) => {
             <Grid container spacing={2} alignItems="center">
               <Grid item xs={true}>
                 <TextField
+                  autoFocus
                   fullWidth
-                  label="New Service Name"
                   placeholder="New Service Name"
                   variant="outlined"
                   value={newServiceName}

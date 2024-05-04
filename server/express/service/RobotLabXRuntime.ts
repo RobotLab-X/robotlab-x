@@ -98,11 +98,11 @@ export default class RobotLabXRuntime extends Service {
   constructor(
     public id: string,
     public name: string,
-    public type: string,
+    public typeKey: string,
     public version: string,
     public hostname: string
   ) {
-    super(id, name, type, version, hostname) // Call the base class constructor if needed
+    super(id, name, typeKey, version, hostname) // Call the base class constructor if needed
     fs.mkdir(this.dataDir, { recursive: true }, (err) => {
       if (err) {
         log.error(`Error creating data directory: ${err}`)
@@ -149,8 +149,8 @@ export default class RobotLabXRuntime extends Service {
 
       // You might want to do more here, such as applying the configuration or starting nodes
       configInstance.getLaunchActions().forEach((action: LaunchAction) => {
-        log.info(`Would start ${action.package}/${action.executable} named ${action.name}`)
-        // Here you would add logic to actually start these actions/nodes
+        log.info(`Starting ${action.package}/${action.executable} named ${action.name}`)
+        this.startServiceType(action.name, action.executable)
       })
     } catch (error) {
       if (error instanceof Error) {

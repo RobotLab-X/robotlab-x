@@ -1,6 +1,7 @@
 import loadable from "@loadable/component"
 import { useStore } from "../store/store"
 
+// TODO - React.lazy vs react-loadable
 export default function ServicePage(props) {
   const registry = useStore((state) => state.registry)
   let service = registry[props.fullname]
@@ -14,6 +15,8 @@ export default function ServicePage(props) {
     type = "Runtime"
   } else if (service.typeKey === "RobotLabXRuntime") {
     type = "RobotLabXRuntime"
+  } else if (service.typeKey === "Clock") {
+    type = "Clock"
   } else {
     type = "Servo"
   }

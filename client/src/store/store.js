@@ -169,7 +169,7 @@ const store = (set, get) => ({
         // atmosphere protocol ping
         return
       }
-
+ 
       let msg = JSON.parse(event.data)
 
       console.info(`in-msg --> ${msg.name}.${msg.method} ${JSON.stringify(msg.data)}`)
@@ -210,16 +210,8 @@ const store = (set, get) => ({
           set({ repo: msg.data[0] })
         }
 
-        let reflectedKey = msg.name + "." + msg.method
-
-        let remoteKey = null
-        if (msg.name.includes("@")) {
-          const prefix = msg.name.split("@")[0]
-          remoteKey = `${prefix}@${get().defaultRemoteId}.${msg.method}`
-        } else {
-          remoteKey = `${msg.name}@${get().defaultRemoteId}.${msg.method}`
-        }
-
+        let remoteKey = `${msg.sender}.${msg.method}`
+        
         // equivalent of MQTT RETAIN
         // store the message
         console.info(`storing message ${remoteKey} ${JSON.stringify(msg)}`)
