@@ -1,7 +1,7 @@
 export class ProcessData {
   public id: string | null = null
   public pid: number | null = null
-  public host: string | null = null
+  public hostname: string | null = null
   // normalize to node, chrome, electron, python, java, go etc. 1 level deep from service
   public platform: string | null = null
   public platformVersion: string | null = null
@@ -15,11 +15,11 @@ export class ProcessData {
   public constructor(
     id: string,
     pid: any,
-    host: string | null,
+    hostname: string | null,
     platform: string | null,
     platformVersion: string | null
   ) {
-    this.host = host
+    this.hostname = hostname
     this.id = id
     this.pid = pid
     this.platform = platform

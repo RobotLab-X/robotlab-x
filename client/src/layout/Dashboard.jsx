@@ -108,10 +108,6 @@ const Dashboard = () => {
 
           // FIXME - just runtime/registry
           response = await fetchGetJson("/runtime/getRegistry")
-          // const json = await response.json()
-          // console.info("json", json)
-          // should be AppData.ts
-          // setAppData(response)
           updateRegistry(response)
 
           const repoRequest = await fetchGetJson("/runtime/getRepo")

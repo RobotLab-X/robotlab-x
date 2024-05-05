@@ -98,7 +98,7 @@ export default class Main {
 
     // register process
     let pd: ProcessData = runtime.getLocalProcessData()
-    pd.host = host.hostname
+    pd.hostname = host.hostname
     runtime.startService()
 
     runtime.registerHost(host)

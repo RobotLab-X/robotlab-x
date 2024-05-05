@@ -306,7 +306,7 @@ export default class RobotLabXRuntime extends Service {
   }
 
   registerProcess(process: ProcessData) {
-    this.processes[`${process.id}@${process.host}`] = process
+    this.processes[`${process.id}@${process.hostname}`] = process
   }
 
   registerType(type: ServiceTypeData) {

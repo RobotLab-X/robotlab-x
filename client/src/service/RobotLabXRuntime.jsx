@@ -159,7 +159,7 @@ export default function RobotLabXRuntime(props) {
                       <br />
                       platform {pd.platform} {pd.platformVersion}
                       <br />
-                      host {pd.host}
+                      hostname {pd.hostname}
                     </Typography>
                   </Typography>
                   {/*
