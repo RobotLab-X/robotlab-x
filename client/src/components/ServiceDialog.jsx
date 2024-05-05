@@ -64,6 +64,12 @@ const ServiceDialog = ({ packages, open, setOpen }) => {
     setIsStartingService(false) // Reset the starting service state
   }
 
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleStartNewService()
+    }
+  }
+
   return (
     <div>
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md">
@@ -79,6 +85,7 @@ const ServiceDialog = ({ packages, open, setOpen }) => {
                   variant="outlined"
                   value={newServiceName}
                   onChange={(e) => setNewServiceName(e.target.value)}
+                  onKeyDown={handleKeyDown}
                 />
               </Grid>
               <Grid item>

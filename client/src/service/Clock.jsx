@@ -18,7 +18,7 @@ export default function Clock({ name, fullname, id }) {
       // Cleanup on unmount
       unsubscribeFrom(name, "publishEpoch")
     }
-  }, [subscribeTo /*, unsubscribeFrom*/])
+  }, [subscribeTo, unsubscribeFrom, name])
 
   // Set and memoize the epoch message
   useEffect(() => {

@@ -5,6 +5,7 @@ import { getLogger } from "./Log"
 
 const log = getLogger("Repo")
 
+// FIXME - there should be no catches in this class only throws
 export class Repo {
   protected repoMap = new Map<string, any>()
   protected services: Map<string, any> = new Map()
@@ -118,15 +119,8 @@ export class Repo {
   public copyPackage(name: string, typeKey: string) {
     const source = `./express/public/repo/${typeKey}/`
     const target = `./express/public/service/${name}`
-
-    try {
-      this.copyRecursiveSync(source, target)
-      log.info("copy operation completed successfully")
-    } catch (error) {
-      log.error("copy operation failed:", error)
-      return false
-    }
-    return true
+    this.copyRecursiveSync(source, target)
+    log.info("copy operation completed successfully")
   }
 
   private copyRecursiveSync(src: string, dest: string) {

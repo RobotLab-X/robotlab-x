@@ -173,12 +173,12 @@ export default class RobotLabXRuntime extends Service {
       log.info(`starting service: ${serviceName}, type: ${serviceType} in ${process.cwd()}`)
 
       // repo should be immutable - make a copy to service/{name} if one doesn't already exist
-      const pkgPath = `./express/public/service/${serviceName}`
+      const targetDir = `./express/public/service/${serviceName}`
       const repo = new Repo()
-      const successful = repo.copyPackage(serviceName, serviceType)
-      log.info(`successful ${successful}`)
+      repo.copyPackage(serviceName, serviceType)
+      log.info(`successful ${targetDir}`)
 
-      const pkgYmlFile = `${pkgPath}/package.yml`
+      const pkgYmlFile = `${targetDir}/package.yml`
 
       // loading type info
       log.info(`loading type data from ${pkgYmlFile}`)
@@ -198,10 +198,10 @@ export default class RobotLabXRuntime extends Service {
       if (pkg.platform === "python") {
         this.installInfo(`python required for ${serviceType}`)
         let installer = new InstallerPython()
-        installer.install()
-        // check if python is installed
-
-        // check if python version is correct
+        // default install venv and pip
+        // check if min python version is correct
+        installer.install({ cwd: targetDir })
+        dependenciesMet = true
       } else {
         log.info(`platform [${pkg.platform}] not supported`)
       }
@@ -224,7 +224,7 @@ export default class RobotLabXRuntime extends Service {
       // platform check - python version, pip installed, venv etc.
       // pip libraries and versions installed
 
-      log.info(`starting process ${pkgPath}/${pkg.cmd} ${pkg.args}`)
+      log.info(`starting process ${targetDir}/${pkg.cmd} ${pkg.args}`)
       let service: Service = null
       // spawn the process if none node process
       if (pkg.platform === "node") {
@@ -237,7 +237,8 @@ export default class RobotLabXRuntime extends Service {
       } else if (dependenciesMet) {
         log.info(`dependencies met for ${serviceName} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
         // spawn the process
-        const childProcess = spawn(pkg.cmd, pkg.args, { cwd: pkgPath })
+        log.info(`spawning process ${pkg.cmd} ${pkg.args} in ${targetDir}`)
+        const childProcess = spawn(pkg.cmd, pkg.args, { cwd: targetDir })
 
         childProcess.on("error", (err) => {
           log.error(`failed to start subprocess. ${err}`)

@@ -17,7 +17,7 @@ import { styled } from "@mui/material/styles"
 import ServiceDialog from "components/ServiceDialog"
 import React, { useEffect, useState } from "react"
 import { useStore } from "../store/store"
-import ReactJson from 'react-json-view'
+// import ReactJson from 'react-json-view'
 
 const imagesUrl = "http://localhost:3001/images"
 
@@ -254,7 +254,7 @@ export default function RobotLabXRuntime(props) {
       <ReactJson src={messages} name="messages" />
       <ReactJson src={message} name="log" />
        */}
-      <ReactJson src={messages} name="messages" />
+
       <br />
       {/** message ? <pre>{JSON.stringify(message, null, 2)}</pre> : <p>No message yet</p> */}
       {/**

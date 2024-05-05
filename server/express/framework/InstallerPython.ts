@@ -4,7 +4,7 @@ import { getLogger } from "./Log"
 const os = require("os")
 const { execSync } = require("child_process")
 
-const log = getLogger("Service")
+const log = getLogger("InstallerPython")
 
 interface ExecException extends Error {
   stderr?: Buffer
@@ -23,16 +23,15 @@ export default class InstallerPython {
 
   ready = false
 
-  optons = {
-    cwd: "/path/to/directory"
-  }
+  optons = {}
 
-  public install() {
+  public install(options: any = {}) {
     this.info("Checking python version")
+    this.optons = options
     this.getPythonVersion()
     this.getPipVersion()
-    this.installVirtualEnvPackage()
     this.createVenv()
+    this.installRequirements()
     this.createShell()
     this.activateVenv("venv")
     // pythonExe should be set and the version known
@@ -41,7 +40,7 @@ export default class InstallerPython {
     }
   }
 
-  installVirtualEnvPackage() {}
+  installRequirements() {}
 
   createShell() {}
   /**
@@ -71,21 +70,29 @@ export default class InstallerPython {
     let versionOutput = ""
 
     try {
+      // versionOutput = execSync("/usr/bin/python --version", this.optons).toString()
+      this.info(`trying python using options ${JSON.stringify(this.optons)}`)
       versionOutput = execSync("python --version", this.optons).toString()
       this.info(`python found ${versionOutput}`)
       this.pythonExe = "python"
     } catch (error) {
       this.info("python not found, trying python3")
-      console.error(`exec error: ${error}`)
+      log.error(`exec error: ${error}`)
 
       try {
         versionOutput = execSync("python3 --version", this.optons).toString()
         this.info(`python3 found ${versionOutput}`)
         this.pythonExe = "python3"
-      } catch (error) {
+      } catch (innerError) {
         this.info("giving up - send instructions to install python to user")
-        console.error(`${error}`)
-        return
+        this.info(
+          "Python is required but not installed. Download it from https://python.org/downloads and follow the installation steps for your operating system. Make sure to add Python to your system's PATH."
+        )
+        log.error(`${innerError}`)
+        throw new Error(
+          `Failed to find Python interpreter. Please ensure Python is installed. Inner error: ${innerError}`
+        )
+        // TODO - provide instructions for installing Python
       }
     }
 
@@ -99,7 +106,25 @@ export default class InstallerPython {
     }
   }
 
-  public getPipVersion() {}
+  public getPipVersion() {
+    let versionOutput = ""
+
+    try {
+      // Check if pip is available with Python
+      this.info(`Checking pip version using ${this.pythonExe}`)
+      versionOutput = execSync(`${this.pythonExe} -m pip --version`, this.optons).toString()
+      this.info(`pip found: ${versionOutput}`)
+    } catch (error) {
+      this.info("pip not found or not installed correctly.")
+      this.info(
+        'pip is required but not installed. If Python is installed, run "python -m ensurepip" to install pip, or follow the instructions at https://pip.pypa.io/en/stable/installation/.'
+      )
+      log.error(`exec error: ${error}`)
+      throw new Error(`Failed to find pip. Please ensure pip is installed. Error details: ${error}`)
+    }
+
+    return versionOutput
+  }
 
   // FIXME - promote to general utilities
   public compareVersions(v1: string, v2: string) {
@@ -153,7 +178,7 @@ export default class InstallerPython {
         this.error(`stderr: ${execError.stderr?.toString()}`) // Convert Buffer to string if it exists
         this.error(`stdout: ${execError.stdout?.toString()}`) // Convert Buffer to string if it exists
       } else {
-        console.error("An unexpected error occurred:", error)
+        log.error("An unexpected error occurred:", error)
       }
       return
     }

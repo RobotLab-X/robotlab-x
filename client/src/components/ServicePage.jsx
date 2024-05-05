@@ -20,7 +20,7 @@ export default function ServicePage(props) {
   } else if (service.typeKey === "TestNodeService") {
     type = "TestNodeService"
   } else {
-    type = "Servo"
+    type = "Unknown"
   }
 
   let AsyncPage = null
