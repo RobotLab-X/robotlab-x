@@ -1,52 +1,65 @@
+import { Button, Typography } from "@mui/material"
 import React, { useEffect, useState } from "react"
-import ReactJson from "react-json-view"
+// import ReactJson from "react-json-view"
 import { useStore } from "../store/store"
-// import ReactJson from 'react-json-view'
+import { useServiceStore } from "../store/useServiceStore"
 
-// Props should put in "name"
-// and all service types defined here
-// the consumer of this and other "views" of components need to be responsible
-// to make a layout that has the appropriat "typed" component and injected prop name
+export default function Clock({ name, fullname, id }) {
+  console.info(`Clock ${fullname}`)
 
-export default function Clock(props) {
-  console.info("Clock", props)
-  const subscribeTo = useStore((state) => state.subscribeTo)
-  const defaultRemoteId = useStore((state) => state.defaultRemoteId)
-  const message = useStore((state) => state.messages[`c1@${defaultRemoteId}.onEpoch`])
-
-  useEffect(() => {
-    // // Subscribe to changes in the 'registry' state
-    // const unsubscribe = useStore.subscribe(
-    //   (newRegistry) => {
-    //     // Handle updates to the registry here
-    //     console.log("Updated Registry:", newRegistry)
-    //   },
-    //   (state) => state.registry
-    // )
-
-    subscribeTo("c1", "publishEpoch")
-
-    // // Cleanup function when component unmounts
-    // return () => {
-    //   unsubscribe() // Unsubscribe from the store
-    // }
-  }, [])
-
-  // begin message log
+  const { subscribeTo, unsubscribeFrom, epochMsg } = useServiceStore(fullname, "publishEpoch")
+  const [timestamp, setTimestamp] = useState(null)
   const [epoch, setEpoch] = useState([])
-  useEffect(() => {
-    if (message) {
-      // Add the new message to the log
-      console.log("New message:", message)
-      setEpoch((log) => message)
-    }
-  }, [JSON.stringify(message)]) // Dependency array includes message, so this runs only if message changes
+  const sendTo = useStore((state) => state.sendTo)
 
-  // end message log
+  useEffect(() => {
+    subscribeTo(name, "publishEpoch")
+    return () => {
+      // Cleanup on unmount
+      unsubscribeFrom(name, "publishEpoch")
+    }
+  }, [subscribeTo /*, unsubscribeFrom*/])
+
+  // Set and memoize the epoch message
+  useEffect(() => {
+    if (epochMsg) {
+      console.log("New message:", epochMsg)
+      setEpoch(epochMsg) // Directly use the new message
+      setTimestamp(epochMsg.data[0])
+    }
+  }, [epochMsg])
+
+  // Memoized rendering of the JSON data to optimize performance
+  // const jsonData = useMemo(() => ({ epoch }), [epoch])
+
+  const handleStart = () => {
+    // TODO add interval
+    sendTo(name, "startClock")
+  }
+
+  const handleStop = () => {
+    sendTo(name, "stopClock")
+  }
 
   return (
     <>
-      <ReactJson src={epoch} name="epoch" />
+      {timestamp ? (
+        <>
+          <Typography variant="h6">Current Timestamp (ms): {timestamp}</Typography>
+          <Typography variant="h6">Formatted Date/Time: {new Date(timestamp).toLocaleString()}</Typography>
+        </>
+      ) : (
+        <Typography variant="h6">No timestamp available</Typography>
+      )}
+      <Button variant="contained" color="primary" onClick={handleStart}>
+        Start
+      </Button>
+      <Button variant="contained" color="secondary" onClick={handleStop} style={{ marginLeft: "8px" }}>
+        Stop
+      </Button>
+      {/*
+      <ReactJson src={jsonData} name="epochMsg" />
+      */}
     </>
   )
 }

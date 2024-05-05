@@ -1,9 +1,13 @@
 ## TODO
-
+* Refactor ... very simple .. full name for all services, all services register individually, including local runtime
+* ! Configuration - Service.getConfig
 * HATEOS - ability to query from top / non "cenralized" / and get all info regarding interfaces
 * for repo package.yml for node services "same-process" should be an option, or shared process an option in both
   node and all platform stuff ... default for node would be true, default for python would be false ?
 * need an "alias" table  ... which can condense a service@host@pid down to a single unique service name
+* unsubscribe when move focus
+* CodecUtil.ts is a mess between client and server
+* get exe builds working
 
 ### From ROS ROS2
 * remapping - defaults are root names e.g. service@id@host/someOutput - how to remap and to what ? 

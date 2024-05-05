@@ -5,11 +5,11 @@ export default class TestService extends Service {
   constructor(
     public id: string,
     public name: string,
-    public type: string,
+    public typeKey: string,
     public version: string,
     public hostname: string
   ) {
-    super(id, name, type, version, hostname) // Call the base class constructor if needed
+    super(id, name, typeKey, version, hostname) // Call the base class constructor if needed
   }
 
   onUptime(msg: string): string {

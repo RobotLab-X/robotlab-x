@@ -169,7 +169,7 @@ const store = (set, get) => ({
         // atmosphere protocol ping
         return
       }
- 
+
       let msg = JSON.parse(event.data)
 
       console.info(`in-msg --> ${msg.name}.${msg.method} ${JSON.stringify(msg.data)}`)
@@ -211,7 +211,7 @@ const store = (set, get) => ({
         }
 
         let remoteKey = `${msg.sender}.${msg.method}`
-        
+
         // equivalent of MQTT RETAIN
         // store the message
         console.info(`storing message ${remoteKey} ${JSON.stringify(msg)}`)
@@ -274,8 +274,14 @@ const store = (set, get) => ({
   subscribeTo: function (name, method) {
     // FIXME- merge more args
     var args = Array.prototype.slice.call(arguments, 1)
-    var msg = get().createMessage(name, "addListener", [method, "runtime" + "@" + get().id])
-    // msg.sendingMethod = "subscribeTo"
+    var msg = get().createMessage(name, "addListener", [method, "runtime@" + get().id])
+    get().sendMessage(msg)
+  },
+
+  unsubscribeFrom: function (name, method) {
+    // FIXME- merge more args
+    var args = Array.prototype.slice.call(arguments, 1)
+    var msg = get().createMessage(name, "removeListener", [method, "runtime@" + get().id])
     get().sendMessage(msg)
   },
 
