@@ -64,12 +64,14 @@ function Home() {
                       width="32"
                       style={{ verticalAlign: "middle" }}
                     />{" "}
+                    {/*
                     <img
                       src={`${imagesUrl}/platform/${repo[card.typeKey]?.platform}.png`}
                       alt={card.typeKey}
                       width="16"
                     />{" "}
                     <img src={`${imagesUrl}/os/linux.png`} alt={card.typeKey} width="16" />
+                    */}
                     &nbsp;{card.name}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">

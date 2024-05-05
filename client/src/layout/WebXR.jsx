@@ -44,8 +44,8 @@ function Scene() {
 
   let pc = null
   let protocol = window.location.protocol
-  let host = window.location.hostname
-  let webrtc_url = protocol + "//" + host + ":8080"
+  let hostname = window.location.hostname
+  let webrtc_url = protocol + "//" + hostname + ":8080"
 
   function negotiate() {
     pc.addTransceiver("video", { direction: "recvonly" })

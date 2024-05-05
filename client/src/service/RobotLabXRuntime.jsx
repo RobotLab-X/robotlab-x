@@ -1,24 +1,12 @@
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import PlaylistAddIcon from "@mui/icons-material/PlaylistAddOutlined"
-import {
-  Box,
-  Card,
-  CardActionArea,
-  CardActions,
-  CardContent,
-  Collapse,
-  Grid,
-  IconButton,
-  Tab,
-  Tabs,
-  Typography
-} from "@mui/material"
+import { Box, Card, CardActionArea, CardContent, Grid, IconButton, Tab, Tabs, Typography } from "@mui/material"
 import { styled } from "@mui/material/styles"
 import ServiceDialog from "components/ServiceDialog"
 import React, { useEffect, useState } from "react"
+import ReactJson from "react-json-view"
 import { useStore } from "../store/store"
-// import ReactJson from 'react-json-view'
 
+const repoUrl = "http://localhost:3001/repo"
 const imagesUrl = "http://localhost:3001/images"
 
 // Props should put in "name"
@@ -157,16 +145,30 @@ export default function RobotLabXRuntime(props) {
         Detailed view for Processes
         <Grid container justifyContent="left">
           <Grid item xs={12} sm={8} md={6} lg={4}>
-            {processArray.map((host, index) => (
-              <Card key={index} onClick={() => handleHostClick(host)} sx={{ margin: 1 }}>
+            {processArray.map((pd, index) => (
+              <Card key={index} onClick={() => handleHostClick(pd)} sx={{ margin: 1 }}>
                 <CardContent>
                   <Typography variant="h5" component="div">
-                    Header
+                    <Typography variant="h5">
+                      <img src={`${imagesUrl}/platform/${pd?.platform}.png`} alt={pd?.platform} width="16" />{" "}
+                      <img src={`${imagesUrl}/os/linux.png`} alt={pd.typeKey} width="16" />
+                      &nbsp;{pd.id}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      pid {pd.pid}
+                      <br />
+                      platform {pd.platform} {pd.platformVersion}
+                      <br />
+                      host {pd.host}
+                    </Typography>
                   </Typography>
+                  {/*
                   <Typography component="div" variant="body2" color="text.secondary">
                     Click to expand more details.
                   </Typography>
+                    */}
                 </CardContent>
+                {/*
                 <CardActions disableSpacing>
                   <ExpandMore
                     expand={expanded}
@@ -185,6 +187,7 @@ export default function RobotLabXRuntime(props) {
                     </Typography>
                   </CardContent>
                 </Collapse>
+                  */}
               </Card>
             ))}
           </Grid>
@@ -254,7 +257,7 @@ export default function RobotLabXRuntime(props) {
       <ReactJson src={messages} name="messages" />
       <ReactJson src={message} name="log" />
        */}
-
+      <ReactJson src={processArray} name="log" />
       <br />
       {/** message ? <pre>{JSON.stringify(message, null, 2)}</pre> : <p>No message yet</p> */}
       {/**

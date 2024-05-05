@@ -198,7 +198,6 @@ const store = (set, get) => ({
         }
 
         if (key === `runtime@${get().id}.onRegistered`) {
-          msg.data[0].id = get().defaultRemoteId
           get().updateRegistryOnRegistered(msg.data[0])
         }
 

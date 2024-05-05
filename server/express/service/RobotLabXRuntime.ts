@@ -193,6 +193,8 @@ export default class RobotLabXRuntime extends Service {
 
       let dependenciesMet = false
 
+      let platformInfo = null
+
       // determine necessary platform python, node, docker, java
       // yes | no -> install -> yes | no
       if (pkg.platform === "python") {
@@ -200,7 +202,7 @@ export default class RobotLabXRuntime extends Service {
         let installer = new InstallerPython()
         // default install venv and pip
         // check if min python version is correct
-        installer.install({ cwd: targetDir })
+        platformInfo = installer.install({ cwd: targetDir })
         dependenciesMet = true
       } else {
         log.info(`platform [${pkg.platform}] not supported`)
@@ -250,16 +252,19 @@ export default class RobotLabXRuntime extends Service {
           service = new Service(childProcess.pid.toString(), serviceName, serviceType, version, this.getHostname())
         }
         // register the process
+        let platformVersion = platformInfo?.platformVersion
         const pd: ProcessData = new ProcessData(
           serviceName,
           childProcess.pid.toString(),
           this.getHostname(),
           pkg.platform,
-          pkg.platformVersion
+          platformVersion ? platformVersion : pkg.platformVersion // actual vs requested version
         )
         this.registerProcess(pd)
 
-        service = new Service(childProcess.pid.toString(), serviceName, serviceType, version, this.getHostname())
+        // service = new Service(childProcess.pid.toString(), serviceName, serviceType, version, this.getHostname())
+        // for unaliased ids for services - single process services will be serviceName@serviceName
+        service = new Service(serviceName, serviceName, serviceType, version, this.getHostname())
 
         log.info(`process ${JSON.stringify(childProcess)}`)
       } else {

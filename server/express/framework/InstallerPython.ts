@@ -25,10 +25,11 @@ export default class InstallerPython {
 
   optons = {}
 
-  public install(options: any = {}) {
+  public install(options: any = {}): any {
     this.info("Checking python version")
+    let platformInfo = { platform: "python", platformVersion: "unknown" }
     this.optons = options
-    this.getPythonVersion()
+    platformInfo.platformVersion = this.getPythonVersion()
     this.getPipVersion()
     this.createVenv()
     this.installRequirements()
@@ -38,6 +39,8 @@ export default class InstallerPython {
     if (this.useVenv) {
       this.createVenv()
     }
+
+    return platformInfo
   }
 
   installRequirements() {}
@@ -66,8 +69,8 @@ export default class InstallerPython {
     this.server.invoke("publishInstallLog", `error: ${msg}`)
   }
 
-  public getPythonVersion() {
-    let versionOutput = ""
+  public getPythonVersion(): string {
+    let versionOutput = "unknown"
 
     try {
       // versionOutput = execSync("/usr/bin/python --version", this.optons).toString()
@@ -104,6 +107,7 @@ export default class InstallerPython {
     } else {
       this.info("Python version could not be parsed.")
     }
+    return this.pythonExeVersion
   }
 
   public getPipVersion() {

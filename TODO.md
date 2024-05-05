@@ -1,6 +1,7 @@
 ## TODO
+* start doing unit tests - because your forgetting what has been done, and how much it works
 * Refactor ... very simple .. full name for all services, all services register individually, including local runtime
-* ! Configuration - Service.getConfig
+* ! Configuration - Service.getConfig - make config executable like ROS config.js
 * HATEOS - ability to query from top / non "cenralized" / and get all info regarding interfaces
 * for repo package.yml for node services "same-process" should be an option, or shared process an option in both
   node and all platform stuff ... default for node would be true, default for python would be false ?
