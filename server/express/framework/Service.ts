@@ -33,7 +33,9 @@ export default class Service {
     if (remoteMethod === null || remoteMethod === "" || remoteMethod === undefined) {
       remoteMethod = CodecUtil.getCallbackTopicName(method)
     }
-    log.info(`adding listener ${this.name}.${method} --> ${remoteName}.${method}`)
+
+    // log.info(`== addListener ${this.name}.${method} --> ${remoteName}.${remoteMethod}`)
+
     if (!(method in this.notifyList)) {
       this.notifyList[method] = []
     }
@@ -99,9 +101,10 @@ export default class Service {
       // send message to remote service
       // log.info(`sending message to ${msgFullName}.${msg.method}`)
       // this.gateway.send(msg)
-      log.info(`<--- ${msgFullName}.${msg.method} <-- ${this.name}.${msg.method}`)
+      const json = JSON.stringify(msg)
+      log.info(`<-- ${msgFullName}.${msg.method} <-- ${msg.sender}.${msg.method} ${JSON.stringify(msg.data)}`)
       log.info(`clients ${[...Store.getInstance().getClients().keys()]} `)
-      Store.getInstance().getClient(msgId)?.send(JSON.stringify(msg))
+      Store.getInstance().getClient(msgId)?.send(json)
       // FIXME !! - need to implement gateway
       return null
     }
@@ -154,7 +157,7 @@ export default class Service {
         this.notifyList[msg.method].forEach((listener: any) => {
           let subMsg = new Message(listener.callbackName, listener.callbackMethod, [ret])
           subMsg.sender = this.getFullName()
-          log.info(`---> notify ${listener.callbackName}.${listener.callbackMethod}`)
+          // log.info(`<- notify ${listener.callbackName}.${listener.callbackMethod}`)
           this.invokeMsg(subMsg)
         })
       }
@@ -177,14 +180,15 @@ export default class Service {
       remoteMethod = CodecUtil.getCallbackTopicName(method)
     }
 
-    log.info(`removing listener ${this.name}.${method} --> ${remoteName}.${method}`)
-    if (!this.notifyList.has(method)) {
+    // log.info(`== removeListener ${this.name}.${method} --> ${remoteName}.${remoteMethod}`)
+
+    if (!this.notifyList || !this.notifyList.hasOwnProperty(method)) {
       return
     }
 
-    this.notifyList.get(method).forEach((listener: any, index: any) => {
+    this.notifyList[method].forEach((listener: any, index: any) => {
       if (listener.callbackName === remoteName && listener.callbackMethod === remoteMethod) {
-        this.notifyList.get(method)?.splice(index, 1)
+        this.notifyList[method].splice(index, 1)
         return
       }
     })

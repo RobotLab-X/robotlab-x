@@ -1,10 +1,10 @@
 // store.js
 import { create } from "zustand"
-import NameGenerator from "../framework/NameGenerator"
 import Message from "../models/Message"
 const store = (set, get) => ({
   // id of this process
-  id: `robot-x-ui-${NameGenerator.getName()}`,
+  //  id: `ui-${NameGenerator.getName()}`,
+  id: `ui-rlx`,
 
   defaultRemoteId: null,
 
@@ -172,7 +172,7 @@ const store = (set, get) => ({
 
       let msg = JSON.parse(event.data)
 
-      console.info(`in-msg --> ${msg.name}.${msg.method} ${JSON.stringify(msg.data)}`)
+      console.info(`---> ${msg.name}.${msg.method} ${JSON.stringify(msg.data)}`)
 
       try {
         let key = msg.name + "." + msg.method
@@ -250,8 +250,10 @@ const store = (set, get) => ({
 
   // FIXME no need to double encode
   sendMessage: (msg) => {
+    const json = JSON.stringify(msg)
+
     // GOOD DEBUGGING
-    // console.info('out-msg <-- ' + msg.name + '.' + msg.method)
+    console.info(`<-- ${msg.name}.${msg.method} ${JSON.stringify(msg.data)}`)
     // msg.encoding = "json"
     // if (msg.data) {
     //   for (let i = 0; i < msg.data.length; i++) {
@@ -259,7 +261,6 @@ const store = (set, get) => ({
     //   }
     // }
 
-    var json = JSON.stringify(msg)
     get().sendJsonMessage(json)
   },
 
@@ -292,8 +293,7 @@ const store = (set, get) => ({
   createMessage: (inName, inMethod, inParams) => {
     // TODO: consider a different way to pass inParams for a no arg method.
     // rather than an array with a single null element.
-    const remoteId = "mrl-id"
-    const id = "react-app-id"
+    const id = get().id
 
     // var msg = {
     //   msgId: new Date().getTime(),

@@ -1,3 +1,48 @@
+```mermaid
+sequenceDiagram
+    participant client as client runtime@ui-rlx@first
+    participant server as server runtime@rlx@first
+
+    client->>client: registers self ???? where ???
+    server->>server: registers self in ElectronStarter.ts
+    %%Note right of server: registers self in ElectronStarter.ts
+    client->>server: initial http upgrade /api/messages?user=root&pwd=pwd&session_id=2309adf3dlkdk&id=ui-rlx
+    server->>server: registers connections associates id to connection
+
+    %%Note over client,server: added listeners
+    client->>server: runtime.addListener(["getServiceNames","runtime@ui-rlx"])
+    client->>server: runtime.addListener(["getService","runtime@ui-rlx"])
+    client->>server: runtime.getServiceNames()
+
+    server->>client: runtime@ui-rlx.onServiceNames <-- runtime@rlx.onServiceNames [["runtime@rlx"]]
+
+
+    %%Note over client,server: added more listeners
+    client->>server: runtime.addListener(["getRegistry","runtime@ui-rlx"])
+    client->>server: runtime.addListener(["getRepo","runtime@ui-rlx"])
+    client->>server: runtime.addListener(["registered","runtime@ui-rlx"])
+
+    client->>server: runtime.register([{"startTime":null,"id":"ui-rlx","name":"runtime","typeKey":"RobotLabXUI","version":"0.0.1","hostname":"electron"}])
+
+    server->>client: runtime@rlx.onRegistered [{"startTime":null,"id":"ui-rlx","name":"runtime","typeKey":"RobotLabXUI","version":"0.0.1","hostname":"electron"}]
+
+    client->>server: runtime.getRegistry()
+
+    server->>client: runtime@rlx.onRegistry [{"runtime@rlx":{"startTime":"2024-05-06T02:56:28.826Z","id":"rlx","name" ...
+
+    client->>server: runtime.getRepo()
+
+    servier->>clinet: runtime@rlx.onRepo [{"Clock":{"typeKey": ...
+
+    client->>server: runtime.getService(["runtime@rlx"])
+
+    server->>client: runtime@rlx.onService [{"startTime":"2024-05-06T02:56:28.826Z","id":"rlx","name":"runtime"...
+
+    %%Note over client,server: Service A is the client sending requests.<br> Service B processes them and responds.
+
+```
+
+
 # react-express-electron-boilerplate
 A boilerplate to generate an Electron app with a React Front end and an Express BackEnd embedded.
 

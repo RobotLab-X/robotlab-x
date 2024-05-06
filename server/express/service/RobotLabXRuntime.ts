@@ -346,7 +346,21 @@ export default class RobotLabXRuntime extends Service {
     return Store.getInstance().getRegistry()
   }
 
+  /**
+   * Returns full name of all services
+   * @returns Array of all registry service names
+   */
   getServiceNames(): string[] {
+    const localId = RobotLabXRuntime.instance.getId() // Assuming CodecUtil.getId() returns the local ID string
+    const registry = Store.getInstance().getRegistry() // Assuming this returns a dictionary
+    return Object.keys(registry)
+  }
+
+  /**
+   * Returns only local services and short names
+   * @returns Array of short names of local services
+   */
+  getLocalServiceNames(): string[] {
     const localId = RobotLabXRuntime.instance.getId() // Assuming CodecUtil.getId() returns the local ID string
     const registry = Store.getInstance().getRegistry() // Assuming this returns a dictionary
 

@@ -86,10 +86,10 @@ export default class Main {
     // FIXME - do this in RobotLabXRuntime
     Main.store = Store.createInstance()
 
-    // TODO - allow id to be passed in or configured
+    // FIXME - allow id to be passed in or configured
     //    let runtime: RobotLabXRuntime = RobotLabXRuntime.createInstance(NameGenerator.getName(), os.hostname())
     NameGenerator.getName()
-    let runtime: RobotLabXRuntime = RobotLabXRuntime.createInstance("robotlab-x", os.hostname())
+    let runtime: RobotLabXRuntime = RobotLabXRuntime.createInstance("rlx", os.hostname())
 
     // FIXME - do the following in RobotLabXRuntime
 
@@ -100,7 +100,6 @@ export default class Main {
     let pd: ProcessData = runtime.getLocalProcessData()
     pd.hostname = host.hostname
     runtime.startService()
-
     runtime.registerHost(host)
     runtime.registerProcess(pd)
     runtime.register(runtime)

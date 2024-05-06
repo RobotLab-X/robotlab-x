@@ -229,7 +229,7 @@ export default class Store {
     return (message: any) => {
       try {
         const msg = JSON.parse(message)
-        log.info(`--> ws ${JSON.stringify(msg)}`)
+        // log.info(`--> ws ${JSON.stringify(msg)}`)
         this.handleMessage(msg)
       } catch (e) {
         // ui error - user should be informed
@@ -247,9 +247,9 @@ export default class Store {
   private handleMessage(msg: Message) {
     try {
       if (msg.data && msg.data.length > 0) {
-        log.info(`${msg.sender} ==> ${msg.name}.${msg.method}(${JSON.stringify(msg.data)})`)
+        log.info(`--> ${msg.sender} --> ${msg.name}.${msg.method}(${JSON.stringify(msg.data)})`)
       } else {
-        log.info(`${msg.sender} ==> ${msg.name}.${msg.method}()`)
+        log.info(`--> ${msg.sender} --> ${msg.name}.${msg.method}()`)
       }
 
       // fully address name
