@@ -1,6 +1,8 @@
 // store.js
 import { create } from "zustand"
+import CodecUtil from "../framework/CodecUtil"
 import Message from "../models/Message"
+
 const store = (set, get) => ({
   // id of this process
   //  id: `ui-${NameGenerator.getName()}`,
@@ -205,9 +207,9 @@ const store = (set, get) => ({
           set({ registry: msg.data[0] })
         }
 
-        if (key === `runtime@${get().id}.onRepo`) {
-          set({ repo: msg.data[0] })
-        }
+        // if (key === `runtime@${get().id}.onRepo`) {
+        //   set({ repo: msg.data[0] })
+        // }
 
         let remoteKey = `${msg.sender}.${msg.method}`
 
@@ -281,6 +283,7 @@ const store = (set, get) => ({
   unsubscribeFrom: function (name, method) {
     // FIXME- merge more args
     var args = Array.prototype.slice.call(arguments, 1)
+    console.info(`unsubscribing from ${name} ${method}`)
     var msg = get().createMessage(name, "removeListener", [method, "runtime@" + get().id])
     get().sendMessage(msg)
   },
@@ -288,6 +291,12 @@ const store = (set, get) => ({
   getFullName: (name) => {
     // FIXME - fix correctly
     return name
+  },
+
+  useMessage: (fullname, method) => {
+    const key = fullname + "." + CodecUtil.getCallbackTopicName(method)
+    const msg = get().messages[key]
+    return msg
   },
 
   createMessage: (inName, inMethod, inParams) => {

@@ -2,48 +2,48 @@ import { Button, Typography } from "@mui/material"
 import React, { useEffect, useState } from "react"
 // import ReactJson from "react-json-view"
 import { useStore } from "../store/store"
-import { useServiceStore } from "../store/useServiceStore"
 
 export default function Clock({ name, fullname, id }) {
   console.info(`Clock ${fullname}`)
 
-  const { subscribeTo, unsubscribeFrom, epochMsg } = useServiceStore(fullname, "publishEpoch")
+  const { subscribeTo, unsubscribeFrom, useMessage } = useStore()
+
+  // msg event callbacks
+  const epochMsg = useMessage(fullname, "publishEpoch")
+
   const [timestamp, setTimestamp] = useState(null)
-  const [epoch, setEpoch] = useState([])
   const sendTo = useStore((state) => state.sendTo)
 
   useEffect(() => {
-    subscribeTo(name, "publishEpoch")
+    // put subscribes here
+    subscribeTo(fullname, "publishEpoch")
     return () => {
+      // unsubscribe here
       // Cleanup on unmount
-      unsubscribeFrom(name, "publishEpoch")
+      unsubscribeFrom(fullname, "publishEpoch")
     }
-  }, [subscribeTo, unsubscribeFrom, name])
+  }, [subscribeTo, unsubscribeFrom, fullname])
 
   // Set and memoize the epoch message
   useEffect(() => {
     if (epochMsg) {
-      console.log("New message:", epochMsg)
-      setEpoch(epochMsg) // Directly use the new message
+      console.log("new message:", epochMsg)
       setTimestamp(epochMsg.data[0])
     }
   }, [epochMsg])
 
-  // Memoized rendering of the JSON data to optimize performance
-  // const jsonData = useMemo(() => ({ epoch }), [epoch])
-
   const handleStart = () => {
     // TODO add interval
-    sendTo(name, "startClock")
+    sendTo(fullname, "startClock")
   }
 
   const handleStop = () => {
-    sendTo(name, "stopClock")
+    sendTo(fullname, "stopClock")
   }
 
   return (
     <>
-      {timestamp ? (
+      {epochMsg ? (
         <>
           <Typography variant="h6">Current Timestamp (ms): {timestamp}</Typography>
           <Typography variant="h6">Formatted Date/Time: {new Date(timestamp).toLocaleString()}</Typography>

@@ -103,7 +103,8 @@ export default class Service {
       // this.gateway.send(msg)
       const json = JSON.stringify(msg)
       log.info(`<-- ${msgFullName}.${msg.method} <-- ${msg.sender}.${msg.method} ${JSON.stringify(msg.data)}`)
-      log.info(`clients ${[...Store.getInstance().getClients().keys()]} `)
+      // FIXME bork'd - need state information regarding connectivity of process/service, and its an "array" of connections
+      log.info(`clients / connections ${[...Store.getInstance().getClients().keys()]} `)
       Store.getInstance().getClient(msgId)?.send(json)
       // FIXME !! - need to implement gateway
       return null
@@ -176,22 +177,32 @@ export default class Service {
   }
 
   removeListener(method: string, remoteName: string, remoteMethod: string) {
-    if (remoteMethod === null) {
+    // log.warn(`removeListener ${method} ${remoteName} ${remoteMethod}`)
+
+    if (remoteMethod === null || remoteMethod === undefined) {
+      // log.info(`remoteMethod is null, setting to ${CodecUtil.getCallbackTopicName(method)}`)
       remoteMethod = CodecUtil.getCallbackTopicName(method)
     }
 
     // log.info(`== removeListener ${this.name}.${method} --> ${remoteName}.${remoteMethod}`)
 
     if (!this.notifyList || !this.notifyList.hasOwnProperty(method)) {
+      // log.error("no listeners for method " + method)
       return
     }
 
     this.notifyList[method].forEach((listener: any, index: any) => {
+      // log.info(
+      //   `checking listener ${listener.callbackName}.${listener.callbackMethod} for ${remoteName}.${remoteMethod}`
+      // )
       if (listener.callbackName === remoteName && listener.callbackMethod === remoteMethod) {
         this.notifyList[method].splice(index, 1)
+        //        log.info(`removed listener on ${method} for -> ${remoteName}.${remoteMethod}`)
         return
       }
     })
+
+    //log.error("no listeners for method " + method)
   }
 
   publishStatus(status: Status) {
