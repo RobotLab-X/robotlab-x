@@ -1,4 +1,6 @@
 ## TODO
+* focus on stdout from new process & Distributed rlx !
+* figure out if registered is needed in RobotLabXRuntime.jsx .. or if getService should be unsubscribed.. and how "init" and "update" with new service works
 * start doing unit tests - because your forgetting what has been done, and how much it works
 * Refactor ... very simple .. full name for all services, all services register individually, including local runtime
 * ! Configuration - Service.getConfig - make config executable like ROS config.js

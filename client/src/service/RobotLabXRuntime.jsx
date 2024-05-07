@@ -7,6 +7,7 @@ import { useProcessedMessage } from "../hooks/useProcessedMessage"
 import { useStore } from "../store/store"
 import useServiceSubscription from "../store/useServiceSubscription"
 
+// FIXME - determine if registered is needed ... "probably"
 // FIXME - certainly a place to have a parent class from which this should drive
 // FIXME - make subscomponents for data objects and displays !!!
 // FIXME - use "baseUrl" from store/config
@@ -116,8 +117,13 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
   const hostArray = service?.hosts ? Object.values(service.hosts) : []
   const processArray = service?.processes ? Object.values(service.processes) : []
 
+  const host = service?.hosts ? service.hosts[service.hostname] : null
+
+  const displayMemory = host?.totalMemory != null ? Math.round(host.totalMemory / 1048576) : "N/A"
+
   return (
     <>
+      {host?.hostname} {host?.platform} {host?.architecture}
       <Tabs value={activeTab} onChange={handleChange} aria-label="stats tabs">
         <Tab label={`Services ${Object.keys(registry).length}`} />
         <Tab label={`Processes ${processArray.length}`} />
@@ -141,7 +147,7 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
                       &nbsp;{host.name}
                     </Typography>
                     <Typography component="div" variant="body2" color="text.secondary">
-                      {host.platform} {host.architecture}
+                      {host.platform} {host.architecture} cpus {host.numberOfCPUs} memory {displayMemory} MB
                     </Typography>
                   </CardContent>
                 </CardActionArea>
@@ -217,9 +223,7 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
         </Grid>{" "}
       </TabPanel>
       {repo && <ServiceDialog packages={repo} open={open} setOpen={setOpen} />}
-
       <br />
-
       <Grid container spacing={2} alignItems="flex-start">
         <Grid item xs={12} sm={8} md={6} lg={4}>
           Message Log:
@@ -264,7 +268,7 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
       <ReactJson src={messages} name="messages" />
       <ReactJson src={service} name="state" />
        */}
-      {repo && <ReactJson src={repo} name="repo" />}
+      {service && <ReactJson src={service} name="service" />}
       <br />
       {/** message ? <pre>{JSON.stringify(message, null, 2)}</pre> : <p>No message yet</p> */}
       {/**

@@ -33,10 +33,10 @@
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig-build.json && cp -r ./express/public ./dist/express && cp -r ./config ./dist/config && cp ./express/framework/LaunchDescription.js ./dist/express/framework",
+    "build": "tsc -p tsconfig-build.json && shx cp -r ./express/public ./dist/express && shx cp -r ./config ./dist/config && shx cp ./express/framework/LaunchDescription.js ./dist/express/framework",
     "remove-package-folder": "rm -rf dist/packages",
-    "move-packages": "cp -r dist/packages/.[0-z]* dist/packages/* ../dist && rm -rf dist/packages/*",
-    "move-build": "yarn run remove-package-folder && cp -r dist/* ../build && rm -rf dist/* dist/.[0-z]* && rm -rf dist",
+    "move-packages": "shx cp -r dist/packages/.[0-z]* dist/packages/* ../dist && rm -rf dist/packages/*",
+    "move-build": "yarn run remove-package-folder && shx cp -r dist/* ../build && rm -rf dist/* dist/.[0-z]* && rm -rf dist",
     "electron-build-all": "yarn run electron-build-mac && yarn run electron-build-win && yarn run electron-build-linux && yarn run move-build",
     "electron-build-mac": "electron-builder -m && yarn run move-packages",
     "electron-build-win": "electron-builder -w && yarn run move-packages",
