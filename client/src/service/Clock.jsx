@@ -1,29 +1,24 @@
 // Clock.jsx
 import { Button, Typography } from "@mui/material"
-import React, { useEffect, useState } from "react"
+// import React, { useEffect, useState } from "react"
 import ReactJson from "react-json-view"
+import { useProcessedMessage } from "../hooks/useProcessedMessage"
 import { useStore } from "../store/store"
 import useServiceSubscription from "../store/useServiceSubscription"
 
+// FIXME remove fullname with context provider
 export default function Clock({ fullname }) {
   const { useMessage, sendTo } = useStore()
+
+  // makes reference to the message object in store
   const epochMsg = useMessage(fullname, "publishEpoch")
 
+  // creates subscriptions to topics and returns the broadcastState message reference
   const serviceMsg = useServiceSubscription(fullname, ["publishEpoch"])
 
-  const [timestamp, setTimestamp] = useState(null)
-  const [service, setService] = useState({})
-
-  useEffect(() => {
-    if (epochMsg) {
-      console.log("new epoch message:", epochMsg)
-      setTimestamp(epochMsg.data[0])
-    }
-    if (serviceMsg) {
-      console.log("new service message:", serviceMsg)
-      setService(serviceMsg.data[0])
-    }
-  }, [epochMsg, serviceMsg])
+  // processes the msg.data[0] and returns the data
+  const service = useProcessedMessage(serviceMsg)
+  const timestamp = useProcessedMessage(epochMsg)
 
   const handleStart = () => {
     sendTo(fullname, "startClock")

@@ -13,6 +13,11 @@ import AppSidebar from "./layout/global/AppSidebar"
 import Topbar from "./layout/global/Topbar"
 import { ColorModeContext, useMode } from "./theme"
 
+/**
+ * This effectively is the implementation of RobotLabXUI type "runtime"
+ * TODO - needs similar properties as all services
+ * @returns
+ */
 function App() {
   // use approriate store selectors
   const connect = useStore((state) => state.connect)
