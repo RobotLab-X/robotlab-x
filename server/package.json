@@ -56,6 +56,7 @@
     "electron-devtools-installer": "^3.2.0",
     "electron-reload": "^2.0.0-alpha.1",
     "nodemon": "^3.1.0",
+    "shx": "^0.3.4",
     "source-map-support": "^0.5.21",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5",
