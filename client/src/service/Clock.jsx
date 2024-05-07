@@ -1,49 +1,31 @@
+// Clock.jsx
 import { Button, Typography } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import ReactJson from "react-json-view"
 import { useStore } from "../store/store"
+import useServiceSubscription from "../store/useServiceSubscription"
 
-export default function Clock({ name, fullname, id }) {
-  console.info(`Clock ${fullname}`)
-
-  const { subscribeTo, unsubscribeFrom, useMessage, sendTo } = useStore()
-
-  // msg event callbacks
+export default function Clock({ fullname }) {
+  const { useMessage, sendTo } = useStore()
   const epochMsg = useMessage(fullname, "publishEpoch")
-  const serviceMsg = useMessage(fullname, "broadcastState")
 
-  // ui states
+  const serviceMsg = useServiceSubscription(fullname, ["publishEpoch"])
+
   const [timestamp, setTimestamp] = useState(null)
   const [service, setService] = useState({})
 
   useEffect(() => {
-    subscribeTo(fullname, "publishEpoch")
-    subscribeTo(fullname, "broadcastState")
-
-    sendTo(fullname, "broadcastState")
-
-    return () => {
-      unsubscribeFrom(fullname, "publishEpoch")
-      unsubscribeFrom(fullname, "broadcastState")
-    }
-  }, [subscribeTo, unsubscribeFrom, sendTo, fullname])
-
-  useEffect(() => {
-    if (serviceMsg) {
-      console.log("new getRepo msg:", serviceMsg)
-      setService(serviceMsg.data[0])
-    }
-  }, [serviceMsg])
-
-  useEffect(() => {
     if (epochMsg) {
-      console.log("new message:", epochMsg)
+      console.log("new epoch message:", epochMsg)
       setTimestamp(epochMsg.data[0])
     }
-  }, [epochMsg])
+    if (serviceMsg) {
+      console.log("new service message:", serviceMsg)
+      setService(serviceMsg.data[0])
+    }
+  }, [epochMsg, serviceMsg])
 
   const handleStart = () => {
-    // TODO add interval
     sendTo(fullname, "startClock")
   }
 
@@ -53,7 +35,8 @@ export default function Clock({ name, fullname, id }) {
 
   return (
     <>
-      {epochMsg ? (
+      <Typography variant="h6">Clock: {fullname}</Typography>
+      {timestamp ? (
         <>
           <Typography variant="h6">Current Timestamp (ms): {timestamp}</Typography>
           <Typography variant="h6">Formatted Date/Time: {new Date(timestamp).toLocaleString()}</Typography>

@@ -190,6 +190,7 @@ const store = (set, get) => ({
           // ask for each service
           for (const serviceName of msg.data[0]) {
             console.info(serviceName)
+            // FIXME !! change to broadcastState()
             get().sendTo("runtime", "getService", serviceName)
           }
         }
