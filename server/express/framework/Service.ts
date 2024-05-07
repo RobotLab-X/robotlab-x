@@ -52,6 +52,14 @@ export default class Service {
     return listener
   }
 
+  /**
+   * Broadcasts the current state of the service
+   * @returns returns self
+   */
+  broadcastState() {
+    return this
+  }
+
   getNotifyList() {
     return this.notifyList
   }

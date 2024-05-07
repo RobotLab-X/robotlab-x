@@ -6,7 +6,11 @@ const log = getLogger("Clock")
 export default class Clock extends Service {
   // Class properties
   private intervalId: NodeJS.Timeout | null = null
-  private intervalMs: number = 1000
+  // private intervalMs: number = 1000
+  config = {
+    intervalMs: 1000,
+    start: false
+  }
 
   constructor(
     public id: string,
@@ -16,6 +20,7 @@ export default class Clock extends Service {
     public hostname: string
   ) {
     super(id, name, typeKey, version, hostname) // Call the base class constructor if needed
+    // this.config = { intervalMs: 1000 }
   }
 
   publishEpoch(): number {
@@ -30,14 +35,16 @@ export default class Clock extends Service {
 
   // Method to start the clock timer
   public startClock(intervalMs?: number): void {
+    this.config.start = true
+
     if (intervalMs) {
-      this.intervalMs = intervalMs
+      this.config.intervalMs = intervalMs
     }
 
     // Ensure no other timer is running before starting a new one
     if (this.intervalId === null) {
-      log.info(`Clock.startClock: Starting timer with interval ${this.intervalMs} ms`)
-      this.intervalId = setInterval(() => this.onTick(), this.intervalMs)
+      log.info(`Clock.startClock: Starting timer with interval ${this.config.intervalMs} ms`)
+      this.intervalId = setInterval(() => this.onTick(), this.config.intervalMs)
     } else {
       log.warn("Clock.startClock: Timer is already running")
     }
@@ -45,6 +52,7 @@ export default class Clock extends Service {
 
   // Method to stop the clock timer
   public stopClock(): void {
+    this.config.start = false
     if (this.intervalId !== null) {
       log.info("Clock.stopClock: Stopping timer")
       clearInterval(this.intervalId)
@@ -62,7 +70,7 @@ export default class Clock extends Service {
       typeKey: this.typeKey,
       version: this.version,
       hostname: this.hostname,
-      intervalMs: this.intervalMs
+      config: this.config
     }
   }
 }

@@ -1,12 +1,13 @@
 import PlaylistAddIcon from "@mui/icons-material/PlaylistAddOutlined"
 import { Box, Card, CardActionArea, CardContent, Grid, IconButton, Tab, Tabs, Typography } from "@mui/material"
-import { styled } from "@mui/material/styles"
 import ServiceDialog from "components/ServiceDialog"
 import React, { useEffect, useState } from "react"
 import ReactJson from "react-json-view"
 import { useStore } from "../store/store"
 
-const repoUrl = "http://localhost:3001/repo"
+// FIXME - certainly a place to have a parent class from which this should drive
+// FIXME - make subscomponents for data objects and displays !!!
+// FIXME - use "baseUrl" from store/config
 const imagesUrl = "http://localhost:3001/images"
 
 // Props should put in "name"
@@ -14,22 +15,23 @@ const imagesUrl = "http://localhost:3001/images"
 // the consumer of this and other "views" of components need to be responsible
 // to make a layout that has the appropriat "typed" component and injected prop name
 
-export default function RobotLabXRuntime(props) {
-  console.info("RobotLabXRuntime render start", props)
+export default function RobotLabXRuntime({ name, fullname, id }) {
+  console.info(`RobotLabXRuntime ${fullname}`)
   const iconSize = 32
   let registry = useStore((state) => state.registry)
-  const repo = useStore((state) => state.repo)
   const [open, setOpen] = useState(false)
-  // const service = props.service
-  let service = registry[props.fullname]
-  const type = repo[service.typeKey]
-  const defaultRemoteId = useStore((state) => state.defaultRemoteId)
-  const subscribeTo = useStore((state) => state.subscribeTo)
+  const { subscribeTo, unsubscribeFrom, useMessage, sendTo } = useStore()
 
+  // ui states
   const [activeTab, setActiveTab] = useState(0)
+  const [repo3, setRepo] = useState({})
+  const [service2, setService] = useState({})
 
-  const message = useStore((state) => state.messages[`runtime@${defaultRemoteId}.onInstallLog`])
-  const messages = useStore((state) => state.messages)
+  // use msgs
+  const message = useMessage(fullname, "publishInstallLog")
+  const newServiceMsg = useMessage(fullname, "registered")
+  const repoMsg = useMessage(fullname, "getRepo")
+  const stateMsg = useMessage(fullname, "broadcastState")
 
   const handleChange = (event, newValue) => {
     setActiveTab(newValue)
@@ -41,45 +43,69 @@ export default function RobotLabXRuntime(props) {
   }
 
   useEffect(() => {
-    // // Subscribe to changes in the 'registry' state
-    // const unsubscribe = useStore.subscribe(
-    //   (newRegistry) => {
-    //     // Handle updates to the registry here
-    //     console.log("Updated Registry:", newRegistry)
-    //   },
-    //   (state) => state.registry
-    // )
+    // IMPORTANT !!! - subscribeTo must add fullname if not supplied
+    subscribeTo(fullname, "registered")
+    subscribeTo(fullname, "getRepo")
+    subscribeTo(fullname, "publishInstallLog")
+    subscribeTo(fullname, "broadcastState")
 
-    subscribeTo("runtime", "publishInstallLog")
+    sendTo(fullname, "getRepo")
+    sendTo(fullname, "broadcastState")
 
-    // // Cleanup function when component unmounts
-    // return () => {
-    //   unsubscribe() // Unsubscribe from the store
-    // }
-  }, [])
+    return () => {
+      unsubscribeFrom(fullname, "registered")
+      unsubscribeFrom(fullname, "getRepo")
+      unsubscribeFrom(fullname, "publishInstallLog")
+      unsubscribeFrom(fullname, "broadcastState")
+    }
+  }, [subscribeTo, unsubscribeFrom, fullname, sendTo])
 
   // begin message log
   const [messageLog, setMessageLog] = useState([])
+
+  useEffect(() => {
+    if (stateMsg) {
+      console.log("new getRepo msg:", stateMsg)
+      setService(stateMsg.data[0])
+    }
+  }, [stateMsg])
+
+  useEffect(() => {
+    if (repoMsg) {
+      console.log("new getRepo msg:", repoMsg)
+      setRepo(repoMsg.data[0])
+    }
+  }, [repoMsg])
+
+  useEffect(() => {
+    if (newServiceMsg) {
+      // Add the new message to the log
+      console.log("new registered msg:", newServiceMsg)
+      // Requires safe change that doesn't propegate back
+      // updateRegistryOnRegistered(newServiceMsg)
+    }
+  }, [newServiceMsg])
+
   useEffect(() => {
     if (message) {
       // Add the new message to the log
-      console.log("New message:", message)
+      console.log("new install log msg:", message)
       setMessageLog((log) => [...log, message])
     }
-  }, [JSON.stringify(message)]) // Dependency array includes message, so this runs only if message changes
+  }, [message]) // Dependency array includes message, so this runs only if message changes
 
   // end message log
 
-  const ExpandMore = styled((props) => {
-    const { expand, ...other } = props
-    return <IconButton {...other} />
-  })(({ theme, expand }) => ({
-    transform: !expand ? "rotate(0deg)" : "rotate(180deg)",
-    marginLeft: "auto",
-    transition: theme.transitions.create("transform", {
-      duration: theme.transitions.duration.shortest
-    })
-  }))
+  // const ExpandMore = styled((props) => {
+  //   const { expand, ...other } = props
+  //   return <IconButton {...other} />
+  // })(({ theme, expand }) => ({
+  //   transform: !expand ? "rotate(0deg)" : "rotate(180deg)",
+  //   marginLeft: "auto",
+  //   transition: theme.transitions.create("transform", {
+  //     duration: theme.transitions.duration.shortest
+  //   })
+  // }))
 
   const TabPanel = ({ children, value, index }) => {
     return (
@@ -104,8 +130,8 @@ export default function RobotLabXRuntime(props) {
     setExpanded(!expanded)
   }
 
-  const hostArray = Object.values(service.hosts)
-  const processArray = Object.values(service.processes)
+  const hostArray = service2?.hosts ? Object.values(service2.hosts) : []
+  const processArray = service2?.processes ? Object.values(service2.processes) : []
 
   return (
     <>
@@ -210,7 +236,7 @@ export default function RobotLabXRuntime(props) {
           </Grid>
         </Grid>{" "}
       </TabPanel>
-      <ServiceDialog packages={repo} open={open} setOpen={setOpen} />
+      <ServiceDialog packages={repo3} open={open} setOpen={setOpen} />
       <br />
 
       <Grid container spacing={2} alignItems="flex-start">
@@ -257,7 +283,7 @@ export default function RobotLabXRuntime(props) {
       <ReactJson src={messages} name="messages" />
       <ReactJson src={message} name="log" />
        */}
-      <ReactJson src={processArray} name="log" />
+      <ReactJson src={service2} name="state" />
       <br />
       {/** message ? <pre>{JSON.stringify(message, null, 2)}</pre> : <p>No message yet</p> */}
       {/**

@@ -1,30 +1,40 @@
 import { Button, Typography } from "@mui/material"
 import React, { useEffect, useState } from "react"
-// import ReactJson from "react-json-view"
+import ReactJson from "react-json-view"
 import { useStore } from "../store/store"
 
 export default function Clock({ name, fullname, id }) {
   console.info(`Clock ${fullname}`)
 
-  const { subscribeTo, unsubscribeFrom, useMessage } = useStore()
+  const { subscribeTo, unsubscribeFrom, useMessage, sendTo } = useStore()
 
   // msg event callbacks
   const epochMsg = useMessage(fullname, "publishEpoch")
+  const serviceMsg = useMessage(fullname, "broadcastState")
 
+  // ui states
   const [timestamp, setTimestamp] = useState(null)
-  const sendTo = useStore((state) => state.sendTo)
+  const [service, setService] = useState({})
 
   useEffect(() => {
-    // put subscribes here
     subscribeTo(fullname, "publishEpoch")
-    return () => {
-      // unsubscribe here
-      // Cleanup on unmount
-      unsubscribeFrom(fullname, "publishEpoch")
-    }
-  }, [subscribeTo, unsubscribeFrom, fullname])
+    subscribeTo(fullname, "broadcastState")
 
-  // Set and memoize the epoch message
+    sendTo(fullname, "broadcastState")
+
+    return () => {
+      unsubscribeFrom(fullname, "publishEpoch")
+      unsubscribeFrom(fullname, "broadcastState")
+    }
+  }, [subscribeTo, unsubscribeFrom, sendTo, fullname])
+
+  useEffect(() => {
+    if (serviceMsg) {
+      console.log("new getRepo msg:", serviceMsg)
+      setService(serviceMsg.data[0])
+    }
+  }, [serviceMsg])
+
   useEffect(() => {
     if (epochMsg) {
       console.log("new message:", epochMsg)
@@ -57,9 +67,7 @@ export default function Clock({ name, fullname, id }) {
       <Button variant="contained" color="secondary" onClick={handleStop} style={{ marginLeft: "8px" }}>
         Stop
       </Button>
-      {/*
-      <ReactJson src={jsonData} name="epochMsg" />
-      */}
+      <ReactJson src={service} name="service" />
     </>
   )
 }
