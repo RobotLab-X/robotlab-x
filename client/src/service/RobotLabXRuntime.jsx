@@ -3,7 +3,9 @@ import { Box, Card, CardActionArea, CardContent, Grid, IconButton, Tab, Tabs, Ty
 import ServiceDialog from "components/ServiceDialog"
 import React, { useEffect, useState } from "react"
 import ReactJson from "react-json-view"
+import { useProcessedMessage } from "../hooks/useProcessedMessage"
 import { useStore } from "../store/store"
+import useServiceSubscription from "../store/useServiceSubscription"
 
 // FIXME - certainly a place to have a parent class from which this should drive
 // FIXME - make subscomponents for data objects and displays !!!
@@ -24,14 +26,16 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
 
   // ui states
   const [activeTab, setActiveTab] = useState(0)
-  const [repo3, setRepo] = useState({})
-  const [service2, setService] = useState({})
 
   // use msgs
-  const message = useMessage(fullname, "publishInstallLog")
+  const installLogMsg = useMessage(fullname, "publishInstallLog")
   const newServiceMsg = useMessage(fullname, "registered")
   const repoMsg = useMessage(fullname, "getRepo")
-  const stateMsg = useMessage(fullname, "broadcastState")
+
+  const serviceMsg = useServiceSubscription(fullname, ["getRepo", "publishInstallLog"])
+  const service = useProcessedMessage(serviceMsg)
+  const repo = useProcessedMessage(repoMsg)
+  const installLog = useProcessedMessage(installLogMsg)
 
   const handleChange = (event, newValue) => {
     setActiveTab(newValue)
@@ -45,37 +49,16 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
   useEffect(() => {
     // IMPORTANT !!! - subscribeTo must add fullname if not supplied
     subscribeTo(fullname, "registered")
-    subscribeTo(fullname, "getRepo")
-    subscribeTo(fullname, "publishInstallLog")
-    subscribeTo(fullname, "broadcastState")
 
     sendTo(fullname, "getRepo")
-    sendTo(fullname, "broadcastState")
 
     return () => {
       unsubscribeFrom(fullname, "registered")
-      unsubscribeFrom(fullname, "getRepo")
-      unsubscribeFrom(fullname, "publishInstallLog")
-      unsubscribeFrom(fullname, "broadcastState")
     }
   }, [subscribeTo, unsubscribeFrom, fullname, sendTo])
 
   // begin message log
   const [messageLog, setMessageLog] = useState([])
-
-  useEffect(() => {
-    if (stateMsg) {
-      console.log("new getRepo msg:", stateMsg)
-      setService(stateMsg.data[0])
-    }
-  }, [stateMsg])
-
-  useEffect(() => {
-    if (repoMsg) {
-      console.log("new getRepo msg:", repoMsg)
-      setRepo(repoMsg.data[0])
-    }
-  }, [repoMsg])
 
   useEffect(() => {
     if (newServiceMsg) {
@@ -87,12 +70,12 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
   }, [newServiceMsg])
 
   useEffect(() => {
-    if (message) {
+    if (installLog) {
       // Add the new message to the log
-      console.log("new install log msg:", message)
-      setMessageLog((log) => [...log, message])
+      console.log("new install log msg:", installLog)
+      setMessageLog((log) => [...log, installLog])
     }
-  }, [message]) // Dependency array includes message, so this runs only if message changes
+  }, [installLog]) // Dependency array includes message, so this runs only if message changes
 
   // end message log
 
@@ -130,8 +113,8 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
     setExpanded(!expanded)
   }
 
-  const hostArray = service2?.hosts ? Object.values(service2.hosts) : []
-  const processArray = service2?.processes ? Object.values(service2.processes) : []
+  const hostArray = service?.hosts ? Object.values(service.hosts) : []
+  const processArray = service?.processes ? Object.values(service.processes) : []
 
   return (
     <>
@@ -230,13 +213,11 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
                 Add a new service
               </Typography>
             </Box>
-            {/**
-            <ServiceDialog packages={repo} open={open} setOpen={setOpen} />
-             */}
           </Grid>
         </Grid>{" "}
       </TabPanel>
-      <ServiceDialog packages={repo3} open={open} setOpen={setOpen} />
+      {repo && <ServiceDialog packages={repo} open={open} setOpen={setOpen} />}
+
       <br />
 
       <Grid container spacing={2} alignItems="flex-start">
@@ -246,13 +227,13 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
             {messageLog.map((msg, index) => {
               // Extract the prefix and the rest of the message
               const prefixPattern = /^(info:|warn:|error:)/
-              const matches = msg?.data[0].match(prefixPattern)
+              const matches = msg?.match(prefixPattern)
               let prefix = ""
-              let message = msg?.data[0]
+              let message = msg
 
               if (matches) {
                 prefix = matches[0] // The matched prefix
-                message = msg?.data[0].substring(prefix.length) // The rest of the message
+                message = msg.substring(prefix.length) // The rest of the message
               }
 
               let style = {}
@@ -281,9 +262,9 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
       <ReactJson src={service} name="service" />
       <ReactJson src={type} name="type" />
       <ReactJson src={messages} name="messages" />
-      <ReactJson src={message} name="log" />
+      <ReactJson src={service} name="state" />
        */}
-      <ReactJson src={service2} name="state" />
+      {repo && <ReactJson src={repo} name="repo" />}
       <br />
       {/** message ? <pre>{JSON.stringify(message, null, 2)}</pre> : <p>No message yet</p> */}
       {/**

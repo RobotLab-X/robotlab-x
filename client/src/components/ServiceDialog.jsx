@@ -29,6 +29,10 @@ const ServiceDialog = ({ packages, open, setOpen }) => {
   const repoUrl = useStore((state) => state.repoUrl)
 
   useEffect(() => {
+    if (!packages) {
+      return
+    }
+
     const filterPackages = () => {
       const filtered = Object.values(packages).filter((pkg) =>
         pkg.description?.toLowerCase().includes(filterText.toLowerCase())
@@ -68,6 +72,10 @@ const ServiceDialog = ({ packages, open, setOpen }) => {
     if (e.key === "Enter") {
       handleStartNewService()
     }
+  }
+
+  if (!packages) {
+    return <div>Loading...</div>
   }
 
   return (
