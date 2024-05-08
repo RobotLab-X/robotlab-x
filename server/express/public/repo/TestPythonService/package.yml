@@ -5,7 +5,7 @@ platformVersion: null
 description: "Python service for testing!"
 version: "0.0.1"
 cmd: "python"
-args: ["start.py"]
+args: ["-u","start.py"] # -u unbuffered output
 cwd: null
 interfaces:
   restAPI:

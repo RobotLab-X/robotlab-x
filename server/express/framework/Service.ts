@@ -86,13 +86,13 @@ export default class Service {
     return `uptime: ${uptime / 1000} seconds`
   }
 
+  getFullName(): string {
+    return CodecUtil.getFullName(this.name)
+  }
+
   invoke(methodName: string, ...args: any[]): any {
     let msg = new Message(this.name, methodName, args)
     return this.invokeMsg(msg)
-  }
-
-  getFullName(): string {
-    return CodecUtil.getFullName(this.name)
   }
 
   invokeMsg(msg: Message) {
@@ -176,6 +176,11 @@ export default class Service {
 
   isReady(): boolean {
     return this.startTime !== null
+  }
+
+  publishStdOut(msg: string): string {
+    log.info(`stdout: ${msg}`)
+    return msg
   }
 
   // maybe purge is a good idea to purge the copy of the repo for an instance ?

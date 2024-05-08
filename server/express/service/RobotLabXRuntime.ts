@@ -240,17 +240,41 @@ export default class RobotLabXRuntime extends Service {
         log.info(`dependencies met for ${serviceName} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
         // spawn the process
         log.info(`spawning process ${pkg.cmd} ${pkg.args} in ${targetDir}`)
-        const childProcess = spawn(pkg.cmd, pkg.args, { cwd: targetDir })
+        const childProcess = spawn(pkg.cmd, pkg.args, { cwd: targetDir, shell: true })
 
         childProcess.on("error", (err) => {
           log.error(`failed to start subprocess. ${err}`)
           // send message with error to UI
+          return
         })
 
         if (childProcess.pid) {
           // register the service
           service = new Service(childProcess.pid.toString(), serviceName, serviceType, version, this.getHostname())
+        } else {
+          log.error("Process PID is undefined, indicating an issue with spawning the process.")
+          return
         }
+
+        // Stream stdout and stderr
+        childProcess.stdout.on("data", (data) => {
+          log.info(`STDOUT: ${data}`)
+          // TODO more structured publishStdOutRecord
+          // where record.level record.ts record.msg
+          service.invoke("publishStdOut", data.toString())
+        })
+
+        childProcess.stderr.on("data", (data) => {
+          log.error(`STDERR: ${data}`)
+          service.invoke("publishStdOut", data.toString())
+        })
+
+        // Handle process exit
+        childProcess.on("close", (code) => {
+          log.info(`Subprocess exited with code ${code}`)
+          // Optionally handle process cleanup or restart
+        })
+
         // register the process
         let platformVersion = platformInfo?.platformVersion
         const pd: ProcessData = new ProcessData(
@@ -264,7 +288,8 @@ export default class RobotLabXRuntime extends Service {
 
         // service = new Service(childProcess.pid.toString(), serviceName, serviceType, version, this.getHostname())
         // for unaliased ids for services - single process services will be serviceName@serviceName
-        service = new Service(serviceName, serviceName, serviceType, version, this.getHostname())
+        // FIXME MAKE A PROXY TYPE !!!
+        service = new Service(this.getId(), serviceName, serviceType, version, this.getHostname())
 
         log.info(`process ${JSON.stringify(childProcess)}`)
       } else {

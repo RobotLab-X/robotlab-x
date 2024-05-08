@@ -19,6 +19,8 @@ export default function ServicePage(props) {
     type = "Clock"
   } else if (service.typeKey === "TestNodeService") {
     type = "TestNodeService"
+  } else if (service.typeKey === "TestPythonService") {
+    type = "TestPythonService"
   } else {
     type = "Unknown"
   }
