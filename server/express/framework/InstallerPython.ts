@@ -1,3 +1,4 @@
+import Package from "express/models/Package"
 import RobotLabXRuntime from "../service/RobotLabXRuntime"
 import { getLogger } from "./Log"
 
@@ -20,15 +21,16 @@ export default class InstallerPython {
   pythonExe: string = "python"
   pythonExeVersion: string = null
   pipVersion: string = null
-
   ready = false
-
   optons = {}
+  pkg: Package = null
 
-  public install(options: any = {}): any {
+  public install(pkg: Package): any {
+    this.info(`Installer processing package ${pkg.title} ${pkg.typeKey} ${pkg.version}`)
     this.info("Checking python version")
+    this.pkg = pkg
+    this.optons = { cwd: pkg.cwd }
     let platformInfo = { platform: "python", platformVersion: "unknown" }
-    this.optons = options
     platformInfo.platformVersion = this.getPythonVersion()
     this.getPipVersion()
     this.createVenv()
@@ -39,11 +41,17 @@ export default class InstallerPython {
     if (this.useVenv) {
       this.createVenv()
     }
-
+    // return a more meaningful object if failure
+    // shows which dependency failed to install
     return platformInfo
   }
 
-  installRequirements() {}
+  installRequirements() {
+    if (this.pkg.requirements) {
+      this.info("Installing requirements")
+      this.info(execSync(`${this.pythonExe} -m ${this.pkg.requirements}`, this.optons))
+    }
+  }
 
   createShell() {}
   /**

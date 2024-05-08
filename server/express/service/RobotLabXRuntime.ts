@@ -184,6 +184,13 @@ export default class RobotLabXRuntime extends Service {
       log.info(`loading type data from ${pkgYmlFile}`)
       const file = fs.readFileSync(pkgYmlFile, "utf8")
       const pkg: Package = YAML.parse(file)
+
+      // validating and preprocessing package.yml
+      if (pkg.cwd == null) {
+        // default targetDir
+        pkg.cwd = targetDir
+      }
+
       let version = pkg.version
       log.info(`package.yml ${JSON.stringify(pkg)}`)
 
@@ -202,7 +209,7 @@ export default class RobotLabXRuntime extends Service {
         let installer = new InstallerPython()
         // default install venv and pip
         // check if min python version is correct
-        platformInfo = installer.install({ cwd: targetDir })
+        platformInfo = installer.install(pkg)
         dependenciesMet = true
       } else {
         log.info(`platform [${pkg.platform}] not supported`)
@@ -300,14 +307,15 @@ export default class RobotLabXRuntime extends Service {
       // register and start the service
       this.register(service)
       return service
-    } catch (e: any) {
+    } catch (e: unknown) {
       const error = e as Error
 
-      // Get the file and line number where the error occurred
-      const file = e.stack.split("\n")[1].match(/\((?<file>.+):\d+\)/)?.groups?.file
-      const lineNumber = e.stack.split("\n")[1].match(/\((?<file>.+):(?<lineNumber>\d+)\)/)?.groups?.lineNumber
-
-      log.error(`e ${error} ${file} ${lineNumber}`)
+      // // Get the file and line number where the error occurred
+      // const file = e.stack.split("\n")[1].match(/\((?<file>.+):\d+\)/)?.groups?.file
+      // const lineNumber = e.stack.split("\n")[1].match(/\((?<file>.+):(?<lineNumber>\d+)\)/)?.groups?.lineNumber
+      let errStr = `error: ${error} ${error.stack}`
+      log.error(errStr)
+      this.invoke("publishInstallLog", errStr)
     }
   }
 
