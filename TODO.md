@@ -1,4 +1,5 @@
 ## TODO
+* WebRTC IS NOT activating venv when int does a pip install -r requirements
 * WebRTC next .. need "minimal" actual "register" which locks with service description started by RobotLabXRuntime.ts
 * add Johnny5 J5Servo and Node-Red
 * focus on stdout from new process & Distributed rlx !

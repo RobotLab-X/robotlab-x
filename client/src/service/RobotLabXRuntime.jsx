@@ -1,6 +1,7 @@
 import InputOutlinedIcon from "@mui/icons-material/InputOutlined"
 import PlaylistAddIcon from "@mui/icons-material/PlaylistAddOutlined"
 import { Box, Card, CardActionArea, CardContent, Grid, IconButton, Tab, Tabs, Typography } from "@mui/material"
+import ConnectDialog from "components/ConnectDialog"
 import ServiceDialog from "components/ServiceDialog"
 import React, { useEffect, useState } from "react"
 import ReactJson from "react-json-view"
@@ -42,6 +43,8 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
 
   const imagesUrl = `${getBaseUrl()}/images`
 
+  const [connectDialogOpen, setConnectDialogOpen] = useState(false)
+
   const handleChange = (event, newValue) => {
     setActiveTab(newValue)
   }
@@ -53,7 +56,9 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
 
   const handleConnect = () => {
     console.info("Connect to Existing Node...")
+    // sendTo(fullname, "connect", url)
   }
+
   useEffect(() => {
     // IMPORTANT !!! - subscribeTo must add fullname if not supplied
     subscribeTo(fullname, "registered")
@@ -230,7 +235,7 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
               {/* Row for the second icon and text */}
               <Grid container alignItems="center" spacing={2}>
                 <Grid item>
-                  <IconButton type="button" onClick={handleConnect}>
+                  <IconButton type="button" onClick={() => setConnectDialogOpen(true)}>
                     <InputOutlinedIcon sx={{ fontSize: iconSize }} />
                   </IconButton>
                 </Grid>
@@ -244,6 +249,7 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
           </Grid>
         </Grid>
       </TabPanel>
+      <ConnectDialog open={connectDialogOpen} onClose={() => setConnectDialogOpen(false)} />
       {repo && <ServiceDialog packages={repo} open={open} setOpen={setOpen} />}
       <br />
       <Grid container spacing={2} alignItems="flex-start">

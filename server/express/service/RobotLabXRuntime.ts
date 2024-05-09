@@ -52,6 +52,13 @@ export default class RobotLabXRuntime extends Service {
     this.save()
   }
 
+  connect(url: string) {
+    log.info(`=== connect ${url} ===`)
+    log.info("connecting")
+    // websocket have a directional initial connection
+    // this should be clearly displayed in connections
+  }
+
   readConfig() {
     const filePath = path.join(this.dataDir, this.config.config, "runtime.yml")
     try {
@@ -368,11 +375,24 @@ export default class RobotLabXRuntime extends Service {
     return repoObject
   }
 
+  getHosts() {
+    return this.hosts
+  }
+
   getHost() {
     if (this.hostname == null) {
       return null
     }
     return this.hosts[this.hostname]
+  }
+
+  getProcesses() {
+    return this.processes
+  }
+
+  // FIXME implement
+  getConnections(): any[] {
+    return []
   }
 
   getRegistry(): Object {

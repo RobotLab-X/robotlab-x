@@ -8,7 +8,7 @@ import { getLogger } from "./Log"
 const log = getLogger("Service")
 
 export default class Service {
-  protected startTime: Date | null = null
+  protected startTime: number | null = null
 
   id: string | null = null
   name: string | null = null
@@ -82,7 +82,7 @@ export default class Service {
       return "service not started"
     }
     const now = new Date()
-    const uptime = now.getTime() - this.startTime.getTime()
+    const uptime = now.getTime() - this.startTime
     return `uptime: ${uptime / 1000} seconds`
   }
 
@@ -224,7 +224,7 @@ export default class Service {
 
   // Example of a shared method
   startService() {
-    this.startTime = new Date()
+    this.startTime = new Date().getTime()
     log.info(`========= started service ${this.name} ===========`)
   }
 
