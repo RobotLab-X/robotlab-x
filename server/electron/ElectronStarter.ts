@@ -1,20 +1,27 @@
 import debug from "debug"
 import Electron from "electron"
+import fs from "fs"
 import "module-alias/register"
 import os from "os"
 import path from "path"
 import "source-map-support/register"
+import YAML from "yaml"
 import Store from "../express/Store"
+import { getLogger } from "../express/framework/Log"
 import NameGenerator from "../express/framework/NameGenerator"
 import { HostData } from "../express/models/HostData"
 import { ProcessData } from "../express/models/ProcessData"
 import RobotLabXRuntime from "../express/service/RobotLabXRuntime"
 
+// import minimist from "minimist"
+const minimist = require("minimist")
+
 // require("electron-reload")(__dirname, {
 //   electron: require(`${__dirname}/node_modules/electron`)
 // })
 
-let log: debug.Debugger
+// let log: debug.Debugger
+const log = getLogger("RobotLabXRuntime")
 
 export default class Main {
   private static app: Electron.App
@@ -75,21 +82,36 @@ export default class Main {
   }
 
   private static bootServer() {
-    // log
-    log = debug("server")
-    log.log = console.log.bind(console)
+    log.info("bootServer: starting server")
+
+    const argv = minimist(process.argv.slice(2))
+    log.info(`bootServer: argv: ${JSON.stringify(argv)}`)
 
     // if (isDev) {
     debug.enable("server")
     // }
 
-    // FIXME - do this in RobotLabXRuntime
-    Main.store = Store.createInstance()
+    let configName = argv.config ? argv.config : "default"
 
-    // FIXME - allow id to be passed in or configured
-    //    let runtime: RobotLabXRuntime = RobotLabXRuntime.createInstance(NameGenerator.getName(), os.hostname())
-    NameGenerator.getName()
-    let runtime: RobotLabXRuntime = RobotLabXRuntime.createInstance("rlx", os.hostname())
+    let config = {
+      id: NameGenerator.getName(),
+      port: 3001
+    }
+
+    try {
+      const filePath = path.join("config", configName, "runtime.yml")
+      const file = fs.readFileSync(filePath, "utf8")
+      config = YAML.parse(file)
+    } catch (e) {
+      log.error(`--config ${configName} config/${configName}/runtime.yml not found`)
+    }
+
+    log.info(`config: ${JSON.stringify(config)}`)
+
+    // FIXME - do this in RobotLabXRuntime
+    Main.store = Store.createInstance(config)
+
+    let runtime: RobotLabXRuntime = RobotLabXRuntime.createInstance(config, os.hostname())
 
     // FIXME - do the following in RobotLabXRuntime
 

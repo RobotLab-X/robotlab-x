@@ -26,8 +26,7 @@ type RegistryType = { [key: string]: any }
 export default class Store {
   private static instance: Store
 
-  // FIXME - remove
-  private static port: string | number | boolean
+  private static config: any
 
   private registry: RegistryType = {}
 
@@ -47,8 +46,9 @@ export default class Store {
   }
 
   // FIXME since express and wss are initialized here, need port passed in
-  public static createInstance(): Store {
+  public static createInstance(config: any): Store {
     if (!Store.instance) {
+      Store.config = config
       Store.instance = new Store()
       let store = Store.instance
       log.info("initializing store")
@@ -60,9 +60,8 @@ export default class Store {
       store.initWebSocketServer()
 
       // FIXME - this is dumb - RuntimeXServer should have config
-      Store.port = Store.normalizePort(process.env.PORT || "3001")
-      store.express.set("port", Store.port)
-      store.http.listen(Store.port)
+      store.express.set("port", config.port)
+      store.http.listen(config.port)
       store.http.on("error", Store.onError)
       store.http.on("listening", Store.onListening)
     } else {
@@ -75,16 +74,16 @@ export default class Store {
     if (error.syscall !== "listen") {
       throw error
     }
-    const bind = typeof Store.port === "string" ? "Pipe " + Store.port : "Port " + Store.port
+    // const bind = typeof Store.port === "string" ? "Pipe " + Store.port : "Port " + Store.port
     switch (error.code) {
       case "EACCES":
         // tslint:disable-next-line:no-console
-        console.error(`${bind} requires elevated privileges`)
+        console.error(`${Store.config.port} requires elevated privileges`)
         process.exit(1)
         break
       case "EADDRINUSE":
         // tslint:disable-next-line:no-console
-        console.error(`${bind} is already in use`)
+        console.error(`${Store.config.port} is already in use`)
         process.exit(1)
         break
       default:
@@ -99,17 +98,6 @@ export default class Store {
     } else {
       const bind = typeof addr === "string" ? `pipe ${addr}` : `port ${addr.port}`
       log.info(`listening on ${bind}`)
-    }
-  }
-
-  private static normalizePort(val: number | string): number | string | boolean {
-    const port: number = typeof val === "string" ? parseInt(val, 10) : val
-    if (isNaN(port)) {
-      return val
-    } else if (port >= 0) {
-      return port
-    } else {
-      return false
     }
   }
 

@@ -11,7 +11,8 @@
         "outFiles": ["${workspaceFolder}/server/dist/**/*.js"],
         "sourceMaps": true,
         "console": "integratedTerminal",
-        "internalConsoleOptions": "neverOpen"
+        "internalConsoleOptions": "neverOpen",
+        "args": ["--config", "default"]
       }
     ]
   }

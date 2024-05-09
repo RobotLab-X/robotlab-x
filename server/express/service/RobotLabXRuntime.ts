@@ -64,9 +64,9 @@ export default class RobotLabXRuntime extends Service {
     }
   }
 
-  static createInstance(id: string, hostname: string): RobotLabXRuntime {
+  static createInstance(config: any, hostname: string): RobotLabXRuntime {
     if (!RobotLabXRuntime.instance) {
-      RobotLabXRuntime.instance = new RobotLabXRuntime(id, "runtime", "RobotLabXRuntime", "0.0.1", hostname)
+      RobotLabXRuntime.instance = new RobotLabXRuntime(config.id, "runtime", "RobotLabXRuntime", "0.0.1", hostname)
     } else {
       log.error("RobotLabXRuntime instance already exists")
     }
