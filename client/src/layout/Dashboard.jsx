@@ -34,15 +34,15 @@ const Dashboard = () => {
   const [msgTxt, setMsgTxt] = useState('{"name":"runtime","method":"getUptime"}')
   const [open, setOpen] = useState(false)
 
+  const getApiUrl = useStore((state) => state.getApiUrl)
+  const getRepoUrl = useStore((state) => state.getRepoUrl)
+
   const updateRepo = useStore((state) => state.updateRepo)
   const updateRegistry = useStore((state) => state.updateRegistry)
   const sendJsonMessage = useStore((state) => state.sendJsonMessage)
   const repo = useStore((state) => state.repo)
   const registry = useStore((state) => state.registry)
   const id = useStore((state) => state.id)
-
-  const baseUrl = "http://localhost:3001/api/v1/services"
-  const repoUrl = "http://localhost:3001/repo"
 
   const handleStartNewService = () => {
     console.info("Starting new node...")
@@ -66,7 +66,7 @@ const Dashboard = () => {
   }
 
   async function put(url, data) {
-    const response = await fetch(`${baseUrl}${url}`, {
+    const response = await fetch(`${getApiUrl()}${url}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -107,10 +107,10 @@ const Dashboard = () => {
           let response = await put("/runtime/register", service)
 
           // FIXME - just runtime/registry
-          response = await fetchGetJson("/runtime/getRegistry")
+          response = await fetchGetJson(getApiUrl(), "/runtime/getRegistry")
           updateRegistry(response)
 
-          const repoRequest = await fetchGetJson("/runtime/getRepo")
+          const repoRequest = await fetchGetJson(getApiUrl(), "/runtime/getRepo")
           // const repoJson = await repoRequest.json()
           updateRepo(repoRequest)
         } catch (error) {
@@ -140,7 +140,7 @@ const Dashboard = () => {
     const [open, setOpen] = useState(false)
     const typeKey = sd?.typeKey // `${sd?.typeKey}@${sd?.version}`
     const type = repo[typeKey]
-    const imagePath = `${repoUrl}/${sd.typeKey}/${sd.typeKey}.png`
+    const imagePath = `${getRepoUrl()}/${sd.typeKey}/${sd.typeKey}.png`
     const connectedPath = `${process.env.PUBLIC_URL}/green.png`
 
     return (

@@ -10,48 +10,33 @@ const store = (set, get) => ({
 
   defaultRemoteId: null,
 
-  apiUrl: "http://localhost:3001/api/v1/services", // Initial base URL value
-  setApiUrl: (url) => set({ apiUrl: url }), // Setter for baseUrl
-
-  repoUrl: "http://localhost:3001/repo", // Initial base URL value
-  setRepoUrl: (url) => set({ repoUrl: url }), // Setter for baseUrl
-
   getMessageApiUrl: () => {
-    // if (process.env.REACT_APP_MESSAGE_BASE_URL) {
-    //   return process.env.REACT_APP_MESSAGE_BASE_URL
-    // }
-
-    // let urlParts = new URL(window.location.href)
-    // const scheme = urlParts.protocol.replace(":", "")
-    // const hostname = urlParts.hostname
-    // // const port = urlParts.port || (scheme === "https" ? "8443" : "80")
-    // const port = urlParts.port // 5000
-    // const wsSchema = scheme === "https" ? "wss" : "ws"
-
-    // const wsUrl = `${wsSchema}://${hostname}:${port}/api/messages?user=root&pwd=pwd&session_id=2309adf3dlkdk&id=${
-    //   get().id
-    // }`
-    // return wsUrl
-
-    // if (process.env.NODE_ENV === "production") {
-    //   let urlParts = new URL(window.location.href)
-    //   const scheme = urlParts.protocol.replace(":", "")
-    //   const hostname = urlParts.hostname
-    //   const port = urlParts.port || (scheme === "https" ? "8443" : "80")
-    //   const wsSchema = scheme === "https" ? "wss" : "ws"
-    //   const wsUrl = `${wsSchema}://${hostname}:${port}/api/messages?user=root&pwd=pwd&session_id=2309adf3dlkdk&id=${
-    //     get().id
-    //   }`
-    //   return wsUrl
-    // } else {
-    //   // for development
-    //   // const wsUrl = `ws://localhost:8888/api/messages?user=root&pwd=pwd&session_id=2309adf3dlkdk&id=${get().id}`
-    //   const wsUrl = process.env.REACT_APP_MESSAGE_BASE_URL
-    //   return wsUrl
-    // }
-
-    return `ws://localhost:3001/api/messages?user=root&pwd=pwd&session_id=2309adf3dlkdk&id=${get().id}`
+    return get().getWsUrl()
   },
+
+  getBaseUrl() {
+    const baseUrl = process.env.REACT_APP_BASE_URL || window.location.origin
+    return baseUrl
+  },
+
+  getWsUrl() {
+    const baseUrl = get().getBaseUrl()
+    let wsOrigin
+
+    if (baseUrl.startsWith("https")) {
+      wsOrigin = baseUrl.replace("https", "wss")
+    } else {
+      wsOrigin = baseUrl.replace("http", "ws")
+    }
+
+    return `${wsOrigin}/api/messages?user=root&pwd=pwd&session_id=2309adf3dlkdk&id=${get().id}`
+  },
+
+  // Use a getter function for apiUrl
+  getApiUrl: () => `${get().getBaseUrl()}/api/v1/services`,
+
+  // Use a getter function for repoUrl
+  getRepoUrl: () => `${get().getBaseUrl()}/repo`,
 
   /**
    * dictionary of services with last known state

@@ -15,14 +15,10 @@ import ServicePage from "components/ServicePage"
 import React, { useState } from "react"
 import { useStore } from "store/store"
 
-const repoUrl = "http://localhost:3001/repo"
-const imagesUrl = "http://localhost:3001/images"
-
 function Home() {
   const [selectedCard, setSelectedCard] = useState(null)
   const [filter, setFilter] = useState("")
-
-  const id = useStore((state) => state.id)
+  const getRepoUrl = useStore((state) => state.getRepoUrl)
   const repo = useStore((state) => state.repo)
   const registry = useStore((state) => state.registry)
   const serviceArray = Object.values(registry)
@@ -59,7 +55,7 @@ function Home() {
                 <CardContent>
                   <Typography variant="h5">
                     <img
-                      src={`${repoUrl}/${card.typeKey}/${card.typeKey}.png`}
+                      src={`${getRepoUrl()}/${card.typeKey}/${card.typeKey}.png`}
                       alt={card.name}
                       width="32"
                       style={{ verticalAlign: "middle" }}

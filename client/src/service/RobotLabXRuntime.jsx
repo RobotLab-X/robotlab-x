@@ -12,7 +12,6 @@ import useServiceSubscription from "../store/useServiceSubscription"
 // FIXME - certainly a place to have a parent class from which this should drive
 // FIXME - make subscomponents for data objects and displays !!!
 // FIXME - use "baseUrl" from store/config
-const imagesUrl = "http://localhost:3001/images"
 
 // Props should put in "name"
 // and all service types defined here
@@ -23,6 +22,7 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
   console.info(`RobotLabXRuntime ${fullname}`)
   const iconSize = 32
   let registry = useStore((state) => state.registry)
+  const getBaseUrl = useStore((state) => state.getBaseUrl)
   const [open, setOpen] = useState(false)
   const { subscribeTo, unsubscribeFrom, useMessage, sendTo } = useStore()
 
@@ -39,6 +39,8 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
   const repo = useProcessedMessage(repoMsg)
   const installLog = useProcessedMessage(installLogMsg)
   const [messageLog, setMessageLog] = useState([])
+
+  const imagesUrl = `${getBaseUrl()}/images`
 
   const handleChange = (event, newValue) => {
     setActiveTab(newValue)
@@ -142,7 +144,7 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
                       <img src={`${imagesUrl}/os/linux.png`} alt="linux" />
                       &nbsp;&nbsp;{host.hostname} {/**  {host.platform} {host.architecture} */}
                       {/**
-                    <img src={`${repoUrl}/${host.typeKey}/${host.typeKey}.png`} alt={host.name} width="32" />
+                    <img src={`${getRepoUrl()}/${host.typeKey}/${host.typeKey}.png`} alt={host.name} width="32" />
                      */}
                       &nbsp;{host.name}
                     </Typography>

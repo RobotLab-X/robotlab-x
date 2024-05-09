@@ -26,7 +26,7 @@ const ServiceDialog = ({ packages, open, setOpen }) => {
   const [newServiceName, setNewServiceName] = useState("")
   const [selectedServiceType, setSelectedServiceType] = useState("")
   const [selectedVersion, setSelectedVersion] = useState("")
-  const repoUrl = useStore((state) => state.repoUrl)
+  const getRepoUrl = useStore((state) => state.getRepoUrl)
 
   useEffect(() => {
     if (!packages) {
@@ -127,7 +127,7 @@ const ServiceDialog = ({ packages, open, setOpen }) => {
                     {filteredPackages.map((pkg) => (
                       <TableRow key={pkg.typeKey}>
                         <TableCell>
-                          <img src={`${repoUrl}/${pkg.typeKey}/${pkg.typeKey}.png`} alt={pkg.typeKey} />
+                          <img src={`${getRepoUrl()}/${pkg.typeKey}/${pkg.typeKey}.png`} alt={pkg.typeKey} />
                         </TableCell>
                         <TableCell>{pkg.title}</TableCell>
                         <TableCell>{`${pkg.platform} ${pkg.platformVersion}`}</TableCell>
