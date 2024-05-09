@@ -141,7 +141,7 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
                 <CardActionArea>
                   <CardContent>
                     <Typography component="div" variant="h2">
-                      <img src={`${imagesUrl}/os/linux.png`} alt="linux" />
+                      <img src={`${imagesUrl}/os/${host.platform}.png`} alt={host.platform} />
                       &nbsp;&nbsp;{host.hostname} {/**  {host.platform} {host.architecture} */}
                       {/**
                     <img src={`${getRepoUrl()}/${host.typeKey}/${host.typeKey}.png`} alt={host.name} width="32" />
@@ -168,7 +168,7 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
                   <Typography variant="h5" component="div">
                     <Typography variant="h5">
                       <img src={`${imagesUrl}/platform/${pd?.platform}.png`} alt={pd?.platform} width="16" />{" "}
-                      <img src={`${imagesUrl}/os/linux.png`} alt={pd.typeKey} width="16" />
+                      <img src={`${imagesUrl}/os/${host.platform}.png`} alt={pd.typeKey} width="16" />
                       &nbsp;{pd.id}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
