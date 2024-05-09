@@ -1,8 +1,5 @@
-import { direct } from "store/store"
-
-async function fetchGetJson(path: string) {
-  const { apiUrl } = direct.getState()
-  const url = `${apiUrl}${path}`
+async function fetchGetJson(origin: string, path: string) {
+  const url = `${origin}/${path}`
   console.info(`GET ${url}`)
 
   try {
@@ -29,9 +26,9 @@ async function fetchGetJson(path: string) {
   }
 }
 
-async function fetchPutJson(path: string, body: any) {
-  const { apiUrl } = direct.getState()
-  const url = `${apiUrl}${path}`
+// FIXME test this - not sure if origin is correct for PUT vs GET
+async function fetchPutJson(origin: string, path: string, body: any) {
+  const url = `${origin}/${path}`
   console.info(`PUT ${url}`)
 
   try {

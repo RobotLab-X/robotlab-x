@@ -1,3 +1,4 @@
+import InputOutlinedIcon from "@mui/icons-material/InputOutlined"
 import PlaylistAddIcon from "@mui/icons-material/PlaylistAddOutlined"
 import { Box, Card, CardActionArea, CardContent, Grid, IconButton, Tab, Tabs, Typography } from "@mui/material"
 import ServiceDialog from "components/ServiceDialog"
@@ -11,7 +12,6 @@ import useServiceSubscription from "../store/useServiceSubscription"
 // FIXME - certainly a place to have a parent class from which this should drive
 // FIXME - make subscomponents for data objects and displays !!!
 // FIXME - use "baseUrl" from store/config
-const imagesUrl = "http://localhost:3001/images"
 
 // Props should put in "name"
 // and all service types defined here
@@ -22,6 +22,7 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
   console.info(`RobotLabXRuntime ${fullname}`)
   const iconSize = 32
   let registry = useStore((state) => state.registry)
+  const getBaseUrl = useStore((state) => state.getBaseUrl)
   const [open, setOpen] = useState(false)
   const { subscribeTo, unsubscribeFrom, useMessage, sendTo } = useStore()
 
@@ -37,6 +38,9 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
   const service = useProcessedMessage(serviceMsg)
   const repo = useProcessedMessage(repoMsg)
   const installLog = useProcessedMessage(installLogMsg)
+  const [messageLog, setMessageLog] = useState([])
+
+  const imagesUrl = `${getBaseUrl()}/images`
 
   const handleChange = (event, newValue) => {
     setActiveTab(newValue)
@@ -47,6 +51,9 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
     setOpen(true) // Open the modal dialog
   }
 
+  const handleConnect = () => {
+    console.info("Connect to Existing Node...")
+  }
   useEffect(() => {
     // IMPORTANT !!! - subscribeTo must add fullname if not supplied
     subscribeTo(fullname, "registered")
@@ -57,9 +64,6 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
       unsubscribeFrom(fullname, "registered")
     }
   }, [subscribeTo, unsubscribeFrom, fullname, sendTo])
-
-  // begin message log
-  const [messageLog, setMessageLog] = useState([])
 
   useEffect(() => {
     if (newServiceMsg) {
@@ -77,8 +81,6 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
       setMessageLog((log) => [...log, installLog])
     }
   }, [installLog]) // Dependency array includes message, so this runs only if message changes
-
-  // end message log
 
   // const ExpandMore = styled((props) => {
   //   const { expand, ...other } = props
@@ -142,7 +144,7 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
                       <img src={`${imagesUrl}/os/linux.png`} alt="linux" />
                       &nbsp;&nbsp;{host.hostname} {/**  {host.platform} {host.architecture} */}
                       {/**
-                    <img src={`${repoUrl}/${host.typeKey}/${host.typeKey}.png`} alt={host.name} width="32" />
+                    <img src={`${getRepoUrl()}/${host.typeKey}/${host.typeKey}.png`} alt={host.name} width="32" />
                      */}
                       &nbsp;{host.name}
                     </Typography>
@@ -211,16 +213,36 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
       <TabPanel value={activeTab} index={0}>
         <Grid container justifyContent="flex-start">
           <Grid item xs={12} sm={8} md={6} lg={4}>
-            <Box display="flex" alignItems="center">
-              <IconButton type="button" onClick={handleStartNewService} sx={{ marginRight: 1 }}>
-                <PlaylistAddIcon sx={{ fontSize: iconSize }} />
-              </IconButton>
-              <Typography component="div" variant="body1">
-                Add a new service
-              </Typography>
+            <Box display="flex" flexDirection="column" alignItems="left">
+              {/* Row for the first icon and text */}
+              <Grid container alignItems="center" spacing={2}>
+                <Grid item>
+                  <IconButton type="button" onClick={handleStartNewService} sx={{ marginRight: 1 }}>
+                    <PlaylistAddIcon sx={{ fontSize: iconSize }} />
+                  </IconButton>
+                </Grid>
+                <Grid item xs>
+                  <Typography component="div" variant="body1">
+                    Add a new service
+                  </Typography>
+                </Grid>
+              </Grid>
+              {/* Row for the second icon and text */}
+              <Grid container alignItems="center" spacing={2}>
+                <Grid item>
+                  <IconButton type="button" onClick={handleConnect}>
+                    <InputOutlinedIcon sx={{ fontSize: iconSize }} />
+                  </IconButton>
+                </Grid>
+                <Grid item xs>
+                  <Typography component="div" variant="body1">
+                    Connect to a running service
+                  </Typography>
+                </Grid>
+              </Grid>
             </Box>
           </Grid>
-        </Grid>{" "}
+        </Grid>
       </TabPanel>
       {repo && <ServiceDialog packages={repo} open={open} setOpen={setOpen} />}
       <br />

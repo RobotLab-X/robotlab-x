@@ -64,9 +64,9 @@ export default class RobotLabXRuntime extends Service {
     }
   }
 
-  static createInstance(id: string, hostname: string): RobotLabXRuntime {
+  static createInstance(config: any, hostname: string): RobotLabXRuntime {
     if (!RobotLabXRuntime.instance) {
-      RobotLabXRuntime.instance = new RobotLabXRuntime(id, "runtime", "RobotLabXRuntime", "0.0.1", hostname)
+      RobotLabXRuntime.instance = new RobotLabXRuntime(config.id, "runtime", "RobotLabXRuntime", "0.0.1", hostname)
     } else {
       log.error("RobotLabXRuntime instance already exists")
     }
@@ -184,6 +184,13 @@ export default class RobotLabXRuntime extends Service {
       log.info(`loading type data from ${pkgYmlFile}`)
       const file = fs.readFileSync(pkgYmlFile, "utf8")
       const pkg: Package = YAML.parse(file)
+
+      // validating and preprocessing package.yml
+      if (pkg.cwd == null) {
+        // default targetDir
+        pkg.cwd = targetDir
+      }
+
       let version = pkg.version
       log.info(`package.yml ${JSON.stringify(pkg)}`)
 
@@ -202,7 +209,7 @@ export default class RobotLabXRuntime extends Service {
         let installer = new InstallerPython()
         // default install venv and pip
         // check if min python version is correct
-        platformInfo = installer.install({ cwd: targetDir })
+        platformInfo = installer.install(pkg)
         dependenciesMet = true
       } else {
         log.info(`platform [${pkg.platform}] not supported`)
@@ -240,17 +247,41 @@ export default class RobotLabXRuntime extends Service {
         log.info(`dependencies met for ${serviceName} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
         // spawn the process
         log.info(`spawning process ${pkg.cmd} ${pkg.args} in ${targetDir}`)
-        const childProcess = spawn(pkg.cmd, pkg.args, { cwd: targetDir })
+        const childProcess = spawn(pkg.cmd, pkg.args, { cwd: targetDir, shell: true })
 
         childProcess.on("error", (err) => {
           log.error(`failed to start subprocess. ${err}`)
           // send message with error to UI
+          return
         })
 
         if (childProcess.pid) {
           // register the service
           service = new Service(childProcess.pid.toString(), serviceName, serviceType, version, this.getHostname())
+        } else {
+          log.error("Process PID is undefined, indicating an issue with spawning the process.")
+          return
         }
+
+        // Stream stdout and stderr
+        childProcess.stdout.on("data", (data) => {
+          log.info(`STDOUT: ${data}`)
+          // TODO more structured publishStdOutRecord
+          // where record.level record.ts record.msg
+          service.invoke("publishStdOut", data.toString())
+        })
+
+        childProcess.stderr.on("data", (data) => {
+          log.error(`STDERR: ${data}`)
+          service.invoke("publishStdOut", data.toString())
+        })
+
+        // Handle process exit
+        childProcess.on("close", (code) => {
+          log.info(`Subprocess exited with code ${code}`)
+          // Optionally handle process cleanup or restart
+        })
+
         // register the process
         let platformVersion = platformInfo?.platformVersion
         const pd: ProcessData = new ProcessData(
@@ -264,7 +295,8 @@ export default class RobotLabXRuntime extends Service {
 
         // service = new Service(childProcess.pid.toString(), serviceName, serviceType, version, this.getHostname())
         // for unaliased ids for services - single process services will be serviceName@serviceName
-        service = new Service(serviceName, serviceName, serviceType, version, this.getHostname())
+        // FIXME MAKE A PROXY TYPE !!!
+        service = new Service(this.getId(), serviceName, serviceType, version, this.getHostname())
 
         log.info(`process ${JSON.stringify(childProcess)}`)
       } else {
@@ -275,14 +307,15 @@ export default class RobotLabXRuntime extends Service {
       // register and start the service
       this.register(service)
       return service
-    } catch (e: any) {
+    } catch (e: unknown) {
       const error = e as Error
 
-      // Get the file and line number where the error occurred
-      const file = e.stack.split("\n")[1].match(/\((?<file>.+):\d+\)/)?.groups?.file
-      const lineNumber = e.stack.split("\n")[1].match(/\((?<file>.+):(?<lineNumber>\d+)\)/)?.groups?.lineNumber
-
-      log.error(`e ${error} ${file} ${lineNumber}`)
+      // // Get the file and line number where the error occurred
+      // const file = e.stack.split("\n")[1].match(/\((?<file>.+):\d+\)/)?.groups?.file
+      // const lineNumber = e.stack.split("\n")[1].match(/\((?<file>.+):(?<lineNumber>\d+)\)/)?.groups?.lineNumber
+      let errStr = `error: ${error} ${error.stack}`
+      log.error(errStr)
+      this.invoke("publishInstallLog", errStr)
     }
   }
 
