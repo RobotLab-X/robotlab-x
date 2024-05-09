@@ -5,7 +5,7 @@
   "scripts": {
     "start-dev": "concurrently \"cd client && npm start\" \"wait-on http://localhost:3000 && cd server && yarn run electron-dev \"",
     "install-all": "yarn install && cd server && yarn install && cd ../client && yarn install",
-    "remove-create-dir": "rm -rf dist && rm -rf build && rm -rf server/dist && mkdir dist && mkdir build && mkdir server/dist",
+    "remove-create-dir": "shx rm -rf dist && shx rm -rf build && shx rm -rf server/dist && mkdir dist && mkdir build && mkdir server/dist",
     "build-all": "yarn run remove-create-dir && cd client && yarn react-build && cd ../server && yarn run build && yarn run electron-build-all",
     "build-win": "yarn run remove-create-dir && cd client && yarn react-build && cd ../server && yarn run build && yarn run electron-build-win && yarn run remove-package-folder && yarn run move-build",
     "build-linux": "yarn run remove-create-dir && cd client && yarn react-build && cd ../server && yarn run build && yarn run electron-build-linux && yarn run remove-package-folder && yarn run move-build",
@@ -17,8 +17,9 @@
   "license": "MPL-2.0",
   "devDependencies": {
     "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
     "prettier": "3.2.5",
+    "shx": "^0.3.4",
     "wait-on": "^5.2.0"
-  },
-  "dependencies": {}
+  }
 }

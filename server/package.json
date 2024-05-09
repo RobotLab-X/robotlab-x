@@ -41,7 +41,7 @@
     "electron-build-mac": "electron-builder -m && yarn run move-packages",
     "electron-build-win": "electron-builder -w && yarn run move-packages",
     "electron-build-linux": "electron-builder -l && yarn run move-packages",
-    "electron-dev": "nodemon --exec 'yarn run build && cross-env ELECTRON_START_URL=http://localhost:3000 electron --inspect ./dist/electron/ElectronStarter.js'",
+    "electron-dev": "nodemon --exec \"yarn run build && cross-env ELECTRON_START_URL=http://localhost:3000 electron --inspect ./dist/electron/ElectronStarter.js\"",
     "test": "vitest",
     "test-coverage": "nyc yarn run test"
   },
