@@ -26,8 +26,6 @@ type RegistryType = { [key: string]: any }
 export default class Store {
   private static instance: Store
 
-  private static config: any
-
   private registry: RegistryType = {}
 
   private express: express.Application
@@ -38,6 +36,8 @@ export default class Store {
 
   private clients: Map<string, WebSocket> = new Map()
 
+  private runtime: RobotLabXRuntime = null
+
   public static getInstance(): Store {
     if (!Store.instance) {
       Store.instance = new Store()
@@ -46,10 +46,10 @@ export default class Store {
   }
 
   // FIXME since express and wss are initialized here, need port passed in
-  public static createInstance(config: any): Store {
+  public static createInstance(runtime: RobotLabXRuntime): Store {
     if (!Store.instance) {
-      Store.config = config
       Store.instance = new Store()
+      Store.instance.runtime = runtime
       let store = Store.instance
       log.info("initializing store")
       store.express = express()
@@ -60,8 +60,9 @@ export default class Store {
       store.initWebSocketServer()
 
       // FIXME - this is dumb - RuntimeXServer should have config
-      store.express.set("port", config.port)
-      store.http.listen(config.port)
+      log.info(`setting port ${runtime.getConfig().port}`)
+      store.express.set("port", runtime.getConfig().port)
+      store.http.listen(runtime.getConfig().port)
       store.http.on("error", Store.onError)
       store.http.on("listening", Store.onListening)
     } else {
@@ -78,12 +79,12 @@ export default class Store {
     switch (error.code) {
       case "EACCES":
         // tslint:disable-next-line:no-console
-        console.error(`${Store.config.port} requires elevated privileges`)
+        console.error(`${Store.instance.runtime.getConfig().port} requires elevated privileges`)
         process.exit(1)
         break
       case "EADDRINUSE":
         // tslint:disable-next-line:no-console
-        console.error(`${Store.config.port} is already in use`)
+        console.error(`${Store.instance.runtime.getConfig().port} is already in use`)
         process.exit(1)
         break
       default:

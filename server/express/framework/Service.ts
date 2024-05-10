@@ -60,6 +60,10 @@ export default class Service {
     return this
   }
 
+  getConfig() {
+    return this.config
+  }
+
   getNotifyList() {
     return this.notifyList
   }

@@ -3,12 +3,14 @@
 import { spawn } from "child_process"
 import { LaunchAction } from "express/framework/LaunchDescription"
 import fs from "fs"
+import os from "os"
 import path from "path"
 import YAML from "yaml"
 import Store from "../../express/Store"
 import { CodecUtil } from "../framework/CodecUtil"
 import InstallerPython from "../framework/InstallerPython"
 import { getLogger } from "../framework/Log"
+import NameGenerator from "../framework/NameGenerator"
 import { Repo } from "../framework/Repo"
 import Service from "../framework/Service"
 import { HostData } from "../models/HostData"
@@ -29,14 +31,17 @@ export default class RobotLabXRuntime extends Service {
 
   protected dataDir = "./data"
   protected configDir = "./config"
+  protected configName: string
 
+  // OVERRIDES Service.ts
   config = {
-    config: "default",
+    id: NameGenerator.getName(),
+    port: 3001,
     registry: [] as string[]
   }
 
   save() {
-    const filePath = path.join(this.dataDir, this.config.config, "runtime.yml")
+    const filePath = path.join(this.configDir, this.configName, "runtime.yml")
     try {
       const yamlStr = YAML.stringify(this.config)
       fs.mkdirSync(path.dirname(filePath), { recursive: true })
@@ -59,21 +64,22 @@ export default class RobotLabXRuntime extends Service {
     // this should be clearly displayed in connections
   }
 
-  readConfig() {
-    const filePath = path.join(this.dataDir, this.config.config, "runtime.yml")
+  readConfig(serviceName: string, defaultConfig: any) {
+    const filePath = path.join(this.configDir, this.configName, `${serviceName}.yml`)
     try {
       const file = fs.readFileSync(filePath, "utf8")
       const config = YAML.parse(file)
-      this.config = config
-      console.log("Config loaded from", filePath)
+      return config
     } catch (error) {
       this.error(`Failed to load config: ${error}`)
+      return defaultConfig
     }
   }
 
-  static createInstance(config: any, hostname: string): RobotLabXRuntime {
+  static createInstance(configName: string): RobotLabXRuntime {
     if (!RobotLabXRuntime.instance) {
-      RobotLabXRuntime.instance = new RobotLabXRuntime(config.id, "runtime", "RobotLabXRuntime", "0.0.1", hostname)
+      RobotLabXRuntime.instance = new RobotLabXRuntime("TEMP", "runtime", "RobotLabXRuntime", "0.0.1", os.hostname())
+      this.instance.configName = configName
     } else {
       log.error("RobotLabXRuntime instance already exists")
     }
@@ -110,16 +116,6 @@ export default class RobotLabXRuntime extends Service {
     public hostname: string
   ) {
     super(id, name, typeKey, version, hostname) // Call the base class constructor if needed
-    fs.mkdir(this.dataDir, { recursive: true }, (err) => {
-      if (err) {
-        log.error(`Error creating data directory: ${err}`)
-      }
-    })
-    fs.mkdir(path.join(this.configDir, this.config.config), { recursive: true }, (err) => {
-      if (err) {
-        log.error(`Error creating data directory: ${err}`)
-      }
-    })
   }
 
   getLocalProcessData(): ProcessData {
@@ -131,6 +127,28 @@ export default class RobotLabXRuntime extends Service {
   // vs release which only frees the service from memory
   releaseService() {
     super.releaseService()
+  }
+
+  startService(): void {
+    fs.mkdir(this.dataDir, { recursive: true }, (err) => {
+      if (err) {
+        log.error(`Error creating data directory: ${err}`)
+      }
+    })
+    fs.mkdir(path.join(this.configDir, this.configName), { recursive: true }, (err) => {
+      if (err) {
+        log.error(`Error creating data directory: ${err}`)
+      }
+    })
+
+    this.config = this.readConfig("runtime", this.config)
+    console.log("Runtime config loaded ", JSON.stringify(this.config))
+    if (this.config.id) {
+      this.id = this.config.id
+    }
+    Store.createInstance(RobotLabXRuntime.instance)
+    super.startService()
+    log.info("starting runtime")
   }
 
   installInfo(msg: string) {

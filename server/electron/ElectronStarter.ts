@@ -1,14 +1,10 @@
 import debug from "debug"
 import Electron from "electron"
-import fs from "fs"
 import "module-alias/register"
 import os from "os"
 import path from "path"
 import "source-map-support/register"
-import YAML from "yaml"
-import Store from "../express/Store"
 import { getLogger } from "../express/framework/Log"
-import NameGenerator from "../express/framework/NameGenerator"
 import { HostData } from "../express/models/HostData"
 import { ProcessData } from "../express/models/ProcessData"
 import RobotLabXRuntime from "../express/service/RobotLabXRuntime"
@@ -27,8 +23,6 @@ export default class Main {
   private static app: Electron.App
   private static BrowserWindow: typeof Electron.BrowserWindow
   private static mainWindow: Electron.BrowserWindow
-  private static port: string | number | boolean
-  private static store: Store
 
   // if this variable is set to true in the main constructor, the app will quit when closing it in macOS
   private static quitOnCloseOSX: boolean
@@ -93,27 +87,23 @@ export default class Main {
 
     let configName = argv.config ? argv.config : "default"
 
-    let config = {
-      id: NameGenerator.getName(),
-      port: 3001
-    }
+    // let config = {
+    //   id: NameGenerator.getName(),
+    //   port: 3001
+    // }
 
-    try {
-      const filePath = path.join("config", configName, "runtime.yml")
-      const file = fs.readFileSync(filePath, "utf8")
-      config = YAML.parse(file)
-    } catch (e) {
-      log.error(`--config ${configName} config/${configName}/runtime.yml not found`)
-    }
+    // FIXME REMOVE - use runtime.readConfig
+    // try {
+    //   const filePath = path.join("config", configName, "runtime.yml")
+    //   const file = fs.readFileSync(filePath, "utf8")
+    //   config = YAML.parse(file)
+    // } catch (e) {
+    //   log.error(`--config ${configName} config/${configName}/runtime.yml not found`)
+    // }
 
-    log.info(`config: ${JSON.stringify(config)}`)
+    // log.info(`config: ${JSON.stringify(config)}`)
 
-    // FIXME - do this in RobotLabXRuntime
-    Main.store = Store.createInstance(config)
-
-    let runtime: RobotLabXRuntime = RobotLabXRuntime.createInstance(config, os.hostname())
-
-    // FIXME - do the following in RobotLabXRuntime
+    let runtime: RobotLabXRuntime = RobotLabXRuntime.createInstance(configName)
 
     // register the host
     let host = HostData.getLocalHostData(os)
@@ -122,6 +112,8 @@ export default class Main {
     let pd: ProcessData = runtime.getLocalProcessData()
     pd.hostname = host.hostname
     runtime.startService()
+
+    // running start before this is critical
     runtime.registerHost(host)
     runtime.registerProcess(pd)
     runtime.register(runtime)
