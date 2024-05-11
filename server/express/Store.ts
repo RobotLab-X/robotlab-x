@@ -3,6 +3,7 @@ import cors from "cors"
 import express from "express"
 import http, { Server as HTTPServer } from "http"
 import path from "path"
+import { v4 as uuidv4 } from "uuid"
 import { WebSocket, Server as WebSocketServer } from "ws"
 import { getLogger } from "../express/framework/Log"
 import { CodecUtil } from "./framework/CodecUtil"
@@ -22,6 +23,11 @@ type RegistryType = { [key: string]: any }
  * application. It is used to store and retrieve data from the registry.
  * It also acts as a central point for the WebSocket server and the Express
  * server.
+ *
+ * This is effectively part of RobotLabXRuntime, but is separated out for
+ * simplicity, clarity and serialization. This class is not serializable,
+ * since it has references to sockets and other communication objects.
+ *
  */
 export default class Store {
   private static instance: Store
@@ -129,25 +135,34 @@ export default class Store {
     this.wss.on("connection", (ws, request) => {
       log.info("client connected")
 
-      // Log the IP address of the client
-      const ip = request.socket.remoteAddress
-      const port = request.socket.remotePort
-      log.info(`client connected from ${ip}:${port}`)
-
       // Access the URL the client connected to
       const url = request.url
       log.info(`connected to url: ${url}`)
 
       // Retrieve a specific query parameter (e.g., id)
       const urlParams = new URLSearchParams(url.split("?")[1]) // assuming your WS URL might contain query params
-      const clientId = urlParams.get("id") // Assuming 'id' is passed as a query parameter
-      if (clientId) {
-        log.info(`client id: ${clientId}`)
+      let clientId: string = urlParams.get("id") // Assuming 'id' is passed as a query parameter
+      const uuid = uuidv4()
+      if (!clientId) {
+        clientId = uuid
       }
-
+      // FIXME - check for collisions
       // FIXME - Web UIs should have a single client id and an array of ws connections
       // unless the client id is associated with a "different" (non default) session
       this.clients.set(clientId, ws)
+
+      // FIXME - MAKE CONNECTION CLASS
+      this.runtime.registerConnection({
+        clientId: clientId,
+        ts: new Date().getTime(),
+        uuid: uuid,
+        ip: request.socket.remoteAddress,
+        port: request.socket.remotePort,
+        url: url,
+        type: "websocket",
+        encoding: "json",
+        direction: "inbound"
+      })
 
       ws.on("message", this.handleWsMessage(ws))
 

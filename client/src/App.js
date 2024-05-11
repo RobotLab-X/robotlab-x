@@ -1,4 +1,5 @@
 import { CssBaseline, ThemeProvider } from "@mui/material"
+import { ProcessData } from "models/ProcessData"
 import Service from "models/Service"
 import { useEffect, useState } from "react"
 import { Route, Routes } from "react-router-dom"
@@ -58,6 +59,8 @@ function App() {
       subscribeTo("runtime", "registered")
       let service = new Service(id, name, typeKey, version, browser.name.toLowerCase())
       sendTo("runtime", "register", service)
+      let prossessData = new ProcessData(id, "browser", "browser", browser.name.toLowerCase(), browser.version)
+      sendTo("runtime", "registerProcess", prossessData)
       sendTo("runtime", "getRegistry")
       sendTo("runtime", "getRepo")
     }

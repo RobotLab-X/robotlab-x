@@ -37,11 +37,35 @@ export default class RobotLabXRuntime extends Service {
   protected configName: string
   protected repo = new Repo()
 
+  // must be pid or userdefined {pid/id}
+  protected processes: { [id: string]: ProcessData } = {}
+
+  // FIXME - how to organize fqdn, hostname, ip, mac, etc. user defined?
+  //  hostname or userdefined ? {hostname}
+  protected hosts: { [id: string]: HostData } = {}
+
+  // FIXME - make a connection class
+  protected connections: { [id: string]: any } = {}
+
+  // static meta data from both registered services and
+  // local packages
+  protected types: { [id: string]: ServiceTypeData } = {}
+
   // OVERRIDES Service.ts
   config = {
     id: NameGenerator.getName(),
     port: 3001,
     registry: [] as string[]
+  }
+
+  constructor(
+    public id: string,
+    public name: string,
+    public typeKey: string,
+    public version: string,
+    public hostname: string
+  ) {
+    super(id, name, typeKey, version, hostname) // Call the base class constructor if needed
   }
 
   save() {
@@ -194,30 +218,6 @@ export default class RobotLabXRuntime extends Service {
 
   static getInstance(): RobotLabXRuntime {
     return RobotLabXRuntime.instance
-  }
-
-  // servo@raspi4  - {serviceName}@{processName}
-  // protected registry: { [id: string]: Service } = {}
-
-  // must be pid or userdefined {pid/id}
-  protected processes: { [id: string]: ProcessData } = {}
-
-  // FIXME - how to organize fqdn, hostname, ip, mac, etc. user defined?
-  //  hostname or userdefined ? {hostname}
-  protected hosts: { [id: string]: HostData } = {}
-
-  // static meta data from both registered services and
-  // local packages
-  protected types: { [id: string]: ServiceTypeData } = {}
-
-  constructor(
-    public id: string,
-    public name: string,
-    public typeKey: string,
-    public version: string,
-    public hostname: string
-  ) {
-    super(id, name, typeKey, version, hostname) // Call the base class constructor if needed
   }
 
   getLocalProcessData(): ProcessData {
@@ -463,6 +463,11 @@ export default class RobotLabXRuntime extends Service {
     return Store.getInstance().getService(fullName)
   }
 
+  registerConnection(connection: any) {
+    log.info(`register connection: ${JSON.stringify(connection)}`)
+    this.connections[`${connection.clientId}`] = connection
+  }
+
   registerHost(host: HostData) {
     this.hosts[`${host.hostname}`] = host
   }
@@ -539,8 +544,8 @@ export default class RobotLabXRuntime extends Service {
   }
 
   // FIXME implement
-  getConnections(): any[] {
-    return []
+  getConnections() {
+    return this.connections
   }
 
   getRegistry(): Object {

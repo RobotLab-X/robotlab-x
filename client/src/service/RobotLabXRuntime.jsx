@@ -1,5 +1,7 @@
+import EastIcon from "@mui/icons-material/East"
 import InputOutlinedIcon from "@mui/icons-material/InputOutlined"
 import PlaylistAddIcon from "@mui/icons-material/PlaylistAddOutlined"
+import WestIcon from "@mui/icons-material/West"
 import { Box, Card, CardActionArea, CardContent, Grid, IconButton, Tab, Tabs, Typography } from "@mui/material"
 import ConnectDialog from "components/ConnectDialog"
 import ServiceDialog from "components/ServiceDialog"
@@ -123,6 +125,7 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
 
   const hostArray = service?.hosts ? Object.values(service.hosts) : []
   const processArray = service?.processes ? Object.values(service.processes) : []
+  const connectionArray = service?.connections ? Object.values(service.connections) : []
 
   const host = service?.hosts ? service.hosts[service.hostname] : null
 
@@ -135,7 +138,7 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
         <Tab label={`Services ${Object.keys(registry).length}`} />
         <Tab label={`Processes ${processArray.length}`} />
         <Tab label={`Hosts ${hostArray.length}`} />
-        <Tab label={`Connections ${processArray.length}`} />
+        <Tab label={`Connections ${connectionArray.length}`} />
       </Tabs>
       <TabPanel value={activeTab} index={2}>
         <Grid container justifyContent="left">
@@ -249,6 +252,37 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
           </Grid>
         </Grid>
       </TabPanel>
+      <TabPanel value={activeTab} index={3}>
+        <Grid container justifyContent="flex-start">
+          <Grid item xs={12} sm={8} md={6} lg={4}>
+            <Box display="flex" flexDirection="column" alignItems="left">
+              Connection details
+              {connectionArray.map((host, index) => (
+                <Card key={index} onClick={() => handleHostClick(host)} sx={{ margin: 1 }}>
+                  <CardActionArea>
+                    <CardContent>
+                      <Box display="flex" alignItems="center" sx={{ marginBottom: 1 }}>
+                        {host.direction === "inbound" ? (
+                          <EastIcon sx={{ marginRight: 1 }} />
+                        ) : (
+                          <WestIcon sx={{ marginRight: 1 }} />
+                        )}
+                        <Typography variant="h5" component="div">
+                          {host.direction} {host.clientId}
+                        </Typography>
+                      </Box>
+                      <Typography component="div" variant="body2" color="text.secondary">
+                        <small>{host.uuid}</small>
+                      </Typography>
+                    </CardContent>
+                  </CardActionArea>
+                </Card>
+              ))}
+              <ReactJson src={connectionArray} name="connections" />
+            </Box>
+          </Grid>
+        </Grid>
+      </TabPanel>
       <ConnectDialog open={connectDialogOpen} onClose={() => setConnectDialogOpen(false)} />
       {repo && <ServiceDialog packages={repo} open={open} setOpen={setOpen} />}
       <br />
@@ -295,8 +329,9 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
       <ReactJson src={type} name="type" />
       <ReactJson src={messages} name="messages" />
       <ReactJson src={service} name="state" />
+{service && <ReactJson src={service} name="service" />}
+
        */}
-      {service && <ReactJson src={service} name="service" />}
       <br />
       {/** message ? <pre>{JSON.stringify(message, null, 2)}</pre> : <p>No message yet</p> */}
       {/**
