@@ -7,12 +7,17 @@ const log = getLogger("Repo")
 
 // FIXME - there should be no catches in this class only throws
 export class Repo {
-  protected repoMap = new Map<string, any>()
-  protected services: Map<string, any> = new Map()
+  protected repoMap: any = {} // new Map<string, any>()
+  protected services: any = {} // Map<string, any> = new Map()
 
-  constructor() {
+  load() {
+    log.info("loading repo")
     this.processRepoDirectory("./express/public/repo")
     this.loadServices()
+  }
+
+  getRepo() {
+    return this.repoMap
   }
 
   loadConfigurations() {
@@ -34,12 +39,12 @@ export class Repo {
             log.error(`Loaded module from ${configPath} is not a constructor: ${typeof ConfigClass}`)
           } else {
             log.info(`Registering config type: ${configName}`)
-            this.services.set(configName, ConfigClass)
+            this.services[configName] = ConfigClass
           }
 
           // Register each service with the filename (minus the extension) as key
           log.info(`=======registering config type: ${configName}`)
-          this.services.set(configName, ConfigClass)
+          this.services[configName] = ConfigClass
         }
       } catch (error) {
         log.error(`Error loading config: ${error}`)
@@ -66,12 +71,12 @@ export class Repo {
             log.error(`Loaded module from ${servicePath} is not a constructor: ${typeof ServiceClass}`)
           } else {
             log.info(`Registering service type: ${serviceName}`)
-            this.services.set(serviceName, ServiceClass)
+            this.services[serviceName] = ServiceClass
           }
 
           // Register each service with the filename (minus the extension) as key
           log.info(`=======registering service type: ${serviceName}`)
-          this.services.set(serviceName, ServiceClass)
+          this.services[serviceName] = ServiceClass
         }
       } catch (error) {
         log.error(`Error loading service: ${error}`)
@@ -103,7 +108,7 @@ export class Repo {
             const packageObject = yaml.parse(packageFileContents)
 
             // Use the directory name as the key since there are no version subdirectories
-            this.repoMap.set(dir.name, packageObject)
+            this.repoMap[dir.name] = packageObject
           } catch (err) {
             // log.error(`Error reading package file in ${dirPath}: ${err}`)
             log.info(`skipping ${dirPath} no package file found`)

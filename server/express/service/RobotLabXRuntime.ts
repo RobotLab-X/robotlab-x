@@ -5,6 +5,7 @@ import { LaunchAction } from "express/framework/LaunchDescription"
 import fs from "fs"
 import os from "os"
 import path from "path"
+import { WebSocket } from "ws"
 import YAML from "yaml"
 import Store from "../../express/Store"
 import { CodecUtil } from "../framework/CodecUtil"
@@ -14,9 +15,11 @@ import NameGenerator from "../framework/NameGenerator"
 import { Repo } from "../framework/Repo"
 import Service from "../framework/Service"
 import { HostData } from "../models/HostData"
+import Message from "../models/Message"
 import Package from "../models/Package"
 import { ProcessData } from "../models/ProcessData"
 import { ServiceTypeData } from "../models/ServiceTypeData"
+
 // import LaunchDescription from "express/framework/LaunchDescription"
 // const LaunchDescription = require("express/framework/LaunchDescription").default
 
@@ -32,6 +35,7 @@ export default class RobotLabXRuntime extends Service {
   protected dataDir = "./data"
   protected configDir = "./config"
   protected configName: string
+  protected repo = new Repo()
 
   // OVERRIDES Service.ts
   config = {
@@ -57,11 +61,109 @@ export default class RobotLabXRuntime extends Service {
     this.save()
   }
 
+  createMessage(inName: string, inMethod: string, inParams: any[]) {
+    // ...inParams: any[]) {
+    // TODO: consider a different way to pass inParams for a no arg method.
+    // rather than an array with a single null element.
+    const id = this.getId()
+
+    // var msg = {
+    //   msgId: new Date().getTime(),
+    //   name: get().getFullName(inName),
+    //   method: inMethod,
+    //   sender: "runtime@" + id,
+    //   sendingMethod: null
+    // }
+    let msg = new Message(inName, inMethod, inParams)
+    msg.sender = `runtime@${id}`
+
+    // msg.name = get().getFullName(inName)
+    // msg.method = inMethod
+    // msg.sender = "runtime@" + id
+
+    // if (inParams || (inParams.length === 1 && inParams[0])) {
+    //   msg["data"] = inParams
+    // }
+    return msg
+  }
+
   connect(url: string) {
     log.info(`=== connect ${url} ===`)
     log.info("connecting")
     // websocket have a directional initial connection
     // this should be clearly displayed in connections
+
+    // use "connections" to store client as well, but you'll need a wrapper to
+    // handle all the meta data
+
+    // connect
+
+    // THIS IS THE WAY PROCESSES CONNECT TO OTHER PROCESSES
+    // HTTP requests should handle it the same way with a session id, or a generated uuid
+    // register Service
+    // registerProcess
+    // registerHost
+    // registerType?
+
+    // addListener getServiceNames
+
+    // maybe register
+
+    // =============== OR ==================
+    // connect
+    // wait for other system to actively register <- no, won't work ... server doesn't have process id
+
+    // this.sendTo("runtime", "register", service)
+
+    // Ultimately, this should be very similar to what the web app does
+
+    const ws: WebSocket = new WebSocket(url)
+    const that = this
+    // Open connection
+    ws.onopen = function open() {
+      console.log("Connected to the server")
+      // Send a message to the WebSocket server
+      // get().subscribeTo("runtime", "getServiceNames")
+      var msg = that.createMessage("runtime", "addListener", ["getServiceNames", "runtime@" + that.getId()])
+      var json = JSON.stringify(msg)
+      console.log("Sending addListener getServiceNames: ", json)
+      ws.send(json)
+
+      // register runtime which in a way is equivalent to a registering a process
+      msg = that.createMessage("runtime", "register", [that])
+      json = JSON.stringify(msg)
+      console.log("Sending register: ", json)
+      ws.send(json)
+      // register the process
+      msg = that.createMessage("runtime", "registerProcess", [that.getLocalProcessData()])
+      json = JSON.stringify(msg)
+      console.log("Sending register: ", json)
+      ws.send(json)
+
+      // register the host
+
+      msg = that.createMessage("runtime", "registerProcess", [that.getHost()])
+      json = JSON.stringify(msg)
+      console.log("Sending register: ", json)
+      ws.send(json)
+
+      // sendTo("runtime", "register", service)
+    }
+
+    // Listen for messages from the server
+    ws.onmessage = function (event) {
+      console.log("Message from server: ", event.data)
+    }
+
+    // Handle any errors that occur.
+    ws.onerror = function (error) {
+      console.error("WebSocket Error: ", error)
+    }
+
+    // Handle WebSocket connection closed
+    ws.onclose = function (event) {
+      console.log("WebSocket connection closed: ", event)
+    }
   }
 
   readConfig(serviceName: string, defaultConfig: any) {
@@ -130,6 +232,10 @@ export default class RobotLabXRuntime extends Service {
   }
 
   startService(): void {
+    log.info("starting runtime")
+
+    this.repo.load()
+
     fs.mkdir(this.dataDir, { recursive: true }, (err) => {
       if (err) {
         log.error(`Error creating data directory: ${err}`)
@@ -142,10 +248,8 @@ export default class RobotLabXRuntime extends Service {
     })
 
     this.config = this.readConfig("runtime", this.config)
-    console.log("Runtime config loaded ", JSON.stringify(this.config))
-    if (this.config.id) {
-      this.id = this.config.id
-    }
+    log.info(`Runtime config loaded ${JSON.stringify(this.config)}`)
+    this.id = this.config.id
     Store.createInstance(RobotLabXRuntime.instance)
     super.startService()
     log.info("starting runtime")
@@ -199,8 +303,8 @@ export default class RobotLabXRuntime extends Service {
 
       // repo should be immutable - make a copy to service/{name} if one doesn't already exist
       const targetDir = `./express/public/service/${serviceName}`
-      const repo = new Repo()
-      repo.copyPackage(serviceName, serviceType)
+
+      this.repo.copyPackage(serviceName, serviceType)
       log.info(`successful ${targetDir}`)
 
       const pkgYmlFile = `${targetDir}/package.yml`
@@ -263,7 +367,7 @@ export default class RobotLabXRuntime extends Service {
       // spawn the process if none node process
       if (pkg.platform === "node") {
         this.installInfo(`node process ${serviceName} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
-        service = repo.getService(this.getId(), serviceName, serviceType, version, this.getHostname())
+        service = this.repo.getService(this.getId(), serviceName, serviceType, version, this.getHostname())
         log.info(`service ${JSON.stringify(service)}`)
         this.installInfo(`platform is ok`)
         this.register(service)
@@ -384,13 +488,12 @@ export default class RobotLabXRuntime extends Service {
   }
 
   getRepo() {
-    const repoBasePath = path.join(__dirname, "../public/repo")
-    log.info(`getting repo with base path: ${repoBasePath}`)
-    const repo = new Repo()
-    const repoMap = repo.processRepoDirectory(repoBasePath)
-    // convert the Map to an Object to send as JSON
-    const repoObject = Object.fromEntries(repoMap)
-    return repoObject
+    // const repoBasePath = path.join(__dirname, "../public/repo")
+    // log.info(`getting repo with base path: ${repoBasePath}`)
+    // const repoMap = this.repo.processRepoDirectory(repoBasePath)
+    // // convert the Map to an Object to send as JSON
+    // const repoObject = Object.fromEntries(repoMap)
+    return this.repo.getRepo()
   }
 
   getHosts() {

@@ -8,7 +8,7 @@ import React, { useState } from "react"
 import { useStore } from "store/store"
 
 function ConnectDialog({ open, onClose }) {
-  const [url, setUrl] = useState("ws://host:3001/api/messages")
+  const [url, setUrl] = useState("ws://localhost:3001/api/messages")
   const { sendTo } = useStore()
 
   const handleUrlChange = (event) => {

@@ -86,35 +86,18 @@ export default class Main {
     // }
 
     let configName = argv.config ? argv.config : "default"
-
-    // let config = {
-    //   id: NameGenerator.getName(),
-    //   port: 3001
-    // }
-
-    // FIXME REMOVE - use runtime.readConfig
-    // try {
-    //   const filePath = path.join("config", configName, "runtime.yml")
-    //   const file = fs.readFileSync(filePath, "utf8")
-    //   config = YAML.parse(file)
-    // } catch (e) {
-    //   log.error(`--config ${configName} config/${configName}/runtime.yml not found`)
-    // }
-
-    // log.info(`config: ${JSON.stringify(config)}`)
-
     let runtime: RobotLabXRuntime = RobotLabXRuntime.createInstance(configName)
+    runtime.startService()
 
     // register the host
     let host = HostData.getLocalHostData(os)
 
-    // register process
-    let pd: ProcessData = runtime.getLocalProcessData()
-    pd.hostname = host.hostname
-    runtime.startService()
-
     // running start before this is critical
     runtime.registerHost(host)
+    // register process
+    log.error("ElectronStart runtime id: ", runtime.getId())
+    let pd: ProcessData = runtime.getLocalProcessData()
+    pd.hostname = host.hostname
     runtime.registerProcess(pd)
     runtime.register(runtime)
   }

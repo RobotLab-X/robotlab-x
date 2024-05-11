@@ -1,4 +1,5 @@
 ## TODO
+* REALIZED "runtime" is really the same a Process which is really the same as id which is the same as "the whole process" - connections in and out belong to "the whole process"
 * WebRTC IS NOT activating venv when int does a pip install -r requirements
 * WebRTC next .. need "minimal" actual "register" which locks with service description started by RobotLabXRuntime.ts
 * add Johnny5 J5Servo and Node-Red
