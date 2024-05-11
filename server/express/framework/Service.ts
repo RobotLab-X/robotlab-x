@@ -2,6 +2,7 @@ import Store from "../Store"
 import Message from "../models/Message"
 import Status from "../models/Status"
 import { SubscriptionListener } from "../models/SubscriptionListener"
+import RobotLabXRuntime from "../service/RobotLabXRuntime"
 import { CodecUtil } from "./CodecUtil"
 import { getLogger } from "./Log"
 
@@ -103,9 +104,11 @@ export default class Service {
     const fullName = this.getFullName()
     const msgFullName = CodecUtil.getFullName(msg.name)
     const msgId = CodecUtil.getId(msgFullName)
-    const id = this.getId()
+    // this process's id
+    const id = RobotLabXRuntime.getInstance().getId()
     let ret: any = null
 
+    // log.error(`invokeMsg msgId ${msgId} id ${id} msgFullName ${msgFullName} fullName ${fullName}`)
     // ==== REMOTE ====
     // FIXME - check if blocking or non-blocking
     // use gateway to send message to remote service

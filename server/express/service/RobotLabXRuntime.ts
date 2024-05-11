@@ -475,12 +475,39 @@ export default class RobotLabXRuntime extends Service {
     this.types[`${type.typeKey}@${type.version}`] = type
   }
 
+  /**
+   * Registering a service.  If its local to this process, most likely
+   * it will be a service derived from Service.ts.  If its a remote service
+   * it will be a proxy.  Which is defined by Service.ts
+   *
+   * All external processes must register. The "runtime" is equivalent to a
+   * process.  If an external process does not register, a generated "runtime"/process
+   * description will be created
+   *
+   * @param service
+   * @returns
+   */
   register(service: Service) {
     // log.info(`registering service: ${service.name} ${service.constructor.name}`)
     log.info(`registering service: ${JSON.stringify(service)}`)
     log.info(`registering service: ${service.name}@${service.id}`)
+
+    // if its a local service - then we understand the type and
+    // it can be directly registered
+    // if its a remote service - we need to get the type from the remote
+    // and construct a proxy
+
+    if (service.id != this.getId()) {
+      // PROXY !!!
+      log.info("service id is remote - create a proxy service")
+      log.info(`${service}`)
+      service = new Service(service.id, service.name, service.typeKey, service.version, service.hostname)
+    }
+
     Store.getInstance().register(`${service.name}@${service.id}`, service)
     this.invoke("registered", service)
+
+    return service
   }
 
   registered(service: Service): Service {
