@@ -131,6 +131,29 @@ export default class Store {
     log.info(`store initializing on node ${process.version}`)
   }
 
+  /**
+   * For outbound client connections
+   * @param clientId
+   * @param ws
+   */
+  addClientConnection(clientId: string, ws: WebSocket) {
+    this.clients.set(clientId, ws)
+    this.runtime.registerConnection({
+      clientId: clientId,
+      ts: new Date().getTime(),
+      uuid: uuidv4(),
+      ip: "localhost",
+      port: 0,
+      url: clientId,
+      type: "websocket",
+      encoding: "json",
+      direction: "outbound"
+    })
+  }
+
+  /**
+   * Accept "inbound" WebSocket connections
+   */
   private initWebSocketServer() {
     this.wss.on("connection", (ws, request) => {
       log.info("client connected")

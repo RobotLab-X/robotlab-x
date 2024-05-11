@@ -30,7 +30,7 @@ const store = (set, get) => ({
       wsOrigin = baseUrl.replace("http", "ws")
     }
 
-    return `${wsOrigin}/api/messages?user=root&pwd=pwd&session_id=2309adf3dlkdk&id=${get().id}`
+    return `${wsOrigin}/api/messages?id=${get().id}`
   },
 
   // Use a getter function for apiUrl

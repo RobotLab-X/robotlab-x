@@ -283,7 +283,7 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
           </Grid>
         </Grid>
       </TabPanel>
-      <ConnectDialog open={connectDialogOpen} onClose={() => setConnectDialogOpen(false)} />
+      <ConnectDialog id={id} open={connectDialogOpen} onClose={() => setConnectDialogOpen(false)} />
       {repo && <ServiceDialog packages={repo} open={open} setOpen={setOpen} />}
       <br />
       <Grid container spacing={2} alignItems="flex-start">
