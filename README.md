@@ -6,7 +6,7 @@ sequenceDiagram
     client->>client: registers self ???? where ???
     server->>server: registers self in ElectronStarter.ts
     %%Note right of server: registers self in ElectronStarter.ts
-    client->>server: initial http upgrade /api/messages?user=root&pwd=pwd&session_id=2309adf3dlkdk&id=ui-rlx
+    client->>server: initial http upgrade /api/messages?id=ui-rlx
     server->>server: registers connections associates id to connection
 
     %%Note over client,server: added listeners

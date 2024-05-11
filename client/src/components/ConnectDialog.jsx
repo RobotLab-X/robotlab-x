@@ -7,8 +7,8 @@ import TextField from "@mui/material/TextField"
 import React, { useState } from "react"
 import { useStore } from "store/store"
 
-function ConnectDialog({ open, onClose }) {
-  const [url, setUrl] = useState("ws://localhost:3001/api/messages")
+function ConnectDialog({ id, open, onClose }) {
+  const [url, setUrl] = useState(`ws://localhost:3001/api/messages?id=${id}`)
   const { sendTo } = useStore()
 
   const handleUrlChange = (event) => {
@@ -27,7 +27,6 @@ function ConnectDialog({ open, onClose }) {
       <DialogTitle>Connect to Service</DialogTitle>
       <DialogContent>
         <TextField
-          autoFocus
           margin="dense"
           id="url"
           label="WebSocket URL"
@@ -36,7 +35,7 @@ function ConnectDialog({ open, onClose }) {
           variant="outlined"
           value={url}
           onChange={handleUrlChange}
-          placeholder="ws://example.com:3001/api/messages"
+          placeholder={url}
         />
       </DialogContent>
       <DialogActions>
