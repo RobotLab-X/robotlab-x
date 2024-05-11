@@ -489,8 +489,8 @@ export default class RobotLabXRuntime extends Service {
    */
   register(service: Service) {
     // log.info(`registering service: ${service.name} ${service.constructor.name}`)
-    log.info(`registering service: ${JSON.stringify(service)}`)
-    log.info(`registering service: ${service.name}@${service.id}`)
+    // log.error(`registering service: ${JSON.stringify(service)}`)
+    log.error(`registering service: ${service.name}@${service.id}`)
 
     // if its a local service - then we understand the type and
     // it can be directly registered

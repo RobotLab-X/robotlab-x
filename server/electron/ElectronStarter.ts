@@ -95,7 +95,6 @@ export default class Main {
     // running start before this is critical
     runtime.registerHost(host)
     // register process
-    log.error("ElectronStart runtime id: ", runtime.getId())
     let pd: ProcessData = runtime.getLocalProcessData()
     pd.hostname = host.hostname
     runtime.registerProcess(pd)
