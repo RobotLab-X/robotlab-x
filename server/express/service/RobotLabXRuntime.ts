@@ -142,7 +142,7 @@ export default class RobotLabXRuntime extends Service {
 
       // register the host
 
-      msg = that.createMessage("runtime", "registerProcess", [that.getHost()])
+      msg = that.createMessage("runtime", "registerHost", [that.getHost()])
       json = JSON.stringify(msg)
       console.log("Sending register: ", json)
       ws.send(json)
