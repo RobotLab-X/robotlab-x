@@ -6,6 +6,7 @@ import SearchIcon from "@mui/icons-material/Search"
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined"
 import { Box, IconButton, InputAdornment, TextField, Typography, useTheme } from "@mui/material"
 import React, { useContext, useState } from "react"
+import { useStore } from "store/store"
 import { ColorModeContext, tokens } from "../../theme"
 
 const Topbar = () => {
@@ -13,6 +14,7 @@ const Topbar = () => {
   const colors = tokens(theme.palette.mode)
   const colorMode = useContext(ColorModeContext)
   const [filter, setFilter] = useState("")
+  const remoteId = useStore((state) => state.defaultRemoteId)
 
   return (
     <Box display="flex" justifyContent="space-between" alignItems="center" p={2}>
@@ -32,8 +34,8 @@ const Topbar = () => {
             }}
           />
         </Box>
-        <Typography variant="h6" component="span">
-          HELLO THERE !!
+        <Typography variant="h3" component="span">
+          {remoteId}
         </Typography>
       </Box>
 

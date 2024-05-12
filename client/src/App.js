@@ -1,4 +1,5 @@
 import { CssBaseline, ThemeProvider } from "@mui/material"
+import { fetchGetJson } from "framework/fetchUtil"
 import { ProcessData } from "models/ProcessData"
 import Service from "models/Service"
 import { useEffect, useState } from "react"
@@ -26,6 +27,8 @@ function App() {
   const connected = useStore((state) => state.connected)
   const subscribeTo = useStore((state) => state.subscribeTo)
   const id = useStore((state) => state.id)
+  const setDefaultRemoteId = useStore((state) => state.setDefaultRemoteId)
+  const setId = useStore((state) => state.setId)
 
   const UAParser = require("ua-parser-js")
   const parser = new UAParser()
@@ -35,6 +38,7 @@ function App() {
   const typeKey = "RobotLabXUI"
   const [theme, colorMode] = useMode()
   const [isSidebar, setIsSidebar] = useState(true)
+  const getApiUrl = useStore((state) => state.getApiUrl)
 
   // log all environment variables that start with REACT_APP_
   console.info("Environment variables:")
@@ -44,13 +48,23 @@ function App() {
       console.log(`${key}: ${process.env[key]}`)
     })
 
-  // INIT ! Store, network connections, etc
   useEffect(() => {
-    connect()
-  }, [connect])
+    const fetchId = async () => {
+      try {
+        const remoteId = await fetchGetJson(getApiUrl(), "/runtime/getId")
+        setDefaultRemoteId(remoteId)
+        setId(`ui-${remoteId}`)
+        connect()
+      } catch (error) {
+        console.error("Error fetching id ! :", error)
+      }
+    }
+    fetchId()
+  }, [connect, setDefaultRemoteId, setId, getApiUrl])
 
   useEffect(() => {
-    if (connected) {
+    // send initial listeners when connected and id set
+    if (connected && id) {
       // TODO make these "service" calls ??? or at least one shot calls
       // that future callbacks are not needed
       // setup server runtime subscriptions, register this runtime, get repo
@@ -64,7 +78,11 @@ function App() {
       sendTo("runtime", "getRegistry")
       sendTo("runtime", "getRepo")
     }
-  }, [connected, subscribeTo, sendTo])
+  }, [connected, id, subscribeTo, sendTo, browser.name, browser.version, name, typeKey, version])
+
+  if (!connected || !id) {
+    return <div>Connecting...</div>
+  }
 
   return (
     <ColorModeContext.Provider value={colorMode}>

@@ -143,6 +143,7 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
   const connectionArray = service?.connections ? Object.values(service.connections) : []
   const host = service?.hosts ? service.hosts[service.hostname] : null
   const displayMemory = host?.totalMemory != null ? Math.round(host.totalMemory / 1073741824) : "N/A"
+  const displayFreeMemory = host?.freeMemory != null ? Math.round(host.freeMemory / 1073741824) : "N/A"
 
   let addresses = []
 
@@ -205,10 +206,10 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
                 <TableCell>{service?.config?.port}</TableCell>
                 <TableCell>
                   <Typography variant="subtitle1" color="textSecondary">
-                    Id
+                    Free
                   </Typography>
                 </TableCell>
-                <TableCell>{service?.config?.id}</TableCell>
+                <TableCell>{displayFreeMemory} Gb</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>
@@ -218,18 +219,20 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
                 </TableCell>
                 <TableCell>
                   {addresses.map((address, index) => (
-                    <>
+                    <React.Fragment key={index}>
                       {address}
                       <br />
-                    </>
+                    </React.Fragment>
                   ))}
                 </TableCell>
                 <TableCell>
                   <Typography variant="subtitle1" color="textSecondary">
-                    Id
+                    Load
                   </Typography>
                 </TableCell>
-                <TableCell>{service?.config?.id}</TableCell>
+                <TableCell>
+                  {host?.loadAverage[0]} {host?.loadAverage[1]} {host?.loadAverage[2]}
+                </TableCell>
               </TableRow>
             </TableBody>
           </Table>
@@ -358,22 +361,23 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
           <Grid item xs={12} sm={8} md={6} lg={4}>
             <Box display="flex" flexDirection="column" alignItems="left">
               Connection details
-              {connectionArray.map((host, index) => (
-                <Card key={index} onClick={() => handleHostClick(host)} sx={{ margin: 1 }}>
+              {connectionArray.map((connection, index) => (
+                <Card key={index} onClick={() => handleHostClick(connection)} sx={{ margin: 1 }}>
                   <CardActionArea>
                     <CardContent>
                       <Box display="flex" alignItems="center" sx={{ marginBottom: 1 }}>
-                        {host.direction === "inbound" ? (
-                          <EastIcon sx={{ marginRight: 1 }} />
-                        ) : (
-                          <WestIcon sx={{ marginRight: 1 }} />
-                        )}
                         <Typography variant="h5" component="div">
-                          {host.direction} {host.clientId}
+                          {connection.clientId}
                         </Typography>
+                        {connection.direction === "inbound" ? (
+                          <EastIcon sx={{ marginRight: 1, marginLeft: 1 }} />
+                        ) : (
+                          <WestIcon sx={{ marginRight: 1, marginLeft: 1 }} />
+                        )}
+                        {service.id}
                       </Box>
                       <Typography component="div" variant="body2" color="text.secondary">
-                        <small>{host.uuid}</small>
+                        <small>{connection.uuid}</small>
                       </Typography>
                     </CardContent>
                   </CardActionArea>

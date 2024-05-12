@@ -1,15 +1,20 @@
 // store.js
 import { create } from "zustand"
 import CodecUtil from "../framework/CodecUtil"
-import NameGenerator from "../framework/NameGenerator"
+// import NameGenerator from "../framework/NameGenerator"
 import Message from "../models/Message"
 
 const store = (set, get) => ({
   // id of this process
-  id: `ui-${NameGenerator.getName()}`,
+  // id: `ui-${get().defaultRemoteId}-${NameGenerator.getName()}`,
   // id: `ui-rlx`,
+  id: null,
 
   defaultRemoteId: null,
+
+  setDefaultRemoteId: (id) => set({ defaultRemoteId: id }),
+
+  setId: (newId) => set({ id: newId }),
 
   getMessageApiUrl: () => {
     return get().getWsUrl()

@@ -78,6 +78,7 @@ const Dashboard = () => {
   }
 
   /*
+        // https://www.npmjs.com/package/xterm-for-react
 
         const xtermRef = React.useRef(null)
  
@@ -94,6 +95,7 @@ const Dashboard = () => {
         }, [])  
   */
 
+  // FIXME - probably not needed, redundant data fetching vs ws
   useEffect(
     () => {
       const fetchData = async () => {
