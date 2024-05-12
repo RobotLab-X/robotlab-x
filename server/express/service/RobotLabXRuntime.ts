@@ -3,6 +3,8 @@
 import { spawn } from "child_process"
 import { LaunchAction } from "express/framework/LaunchDescription"
 import fs from "fs"
+import http from "http"
+import https from "https"
 import os from "os"
 import path from "path"
 import { WebSocket } from "ws"
@@ -19,7 +21,6 @@ import Message from "../models/Message"
 import Package from "../models/Package"
 import { ProcessData } from "../models/ProcessData"
 import { ServiceTypeData } from "../models/ServiceTypeData"
-
 // import LaunchDescription from "express/framework/LaunchDescription"
 // const LaunchDescription = require("express/framework/LaunchDescription").default
 
@@ -111,85 +112,99 @@ export default class RobotLabXRuntime extends Service {
     return msg
   }
 
-  connect(url: string) {
-    log.info(`=== connect ${url} ===`)
+  /**
+   * Connects this process to a remote process.
+   * With HATEOS, it begins with a http request to get the remote id
+   * then a websocket connection is established.
+   * Next a series of messages are sent to the remote process for registration of
+   * this service, process and host.
+   * @param wsUrl
+   */
+  connect(wsUrl: string) {
+    log.info(`=== connect ${wsUrl} ===`)
     log.info("connecting")
-    // websocket have a directional initial connection
-    // this should be clearly displayed in connections
 
-    // use "connections" to store client as well, but you'll need a wrapper to
-    // handle all the meta data
+    const parsedUrl = new URL(wsUrl)
 
-    // connect
+    // Correctly determine the HTTP protocol to use based on the WebSocket protocol
+    const isSecure = parsedUrl.protocol === "wss:"
+    const httpProtocol = isSecure ? https : http
+    const fetchIdUrl = `${isSecure ? "https" : "http"}://${parsedUrl.hostname}:${parsedUrl.port}/api/v1/services/runtime/getId`
+    let remoteId = null
+    // Make the HTTP or HTTPS request based on the protocol
+    log.info(`http getId to remote: ${fetchIdUrl}`)
 
-    // THIS IS THE WAY PROCESSES CONNECT TO OTHER PROCESSES
-    // HTTP requests should handle it the same way with a session id, or a generated uuid
-    // register Service
-    // registerProcess
-    // registerHost
-    // registerType?
+    httpProtocol
+      .get(fetchIdUrl, (res) => {
+        let data = ""
 
-    // addListener getServiceNames
+        res.on("data", (chunk) => {
+          data += chunk
+        })
 
-    // maybe register
+        res.on("end", () => {
+          const remoteId = JSON.parse(data)
+          // const remoteId = response.id
 
-    // =============== OR ==================
-    // connect
-    // wait for other system to actively register <- no, won't work ... server doesn't have process id
+          if (remoteId) {
+            const ws: WebSocket = new WebSocket(wsUrl)
+            const that = this
+            // Open connection
+            ws.onopen = function open() {
+              console.log("Connected to the server")
+              // Send a message to the WebSocket server
+              // get().subscribeTo("runtime", "getServiceNames")
+              var msg = that.createMessage("runtime", "addListener", ["getServiceNames", "runtime@" + that.getId()])
+              var json = JSON.stringify(msg)
+              console.log("Sending addListener getServiceNames: ", json)
+              ws.send(json)
 
-    // this.sendTo("runtime", "register", service)
+              // register runtime which in a way is equivalent to a registering a process
+              msg = that.createMessage("runtime", "register", [that])
+              json = JSON.stringify(msg)
+              console.log("Sending register: ", json)
+              ws.send(json)
+              // register the process
+              msg = that.createMessage("runtime", "registerProcess", [that.getLocalProcessData()])
+              json = JSON.stringify(msg)
+              console.log("Sending register: ", json)
+              ws.send(json)
 
-    // Ultimately, this should be very similar to what the web app does
-    const ws: WebSocket = new WebSocket(url)
-    const that = this
-    // Open connection
-    ws.onopen = function open() {
-      console.log("Connected to the server")
-      // Send a message to the WebSocket server
-      // get().subscribeTo("runtime", "getServiceNames")
-      var msg = that.createMessage("runtime", "addListener", ["getServiceNames", "runtime@" + that.getId()])
-      var json = JSON.stringify(msg)
-      console.log("Sending addListener getServiceNames: ", json)
-      ws.send(json)
+              // register the host
 
-      // register runtime which in a way is equivalent to a registering a process
-      msg = that.createMessage("runtime", "register", [that])
-      json = JSON.stringify(msg)
-      console.log("Sending register: ", json)
-      ws.send(json)
-      // register the process
-      msg = that.createMessage("runtime", "registerProcess", [that.getLocalProcessData()])
-      json = JSON.stringify(msg)
-      console.log("Sending register: ", json)
-      ws.send(json)
+              msg = that.createMessage("runtime", "registerHost", [that.getHost()])
+              json = JSON.stringify(msg)
+              console.log("Sending register: ", json)
+              ws.send(json)
 
-      // register the host
+              // does url need to be unique ? e.g. connect(ws://localhost:3000/api/messages?id=happy-arduino&session_id=1234)
+              Store.getInstance().addClientConnection(remoteId, ws)
+              // sendTo("runtime", "register", service)
+              that.invoke("broadcastState")
+            }
 
-      msg = that.createMessage("runtime", "registerHost", [that.getHost()])
-      json = JSON.stringify(msg)
-      console.log("Sending register: ", json)
-      ws.send(json)
+            // Listen for messages from the server
+            ws.onmessage = function (event) {
+              console.log("Message from server: ", event.data)
+            }
 
-      // does url need to be unique ? e.g. connect(ws://localhost:3000/api/messages?id=happy-arduino&session_id=1234)
-      Store.getInstance().addClientConnection(url, ws)
-      // sendTo("runtime", "register", service)
-      that.invoke("broadcastState")
-    }
+            // Handle any errors that occur.
+            ws.onerror = function (error) {
+              console.error("WebSocket Error: ", error)
+            }
 
-    // Listen for messages from the server
-    ws.onmessage = function (event) {
-      console.log("Message from server: ", event.data)
-    }
-
-    // Handle any errors that occur.
-    ws.onerror = function (error) {
-      console.error("WebSocket Error: ", error)
-    }
-
-    // Handle WebSocket connection closed
-    ws.onclose = function (event) {
-      console.log("WebSocket connection closed: ", event)
-    }
+            // Handle WebSocket connection closed
+            ws.onclose = function (event) {
+              console.log("WebSocket connection closed: ", event)
+            }
+          } else {
+            console.error("Failed to fetch remote ID")
+          }
+        })
+      })
+      .on("error", (e) => {
+        console.error(`Got error: ${e.message}`)
+      })
   }
 
   readConfig(serviceName: string, defaultConfig: any) {

@@ -374,7 +374,9 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
                         ) : (
                           <WestIcon sx={{ marginRight: 1, marginLeft: 1 }} />
                         )}
-                        {service.id}
+                        <Typography variant="h5" component="div">
+                          {service.id}
+                        </Typography>
                       </Box>
                       <Typography component="div" variant="body2" color="text.secondary">
                         <small>{connection.uuid}</small>
