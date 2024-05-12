@@ -1,15 +1,4 @@
-import SearchIcon from "@mui/icons-material/Search"
-import {
-  AppBar,
-  Box,
-  Card,
-  CardActionArea,
-  CardContent,
-  InputAdornment,
-  TextField,
-  Toolbar,
-  Typography
-} from "@mui/material"
+import { Box, Card, CardActionArea, CardContent, Typography } from "@mui/material"
 import SendMsgTextArea from "components/SendMsgTextArea"
 import ServicePage from "components/ServicePage"
 import React, { useState } from "react"
@@ -32,6 +21,7 @@ function Home() {
     <>
       <Box sx={{ display: "flex", height: "100vh" }}>
         <Box sx={{ width: "300px", overflowY: "auto" }}>
+          {/*}
           <AppBar position="static" color="default">
             <Toolbar>
               <TextField
@@ -48,7 +38,7 @@ function Home() {
                 }}
               />
             </Toolbar>
-          </AppBar>
+              </AppBar>*/}
           {filteredCards.map((card, index) => (
             <Card key={index} onClick={() => handleCardClick(card)} sx={{ margin: 1 }}>
               <CardActionArea>
