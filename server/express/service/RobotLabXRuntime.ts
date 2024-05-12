@@ -178,7 +178,7 @@ export default class RobotLabXRuntime extends Service {
               ws.send(json)
 
               // does url need to be unique ? e.g. connect(ws://localhost:3000/api/messages?id=happy-arduino&session_id=1234)
-              Store.getInstance().addClientConnection(remoteId, ws)
+              Store.getInstance().addClientConnection(remoteId, wsUrl, ws)
               // sendTo("runtime", "register", service)
               that.invoke("broadcastState")
             }

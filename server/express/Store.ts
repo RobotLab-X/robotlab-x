@@ -136,7 +136,7 @@ export default class Store {
    * @param clientId
    * @param ws
    */
-  addClientConnection(clientId: string, ws: WebSocket) {
+  addClientConnection(clientId: string, url: string, ws: WebSocket) {
     this.clients.set(clientId, ws)
     this.runtime.registerConnection({
       clientId: clientId,
@@ -144,7 +144,7 @@ export default class Store {
       uuid: uuidv4(),
       ip: "localhost",
       port: 0,
-      url: clientId,
+      url: url,
       type: "websocket",
       encoding: "json",
       direction: "outbound"
