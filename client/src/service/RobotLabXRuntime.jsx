@@ -2,7 +2,22 @@ import EastIcon from "@mui/icons-material/East"
 import InputOutlinedIcon from "@mui/icons-material/InputOutlined"
 import PlaylistAddIcon from "@mui/icons-material/PlaylistAddOutlined"
 import WestIcon from "@mui/icons-material/West"
-import { Box, Card, CardActionArea, CardContent, Grid, IconButton, Tab, Tabs, Typography } from "@mui/material"
+import {
+  Box,
+  Card,
+  CardActionArea,
+  CardContent,
+  Grid,
+  IconButton,
+  Paper,
+  Tab,
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
+  Tabs,
+  Typography
+} from "@mui/material"
 import ConnectDialog from "components/ConnectDialog"
 import ServiceDialog from "components/ServiceDialog"
 import React, { useEffect, useState } from "react"
@@ -126,14 +141,100 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
   const hostArray = service?.hosts ? Object.values(service.hosts) : []
   const processArray = service?.processes ? Object.values(service.processes) : []
   const connectionArray = service?.connections ? Object.values(service.connections) : []
-
   const host = service?.hosts ? service.hosts[service.hostname] : null
+  const displayMemory = host?.totalMemory != null ? Math.round(host.totalMemory / 1073741824) : "N/A"
 
-  const displayMemory = host?.totalMemory != null ? Math.round(host.totalMemory / 1048576) : "N/A"
+  let addresses = []
+
+  // Loop through each host's network interfaces
+  if (service?.hosts) {
+    Object.keys(service.hosts).forEach((hostKey) => {
+      const interfaces = service.hosts[hostKey].networkInterfaces
+      Object.keys(interfaces).forEach((interfaceKey) => {
+        interfaces[interfaceKey].forEach((interfaceInfo) => {
+          addresses.push(interfaceInfo.address)
+        })
+      })
+    })
+  }
 
   return (
     <>
-      {host?.hostname} {host?.platform} {host?.architecture}
+      <div style={{ display: "flex", justifyContent: "flex-start" }}>
+        {" "}
+        {/* Aligns content to the left */}
+        <Paper style={{ display: "inline-block", overflowX: "auto", margin: "2px" }}>
+          <Table size="small" aria-label="a dense table">
+            <TableBody>
+              <TableRow>
+                <TableCell>
+                  <Typography variant="subtitle1" color="textSecondary">
+                    Hostname
+                  </Typography>
+                </TableCell>
+                <TableCell>{host?.hostname}</TableCell>
+                <TableCell>
+                  <Typography variant="subtitle1" color="textSecondary">
+                    Platform
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  {host?.platform} {host?.architecture}
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>
+                  <Typography variant="subtitle1" color="textSecondary">
+                    CPUs
+                  </Typography>
+                </TableCell>
+                <TableCell>{host?.numberOfCPUs}</TableCell>
+                <TableCell>
+                  <Typography variant="subtitle1" color="textSecondary">
+                    Memory
+                  </Typography>
+                </TableCell>
+                <TableCell>{displayMemory} Gb</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>
+                  <Typography variant="subtitle1" color="textSecondary">
+                    Port
+                  </Typography>
+                </TableCell>
+                <TableCell>{service?.config?.port}</TableCell>
+                <TableCell>
+                  <Typography variant="subtitle1" color="textSecondary">
+                    Id
+                  </Typography>
+                </TableCell>
+                <TableCell>{service?.config?.id}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>
+                  <Typography variant="subtitle1" color="textSecondary">
+                    Network
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  {addresses.map((address, index) => (
+                    <>
+                      {address}
+                      <br />
+                    </>
+                  ))}
+                </TableCell>
+                <TableCell>
+                  <Typography variant="subtitle1" color="textSecondary">
+                    Id
+                  </Typography>
+                </TableCell>
+                <TableCell>{service?.config?.id}</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </Paper>
+      </div>
       <Tabs value={activeTab} onChange={handleChange} aria-label="stats tabs">
         <Tab label={`Services ${Object.keys(registry).length}`} />
         <Tab label={`Processes ${processArray.length}`} />
@@ -332,7 +433,9 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
 {service && <ReactJson src={service} name="service" />}
 
        */}
+
       <br />
+      {service && <ReactJson src={service} name="service" />}
       {/** message ? <pre>{JSON.stringify(message, null, 2)}</pre> : <p>No message yet</p> */}
       {/**
       <Button onClick={handleStartNewService} variant="contained">
