@@ -252,7 +252,7 @@ export default class Store {
    * Decode the message
    * @param ws
    */
-  private handleWsMessage(ws: WebSocket) {
+  public handleWsMessage(ws: WebSocket) {
     return (message: any) => {
       try {
         const msg = JSON.parse(message)
@@ -271,7 +271,7 @@ export default class Store {
    * @param msg
    * @returns
    */
-  private handleMessage(msg: Message) {
+  public handleMessage(msg: Message) {
     try {
       if (msg.data && msg.data.length > 0) {
         log.info(`--> ${msg.sender} --> ${msg.name}.${msg.method}(${JSON.stringify(msg.data)})`)
@@ -290,7 +290,7 @@ export default class Store {
         return null
       }
 
-      if (msg.method === null || service[msg.method] === null) {
+      if (msg.method === null) {
         // ui error - user should be informed
         console.error(`method ${msg.method} not found`)
         return null

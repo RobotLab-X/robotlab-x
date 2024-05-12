@@ -75,6 +75,7 @@ function App() {
       sendTo("runtime", "register", service)
       let prossessData = new ProcessData(id, "browser", "browser", browser.name.toLowerCase(), browser.version)
       sendTo("runtime", "registerProcess", prossessData)
+      // FIXME - registerHost should be here?
       sendTo("runtime", "getRegistry")
       sendTo("runtime", "getRepo")
     }

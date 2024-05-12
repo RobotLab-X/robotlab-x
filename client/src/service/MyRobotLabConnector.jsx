@@ -21,22 +21,7 @@ export default function MyRobotLabConnector(props) {
 
   const handleConnect = async () => {
     setLoading(true)
-    // sendTo(getName(), "register", service)
     send("connect", wsUrl)
-    // try {
-    //   const response = await fetch(wsUrl, { method: "POST" })
-    //   const data = await response.json()
-    //   setStats({
-    //     version: data.version,
-    //     numberOfServices: data.numberOfServices
-    //   })
-    //   setConnected(true)
-    // } catch (error) {
-    //   console.error("Connection Error: ", error)
-    //   setConnected(false)
-    // } finally {
-    //   setLoading(false)
-    // }
   }
 
   return (

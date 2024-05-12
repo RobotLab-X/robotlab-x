@@ -52,6 +52,12 @@ export default class RobotLabXRuntime extends Service {
   // local packages
   protected types: { [id: string]: ServiceTypeData } = {}
 
+  /**
+   * routeTable - a map of process ids to their immediate connections
+   * id's to connection clientIds (should be array of uuids ?)
+   */
+  protected routeTable: { [id: string]: string } = {}
+
   // OVERRIDES Service.ts
   config = {
     id: NameGenerator.getName(),
@@ -130,9 +136,9 @@ export default class RobotLabXRuntime extends Service {
     const isSecure = parsedUrl.protocol === "wss:"
     const httpProtocol = isSecure ? https : http
     const fetchIdUrl = `${isSecure ? "https" : "http"}://${parsedUrl.hostname}:${parsedUrl.port}/api/v1/services/runtime/getId`
-    let remoteId = null
     // Make the HTTP or HTTPS request based on the protocol
     log.info(`http getId to remote: ${fetchIdUrl}`)
+    const that = this
 
     httpProtocol
       .get(fetchIdUrl, (res) => {
@@ -148,7 +154,7 @@ export default class RobotLabXRuntime extends Service {
 
           if (remoteId) {
             const ws: WebSocket = new WebSocket(wsUrl)
-            const that = this
+
             // Open connection
             ws.onopen = function open() {
               console.log("Connected to the server")
@@ -164,28 +170,36 @@ export default class RobotLabXRuntime extends Service {
               json = JSON.stringify(msg)
               console.log("Sending register: ", json)
               ws.send(json)
+
               // register the process
               msg = that.createMessage("runtime", "registerProcess", [that.getLocalProcessData()])
               json = JSON.stringify(msg)
-              console.log("Sending register: ", json)
+              console.log("Sending registerProcess: ", json)
               ws.send(json)
 
               // register the host
-
               msg = that.createMessage("runtime", "registerHost", [that.getHost()])
               json = JSON.stringify(msg)
-              console.log("Sending register: ", json)
+              console.log("Sending registerHost: ", json)
               ws.send(json)
 
               // does url need to be unique ? e.g. connect(ws://localhost:3000/api/messages?id=happy-arduino&session_id=1234)
               Store.getInstance().addClientConnection(remoteId, wsUrl, ws)
-              // sendTo("runtime", "register", service)
               that.invoke("broadcastState")
             }
 
             // Listen for messages from the server
             ws.onmessage = function (event) {
               console.log("Message from server: ", event.data)
+              try {
+                let json: string = event.data.toString()
+                const msg: Message = JSON.parse(json)
+                Store.getInstance().handleMessage(msg)
+              } catch (e) {
+                // ui error - user should be informed
+                console.error("parsing message error")
+                console.error(e)
+              }
             }
 
             // Handle any errors that occur.

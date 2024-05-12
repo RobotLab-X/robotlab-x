@@ -217,7 +217,6 @@ const store = (set, get) => ({
         }))
 
         let test = get().messages[key]
-        // console.info('onmessage end')
       } catch (error) {
         console.error(error)
       }
