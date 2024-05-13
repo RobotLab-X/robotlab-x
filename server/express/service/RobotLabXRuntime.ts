@@ -75,7 +75,9 @@ export default class RobotLabXRuntime extends Service {
     id: NameGenerator.getName(),
     logLevel: "info",
     port: 3001,
-    registry: [] as string[]
+    registry: [] as string[],
+    // list of processes to connect to
+    connect: [] as string[]
   }
 
   constructor(
