@@ -29,7 +29,6 @@ export default function Clock({ fullname }) {
 
   return (
     <>
-      <Typography variant="h6">Clock: {fullname}</Typography>
       {timestamp ? (
         <>
           <Typography variant="h6">Current Timestamp (ms): {timestamp}</Typography>
