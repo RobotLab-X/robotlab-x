@@ -84,7 +84,7 @@ export class Repo {
     })
   }
   getService(id: string, name: string, serviceType: string, version: string, hostname: string | null = null) {
-    const ServiceClass = this.services.get(serviceType)
+    const ServiceClass = this.services[serviceType]
     if (!ServiceClass) {
       throw new Error(`No service found for type: ${serviceType}`)
     }

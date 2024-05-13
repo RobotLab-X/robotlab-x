@@ -72,7 +72,15 @@ function Home() {
         <Box sx={{ flexGrow: 1, p: 3 }}>
           {selectedCard ? (
             <div>
-              <Typography variant="h4">{selectedCard.name}</Typography>
+              <Typography variant="h4">
+                <img
+                  src={`${getRepoUrl()}/${selectedCard.typeKey}/${selectedCard.typeKey}.png`}
+                  alt={selectedCard.name}
+                  width="32"
+                  style={{ verticalAlign: "middle" }}
+                />{" "}
+                <span style={{ color: "grey" }}>{selectedCard.id}</span> {selectedCard.name}
+              </Typography>
               <ServicePage
                 fullname={`${selectedCard.name}@${selectedCard.id}`}
                 name={selectedCard.name}
