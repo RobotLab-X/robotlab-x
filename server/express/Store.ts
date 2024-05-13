@@ -289,10 +289,6 @@ export default class Store {
         log.info(`--> ${msg.sender} --> ${msg.name}.${msg.method}()`)
       }
 
-      // TODO - XXX
-      // if clientId is not in processes or "runtime".id services or connections
-      // register it ... make it accessible to routes
-
       // fully address name
       let fullName = CodecUtil.getFullName(msg.name)
       const msgId = CodecUtil.getId(fullName)
@@ -331,9 +327,16 @@ export default class Store {
       // }
       log.debug(`return ${JSON.stringify(ret)}`)
 
-      return ret
+      // DYNAMIC ROUTE UPDATES
+      // TODO - XXX
+      // if clientId is not in processes or "runtime".id services or connections
+      // register it ... make it accessible to routes
+      if (msg.method === "register") {
+        log.info(`registering ===> ${msg.data[0].id} ${msg.clientId} =======================`)
+        this.runtime.addRoute(msg.data[0].id, { id: msg.data[0].id, clientId: msg.clientId })
+      }
 
-      //
+      return ret
 
       // Example of sending a message back to the client
       // ws.send(`Server received: ${message}`);

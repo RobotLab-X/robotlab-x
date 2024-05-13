@@ -59,6 +59,14 @@ export default class RobotLabXRuntime extends Service {
   /**
    * routeTable - a map of process ids to their immediate connections
    * id's to connection clientIds (should be array of uuids ?)
+   *
+   *
+   * currently:
+   *
+   * destination id -> connection id (client id)
+   *
+   * Can find a connection to a connected process by looking up the distantly remote process id
+   *
    */
   protected routeTable: { [id: string]: string } = {}
 
@@ -89,6 +97,11 @@ export default class RobotLabXRuntime extends Service {
     } catch (error) {
       this.error(`Failed to save config: ${error}`)
     }
+  }
+
+  // FIXME - define route
+  addRoute(id: string, route: any) {
+    this.routeTable[id] = route
   }
 
   apply(config: any) {
@@ -640,5 +653,25 @@ export default class RobotLabXRuntime extends Service {
   publishInstallLog(msg: string): string {
     log.info(`publishInstallLog: ${msg}`)
     return msg
+  }
+
+  /**
+   * Get the immediate connection that the
+   * destination id can be routed to
+   *
+   * @param id - destination id
+   * @returns viable connection to destination process
+   */
+  getRouteClient(id: string) {
+    // TODO "default" route
+    // const clientId = routeTable[id]?.clientId ?? "defaultClientId";
+    if (!(id in this.routeTable)) {
+      log.error(`no route to ${id} in keyset ${Object.keys(this.routeTable)}`)
+      return null
+    }
+    // FIXME make class schema for RouteEntry
+    const routeEntry: any = this.routeTable[id]
+    let conn: any = Store.getInstance().getClient(routeEntry.clientId)
+    return conn
   }
 }

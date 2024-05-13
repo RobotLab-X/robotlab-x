@@ -121,12 +121,20 @@ export default class Service {
       // FIXME bork'd - need state information regarding connectivity of process/service, and its an "array" of connections
       log.info(`clients / connections ${[...Store.getInstance().getClients().keys()]} `)
 
-      const conn: any = Store.getInstance().getClient(msgId)
+      let conn: any = Store.getInstance().getClient(msgId)
       if (conn) {
-        log.error(`sending to id ${msgId}`)
+        // log.info(`sending to id ${msgId}`)
         conn.send(json)
       } else {
-        log.error(`no connection to ${msgId}`)
+        // consult route table
+        // TODO - implement *metric* based routing
+        // log.info(`clients / connections ${[...Store.getInstance().getClients().keys()]} `)
+        conn = RobotLabXRuntime.getInstance().getRouteClient(msgId)
+        if (conn) {
+          conn.send(json)
+        } else {
+          log.error(`no route to ${msgId}`)
+        }
       }
 
       // FIXME !! - need to implement gateway
