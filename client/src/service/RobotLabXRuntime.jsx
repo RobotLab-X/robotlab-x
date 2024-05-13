@@ -141,6 +141,7 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
   const hostArray = service?.hosts ? Object.values(service.hosts) : []
   const processArray = service?.processes ? Object.values(service.processes) : []
   const connectionArray = service?.connections ? Object.values(service.connections) : []
+  const routeTableArray = service?.routeTable ? Object.values(service.routeTable) : []
   const host = service?.hosts ? service.hosts[service.hostname] : null
   const displayMemory = host?.totalMemory != null ? Math.round(host.totalMemory / 1073741824) : "N/A"
   const displayFreeMemory = host?.freeMemory != null ? Math.round(host.freeMemory / 1073741824) : "N/A"
@@ -385,7 +386,20 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
                   </CardActionArea>
                 </Card>
               ))}
+              Route Table
+              {routeTableArray.map((connection, index) => (
+                <Card key={index} onClick={() => handleHostClick(connection)} sx={{ margin: 1 }}>
+                  <CardActionArea>
+                    <CardContent>
+                      <Typography component="div" variant="body2" color="text.secondary">
+                        {connection.id} {connection.clientId}
+                      </Typography>
+                    </CardContent>
+                  </CardActionArea>
+                </Card>
+              ))}
               <ReactJson src={connectionArray} name="connections" />
+              <ReactJson src={routeTableArray} name="routeTableArray" />
             </Box>
           </Grid>
         </Grid>
