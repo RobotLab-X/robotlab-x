@@ -178,18 +178,23 @@ export default class RobotLabXRuntime extends Service {
               console.log("Sending getRegistry: ", json)
               ws.send(json)
 
-              // Registering self to remote begin ====================================
-              // register runtime which in a way is equivalent to a registering a process
-              msg = that.createMessage(remoteRuntime, "register", [that])
-              json = JSON.stringify(msg)
-              console.log("Sending register: ", json)
-              ws.send(json)
-
-              // register the process
+              // register the process - this one is critical ! doesn't matter if a service is registered, but a process is needed
+              // to provide routing information
               msg = that.createMessage(remoteRuntime, "registerProcess", [that.getLocalProcessData()])
               json = JSON.stringify(msg)
               console.log("Sending registerProcess: ", json)
               ws.send(json)
+
+              // Registering self to remote begin ====================================
+              const registry = that.getRegistry()
+              Object.entries(registry).forEach(([key, service]) => {
+                // TODO - filter based on requirements
+                // maybe only runtime, maybe only local services, maybe only services with a specific type
+                msg = that.createMessage(remoteRuntime, "register", [service])
+                json = JSON.stringify(msg)
+                console.log("Sending register: ", json)
+                ws.send(json)
+              })
 
               // register the host
               msg = that.createMessage(remoteRuntime, "registerHost", [that.getHost()])
