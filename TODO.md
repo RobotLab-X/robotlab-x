@@ -1,5 +1,7 @@
 ## TODO
 *       // TODO - XXX <- this is the area where dynamic route table is started
+* add defaultId onto any raw "runtime" reference sent by the ui
+* every incoming connection should identify a remote process, connecting with no additional info would mean the process definition should be generated
 * remove current "mac" terminal - replace with - https://www.npmjs.com/package/xterm-for-react - check Dashboard.jsx for details
 * REALIZED "runtime" is really the same a Process which is really the same as id which is the same as "the whole process" - connections in and out belong to "the whole process"
 * WebRTC IS NOT activating venv when int does a pip install -r requirements

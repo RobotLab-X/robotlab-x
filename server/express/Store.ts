@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from "uuid"
 import { WebSocket, Server as WebSocketServer } from "ws"
 import { getLogger } from "../express/framework/Log"
 import { CodecUtil } from "./framework/CodecUtil"
+import Service from "./framework/Service"
 import Message from "./models/Message"
 import RobotLabXRuntime from "./service/RobotLabXRuntime"
 
@@ -16,7 +17,7 @@ const apiPrefix = "/api/v1/services"
 
 const log = getLogger("Store")
 
-type RegistryType = { [key: string]: any }
+type RegistryType = { [key: string]: Service }
 
 /**
  * The Store class is a singleton class that acts as a central store for the
