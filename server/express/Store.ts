@@ -281,6 +281,15 @@ export default class Store {
 
       // fully address name
       let fullName = CodecUtil.getFullName(msg.name)
+      const msgId = CodecUtil.getId(fullName)
+
+      // check if msg destination is remote or local
+      if (msgId !== this.runtime.getId()) {
+        // "relay" send to remote
+        this.getClient(msgId).send(JSON.stringify(msg))
+        return null
+      }
+
       // find service in registry
       let service = this.getService(fullName)
 

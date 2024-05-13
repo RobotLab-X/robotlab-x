@@ -26,6 +26,10 @@ import { ServiceTypeData } from "../models/ServiceTypeData"
 
 const log = getLogger("RobotLabXRuntime")
 
+interface Registry {
+  [key: string]: Service
+}
+
 interface Error {
   stack?: string | undefined
 }
@@ -150,7 +154,9 @@ export default class RobotLabXRuntime extends Service {
 
         res.on("end", () => {
           const remoteId = JSON.parse(data)
-          // const remoteId = response.id
+          log.info(`remoteId: ${remoteId}`)
+
+          // remoteId is the only thing needed to register a runtime process
 
           if (remoteId) {
             const ws: WebSocket = new WebSocket(wsUrl)
@@ -158,30 +164,39 @@ export default class RobotLabXRuntime extends Service {
             // Open connection
             ws.onopen = function open() {
               console.log("Connected to the server")
-              // Send a message to the WebSocket server
-              // get().subscribeTo("runtime", "getServiceNames")
-              var msg = that.createMessage("runtime", "addListener", ["getServiceNames", "runtime@" + that.getId()])
+
+              const remoteRuntime = `runtime@${remoteId}`
+
+              // TODO - use "synchronous service call"
+              var msg = that.createMessage(remoteRuntime, "addListener", ["getRegistry", "runtime@" + that.getId()])
               var json = JSON.stringify(msg)
-              console.log("Sending addListener getServiceNames: ", json)
+              console.log("Sending addListener getRegistry: ", json)
               ws.send(json)
 
+              var msg = that.createMessage(remoteRuntime, "getRegistry", [])
+              var json = JSON.stringify(msg)
+              console.log("Sending getRegistry: ", json)
+              ws.send(json)
+
+              // Registering self to remote begin ====================================
               // register runtime which in a way is equivalent to a registering a process
-              msg = that.createMessage("runtime", "register", [that])
+              msg = that.createMessage(remoteRuntime, "register", [that])
               json = JSON.stringify(msg)
               console.log("Sending register: ", json)
               ws.send(json)
 
               // register the process
-              msg = that.createMessage("runtime", "registerProcess", [that.getLocalProcessData()])
+              msg = that.createMessage(remoteRuntime, "registerProcess", [that.getLocalProcessData()])
               json = JSON.stringify(msg)
               console.log("Sending registerProcess: ", json)
               ws.send(json)
 
               // register the host
-              msg = that.createMessage("runtime", "registerHost", [that.getHost()])
+              msg = that.createMessage(remoteRuntime, "registerHost", [that.getHost()])
               json = JSON.stringify(msg)
               console.log("Sending registerHost: ", json)
               ws.send(json)
+              // Registering self to remote end ====================================
 
               // does url need to be unique ? e.g. connect(ws://localhost:3000/api/messages?id=happy-arduino&session_id=1234)
               Store.getInstance().addClientConnection(remoteId, wsUrl, ws)
@@ -194,6 +209,8 @@ export default class RobotLabXRuntime extends Service {
               try {
                 let json: string = event.data.toString()
                 const msg: Message = JSON.parse(json)
+                // DYNAMIC ROUTING - if a "sender" is found in the message
+                // add it to the routeTable with this connection
                 Store.getInstance().handleMessage(msg)
               } catch (e) {
                 // ui error - user should be informed
@@ -512,6 +529,20 @@ export default class RobotLabXRuntime extends Service {
   }
 
   /**
+   * Initial callback for a new process to register itself
+   * after an addListener message is sent to the remote process
+   * then a getRegistry message is sent to the remote process
+   * @param data
+   */
+  onRegistry(registry: Registry) {
+    log.error(`=============onRegistry: ${JSON.stringify(registry)}`)
+
+    for (const [key, service] of Object.entries(registry)) {
+      this.register(service)
+    }
+  }
+
+  /**
    * Registering a service.  If its local to this process, most likely
    * it will be a service derived from Service.ts.  If its a remote service
    * it will be a proxy.  Which is defined by Service.ts
@@ -532,13 +563,6 @@ export default class RobotLabXRuntime extends Service {
     // it can be directly registered
     // if its a remote service - we need to get the type from the remote
     // and construct a proxy
-
-    if (service.id != this.getId()) {
-      // PROXY !!!
-      log.info("service id is remote - create a proxy service")
-      log.info(`${service}`)
-      service = new Service(service.id, service.name, service.typeKey, service.version, service.hostname)
-    }
 
     Store.getInstance().register(`${service.name}@${service.id}`, service)
     this.invoke("registered", service)
