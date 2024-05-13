@@ -73,6 +73,7 @@ export default class RobotLabXRuntime extends Service {
   // OVERRIDES Service.ts
   config = {
     id: NameGenerator.getName(),
+    logLevel: "info",
     port: 3001,
     registry: [] as string[]
   }

@@ -16,7 +16,7 @@ import {
 import React, { useEffect, useState } from "react"
 import { useStore } from "store/store"
 
-const ServiceDialog = ({ packages, open, setOpen }) => {
+const ServiceDialog = ({ packages, open, fullname, setOpen }) => {
   // console.info("ServiceDialog", packages)
 
   const sendTo = useStore((state) => state.sendTo)
@@ -55,7 +55,7 @@ const ServiceDialog = ({ packages, open, setOpen }) => {
     // error check ${newServiceName} ${selectedServiceType}
     // valid characters not empty etc
 
-    sendTo("runtime", "startServiceType", newServiceName, selectedServiceType, selectedVersion)
+    sendTo(fullname, "startServiceType", newServiceName, selectedServiceType, selectedVersion)
 
     handleClose() // Close the dialog
   }
