@@ -187,7 +187,8 @@ export default class Store {
         direction: "inbound"
       })
 
-      ws.on("message", this.handleWsMessage(ws))
+      // onmessage - server
+      ws.on("message", this.handleWsMessage(ws, clientId))
 
       ws.on("close", () => {
         // TODO - disconnecting a client should be associated
@@ -217,6 +218,9 @@ export default class Store {
           })
 
           this.clients.delete(clientId)
+        } else {
+          log.error(`====================== client ${clientId} not found ======================`)
+          log.error(`====================== routing problem ======================`)
         }
       })
 
@@ -234,6 +238,7 @@ export default class Store {
     return this.clients
   }
 
+  // FIXME - there is probably no Use Case for this - remove
   public broadcastJsonMessage(message: string): void {
     // Iterate over the set of clients and send the message to each
     this.clients.forEach((client) => {
@@ -252,10 +257,14 @@ export default class Store {
    * Decode the message
    * @param ws
    */
-  public handleWsMessage(ws: WebSocket) {
+  // FIXME switch clientId to connection uuid !!!!
+  public handleWsMessage(ws: WebSocket, clientId: string) {
     return (message: any) => {
       try {
         const msg = JSON.parse(message)
+        // setting connection/client id on message
+        // its one of two points
+        msg.clientId = clientId
         // log.info(`--> ws ${JSON.stringify(msg)}`)
         this.handleMessage(msg)
       } catch (e) {
@@ -278,6 +287,10 @@ export default class Store {
       } else {
         log.info(`--> ${msg.sender} --> ${msg.name}.${msg.method}()`)
       }
+
+      // TODO - XXX
+      // if clientId is not in processes or "runtime".id services or connections
+      // register it ... make it accessible to routes
 
       // fully address name
       let fullName = CodecUtil.getFullName(msg.name)

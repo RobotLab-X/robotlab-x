@@ -16,6 +16,13 @@ export default class Message {
   public type: string | null = null
 
   /**
+   * clientId is an "internal" identifier for the client that sent the message,
+   * its set by the process that's processing the message, not the remote process
+   * @type {string}
+   */
+  public clientId: string | null = null
+
+  /**
    * Service name - name of the service the message is addressed to
    * @type {string}
    */

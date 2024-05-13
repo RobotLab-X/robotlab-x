@@ -204,6 +204,7 @@ export default class RobotLabXRuntime extends Service {
             }
 
             // Listen for messages from the server
+            // onmessage - client
             ws.onmessage = function (event) {
               console.log("Message from server: ", event.data)
               try {
@@ -211,6 +212,7 @@ export default class RobotLabXRuntime extends Service {
                 const msg: Message = JSON.parse(json)
                 // DYNAMIC ROUTING - if a "sender" is found in the message
                 // add it to the routeTable with this connection
+                msg.clientId = remoteId
                 Store.getInstance().handleMessage(msg)
               } catch (e) {
                 // ui error - user should be informed

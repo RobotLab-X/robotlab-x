@@ -120,7 +120,15 @@ export default class Service {
       log.info(`<-- ${msgFullName}.${msg.method} <-- ${msg.sender}.${msg.method} ${JSON.stringify(msg.data)}`)
       // FIXME bork'd - need state information regarding connectivity of process/service, and its an "array" of connections
       log.info(`clients / connections ${[...Store.getInstance().getClients().keys()]} `)
-      Store.getInstance().getClient(msgId)?.send(json)
+
+      const conn: any = Store.getInstance().getClient(msgId)
+      if (conn) {
+        log.error(`sending to id ${msgId}`)
+        conn.send(json)
+      } else {
+        log.error(`no connection to ${msgId}`)
+      }
+
       // FIXME !! - need to implement gateway
       return null
     }

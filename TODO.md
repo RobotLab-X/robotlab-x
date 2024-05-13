@@ -1,4 +1,5 @@
 ## TODO
+*       // TODO - XXX <- this is the area where dynamic route table is started
 * remove current "mac" terminal - replace with - https://www.npmjs.com/package/xterm-for-react - check Dashboard.jsx for details
 * REALIZED "runtime" is really the same a Process which is really the same as id which is the same as "the whole process" - connections in and out belong to "the whole process"
 * WebRTC IS NOT activating venv when int does a pip install -r requirements
