@@ -17,6 +17,8 @@ export default function ServicePage(props) {
     type = "RobotLabXRuntime"
   } else if (service.typeKey === "Clock") {
     type = "Clock"
+  } else if (service.typeKey === "Docker") {
+    type = "Docker"
   } else if (service.typeKey === "Ollama") {
     type = "Ollama"
   } else if (service.typeKey === "TestNodeService") {

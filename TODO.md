@@ -1,5 +1,12 @@
 ## TODO
+* FIXME - install must move to Service.ts
+* each service "installs" .. or does a noop
+* open source 3d robotics simulator - gazebo, 
+* install - would you like to start ros ? would you like to use docker ?  install.yml ?
+* state.yml and config.yml .. one is state the other config, one is how it currently is, the other is how you want it to be
+* https://www.npmjs.com/package/react-use-wizard
 * Configuration sets
+* consoludate set of initial msgs addListener, register, registered, etc into "on" funtion which is called by setup in both client/server & ui
 * https://www.npmjs.com/package/opencv4nodejs
 * Ollama front end
 * Aliases at some point !
@@ -44,3 +51,15 @@ a nice LifeCycleNode
 * Mic - https://www.npmjs.com/package/mic
 * Webcam - https://www.npmjs.com/package/react-webcam
 * Ollama - https://www.npmjs.com/package/ollama
+
+
+Gazebo is one of the most popular open-source robotics simulators. It provides a robust physics engine, high-quality graphics, and convenient programmatic and graphical interfaces.
+
+Webots is an open-source robot simulator that offers a complete development environment to model, program, and simulate robots.
+
+V-REP (CoppeliaSim)
+CoppeliaSim, formerly known as V-REP, is a versatile and powerful robot simulation platform.
+
+ARGoS is a modular, multi-robot simulator that allows the simulation of large-scale robot swarms.
+
+OpenRAVE is a planning and simulation environment for robotics. It focuses on providing an environment for testing, developing, and deploying motion planning algorithms.
