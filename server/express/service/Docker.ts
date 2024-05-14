@@ -1,3 +1,4 @@
+import os from "os"
 import { getLogger } from "../framework/Log"
 import Service from "../framework/Service"
 var DockerOde = require("dockerode")
@@ -8,7 +9,8 @@ export default class Docker extends Service {
   // Class properties
   private intervalId: NodeJS.Timeout | null = null
 
-  private docker = new DockerOde({ socketPath: "/var/run/docker.sock" })
+  private docker: any = null
+
   // private docker = new DockerOde()
 
   private containers: any = []
@@ -28,6 +30,13 @@ export default class Docker extends Service {
   ) {
     super(id, name, typeKey, version, hostname) // Call the base class constructor if needed
     // this.config = { intervalMs: 1000 }
+
+    if (os.platform() === "win32") {
+      this.docker = new DockerOde({ socketPath: "//./pipe/docker_engine" })
+    } else {
+      this.docker = new DockerOde({ socketPath: "/var/run/docker.sock" })
+    }
+
     this.startPs()
   }
 
