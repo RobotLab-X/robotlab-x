@@ -59,6 +59,63 @@ export default class Docker extends Service {
     return this.containers
   }
 
+  createAndStartContainer(imageName: string, containerName: string): void {
+    const that = this
+    // FIXME change it to a InstallLog object ?
+    that.invoke("publishProgress", `${imageName} ${containerName}`)
+    const createAndStartContainer = async (imageName: string, containerName: string) => {
+      try {
+        // Pull the image if it doesn't exist locally
+        await new Promise((resolve, reject) => {
+          this.docker.pull(imageName, (err: any, stream: any) => {
+            if (err) {
+              that.invoke("publishError", err)
+              return reject(err)
+            }
+            that.docker.modem.followProgress(stream, onFinished, onProgress)
+
+            function onFinished(err: any, output: any) {
+              if (err) {
+                that.invoke("publishError", err)
+                return reject(err)
+              }
+              resolve(output)
+              that.invoke("publishFinished", output)
+            }
+            function onProgress(event: any) {
+              console.log(event)
+              that.invoke("publishProgress", event)
+            }
+          })
+        })
+
+        // // Create the container
+        // const container = await this.docker.createContainer({
+        //   Image: imageName,
+        //   name: containerName,
+        //   Tty: true // Allocate a pseudo-TTY
+        // })
+
+        const container = await this.docker.createContainer({
+          Image: imageName,
+          name: containerName,
+          Tty: true, // Allocate a pseudo-TTY
+          ExposedPorts: { "80/tcp": {} },
+          HostConfig: {
+            PortBindings: { "80/tcp": [{ HostPort: "8080" }] } // Map container port 80 to host port 8080
+          }
+        })
+
+        // Start the container
+        await container.start()
+        console.log(`Container ${containerName} started successfully.`)
+      } catch (err) {
+        console.error("Error:", err)
+      }
+    }
+    createAndStartContainer(imageName, containerName)
+  }
+
   pullImage(imageName: string): void {
     let that = this
     this.docker.pull(imageName, function (err: any, stream: any) {
@@ -83,7 +140,27 @@ export default class Docker extends Service {
     })
   }
 
-  listImages(): any[] {
+  startContainer = async (containerId: string) => {
+    try {
+      const container = this.docker.getContainer(containerId)
+      await container.start()
+      console.log(`Container ${containerId} started successfully.`)
+    } catch (err) {
+      console.error(`Error starting container ${containerId}:`, err)
+    }
+  }
+
+  stopContainer = async (containerId: string) => {
+    try {
+      const container = this.docker.getContainer(containerId)
+      await container.stop()
+      console.log(`Container ${containerId} stopped successfully.`)
+    } catch (err) {
+      console.error(`Error stopping container ${containerId}:`, err)
+    }
+  }
+
+  getImages(): any[] {
     let that = this
     this.docker.listImages(function (err: any, images: any) {
       if (err) {

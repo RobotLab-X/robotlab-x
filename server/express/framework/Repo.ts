@@ -86,6 +86,7 @@ export class Repo {
   getService(id: string, name: string, serviceType: string, version: string, hostname: string | null = null) {
     const ServiceClass = this.services[serviceType]
     if (!ServiceClass) {
+      log.error(`No service found for type: ${serviceType} list of possible types: ${Object.keys(this.services)}`)
       throw new Error(`No service found for type: ${serviceType}`)
     }
     log.info(`constructing ${serviceType}`)

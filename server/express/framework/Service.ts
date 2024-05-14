@@ -1,3 +1,8 @@
+import { InstallLog } from "express/models/InstallLog"
+import { InstallStatus } from "express/models/InstallStatus"
+import Package from "express/models/Package"
+import fs from "fs"
+import YAML from "yaml"
 import Store from "../Store"
 import Message from "../models/Message"
 import Status from "../models/Status"
@@ -19,6 +24,8 @@ export default class Service {
 
   // notifyList = new Map<string, SubscriptionListener[]>()
   notifyList = {} as any
+
+  pkg: Package | null = null
 
   config: any = {}
 
@@ -51,6 +58,35 @@ export default class Service {
     const listener = new SubscriptionListener(method, remoteName, remoteMethod)
     this.notifyList[method].push(listener)
     return listener
+  }
+
+  publishInstallLog(installLog: InstallLog) {
+    return installLog
+  }
+
+  publishInstallStatus(status: InstallStatus) {
+    return status
+  }
+
+  getPackage() {
+    try {
+      log.info(`${this.name} getting package`)
+      const targetDir = `./express/public/service/${this.name}`
+
+      // RobotLabXRuntime.getInstance().getRepo().copyPackage(serviceName, serviceType)
+      // this.repo.copyPackage(serviceName, serviceType)
+      log.info(`successful ${targetDir}`)
+
+      const pkgYmlFile = `${targetDir}/package.yml`
+
+      // loading type info
+      log.info(`loading type data from ${pkgYmlFile}`)
+
+      const file = fs.readFileSync(pkgYmlFile, "utf8")
+      this.pkg = YAML.parse(file)
+    } catch (e) {
+      log.error(`failed to load package ${e}`)
+    }
   }
 
   /**
@@ -249,6 +285,7 @@ export default class Service {
   startService() {
     this.startTime = new Date().getTime()
     log.info(`========= started service ${this.name} ===========`)
+    this.getPackage()
   }
 
   stopService() {

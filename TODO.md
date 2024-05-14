@@ -4,7 +4,7 @@
 * open source 3d robotics simulator - gazebo, 
 * install - would you like to start ros ? would you like to use docker ?  install.yml ?
 * state.yml and config.yml .. one is state the other config, one is how it currently is, the other is how you want it to be
-* https://www.npmjs.com/package/react-use-wizard
+* prefer https://www.npmjs.com/package/react-step-wizard or https://www.npmjs.com/package/react-use-wizard
 * Configuration sets
 * consoludate set of initial msgs addListener, register, registered, etc into "on" funtion which is called by setup in both client/server & ui
 * https://www.npmjs.com/package/opencv4nodejs

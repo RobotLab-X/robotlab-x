@@ -1,5 +1,5 @@
+import Service from "express/framework/Service"
 import Package from "express/models/Package"
-import RobotLabXRuntime from "../service/RobotLabXRuntime"
 import { getLogger } from "./Log"
 
 const os = require("os")
@@ -15,7 +15,7 @@ interface ExecException extends Error {
 // FIXME - way to set RobotLabXRuntime python command to python or python3
 
 export default class InstallerPython {
-  private server: RobotLabXRuntime = RobotLabXRuntime.getInstance()
+  private server: Service = null
 
   useVenv = true
   pythonExe: string = "python"
@@ -24,6 +24,10 @@ export default class InstallerPython {
   ready = false
   optons = {}
   pkg: Package = null
+
+  constructor(public service: Service) {
+    this.server = service
+  }
 
   public install(pkg: Package): any {
     this.info(`Installer processing package ${pkg.title} ${pkg.typeKey} ${pkg.version}`)

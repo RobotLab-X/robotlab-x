@@ -117,6 +117,7 @@
     "@loadable/component": "^5.15.3",
     "axios": "^0.21.1",
     "react-json-view": "^1.21.3",
+    "react-step-wizard": "^5.3.11",
     "react-terminal-ui": "^1.2.0",
     "ua-parser-js": "^1.0.37",
     "uuid": "^9.0.1",

@@ -1,12 +1,9 @@
 typeKey: "OakD"
-title: "OakD DepthAI"
-platform: "python"
-platformVersion: null
-description: "OakD depth camera for depth and object detection."
+title: "OakD DepthAI Camera"
+platform: "node"
+platformVersion: "v20.9.0"
+description: "OakD depth camera for depth and object detection and face recognition."
 version: "0.0.1"
-cmd: "python"
-args: ["/home/perry/Luxonis/depthai/depthai_demo.py"]
-cwd: null
 interfaces:
   restAPI:
     - endpoint: "/api/v1/resource"
@@ -15,6 +12,8 @@ interfaces:
 author: "GroG"
 license: "MIT"
 categories:
-- "web"
-- "ui"
+- "ai"
+- "camera"
+- "face recognition"
+- "object detection"
 dependencies: null

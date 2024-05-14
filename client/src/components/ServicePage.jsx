@@ -5,27 +5,24 @@ import { useStore } from "../store/store"
 export default function ServicePage(props) {
   const registry = useStore((state) => state.registry)
   let service = registry[props.fullname]
-
   let type = service.typeKey
-  if (service.typeKey === "WebXR") {
-    type = "WebXR"
-  } else if (service.typeKey === "MyRobotLabConnector") {
-    type = "MyRobotLabConnector"
-  } else if (service.typeKey === "Runtime") {
-    type = "Runtime"
-  } else if (service.typeKey === "RobotLabXRuntime") {
-    type = "RobotLabXRuntime"
-  } else if (service.typeKey === "Clock") {
-    type = "Clock"
-  } else if (service.typeKey === "Docker") {
-    type = "Docker"
-  } else if (service.typeKey === "Ollama") {
-    type = "Ollama"
-  } else if (service.typeKey === "TestNodeService") {
-    type = "TestNodeService"
-  } else if (service.typeKey === "TestPythonService") {
-    type = "TestPythonService"
-  } else {
+
+  // FIXME - this is a pain, it should dynamically check if the service exists
+  // but no library or native lazy loader seems to support this
+  const types = [
+    "Clock",
+    "Docker",
+    "MyRobotLabConnector",
+    "OakD",
+    "Ollama",
+    "RobotLabXRuntime",
+    "Runtime",
+    "TestNodeService",
+    "TestPythonService",
+    "WebXR"
+  ]
+
+  if (!types.includes(type)) {
     type = "Unknown"
   }
 

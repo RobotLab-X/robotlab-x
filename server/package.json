@@ -68,6 +68,7 @@
     "@types/node": "^20.11.30",
     "@types/winston": "^2.4.4",
     "cors": "^2.8.5",
+    "dockerode": "^4.0.2",
     "express": "^4.19.2",
     "express-session": "^1.18.0",
     "flatten": "^1.0.3",
