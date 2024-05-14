@@ -116,6 +116,37 @@ export default class Docker extends Service {
     createAndStartContainer(imageName, containerName)
   }
 
+  deleteContainer(containerId: string): void {
+    console.log(`Deleting container ${containerId}`)
+    const that = this
+    const deleteContainer = async (containerId: string) => {
+      try {
+        const container = this.docker.getContainer(containerId)
+        // await container.stop() throws if already stopped
+        await container.remove()
+        console.log(`Container ${containerId} deleted successfully.`)
+      } catch (err) {
+        console.error("Error:", err)
+      }
+    }
+    deleteContainer(containerId)
+  }
+
+  deleteImage(imageId: string): void {
+    console.log(`Deleting image ${imageId}`)
+    const that = this
+    const deleteImage = async (imageId: string) => {
+      try {
+        const image = this.docker.getImage(imageId)
+        await image.remove()
+        console.log(`Image ${imageId} deleted successfully.`)
+      } catch (err) {
+        console.error("Error:", err)
+      }
+    }
+    deleteImage(imageId)
+  }
+
   pullImage(imageName: string): void {
     let that = this
     this.docker.pull(imageName, function (err: any, stream: any) {

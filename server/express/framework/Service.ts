@@ -60,14 +60,6 @@ export default class Service {
     return listener
   }
 
-  publishInstallLog(installLog: InstallLog) {
-    return installLog
-  }
-
-  publishInstallStatus(status: InstallStatus) {
-    return status
-  }
-
   getPackage() {
     try {
       log.info(`${this.name} getting package`)
@@ -278,6 +270,27 @@ export default class Service {
   }
 
   publishStatus(status: Status) {
+    return status
+  }
+
+  /**
+   * A generalized install log entry for installing components or images.
+   * Comes with a timestamp, a level (info, warn, error), and a message.
+   * @param installLog
+   * @returns
+   */
+  publishInstallLog(installLog: InstallLog) {
+    return installLog
+  }
+
+  /**
+   * A generalized install status to determine if dependencies have
+   * successfully been installed, and details of problems.
+   *
+   * @param status
+   * @returns
+   */
+  publishInstallStatus(status: InstallStatus) {
     return status
   }
 

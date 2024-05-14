@@ -1,10 +1,9 @@
-import { Button, IconButton, Paper, Table, TableBody, TableCell, TableRow } from "@mui/material"
-
+import DeleteIcon from "@mui/icons-material/Delete"
 import ExpandLessIcon from "@mui/icons-material/ExpandLess"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import PlayCircleFilledIcon from "@mui/icons-material/PlayCircleFilled"
 import StopIcon from "@mui/icons-material/Stop"
-import { TextField } from "@mui/material"
+import { Box, Button, IconButton, Paper, Table, TableBody, TableCell, TableRow, TextField } from "@mui/material"
 import Checkbox from "@mui/material/Checkbox"
 import FormControlLabel from "@mui/material/FormControlLabel"
 import React, { useState } from "react"
@@ -33,13 +32,16 @@ export default function Docker({ fullname }) {
   const publishErrorMsg = useMessage(fullname, "publishError")
   const publishImagesMsg = useMessage(fullname, "publishImages")
 
+  const publishInstallLogMsg = useMessage(fullname, "publishInstallLog")
+
   // creates subscriptions to topics and returns the broadcastState message reference
   const serviceMsg = useServiceSubscription(fullname, [
     "publishPs",
     "publishProgress",
     "publishFinished",
     "publishError",
-    "publishImages"
+    "publishImages",
+    "publishInstallLog"
   ])
 
   // processes the msg.data[0] and returns the data
@@ -50,7 +52,17 @@ export default function Docker({ fullname }) {
   const publishError = useProcessedMessage(publishErrorMsg)
   const publishImages = useProcessedMessage(publishImagesMsg)
 
+  const publishInstallLog = useProcessedMessage(publishInstallLogMsg)
+
   const handleAction = (containerId, action) => {
+    if (action === "delete") {
+      sendTo(fullname, "deleteContainer", containerId)
+      return
+    }
+    if (action === "deleteImage") {
+      sendTo(fullname, "deleteImage", containerId)
+      return
+    }
     sendTo(fullname, action === "stop" ? "stopContainer" : "startContainer", containerId)
   }
 
@@ -110,9 +122,14 @@ export default function Docker({ fullname }) {
                             <StopIcon />
                           </IconButton>
                         ) : (
-                          <IconButton color="success" onClick={() => handleAction(container.Id, "start")}>
-                            <PlayCircleFilledIcon />
-                          </IconButton>
+                          <Box display="flex" alignItems="center">
+                            <IconButton color="success" onClick={() => handleAction(container.Id, "start")}>
+                              <PlayCircleFilledIcon />
+                            </IconButton>
+                            <IconButton color="error" onClick={() => handleAction(container.Id, "delete")}>
+                              <DeleteIcon />
+                            </IconButton>
+                          </Box>
                         )}
                       </TableCell>
                     </TableRow>
@@ -156,9 +173,14 @@ export default function Docker({ fullname }) {
                       </TableCell>
                       <TableCell>{Math.round(image.Size / 1048576)} MB</TableCell>
                       <TableCell>
-                        <IconButton color="success" onClick={() => handleCreateAndStartContainer(imageName)}>
-                          <PlayCircleFilledIcon />
-                        </IconButton>
+                        <Box display="flex" alignItems="center">
+                          <IconButton color="success" onClick={() => handleCreateAndStartContainer(image.Id)}>
+                            <PlayCircleFilledIcon />
+                          </IconButton>
+                          <IconButton color="error" onClick={() => handleAction(image.Id, "deleteImage")}>
+                            <DeleteIcon />
+                          </IconButton>
+                        </Box>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -189,6 +211,7 @@ export default function Docker({ fullname }) {
         }}
       />{" "}
       <br />
+      {publishInstallLog && JSON.stringify(publishInstallLog)}
       {publishProgress && JSON.stringify(publishProgress)}
       {publishError && <div style={{ color: "red" }}>{JSON.stringify(publishError)}</div>}
       {publishFinished && <div style={{ color: "green" }}>{JSON.stringify(publishFinished)}</div>}

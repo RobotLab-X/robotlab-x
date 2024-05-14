@@ -11,7 +11,6 @@ import { WebSocket } from "ws"
 import YAML from "yaml"
 import Store from "../../express/Store"
 import { CodecUtil } from "../framework/CodecUtil"
-import InstallerPython from "../framework/InstallerPython"
 import { getLogger } from "../framework/Log"
 import NameGenerator from "../framework/NameGenerator"
 import { Repo } from "../framework/Repo"
@@ -398,40 +397,9 @@ export default class RobotLabXRuntime extends Service {
       // and mrl and process exists - then /runtime/start
       log.info(`package.platform: ${pkg.platform}, type: ${serviceType} in ${process.cwd()}`)
 
-      let dependenciesMet = false
+      let dependenciesMet = true
 
       let platformInfo = null
-
-      // determine necessary platform python, node, docker, java
-      // yes | no -> install -> yes | no
-      if (pkg.platform === "python") {
-        this.installInfo(`python required for ${serviceType}`)
-        let installer = new InstallerPython()
-        // default install venv and pip
-        // check if min python version is correct
-        platformInfo = installer.install(pkg)
-        dependenciesMet = true
-      } else {
-        log.info(`platform [${pkg.platform}] not supported`)
-      }
-
-      // TODO - way to set cmd line args
-
-      // resolve if package.yml dependencies are met
-
-      // creating instance config from type if it does not exist
-
-      // preparing to start the process
-
-      // const script = "start.py"
-      // register
-
-      // TODO - only if you need a new process
-      // TODO get package.yml from processModule - check if
-      // dependencies are met
-      // host check
-      // platform check - python version, pip installed, venv etc.
-      // pip libraries and versions installed
 
       log.info(`starting process ${targetDir}/${pkg.cmd} ${pkg.args}`)
       let service: Service = null
@@ -444,6 +412,8 @@ export default class RobotLabXRuntime extends Service {
         this.register(service)
         this.installInfo(`registered service ${serviceName}`)
       } else if (dependenciesMet) {
+        // FIXME - REMOVE ALL BELOW - because starting a new process should ALWAYS
+        // be in the context of the node service ..
         log.info(`dependencies met for ${serviceName} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
         // spawn the process
         log.info(`spawning process ${pkg.cmd} ${pkg.args} in ${targetDir}`)
@@ -483,7 +453,7 @@ export default class RobotLabXRuntime extends Service {
         })
 
         // register the process
-        let platformVersion = platformInfo?.platformVersion
+        let platformVersion = "0.0.0" // platformInfo?.platformVersion
         const pd: ProcessData = new ProcessData(
           serviceName,
           childProcess.pid.toString(),
@@ -659,11 +629,6 @@ export default class RobotLabXRuntime extends Service {
     return Object.keys(registry)
       .filter((key) => key.endsWith(`@${localId}`)) // Filter keys that end with the local ID
       .map((key) => key.split("@")[0]) // Extract the name part from each key
-  }
-
-  publishInstallLog(msg: string): string {
-    log.info(`publishInstallLog: ${msg}`)
-    return msg
   }
 
   /**
