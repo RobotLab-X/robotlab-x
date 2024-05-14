@@ -1,6 +1,7 @@
 import EastIcon from "@mui/icons-material/East"
 import InputOutlinedIcon from "@mui/icons-material/InputOutlined"
 import PlaylistAddIcon from "@mui/icons-material/PlaylistAddOutlined"
+import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined"
 import WestIcon from "@mui/icons-material/West"
 import {
   Box,
@@ -18,11 +19,12 @@ import {
   Tabs,
   Typography
 } from "@mui/material"
+import ConfigurationDialog from "components/ConfigurationDialog"
 import ConnectDialog from "components/ConnectDialog"
 import ServiceDialog from "components/ServiceDialog"
+import { useProcessedMessage } from "hooks/useProcessedMessage"
 import React, { useEffect, useState } from "react"
 import ReactJson from "react-json-view"
-import { useProcessedMessage } from "../hooks/useProcessedMessage"
 import { useStore } from "../store/store"
 import useServiceSubscription from "../store/useServiceSubscription"
 
@@ -61,6 +63,7 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
   const imagesUrl = `${getBaseUrl()}/images`
 
   const [connectDialogOpen, setConnectDialogOpen] = useState(false)
+  const [configurationDialogOpen, setConfigurationDialogOpen] = useState(false)
 
   const handleChange = (event, newValue) => {
     setActiveTab(newValue)
@@ -71,10 +74,10 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
     setOpen(true) // Open the modal dialog
   }
 
-  const handleConnect = () => {
-    console.info("Connect to Existing Node...")
-    // sendTo(fullname, "connect", url)
-  }
+  // const handleConnect = () => {
+  //   console.info("Connect to Existing Node...")
+  //   // sendTo(fullname, "connect", url)
+  // }
 
   useEffect(() => {
     // IMPORTANT !!! - subscribeTo must add fullname if not supplied
@@ -162,8 +165,19 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
 
   return (
     <>
+      <Box>
+        <Typography variant="subtitle1" component="span" color="textSecondary">
+          Config:
+        </Typography>{" "}
+        <Typography variant="body1" component="span">
+          {service?.configName}
+
+          <IconButton type="button" onClick={() => setConfigurationDialogOpen(true)}>
+            <SettingsOutlinedIcon />
+          </IconButton>
+        </Typography>
+      </Box>
       <div style={{ display: "flex", justifyContent: "flex-start" }}>
-        {" "}
         {/* Aligns content to the left */}
         <Paper style={{ display: "inline-block", overflowX: "auto", margin: "2px" }}>
           <Table size="small" aria-label="a dense table">
@@ -405,6 +419,12 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
         </Grid>
       </TabPanel>
       <ConnectDialog id={id} open={connectDialogOpen} onClose={() => setConnectDialogOpen(false)} />
+      {repo && <ServiceDialog packages={repo} fullname={fullname} open={open} setOpen={setOpen} />}
+      <ConfigurationDialog
+        fullname={fullname}
+        open={configurationDialogOpen}
+        onClose={() => setConfigurationDialogOpen(false)}
+      />
       {repo && <ServiceDialog packages={repo} fullname={fullname} open={open} setOpen={setOpen} />}
       <br />
       <Grid container spacing={2} alignItems="flex-start">

@@ -597,6 +597,10 @@ export default class RobotLabXRuntime extends Service {
     return service
   }
 
+  setConfigName(configName: string) {
+    this.configName = configName
+  }
+
   getRepo() {
     // const repoBasePath = path.join(__dirname, "../public/repo")
     // log.info(`getting repo with base path: ${repoBasePath}`)
@@ -604,6 +608,10 @@ export default class RobotLabXRuntime extends Service {
     // // convert the Map to an Object to send as JSON
     // const repoObject = Object.fromEntries(repoMap)
     return this.repo.getRepo()
+  }
+
+  getConfigList() {
+    return ["default", "worky1", "worky2", "worky3", "worky4"]
   }
 
   getHosts() {

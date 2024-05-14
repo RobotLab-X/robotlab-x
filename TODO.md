@@ -1,5 +1,7 @@
 ## TODO
 * Configuration sets
+* https://www.npmjs.com/package/opencv4nodejs
+* Ollama front end
 * Aliases at some point !
 * Robust disconnect, reconnect - grey/disable gui of clientId and all routes through client id
 * add defaultId onto any raw "runtime" reference sent by the ui

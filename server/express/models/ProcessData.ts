@@ -1,3 +1,4 @@
+// @Deprecated merge with RobotLabXRuntime
 export class ProcessData {
   public id: string | null = null
   public pid: number | null = null

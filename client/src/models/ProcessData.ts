@@ -1,3 +1,5 @@
+// @Deprecated merge with RobotLabXUI
+
 export class ProcessData {
   public id: string | null = null
   public pid: number | null = null
