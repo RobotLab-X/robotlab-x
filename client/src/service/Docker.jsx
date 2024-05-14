@@ -68,7 +68,7 @@ export default function Docker({ fullname }) {
             </TableRow>
             {ps &&
               ps.map((container, index) => (
-                <TableRow>
+                <TableRow key={container.Id}>
                   <TableCell>{container.Id.substring(0, 12)}</TableCell>
                   <TableCell>{container.Image}</TableCell>
                   <TableCell>{container.Command}</TableCell>
@@ -93,13 +93,13 @@ export default function Docker({ fullname }) {
               <TableCell>Size</TableCell>
             </TableRow>
             {publishImages &&
-              publishImages.map((container, index) => (
-                <TableRow>
+              publishImages.map((image, index) => (
+                <TableRow key={image.Id}>
                   <TableCell>Repo</TableCell>
-                  <TableCell>{JSON.stringify(container.RepoTags)}</TableCell>
-                  <TableCell>{container.Id.substring(0, 12)}</TableCell>
-                  <TableCell>{container.Created}</TableCell>
-                  <TableCell>{container.Size}</TableCell>
+                  <TableCell>{JSON.stringify(image.RepoTags)}</TableCell>
+                  <TableCell>{image.Id.substring(0, 12)}</TableCell>
+                  <TableCell>{image.Created}</TableCell>
+                  <TableCell>{Math.round(image.Size / 1048576)} MB</TableCell>
                 </TableRow>
               ))}
           </TableBody>
