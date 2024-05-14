@@ -45,7 +45,7 @@ export default class Docker extends Service {
 
       log.info("All running containers:")
       containers.forEach(function (containerInfo: any) {
-        log.info(JSON.stringify(containerInfo))
+        log.debug(JSON.stringify(containerInfo))
       })
       that.containers = containers
       that.invoke("publishPs")
@@ -69,22 +69,21 @@ export default class Docker extends Service {
         await new Promise((resolve, reject) => {
           this.docker.pull(imageName, (err: any, stream: any) => {
             if (err) {
-              that.invoke("publishError", err)
+              that.installError(JSON.stringify(err))
               return reject(err)
             }
             that.docker.modem.followProgress(stream, onFinished, onProgress)
 
             function onFinished(err: any, output: any) {
               if (err) {
-                that.invoke("publishError", err)
+                that.installError(JSON.stringify(err))
                 return reject(err)
               }
               resolve(output)
-              that.invoke("publishFinished", output)
+              that.installInfo(JSON.stringify(output))
             }
             function onProgress(event: any) {
-              console.log(event)
-              that.invoke("publishProgress", event)
+              that.installInfo(JSON.stringify(JSON.stringify(event)))
             }
           })
         })
@@ -96,6 +95,7 @@ export default class Docker extends Service {
         //   Tty: true // Allocate a pseudo-TTY
         // })
 
+        // FIXME variable parameters
         const container = await this.docker.createContainer({
           Image: imageName,
           name: containerName,
@@ -106,42 +106,41 @@ export default class Docker extends Service {
           }
         })
 
-        // Start the container
         await container.start()
-        console.log(`Container ${containerName} started successfully.`)
+        log.info(`Container ${containerName} started successfully.`)
       } catch (err) {
-        console.error("Error:", err)
+        that.installError(JSON.stringify(err))
       }
     }
     createAndStartContainer(imageName, containerName)
   }
 
   deleteContainer(containerId: string): void {
-    console.log(`Deleting container ${containerId}`)
     const that = this
+    that.installInfo(`Deleting container ${containerId}`)
     const deleteContainer = async (containerId: string) => {
       try {
         const container = this.docker.getContainer(containerId)
         // await container.stop() throws if already stopped
         await container.remove()
-        console.log(`Container ${containerId} deleted successfully.`)
+        that.installInfo(`Container ${containerId} deleted successfully.`)
       } catch (err) {
-        console.error("Error:", err)
+        that.installError(JSON.stringify(err))
       }
     }
     deleteContainer(containerId)
   }
 
   deleteImage(imageId: string): void {
-    console.log(`Deleting image ${imageId}`)
     const that = this
+    that.installInfo(`Deleting image ${imageId}`)
     const deleteImage = async (imageId: string) => {
       try {
         const image = this.docker.getImage(imageId)
         await image.remove()
-        console.log(`Image ${imageId} deleted successfully.`)
+        that.installInfo(`Image ${imageId} deleted successfully.`)
       } catch (err) {
-        console.error("Error:", err)
+        that.installError(JSON.stringify(err))
       }
     }
     deleteImage(imageId)
@@ -149,8 +148,10 @@ export default class Docker extends Service {
 
   pullImage(imageName: string): void {
     let that = this
+    that.installInfo(`Pulling image ${imageName}.`)
     this.docker.pull(imageName, function (err: any, stream: any) {
       if (err) {
+        that.installError(JSON.stringify(err))
         return console.error(err)
       }
 
@@ -158,36 +159,39 @@ export default class Docker extends Service {
 
       function onFinished(err: any, output: any) {
         if (err) {
-          that.invoke("publishError", err)
+          that.installError(JSON.stringify(err))
           return console.error(err)
         }
-        console.log("Image pulled successfully")
-        that.invoke("publishFinished", err)
+        that.installInfo(`Image pulled successfully.`)
       }
 
       function onProgress(event: any) {
-        that.invoke("publishProgress", event)
+        that.installInfo(`${JSON.stringify(event)}`)
       }
     })
   }
 
   startContainer = async (containerId: string) => {
+    const that = this
+    that.installInfo(`Starting container ${containerId}.`)
     try {
       const container = this.docker.getContainer(containerId)
       await container.start()
-      console.log(`Container ${containerId} started successfully.`)
+      that.installInfo(`Container ${containerId} started successfully.`)
     } catch (err) {
-      console.error(`Error starting container ${containerId}:`, err)
+      that.installError(`Error starting container ${containerId}: ${err}`)
     }
   }
 
   stopContainer = async (containerId: string) => {
+    const that = this
+    that.installInfo(`Stopping container ${containerId}.`)
     try {
       const container = this.docker.getContainer(containerId)
       await container.stop()
-      console.log(`Container ${containerId} stopped successfully.`)
+      that.installInfo(`Container ${containerId} stopped successfully.`)
     } catch (err) {
-      console.error(`Error stopping container ${containerId}:`, err)
+      that.installError(`Error stopping container ${containerId}:${err}`)
     }
   }
 
@@ -195,13 +199,13 @@ export default class Docker extends Service {
     let that = this
     this.docker.listImages(function (err: any, images: any) {
       if (err) {
-        log.error("Error listing images:", err)
+        that.installError(`Listing images error ${err}`)
         return
       }
 
-      log.info("All images:")
+      log.debug("All images:")
       images.forEach(function (imageInfo: any) {
-        log.info(JSON.stringify(imageInfo))
+        log.debug(JSON.stringify(imageInfo))
       })
 
       that.images = images

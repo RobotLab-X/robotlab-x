@@ -1,4 +1,4 @@
-export class InstallLog {
+export default class InstallLog {
   public ts: number = new Date().getTime()
   public level: string | null = null
   public msg: string | null = null

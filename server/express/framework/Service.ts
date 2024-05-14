@@ -1,9 +1,9 @@
-import { InstallLog } from "express/models/InstallLog"
-import { InstallStatus } from "express/models/InstallStatus"
+import InstallStatus from "express/models/InstallStatus"
 import Package from "express/models/Package"
 import fs from "fs"
 import YAML from "yaml"
 import Store from "../Store"
+import InstallLog from "../models/InstallLog"
 import Message from "../models/Message"
 import Status from "../models/Status"
 import { SubscriptionListener } from "../models/SubscriptionListener"
@@ -271,6 +271,18 @@ export default class Service {
 
   publishStatus(status: Status) {
     return status
+  }
+
+  installError(msg: string) {
+    log.error(msg)
+    const err = new InstallLog("error", msg)
+    this.invoke("publishInstallLog", err)
+  }
+
+  installInfo(msg: string) {
+    log.info(msg)
+    const il = new InstallLog("info", msg)
+    this.invoke("publishInstallLog", il)
   }
 
   /**

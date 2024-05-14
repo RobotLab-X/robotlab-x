@@ -1,4 +1,4 @@
-export class InstallStatus {
+export default class InstallStatus {
   public ts: number = new Date().getTime()
   public ready: boolean = false
   // list of dependency steps
