@@ -148,6 +148,7 @@ export default class Docker extends Service {
         const image = this.docker.getImage(imageId)
         await image.remove()
         that.installInfo(`Image ${imageId} deleted successfully.`)
+        that.invoke("getImages")
       } catch (err) {
         that.installError(JSON.stringify(err))
       }
@@ -172,6 +173,7 @@ export default class Docker extends Service {
           return console.error(err)
         }
         that.installInfo(`Image pulled successfully.`)
+        that.invoke("getImages")
       }
 
       function onProgress(event: any) {
