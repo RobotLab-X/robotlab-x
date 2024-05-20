@@ -1,4 +1,16 @@
-import { Box, Button, TextField, Typography } from "@mui/material"
+import {
+  Box,
+  Button,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+  Typography
+} from "@mui/material"
 import React, { useEffect, useState } from "react"
 import ReactJson from "react-json-view"
 import StepWizard from "react-step-wizard"
@@ -10,6 +22,10 @@ import useServiceSubscription from "../store/useServiceSubscription"
 export default function Ollama({ fullname }) {
   const { useMessage, sendTo } = useStore()
   const [service, setService] = useState(null)
+  const [isEditingUrl, setIsEditingUrl] = useState(false)
+  const [url, setUrl] = useState("")
+  const [chatInput, setChatInput] = useState("")
+  const [chatHistory, setChatHistory] = useState([])
 
   // makes reference to the message object in store
   const epochMsg = useMessage(fullname, "publishEpoch")
@@ -22,6 +38,9 @@ export default function Ollama({ fullname }) {
 
   useEffect(() => {
     setService(processedService)
+    if (processedService?.config?.url) {
+      setUrl(processedService.config.url)
+    }
   }, [processedService])
 
   const handleFinishInstall = () => {
@@ -29,6 +48,35 @@ export default function Ollama({ fullname }) {
     setService(updatedService)
     sendTo(fullname, "applyConfig", updatedService.config)
     sendTo(fullname, "saveConfig")
+  }
+
+  const handleEditUrl = () => {
+    setIsEditingUrl(true)
+  }
+
+  const handleSaveUrl = () => {
+    const updatedService = { ...service, config: { ...service.config, url } }
+    setService(updatedService)
+    setIsEditingUrl(false)
+    sendTo(fullname, "applyConfig", updatedService.config)
+    sendTo(fullname, "saveConfig")
+  }
+
+  const handleUrlChange = (event) => {
+    setUrl(event.target.value)
+  }
+
+  const handleChatInputChange = (event) => {
+    setChatInput(event.target.value)
+  }
+
+  const handleSendChat = () => {
+    if (chatInput.trim() !== "") {
+      const newMessage = { user: "You", message: chatInput }
+      setChatHistory([...chatHistory, newMessage])
+      // Optionally, send the message to the backend here
+      setChatInput("")
+    }
   }
 
   const Step1 = ({ nextStep }) => (
@@ -84,7 +132,75 @@ export default function Ollama({ fullname }) {
           </StepWizard>
         )}
       </div>
-      {service && <ReactJson src={service} name="service" />}
+      {service && (
+        <>
+          <Box sx={{ mt: 4 }}>
+            <Typography variant="h5">Service Configuration</Typography>
+            {isEditingUrl ? (
+              <>
+                <TextField
+                  label="URL"
+                  variant="outlined"
+                  fullWidth
+                  margin="normal"
+                  value={url}
+                  onChange={handleUrlChange}
+                />
+                <Button variant="contained" color="primary" onClick={handleSaveUrl} sx={{ mt: 2 }}>
+                  Save
+                </Button>
+              </>
+            ) : (
+              <>
+                <Typography variant="body1">URL: {service.config.url}</Typography>
+                <Button variant="contained" color="secondary" onClick={handleEditUrl} sx={{ mt: 2 }}>
+                  Edit
+                </Button>
+              </>
+            )}
+          </Box>
+          <ReactJson src={service} name="service" />
+          <Box sx={{ mt: 4 }}>
+            <TextField
+              label="Type your message"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              value={chatInput}
+              onChange={handleChatInputChange}
+              onKeyPress={(e) => {
+                if (e.key === "Enter") {
+                  handleSendChat()
+                }
+              }}
+            />
+            <Button variant="contained" color="primary" onClick={handleSendChat} sx={{ mt: 2 }}>
+              Send
+            </Button>
+          </Box>
+          <Box sx={{ mt: 4 }}>
+            <Typography variant="h6">Chat History</Typography>
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>User</TableCell>
+                    <TableCell>Message</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {chatHistory.map((chat, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{chat.user}</TableCell>
+                      <TableCell>{chat.message}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Box>
+        </>
+      )}
     </>
   )
 }
