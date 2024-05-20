@@ -3,10 +3,21 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import PlayCircleFilledIcon from "@mui/icons-material/PlayCircleFilled"
 import StopIcon from "@mui/icons-material/Stop"
-import { Box, Button, IconButton, Paper, Table, TableBody, TableCell, TableRow, TextField } from "@mui/material"
+import {
+  Box,
+  Button,
+  IconButton,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  TextField
+} from "@mui/material"
 import Checkbox from "@mui/material/Checkbox"
 import FormControlLabel from "@mui/material/FormControlLabel"
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
 import { useStore } from "../store/store"
 import useServiceSubscription from "../store/useServiceSubscription"
@@ -19,6 +30,8 @@ export default function Docker({ fullname }) {
   const [imageName, setImageName] = useState("")
   const [showContainers, setShowContainers] = useState(false) // State for showing/hiding containers table
   const [showImages, setShowImages] = useState(false) // State for showing/hiding images table
+  const [logEntries, setLogEntries] = useState([])
+  const [maxLogEntries, setMaxLogEntries] = useState(10) // State for max log entries
 
   const handleChange = (event) => {
     setChecked(event.target.checked)
@@ -54,6 +67,15 @@ export default function Docker({ fullname }) {
 
   const publishInstallLog = useProcessedMessage(publishInstallLogMsg)
 
+  useEffect(() => {
+    if (publishInstallLog) {
+      setLogEntries((prevEntries) => {
+        const newEntries = [...prevEntries, publishInstallLog].slice(-maxLogEntries)
+        return newEntries
+      })
+    }
+  }, [publishInstallLog, maxLogEntries])
+
   const handleAction = (containerId, action) => {
     if (action === "delete") {
       sendTo(fullname, "deleteContainer", containerId)
@@ -79,8 +101,8 @@ export default function Docker({ fullname }) {
     setShowImages(!showImages)
   }
 
-  const handleCreateAndStartContainer = () => {
-    sendTo(fullname, "createAndStartContainer", "nginx", "my-nginx-container")
+  const handleCreateAndStartContainer = (id) => {
+    sendTo(fullname, "createAndStartContainer", id, null)
   }
 
   const tableContainerStyle = { display: "flex", flexDirection: "column", minWidth: "50%" }
@@ -174,7 +196,10 @@ export default function Docker({ fullname }) {
                       <TableCell>{Math.round(image.Size / 1048576)} MB</TableCell>
                       <TableCell>
                         <Box display="flex" alignItems="center">
-                          <IconButton color="success" onClick={() => handleCreateAndStartContainer(image.Id)}>
+                          <IconButton
+                            color="success"
+                            onClick={() => handleCreateAndStartContainer(image.Id.substring(7, 19))}
+                          >
                             <PlayCircleFilledIcon />
                           </IconButton>
                           <IconButton color="error" onClick={() => handleAction(image.Id, "deleteImage")}>
@@ -211,10 +236,61 @@ export default function Docker({ fullname }) {
         }}
       />{" "}
       <br />
-      {publishInstallLog && JSON.stringify(publishInstallLog)}
-      {publishProgress && JSON.stringify(publishProgress)}
-      {publishError && <div style={{ color: "red" }}>{JSON.stringify(publishError)}</div>}
-      {publishFinished && <div style={{ color: "green" }}>{JSON.stringify(publishFinished)}</div>}
+      <LogTable entries={logEntries} />
     </>
   )
+
+  function LogTable({ entries }) {
+    return (
+      <Table sx={{ borderCollapse: "separate", borderSpacing: "0" }}>
+        <TableHead>
+          <TableRow>
+            <TableCell sx={{ borderBottom: "none" }}>Timestamp</TableCell>
+            <TableCell sx={{ borderBottom: "none" }}>Level</TableCell>
+            <TableCell sx={{ borderBottom: "none" }}>Message</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {entries.map((entry, index) => (
+            <TableRow key={index} sx={{ borderBottom: "none" }}>
+              <TableCell sx={{ borderBottom: "none", color: getColor(entry) }}>{entry.ts}</TableCell>
+              <TableCell sx={{ borderBottom: "none", color: getColor(entry) }}>{entry.level}</TableCell>
+              <TableCell sx={{ borderBottom: "none", color: getColor(entry) }}>
+                {typeof entry.msg === "string" ? entry.msg : JSON.stringify(entry.msg)}
+                {entry.msg && typeof entry.msg !== "string" && (
+                  <>
+                    {entry.msg.status && (
+                      <div>
+                        <strong>Status:</strong> {entry.msg.status}
+                      </div>
+                    )}
+                    {entry.msg.progressDetail && (
+                      <div>
+                        <strong>Progress Detail:</strong> {JSON.stringify(entry.msg.progressDetail)}
+                      </div>
+                    )}
+                    {entry.msg.progress && (
+                      <div>
+                        <strong>Progress:</strong> {entry.msg.progress}
+                      </div>
+                    )}
+                  </>
+                )}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    )
+  }
+
+  function getColor(entry) {
+    if (entry.msg === "Image pulled successfully.") {
+      return "green"
+    }
+    if (entry.level === "error") {
+      return "red"
+    }
+    return "inherit"
+  }
 }
