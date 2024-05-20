@@ -1,7 +1,11 @@
 import {
   Box,
   Button,
+  FormControl,
+  InputLabel,
+  MenuItem,
   Paper,
+  Select,
   Table,
   TableBody,
   TableCell,
@@ -12,7 +16,7 @@ import {
   Typography
 } from "@mui/material"
 import React, { useEffect, useState } from "react"
-import ReactJson from "react-json-view"
+// import ReactJson from "react-json-view"
 import StepWizard from "react-step-wizard"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
 import { useStore } from "../store/store"
@@ -26,6 +30,7 @@ export default function Ollama({ fullname }) {
   const [url, setUrl] = useState("")
   const [chatInput, setChatInput] = useState("")
   const [chatHistory, setChatHistory] = useState([])
+  const [model, setModel] = useState("Model 1")
 
   // makes reference to the message object in store
   const epochMsg = useMessage(fullname, "publishEpoch")
@@ -74,9 +79,14 @@ export default function Ollama({ fullname }) {
     if (chatInput.trim() !== "") {
       const newMessage = { user: "You", message: chatInput }
       setChatHistory([...chatHistory, newMessage])
-      // Optionally, send the message to the backend here
+      // Optionally, send the message to the
+      // backend here
       setChatInput("")
     }
+  }
+
+  const handleModelChange = (event) => {
+    setModel(event.target.value)
   }
 
   const Step1 = ({ nextStep }) => (
@@ -124,6 +134,22 @@ export default function Ollama({ fullname }) {
 
   return (
     <>
+      <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+        <FormControl variant="outlined" sx={{ minWidth: 200 }}>
+          <InputLabel id="model-select-label">Model</InputLabel>
+          <Select
+            labelId="model-select-label"
+            id="model-select"
+            value={model}
+            onChange={handleModelChange}
+            label="Model"
+          >
+            <MenuItem value="Model 1">Model 1</MenuItem>
+            <MenuItem value="Model 2">Model 2</MenuItem>
+            <MenuItem value="Model 3">Model 3</MenuItem>
+          </Select>
+        </FormControl>
+      </Box>
       <div className="multi-step-form">
         {!service?.config?.installed && service && (
           <StepWizard>
@@ -159,7 +185,7 @@ export default function Ollama({ fullname }) {
               </>
             )}
           </Box>
-          <ReactJson src={service} name="service" />
+
           <Box sx={{ mt: 4 }}>
             <TextField
               label="Type your message"
@@ -199,6 +225,7 @@ export default function Ollama({ fullname }) {
               </Table>
             </TableContainer>
           </Box>
+          {/*<ReactJson src={service} name="service" />*/}
         </>
       )}
     </>
