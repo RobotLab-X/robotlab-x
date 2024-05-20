@@ -272,6 +272,18 @@ export default class RobotLabXRuntime extends Service {
     }
   }
 
+  saveServiceConfig(serviceName: string, config: any) {
+    const filePath = path.join(this.configDir, this.configName, `${serviceName}.yml`)
+    try {
+      const yamlStr = YAML.stringify(config)
+      fs.mkdirSync(path.dirname(filePath), { recursive: true })
+      fs.writeFileSync(filePath, yamlStr, "utf8")
+      console.log("Config saved to", filePath)
+    } catch (error) {
+      this.error(`Failed to save config: ${error}`)
+    }
+  }
+
   static createInstance(configName: string): RobotLabXRuntime {
     if (!RobotLabXRuntime.instance) {
       RobotLabXRuntime.instance = new RobotLabXRuntime("TEMP", "runtime", "RobotLabXRuntime", "0.0.1", os.hostname())

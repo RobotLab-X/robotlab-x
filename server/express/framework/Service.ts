@@ -93,6 +93,14 @@ export default class Service {
     return this.config
   }
 
+  applyConfig(config: any) {
+    this.config = config
+  }
+
+  saveConfig() {
+    RobotLabXRuntime.getInstance().saveServiceConfig(this.name, this.config)
+  }
+
   getNotifyList() {
     return this.notifyList
   }
