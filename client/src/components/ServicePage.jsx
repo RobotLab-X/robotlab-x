@@ -11,7 +11,7 @@ import {
   IconButton,
   Typography
 } from "@mui/material"
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import ReactJson from "react-json-view"
 import { useStore } from "../store/store"
 
@@ -23,6 +23,24 @@ export default function ServicePage(props) {
   const getRepoUrl = useStore((state) => state.getRepoUrl)
   const [showJson, setShowJson] = useState(false)
   const [open, setOpen] = useState(false)
+
+  const message = useStore((state) => state.useMessage(props.fullname, "broadcastState"))
+
+  const [AsyncPage, setAsyncPage] = useState(null)
+
+  useEffect(() => {
+    // Dynamically import the service page component
+    const loadAsyncPage = async () => {
+      try {
+        const LoadedPage = await loadable(() => import(`../service/${type}`))
+        setAsyncPage(() => LoadedPage)
+      } catch (error) {
+        setAsyncPage(() => () => <div>Service not found</div>)
+      }
+    }
+
+    loadAsyncPage()
+  }, [type])
 
   // FIXME - this is a pain, it should dynamically check if the service exists
   // but no library or native lazy loader seems to support this
@@ -61,15 +79,6 @@ export default function ServicePage(props) {
     setShowJson(!showJson)
   }
 
-  let AsyncPage = null
-
-  try {
-    // FIXME - test with throwable fetch and to determine if loadable is possible
-    AsyncPage = loadable(() => import(`../service/${type}`))
-  } catch (error) {
-    return <div>Service not found</div>
-  }
-
   return (
     <div className="service-content-div">
       <Typography variant="h4" component="div" sx={{ display: "flex", alignItems: "center" }}>
@@ -89,8 +98,8 @@ export default function ServicePage(props) {
         </IconButton>
       </Typography>
 
-      <AsyncPage page={type} name={props.name} id={props.id} fullname={props.fullname} />
-      {showJson && <ReactJson src={service} name="service" />}
+      {AsyncPage && <AsyncPage page={type} name={props.name} id={props.id} fullname={props.fullname} />}
+      {showJson && <ReactJson src={message} name="service" />}
       {/* Confirmation Dialog */}
       <Dialog
         open={open}

@@ -1,5 +1,6 @@
 // store.js
 import { create } from "zustand"
+import { devtools } from "zustand/middleware"
 import CodecUtil from "../framework/CodecUtil"
 // import NameGenerator from "../framework/NameGenerator"
 import Message from "../models/Message"
@@ -323,5 +324,5 @@ const store = (set, get) => ({
   }
 })
 
-export const useStore = create(store)
+export const useStore = create(devtools(store))
 export const direct = useStore

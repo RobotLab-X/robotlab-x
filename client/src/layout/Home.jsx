@@ -1,17 +1,21 @@
 import { Box, Card, CardActionArea, CardContent, Typography } from "@mui/material"
 import SendMsgTextArea from "components/SendMsgTextArea"
 import ServicePage from "components/ServicePage"
-import React, { useState } from "react"
+import React, { useRef, useState } from "react"
 import { useStore } from "store/store"
 
 function Home() {
   const [selectedCard, setSelectedCard] = useState(null)
   const [filter, setFilter] = useState("")
+  const [selectedService, setSelectedService] = useState(null)
   const getRepoUrl = useStore((state) => state.getRepoUrl)
   const repo = useStore((state) => state.repo)
   const registry = useStore((state) => state.registry)
   const serviceArray = Object.values(registry)
   const filteredCards = serviceArray.filter((card) => card.name.toLowerCase().includes(filter.toLowerCase()))
+  const remoteId = useStore((state) => state.defaultRemoteId)
+  // Ref to track initial fetch
+  const hasFetchedInitial = useRef(false)
 
   const handleCardClick = (card) => {
     setSelectedCard(card)
@@ -48,7 +52,7 @@ function Home() {
                       src={`${getRepoUrl()}/${card.typeKey}/${card.typeKey}.png`}
                       alt={card.name}
                       width="32"
-                      style={{ verticalAlign: "middle" }}
+                      style={{ verticalAlign: "top" }}
                     />{" "}
                     {/*
                     <img
@@ -60,9 +64,13 @@ function Home() {
                     */}
                     &nbsp;{card.name}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {repo[card.typeKey]?.title} {card.id}
-                  </Typography>
+                  {remoteId !== card.id ? (
+                    <Typography variant="body2" color="text.secondary">
+                      {repo[card.typeKey]?.title} {card.id}
+                    </Typography>
+                  ) : (
+                    <></>
+                  )}
                 </CardContent>
               </CardActionArea>
             </Card>
@@ -72,15 +80,6 @@ function Home() {
         <Box sx={{ flexGrow: 1, p: 3 }}>
           {selectedCard ? (
             <div>
-              <Typography variant="h4">
-                <img
-                  src={`${getRepoUrl()}/${selectedCard.typeKey}/${selectedCard.typeKey}.png`}
-                  alt={selectedCard.name}
-                  width="32"
-                  style={{ verticalAlign: "middle" }}
-                />{" "}
-                <span style={{ color: "grey" }}>{selectedCard.id}</span> {selectedCard.name}
-              </Typography>
               <ServicePage
                 fullname={`${selectedCard.name}@${selectedCard.id}`}
                 name={selectedCard.name}
@@ -93,6 +92,8 @@ function Home() {
           )}
         </Box>
       </Box>
+
+      <br />
     </>
   )
 }

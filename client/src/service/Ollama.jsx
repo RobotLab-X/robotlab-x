@@ -79,6 +79,7 @@ export default function Ollama({ fullname }) {
 
   const handleSendChat = () => {
     if (chatInput.trim() !== "") {
+      sendTo(fullname, "getResponse", { model: model, message: chatInput })
       const newMessage = { user: "You", message: chatInput }
       setChatHistory([...chatHistory, newMessage])
       // Optionally, send the message to the backend here

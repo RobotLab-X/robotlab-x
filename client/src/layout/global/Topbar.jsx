@@ -34,8 +34,8 @@ const Topbar = () => {
             }}
           />
         </Box>
-        <Typography variant="h3" component="span">
-          {remoteId}
+        <Typography variant="h4" component="span">
+          RobotLab-X {remoteId}
         </Typography>
       </Box>
 

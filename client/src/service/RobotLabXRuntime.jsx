@@ -471,11 +471,11 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
       <ReactJson src={messages} name="messages" />
       <ReactJson src={service} name="state" />
 {service && <ReactJson src={service} name="service" />}
+      {service && <ReactJson src={service} name="service" />}
 
        */}
 
       <br />
-      {service && <ReactJson src={service} name="service" />}
       {/** message ? <pre>{JSON.stringify(message, null, 2)}</pre> : <p>No message yet</p> */}
       {/**
       <Button onClick={handleStartNewService} variant="contained">
