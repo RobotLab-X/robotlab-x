@@ -16,7 +16,6 @@ import {
   Typography
 } from "@mui/material"
 import React, { useEffect, useState } from "react"
-// import ReactJson from "react-json-view"
 import StepWizard from "react-step-wizard"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
 import { useStore } from "../store/store"
@@ -31,10 +30,7 @@ export default function Ollama({ fullname }) {
   const [installUrl, setInstallUrl] = useState("")
   const [chatInput, setChatInput] = useState("")
   const [chatHistory, setChatHistory] = useState([])
-  const [model, setModel] = useState("Model 1")
-
-  // makes reference to the message object in store
-  const epochMsg = useMessage(fullname, "publishEpoch")
+  const [model, setModel] = useState("llama3")
 
   // creates subscriptions to topics and returns the broadcastState message reference
   const serviceMsg = useServiceSubscription(fullname, ["publishEpoch"])
@@ -46,6 +42,7 @@ export default function Ollama({ fullname }) {
     setService(processedService)
     if (processedService?.config?.url) {
       setUrl(processedService.config.url)
+      setInstallUrl(processedService.config.url) // Ensure installUrl is also initialized
     }
   }, [processedService])
 
@@ -69,6 +66,10 @@ export default function Ollama({ fullname }) {
   }
 
   const handleUrlChange = (event) => {
+    setUrl(event.target.value)
+  }
+
+  const handleInstallUrlChange = (event) => {
     setInstallUrl(event.target.value)
   }
 
@@ -80,8 +81,7 @@ export default function Ollama({ fullname }) {
     if (chatInput.trim() !== "") {
       const newMessage = { user: "You", message: chatInput }
       setChatHistory([...chatHistory, newMessage])
-      // Optionally, send the message to the
-      // backend here
+      // Optionally, send the message to the backend here
       setChatInput("")
     }
   }
@@ -105,9 +105,8 @@ export default function Ollama({ fullname }) {
         variant="outlined"
         fullWidth
         margin="normal"
-        placeholder={service?.config?.url}
-        defaultValue={service?.config?.url}
-        onChange={(e) => setInstallUrl(e.target.value)}
+        value={installUrl}
+        onChange={handleInstallUrlChange}
       />
       <Button variant="contained" color="primary" onClick={nextStep} sx={{ mt: 2 }}>
         Next
@@ -156,7 +155,7 @@ export default function Ollama({ fullname }) {
               onChange={handleModelChange}
               label="Model"
             >
-              <MenuItem value="llama3">lama3</MenuItem>
+              <MenuItem value="llama3">llama3</MenuItem>
               <MenuItem value="llama2">llama2</MenuItem>
               <MenuItem value="phi-beta">phi-beta</MenuItem>
             </Select>
@@ -176,6 +175,7 @@ export default function Ollama({ fullname }) {
                   margin="normal"
                   value={url}
                   onChange={handleUrlChange}
+                  sx={{ maxWidth: { xs: "100%", sm: "80%", md: "30%" } }} // Ensure consistent width
                 />
                 <Button variant="contained" color="primary" onClick={handleSaveUrl} sx={{ mt: 2 }}>
                   Save
@@ -183,7 +183,9 @@ export default function Ollama({ fullname }) {
               </>
             ) : (
               <>
-                <Typography variant="body1">URL: {service.config.url}</Typography>
+                <Typography variant="body1" sx={{ maxWidth: { xs: "100%", sm: "80%", md: "30%" } }}>
+                  URL: {service.config.url}
+                </Typography>
                 <Button variant="contained" color="secondary" onClick={handleEditUrl} sx={{ mt: 2 }}>
                   Edit
                 </Button>
