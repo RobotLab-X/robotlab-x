@@ -28,6 +28,7 @@ export default function Ollama({ fullname }) {
   const [service, setService] = useState(null)
   const [isEditingUrl, setIsEditingUrl] = useState(false)
   const [url, setUrl] = useState("")
+  const [installUrl, setInstallUrl] = useState("")
   const [chatInput, setChatInput] = useState("")
   const [chatHistory, setChatHistory] = useState([])
   const [model, setModel] = useState("Model 1")
@@ -49,7 +50,7 @@ export default function Ollama({ fullname }) {
   }, [processedService])
 
   const handleFinishInstall = () => {
-    const updatedService = { ...service, config: { ...service.config, installed: true } }
+    const updatedService = { ...service, config: { ...service.config, installed: true, url: installUrl } }
     setService(updatedService)
     sendTo(fullname, "applyConfig", updatedService.config)
     sendTo(fullname, "saveConfig")
@@ -68,7 +69,7 @@ export default function Ollama({ fullname }) {
   }
 
   const handleUrlChange = (event) => {
-    setUrl(event.target.value)
+    setInstallUrl(event.target.value)
   }
 
   const handleChatInputChange = (event) => {
@@ -95,7 +96,7 @@ export default function Ollama({ fullname }) {
         Ollama API URL
       </Typography>
       <Typography variant="body2" gutterBottom>
-        The Ollama API URL is needed to connect and query the API.
+        The Ollama base API URL is needed to connect and query the API.
       </Typography>
       <TextField
         label="URL"
@@ -104,8 +105,9 @@ export default function Ollama({ fullname }) {
         variant="outlined"
         fullWidth
         margin="normal"
-        placeholder="http://localhost:11434/v1/chat/completions"
-        defaultValue="http://localhost:11434/v1/chat/completions"
+        placeholder={service?.config?.url}
+        defaultValue={service?.config?.url}
+        onChange={(e) => setInstallUrl(e.target.value)}
       />
       <Button variant="contained" color="primary" onClick={nextStep} sx={{ mt: 2 }}>
         Next
@@ -134,22 +136,7 @@ export default function Ollama({ fullname }) {
 
   return (
     <>
-      <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-        <FormControl variant="outlined" sx={{ minWidth: 200 }}>
-          <InputLabel id="model-select-label">Model</InputLabel>
-          <Select
-            labelId="model-select-label"
-            id="model-select"
-            value={model}
-            onChange={handleModelChange}
-            label="Model"
-          >
-            <MenuItem value="Model 1">Model 1</MenuItem>
-            <MenuItem value="Model 2">Model 2</MenuItem>
-            <MenuItem value="Model 3">Model 3</MenuItem>
-          </Select>
-        </FormControl>
-      </Box>
+      <br />
       <div className="multi-step-form">
         {!service?.config?.installed && service && (
           <StepWizard>
@@ -158,7 +145,25 @@ export default function Ollama({ fullname }) {
           </StepWizard>
         )}
       </div>
-      {service && (
+      {service?.config?.installed && (
+        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+          <FormControl variant="outlined" sx={{ minWidth: 200 }}>
+            <InputLabel id="model-select-label">Model</InputLabel>
+            <Select
+              labelId="model-select-label"
+              id="model-select"
+              value={model}
+              onChange={handleModelChange}
+              label="Model"
+            >
+              <MenuItem value="llama3">lama3</MenuItem>
+              <MenuItem value="llama2">llama2</MenuItem>
+              <MenuItem value="phi-beta">phi-beta</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
+      )}
+      {service?.config?.installed && service && (
         <>
           <Box sx={{ mt: 4 }}>
             <Typography variant="h5">Service Configuration</Typography>
@@ -188,25 +193,27 @@ export default function Ollama({ fullname }) {
 
           <Box sx={{ mt: 4 }}>
             <TextField
+              sx={{ maxWidth: { xs: "100%", sm: "80%", md: "30%" } }}
               label="Type your message"
               variant="outlined"
               fullWidth
               margin="normal"
               value={chatInput}
               onChange={handleChatInputChange}
-              onKeyPress={(e) => {
+              onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   handleSendChat()
                 }
               }}
             />
+            <br />
             <Button variant="contained" color="primary" onClick={handleSendChat} sx={{ mt: 2 }}>
               Send
             </Button>
           </Box>
           <Box sx={{ mt: 4 }}>
             <Typography variant="h6">Chat History</Typography>
-            <TableContainer component={Paper}>
+            <TableContainer component={Paper} sx={{ maxWidth: { xs: "100%", sm: "80%", md: "30%" } }}>
               <Table>
                 <TableHead>
                   <TableRow>
