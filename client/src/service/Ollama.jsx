@@ -107,6 +107,7 @@ export default function Ollama({ fullname }) {
         margin="normal"
         value={installUrl}
         onChange={handleInstallUrlChange}
+        sx={{ maxWidth: { xs: "100%", sm: "80%", md: "30%" } }} // Ensure consistent width
       />
       <Button variant="contained" color="primary" onClick={nextStep} sx={{ mt: 2 }}>
         Next

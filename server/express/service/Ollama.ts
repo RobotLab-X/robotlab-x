@@ -1,3 +1,4 @@
+import axios from "axios"
 import { getLogger } from "../framework/Log"
 import Service from "../framework/Service"
 
@@ -7,10 +8,10 @@ const log = getLogger("Ollama")
 export default class Ollama extends Service {
   // Class properties
   private intervalId: NodeJS.Timeout | null = null
-  // private intervalMs: number = 1000
   config = {
     installed: false,
-    url: "http://localhost:11434/v1/chat/completions"
+    url: "http://localhost:11434",
+    model: "llama3"
   }
 
   constructor(
@@ -20,7 +21,47 @@ export default class Ollama extends Service {
     public version: string,
     public hostname: string
   ) {
-    super(id, name, typeKey, version, hostname) // Call the base class constructor if needed
-    // this.config = { intervalMs: 1000 }
+    super(id, name, typeKey, version, hostname)
+  }
+
+  public setModel(model?: string): void {
+    this.config.model = model
+  }
+
+  applyConfig(config: any) {
+    super.applyConfig(config)
+    if (this.config.installed && !this.intervalId) {
+      this.startCheckTimer()
+    }
+  }
+
+  private startCheckTimer(): void {
+    this.intervalId = setInterval(() => this.check(), 5000)
+  }
+
+  private async check(): Promise<void> {
+    try {
+      const response = await axios.get(this.config.url)
+      log.info(`Response from ${this.config.url}:${response.data}`)
+    } catch (error) {
+      log.error(`Error fetching from ${this.config.url}:${error}`)
+    }
+  }
+
+  public stopCheckTimer(): void {
+    if (this.intervalId) {
+      clearInterval(this.intervalId)
+      this.intervalId = null
+    }
+  }
+  toJSON() {
+    return {
+      id: this.id,
+      name: this.name,
+      typeKey: this.typeKey,
+      version: this.version,
+      hostname: this.hostname,
+      config: this.config
+    }
   }
 }
