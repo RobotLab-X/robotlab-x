@@ -1,4 +1,5 @@
 import axios from "axios"
+import { ChatResponse, Ollama as OllamaClient } from "ollama"
 import { getLogger } from "../framework/Log"
 import Service from "../framework/Service"
 
@@ -54,6 +55,42 @@ export default class Ollama extends Service {
       this.intervalId = null
     }
   }
+
+  public publishResponse(response: any): any {
+    log.info(`publishResponse ${JSON.stringify(response)}`)
+    return response
+  }
+
+  public publishChat(text: string): string {
+    log.info(`publishResponse ${text}`)
+    return text
+  }
+
+  public async chat(text: string): Promise<void> {
+    try {
+      const ola = new OllamaClient({ host: this.config.url })
+      let json = {
+        model: this.config.model,
+        messages: [{ role: "user", content: text }]
+      }
+      log.error(`chat ${JSON.stringify(json)}`)
+      let response: ChatResponse = await ola.chat(json)
+      this.invoke("publishResponse", response)
+      this.invoke("publishChat", response.message.content)
+    } catch (error) {
+      log.error(`Error fetching from ${this.config.url}:${error}`)
+    }
+  }
+
+  public async getResponse(request: any): Promise<void> {
+    try {
+      const response = await axios.get(`${this.config.url}/chat`)
+      log.info(`Response from ${this.config.url}:${response.data}`)
+    } catch (error) {
+      log.error(`Error fetching from ${this.config.url}:${error}`)
+    }
+  }
+
   toJSON() {
     return {
       id: this.id,

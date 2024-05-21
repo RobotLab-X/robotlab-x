@@ -16,15 +16,15 @@ import ReactJson from "react-json-view"
 import { useStore } from "../store/store"
 
 // TODO - React.lazy vs react-loadable
-export default function ServicePage(props) {
+export default function ServicePage({ fullname, name, id }) {
   const registry = useStore((state) => state.registry)
-  let service = registry[props.fullname]
+  let service = registry[fullname]
   let type = service.typeKey
   const getRepoUrl = useStore((state) => state.getRepoUrl)
   const [showJson, setShowJson] = useState(false)
   const [open, setOpen] = useState(false)
 
-  const message = useStore((state) => state.useMessage(props.fullname, "broadcastState"))
+  const message = useStore((state) => state.useMessage(fullname, "broadcastState"))
 
   const [AsyncPage, setAsyncPage] = useState(null)
 
@@ -98,7 +98,7 @@ export default function ServicePage(props) {
         </IconButton>
       </Typography>
 
-      {AsyncPage && <AsyncPage page={type} name={props.name} id={props.id} fullname={props.fullname} />}
+      {AsyncPage && <AsyncPage page={type} name={name} id={id} fullname={fullname} />}
       {showJson && <ReactJson src={message} name="service" />}
       {/* Confirmation Dialog */}
       <Dialog

@@ -16,6 +16,7 @@ import {
   Typography
 } from "@mui/material"
 import React, { useEffect, useState } from "react"
+import ReactJson from "react-json-view"
 import StepWizard from "react-step-wizard"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
 import { useStore } from "../store/store"
@@ -24,33 +25,46 @@ import useServiceSubscription from "../store/useServiceSubscription"
 // FIXME remove fullname with context provider
 export default function Ollama({ fullname }) {
   const { useMessage, sendTo } = useStore()
-  const [service, setService] = useState(null)
+  // const [service, setService] = useState(null)
   const [isEditingUrl, setIsEditingUrl] = useState(false)
   const [url, setUrl] = useState("")
   const [installUrl, setInstallUrl] = useState("")
   const [chatInput, setChatInput] = useState("")
   const [chatHistory, setChatHistory] = useState([])
   const [model, setModel] = useState("llama3")
+  const [chatLog, setChatLog] = useState([])
+
+  const chatMsg = useMessage(fullname, "publishChat")
 
   // creates subscriptions to topics and returns the broadcastState message reference
-  const serviceMsg = useServiceSubscription(fullname, ["publishEpoch"])
+  const serviceMsg = useServiceSubscription(fullname, ["publishChat"])
 
   // processes the msg.data[0] and returns the data
-  const processedService = useProcessedMessage(serviceMsg)
+  const service = useProcessedMessage(serviceMsg)
+  const chat = useProcessedMessage(chatMsg)
 
   useEffect(() => {
-    setService(processedService)
-    if (processedService?.config?.url) {
-      setUrl(processedService.config.url)
-      setInstallUrl(processedService.config.url) // Ensure installUrl is also initialized
+    // setService(processedService)
+    if (service?.config?.url) {
+      setUrl(service.config.url)
+      setInstallUrl(service.config.url) // Ensure installUrl is also initialized
     }
-  }, [processedService])
+  }, [service])
+
+  useEffect(() => {
+    if (chat) {
+      // Add the new message to the log
+      console.log("new install log msg:", chat)
+      setChatLog((log) => [...log, chat])
+    }
+  }, [chat])
 
   const handleFinishInstall = () => {
     const updatedService = { ...service, config: { ...service.config, installed: true, url: installUrl } }
-    setService(updatedService)
+    //     setService(updatedService)
     sendTo(fullname, "applyConfig", updatedService.config)
     sendTo(fullname, "saveConfig")
+    sendTo(fullname, "broadcastState")
   }
 
   const handleEditUrl = () => {
@@ -59,10 +73,11 @@ export default function Ollama({ fullname }) {
 
   const handleSaveUrl = () => {
     const updatedService = { ...service, config: { ...service.config, url } }
-    setService(updatedService)
+    //     setService(updatedService)
     setIsEditingUrl(false)
     sendTo(fullname, "applyConfig", updatedService.config)
     sendTo(fullname, "saveConfig")
+    sendTo(fullname, "broadcastState")
   }
 
   const handleUrlChange = (event) => {
@@ -79,7 +94,8 @@ export default function Ollama({ fullname }) {
 
   const handleSendChat = () => {
     if (chatInput.trim() !== "") {
-      sendTo(fullname, "getResponse", { model: model, message: chatInput })
+      // sendTo(fullname, "getResponse", { model: model, message: chatInput })
+      sendTo(fullname, "chat", chatInput)
       const newMessage = { user: "You", message: chatInput }
       setChatHistory([...chatHistory, newMessage])
       // Optionally, send the message to the backend here
@@ -236,7 +252,7 @@ export default function Ollama({ fullname }) {
               </Table>
             </TableContainer>
           </Box>
-          {/*<ReactJson src={service} name="service" />*/}
+          {<ReactJson src={chatLog} name="chatLog" />}
         </>
       )}
     </>
