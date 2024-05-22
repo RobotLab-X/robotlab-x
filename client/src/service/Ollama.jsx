@@ -17,10 +17,10 @@ import {
 } from "@mui/material"
 import React, { useEffect, useState } from "react"
 // import ReactJson from "react-json-view"
-import StepWizard from "react-step-wizard"
-import { useProcessedMessage } from "../hooks/useProcessedMessage"
-import { useStore } from "../store/store"
-import useServiceSubscription from "../store/useServiceSubscription"
+import { useProcessedMessage } from "hooks/useProcessedMessage"
+import { useStore } from "store/store"
+import useServiceSubscription from "store/useServiceSubscription"
+import OllamaWizard from "wizards/OllamaWizard"
 
 // FIXME remove fullname with context provider
 export default function Ollama({ fullname }) {
@@ -109,59 +109,16 @@ export default function Ollama({ fullname }) {
     setModel(event.target.value)
   }
 
-  const Step1 = ({ nextStep }) => (
-    <Box>
-      <Typography variant="h4" gutterBottom>
-        Ollama API URL
-      </Typography>
-      <Typography variant="body2" gutterBottom>
-        The Ollama base API URL is needed to connect and query the API.
-      </Typography>
-      <TextField
-        label="URL"
-        name="url"
-        id="url"
-        variant="outlined"
-        fullWidth
-        margin="normal"
-        value={installUrl}
-        onChange={handleInstallUrlChange}
-        sx={{ maxWidth: { xs: "100%", sm: "80%", md: "30%" } }} // Ensure consistent width
-      />
-      <Button variant="contained" color="primary" onClick={nextStep} sx={{ mt: 2 }}>
-        Next
-      </Button>
-    </Box>
-  )
-
-  const Step3 = ({ previousStep }) => (
-    <Box>
-      <Typography variant="h4" gutterBottom>
-        Done!
-      </Typography>
-      <Typography variant="body1" gutterBottom>
-        You should be ready to use the Ollama service now.
-      </Typography>
-      <Box sx={{ mt: 2 }}>
-        <Button variant="contained" color="secondary" onClick={previousStep} sx={{ mr: 2 }}>
-          Previous
-        </Button>
-        <Button variant="contained" color="primary" onClick={handleFinishInstall}>
-          Finish
-        </Button>
-      </Box>
-    </Box>
-  )
-
   return (
     <>
       <br />
       <div className="multi-step-form">
         {!service?.config?.installed && service && (
-          <StepWizard>
-            <Step1 />
-            <Step3 />
-          </StepWizard>
+          <OllamaWizard
+            installUrl={installUrl}
+            handleInstallUrlChange={handleInstallUrlChange}
+            handleFinishInstall={handleFinishInstall}
+          />
         )}
       </div>
       {service?.config?.installed && (
