@@ -36,8 +36,7 @@ export default function Ollama({ name, fullname, id }) {
   const [config, setConfig] = useState(null)
   const [chatInput, setChatInput] = useState("")
   const [chatHistory, setChatHistory] = useState([])
-  const [model, setModel] = useState("llama3")
-  const [editMode, setEditMode] = useState(true) // State for showing/hiding containers table
+  const [editMode, setEditMode] = useState(false)
 
   const chatMsg = useMessage(fullname, "publishChat")
 
@@ -87,8 +86,9 @@ export default function Ollama({ name, fullname, id }) {
   const service = useProcessedMessage(serviceMsg)
   const chat = useProcessedMessage(chatMsg)
 
+  // backend update resets the config
   useEffect(() => {
-    if (service && config === null) {
+    if (service /* && config === null */) {
       // DEEP COPY !
       // setConfig(JSON.parse(JSON.stringify(service.config)))
 
@@ -96,6 +96,17 @@ export default function Ollama({ name, fullname, id }) {
       setConfig(service.config)
     }
   }, [service])
+
+  useEffect(() => {
+    if (config?.prompt) {
+      const cardIndex = cards.findIndex((card) => card.name === config.prompt)
+      if (cardIndex !== -1) {
+        setCurrentCard(cardIndex)
+      }
+    }
+
+    // when config.prompt changes, update the currentCard
+  }, [config?.prompt])
 
   useEffect(() => {
     if (chat) {
@@ -106,17 +117,11 @@ export default function Ollama({ name, fullname, id }) {
     }
   }, [chat])
 
-  // useEffect(() => {
-  //   setConfig((prevConfig) => ({
-  //     ...prevConfig,
-  //     prompt: cards[currentCard].name
-  //   }))
-  // }, [currentCard])
-
   const toggleEditMode = () => {
     setEditMode(!editMode)
   }
 
+  // could probably be normalized with handleSaveConfig
   const handleFinishInstall = () => {
     // const updatedService = { ...service, config: { ...service.config, installed: true, url: installUrl } }
     //     setService(updatedService)
@@ -129,6 +134,7 @@ export default function Ollama({ name, fullname, id }) {
   const handleSaveConfig = () => {
     // const updatedService = { ...service, config: { ...service.config, url, maxHistory } }
     //     setService(updatedService)
+    config.prompt = cards[currentCard].name
     sendTo(fullname, "applyConfig", config)
     sendTo(fullname, "saveConfig")
     sendTo(fullname, "broadcastState")
@@ -137,10 +143,11 @@ export default function Ollama({ name, fullname, id }) {
 
   // can handle any config field change if the edit name matches the config name
   const handleConfigChange = (event) => {
-    const { name, value } = event.target
+    const { name, value, type } = event.target
+    const newValue = type === "number" ? Number(value) : value
     setConfig((prevConfig) => ({
       ...prevConfig,
-      [name]: value
+      [name]: newValue
     }))
   }
 
@@ -157,10 +164,6 @@ export default function Ollama({ name, fullname, id }) {
       // Optionally, send the message to the backend here
       setChatInput("")
     }
-  }
-
-  const handleModelChange = (event) => {
-    setModel(event.target.value)
   }
 
   return (
@@ -189,8 +192,9 @@ export default function Ollama({ name, fullname, id }) {
                   <Select
                     labelId="model-select-label"
                     id="model-select"
-                    value={model}
-                    onChange={handleModelChange}
+                    name="model"
+                    value={config?.model}
+                    onChange={handleConfigChange}
                     label="Model"
                   >
                     <MenuItem value="llama3">llama3</MenuItem>

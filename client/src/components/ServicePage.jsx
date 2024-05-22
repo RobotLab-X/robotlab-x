@@ -99,7 +99,9 @@ export default function ServicePage({ fullname, name, id }) {
       </Typography>
 
       {AsyncPage && <AsyncPage page={type} name={name} id={id} fullname={fullname} />}
-      {showJson && <ReactJson src={message} name="service" />}
+      {showJson && (
+        <ReactJson src={message?.data[0]} name="service" displayDataTypes={false} displayObjectSize={false} />
+      )}
       {/* Confirmation Dialog */}
       <Dialog
         open={open}
