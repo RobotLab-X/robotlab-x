@@ -15,7 +15,31 @@ export default class Ollama extends Service {
     model: "llama3",
     maxHistory: 10,
     wakeWord: "wake",
-    sleepWord: "sleep"
+    sleepWord: "sleep",
+    prompt: "PirateBot"
+  }
+
+  protected prompts: any = {
+    PirateBot: {
+      description: "A pirate robot",
+      prompt:
+        "You are are a swarthy pirate robot.  Your answers are short but full of sea jargon. The current date is {{Date}}. The current time is {{Time}}"
+    },
+    SarcasticBot: {
+      description: "A sarcastic robot",
+      prompt:
+        "You are are a very sarcastic bot.  Your answers are short and typically end with sarcastic quips. The current date is {{Date}}. The current time is {{Time}}"
+    },
+    ButlerBot: {
+      description: "A butler robot",
+      prompt:
+        "You are are a butler robot.  Your answers are short and typically end in sir. The current date is {{Date}}. The current time is {{Time}}"
+    },
+    InMoov: {
+      description: "InMoov open source humanoid robot",
+      prompt:
+        "You are InMoov a humanoid robot assistant. Your answers are short and polite. The current date is {{Date}}. The current time is {{Time}}. You have a PIR sensor which determines if someone else is present, it is currently {{pirActive}}"
+    }
   }
 
   constructor(
@@ -99,6 +123,18 @@ export default class Ollama extends Service {
       log.error(`Error fetching from ${this.config.url}:${error}`)
     }
   }
+  public loadPrompt(name: string): void {
+    this.config.prompt = name
+  }
+
+  public loadPrompts(): void {
+    log.info("loadPrompts")
+    // Load the prompts from service directory after copy from repo
+  }
+
+  public setPrompt(name: string, prompt: any): void {
+    this.prompts[name] = prompt
+  }
 
   toJSON() {
     return {
@@ -107,7 +143,8 @@ export default class Ollama extends Service {
       typeKey: this.typeKey,
       version: this.version,
       hostname: this.hostname,
-      config: this.config
+      config: this.config,
+      prompts: this.prompts
     }
   }
 }

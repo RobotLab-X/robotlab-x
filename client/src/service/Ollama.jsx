@@ -33,16 +33,15 @@ import OllamaWizard from "wizards/OllamaWizard"
 export default function Ollama({ name, fullname, id }) {
   const { useMessage, sendTo } = useStore()
   const getBaseUrl = useStore((state) => state.getBaseUrl)
-  // const [service, setService] = useState(null)
-  const [url, setUrl] = useState("")
-  const [installUrl, setInstallUrl] = useState("")
+  const [config, setConfig] = useState(null)
   const [chatInput, setChatInput] = useState("")
   const [chatHistory, setChatHistory] = useState([])
   const [model, setModel] = useState("llama3")
-  const [showConfiguration, setShowConfiguration] = useState(false) // State for showing/hiding containers table
+  const [editMode, setEditMode] = useState(true) // State for showing/hiding containers table
 
   const chatMsg = useMessage(fullname, "publishChat")
 
+  // TODO - pull from public/service/${name}/prompts
   const cards = [
     {
       id: 1,
@@ -84,18 +83,17 @@ export default function Ollama({ name, fullname, id }) {
     setCurrentCard((prevCard) => (prevCard - 1 + cards.length) % cards.length)
   }
 
-  // creates subscriptions to topics and returns the broadcastState message reference
   const serviceMsg = useServiceSubscription(fullname, ["publishChat"])
-
-  // processes the msg.data[0] and returns the data
   const service = useProcessedMessage(serviceMsg)
   const chat = useProcessedMessage(chatMsg)
 
   useEffect(() => {
-    // setService(processedService)
-    if (!installUrl && service?.config?.url) {
-      setUrl(service.config.url)
-      setInstallUrl(service.config.url) // Ensure installUrl is also initialized
+    if (service && config === null) {
+      // DEEP COPY !
+      // setConfig(JSON.parse(JSON.stringify(service.config)))
+
+      // NOT A COPY !
+      setConfig(service.config)
     }
   }, [service])
 
@@ -108,32 +106,42 @@ export default function Ollama({ name, fullname, id }) {
     }
   }, [chat])
 
-  const toggleShowConfiguration = () => {
-    setShowConfiguration(!showConfiguration)
+  // useEffect(() => {
+  //   setConfig((prevConfig) => ({
+  //     ...prevConfig,
+  //     prompt: cards[currentCard].name
+  //   }))
+  // }, [currentCard])
+
+  const toggleEditMode = () => {
+    setEditMode(!editMode)
   }
 
   const handleFinishInstall = () => {
-    const updatedService = { ...service, config: { ...service.config, installed: true, url: installUrl } }
+    // const updatedService = { ...service, config: { ...service.config, installed: true, url: installUrl } }
     //     setService(updatedService)
-    sendTo(fullname, "applyConfig", updatedService.config)
+    config.installed = true
+    sendTo(fullname, "applyConfig", config)
     sendTo(fullname, "saveConfig")
     sendTo(fullname, "broadcastState")
   }
 
-  const handleSaveUrl = () => {
-    const updatedService = { ...service, config: { ...service.config, url } }
+  const handleSaveConfig = () => {
+    // const updatedService = { ...service, config: { ...service.config, url, maxHistory } }
     //     setService(updatedService)
-    sendTo(fullname, "applyConfig", updatedService.config)
+    sendTo(fullname, "applyConfig", config)
     sendTo(fullname, "saveConfig")
     sendTo(fullname, "broadcastState")
+    setEditMode(false)
   }
 
-  const handleUrlChange = (event) => {
-    setUrl(event.target.value)
-  }
-
-  const handleInstallUrlChange = (event) => {
-    setInstallUrl(event.target.value)
+  // can handle any config field change if the edit name matches the config name
+  const handleConfigChange = (event) => {
+    const { name, value } = event.target
+    setConfig((prevConfig) => ({
+      ...prevConfig,
+      [name]: value
+    }))
   }
 
   const handleChatInputChange = (event) => {
@@ -161,55 +169,57 @@ export default function Ollama({ name, fullname, id }) {
       <div className="multi-step-form">
         {!service?.config?.installed && service && (
           <OllamaWizard
-            installUrl={installUrl}
-            handleInstallUrlChange={handleInstallUrlChange}
+            config={config}
+            handleConfigChange={handleConfigChange}
             handleFinishInstall={handleFinishInstall}
           />
         )}
       </div>
-      {service?.config?.installed && (
-        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-          <FormControl variant="outlined" sx={{ minWidth: 200 }}>
-            <InputLabel id="model-select-label">Model</InputLabel>
-            <Select
-              labelId="model-select-label"
-              id="model-select"
-              value={model}
-              onChange={handleModelChange}
-              label="Model"
-            >
-              <MenuItem value="llama3">llama3</MenuItem>
-              <MenuItem value="llama2">llama2</MenuItem>
-              <MenuItem value="phi-beta">phi-beta</MenuItem>
-            </Select>
-          </FormControl>
-        </Box>
-      )}
       {service?.config?.installed && service && (
         <>
-          <h3 style={{ display: "flex", alignItems: "center", cursor: "pointer" }} onClick={toggleShowConfiguration}>
+          <h3 style={{ display: "flex", alignItems: "center", cursor: "pointer" }} onClick={toggleEditMode}>
             Configuration
-            {showConfiguration ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+            {editMode ? <ExpandLessIcon /> : <ExpandMoreIcon />}
           </h3>
-          {showConfiguration ? (
+          {editMode ? (
             <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "30%" } }}>
+              <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                <FormControl variant="outlined" sx={{ minWidth: 200 }}>
+                  <InputLabel id="model-select-label">Model</InputLabel>
+                  <Select
+                    labelId="model-select-label"
+                    id="model-select"
+                    value={model}
+                    onChange={handleModelChange}
+                    label="Model"
+                  >
+                    <MenuItem value="llama3">llama3</MenuItem>
+                    <MenuItem value="llama2">llama2</MenuItem>
+                    <MenuItem value="phi-beta">phi-beta</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
+
               <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
                 <TextField
                   label="URL"
+                  name="url"
                   variant="outlined"
                   fullWidth
                   margin="normal"
-                  value={url}
-                  onChange={handleUrlChange}
+                  value={config?.url}
+                  onChange={handleConfigChange}
                   sx={{ flex: 1 }} // Ensure consistent width
                 />
                 <TextField
                   label="Max History"
+                  name="maxHistory"
                   variant="outlined"
                   fullWidth
                   margin="normal"
                   type="number"
-                  value="5"
+                  value={config?.maxHistory}
+                  onChange={handleConfigChange}
                   sx={{ flex: 1 }} // Ensure consistent width
                 />
               </Box>
@@ -244,7 +254,7 @@ export default function Ollama({ name, fullname, id }) {
               </Box>
 
               <Box sx={{ mt: 2, display: "flex", gap: 2 }}>
-                <Button variant="contained" color="primary" onClick={handleSaveUrl}>
+                <Button variant="contained" color="primary" onClick={handleSaveConfig}>
                   Save
                 </Button>
               </Box>

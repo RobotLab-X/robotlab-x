@@ -4,7 +4,7 @@ import React from "react"
 import StepWizard from "react-step-wizard"
 
 // Step1 Component
-const Step1 = ({ nextStep, installUrl, handleInstallUrlChange }) => (
+const Step1 = ({ nextStep, config, handleConfigChange }) => (
   <Box>
     <Typography variant="h4" gutterBottom>
       Ollama API URL
@@ -19,8 +19,8 @@ const Step1 = ({ nextStep, installUrl, handleInstallUrlChange }) => (
       variant="outlined"
       fullWidth
       margin="normal"
-      value={installUrl}
-      onChange={handleInstallUrlChange}
+      value={config?.url}
+      onChange={handleConfigChange}
       sx={{ maxWidth: { xs: "100%", sm: "80%", md: "30%" } }} // Ensure consistent width
     />
     <Button variant="contained" color="primary" onClick={nextStep} sx={{ mt: 2 }}>
@@ -49,9 +49,9 @@ const Step3 = ({ previousStep, handleFinishInstall }) => (
   </Box>
 )
 
-const OllamaWizard = ({ installUrl, handleInstallUrlChange, handleFinishInstall }) => (
+const OllamaWizard = ({ config, handleConfigChange, handleFinishInstall }) => (
   <StepWizard>
-    <Step1 installUrl={installUrl} handleInstallUrlChange={handleInstallUrlChange} />
+    <Step1 config={config} handleConfigChange={handleConfigChange} />
     <Step3 handleFinishInstall={handleFinishInstall} />
   </StepWizard>
 )

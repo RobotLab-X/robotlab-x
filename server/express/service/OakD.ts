@@ -1,6 +1,6 @@
-import InstallerPython from "express/framework/InstallerPython"
-import { getLogger } from "express/framework/Log"
-import Service from "express/framework/Service"
+import InstallerPython from "../framework/InstallerPython"
+import { getLogger } from "../framework/Log"
+import Service from "../framework/Service"
 
 const log = getLogger("OakD")
 
@@ -18,7 +18,7 @@ export default class OakD extends Service {
   }
 
   startService(): void {
-    log.info(`Starting OakD service`)
+    // log.info(`Starting OakD service`)
     super.startService()
     let installer = new InstallerPython(this)
     // platformInfo = installer.install(this.pkg)
