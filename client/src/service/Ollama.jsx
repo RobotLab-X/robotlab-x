@@ -1,3 +1,5 @@
+import ExpandLessIcon from "@mui/icons-material/ExpandLess"
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import {
   Box,
   Button,
@@ -16,6 +18,7 @@ import {
   Typography
 } from "@mui/material"
 import React, { useEffect, useState } from "react"
+
 // import ReactJson from "react-json-view"
 import { useProcessedMessage } from "hooks/useProcessedMessage"
 import { useStore } from "store/store"
@@ -32,7 +35,7 @@ export default function Ollama({ fullname }) {
   const [chatInput, setChatInput] = useState("")
   const [chatHistory, setChatHistory] = useState([])
   const [model, setModel] = useState("llama3")
-  const [chatLog, setChatLog] = useState([])
+  const [showConfiguration, setShowConfiguration] = useState(false) // State for showing/hiding containers table
 
   const chatMsg = useMessage(fullname, "publishChat")
 
@@ -55,11 +58,14 @@ export default function Ollama({ fullname }) {
     if (chat) {
       // Add the new message to the log
       console.log("new install log msg:", chat)
-      setChatLog((log) => [...log, chat])
       const newMessage = { user: "Bot", message: chat }
       setChatHistory([...chatHistory, newMessage])
     }
   }, [chat])
+
+  const toggleShowConfiguration = () => {
+    setShowConfiguration(!showConfiguration)
+  }
 
   const handleFinishInstall = () => {
     const updatedService = { ...service, config: { ...service.config, installed: true, url: installUrl } }
@@ -141,10 +147,13 @@ export default function Ollama({ fullname }) {
       )}
       {service?.config?.installed && service && (
         <>
-          <Box sx={{ mt: 4 }}>
-            <Typography variant="h5">Service Configuration</Typography>
-            {isEditingUrl ? (
-              <>
+          <h3 style={{ display: "flex", alignItems: "center", cursor: "pointer" }} onClick={toggleShowConfiguration}>
+            Configuration
+            {showConfiguration ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+          </h3>
+          {showConfiguration ? (
+            <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "30%" } }}>
+              <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
                 <TextField
                   label="URL"
                   variant="outlined"
@@ -152,27 +161,27 @@ export default function Ollama({ fullname }) {
                   margin="normal"
                   value={url}
                   onChange={handleUrlChange}
-                  sx={{ maxWidth: { xs: "100%", sm: "80%", md: "30%" } }} // Ensure consistent width
+                  sx={{ flex: 1 }} // Ensure consistent width
                 />
-                <Button variant="contained" color="primary" onClick={handleSaveUrl} sx={{ mt: 2 }}>
+                <TextField
+                  label="Max History"
+                  variant="outlined"
+                  fullWidth
+                  margin="normal"
+                  type="number"
+                  value="5"
+                  sx={{ flex: 1 }} // Ensure consistent width
+                />
+              </Box>
+              <Box sx={{ mt: 2, display: "flex", gap: 2 }}>
+                <Button variant="contained" color="primary" onClick={handleSaveUrl}>
                   Save
                 </Button>
-              </>
-            ) : (
-              <>
-                <Typography variant="body1" sx={{ maxWidth: { xs: "100%", sm: "80%", md: "30%" } }}>
-                  URL: {service.config.url}
-                </Typography>
-                <Button variant="contained" color="secondary" onClick={handleEditUrl} sx={{ mt: 2 }}>
-                  Edit
-                </Button>
-              </>
-            )}
-          </Box>
-
-          <Box sx={{ mt: 4 }}>
+              </Box>
+            </Box>
+          ) : null}
+          <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "30%" }, display: "flex", gap: 2, alignItems: "center" }}>
             <TextField
-              sx={{ maxWidth: { xs: "100%", sm: "80%", md: "30%" } }}
               label="Type your message"
               variant="outlined"
               fullWidth
@@ -185,14 +194,13 @@ export default function Ollama({ fullname }) {
                 }
               }}
             />
-            <br />
             <Button variant="contained" color="primary" onClick={handleSendChat} sx={{ mt: 2 }}>
               Send
             </Button>
-          </Box>
-          <Box sx={{ mt: 4 }}>
+          </Box>{" "}
+          <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "30%" } }}>
             <Typography variant="h6">Chat History</Typography>
-            <TableContainer component={Paper} sx={{ maxWidth: { xs: "100%", sm: "80%", md: "30%" } }}>
+            <TableContainer component={Paper}>
               <Table>
                 <TableHead>
                   <TableRow>

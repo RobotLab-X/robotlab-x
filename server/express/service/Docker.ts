@@ -71,7 +71,7 @@ export default class Docker extends Service {
   createAndStartContainer(imageName: string, containerName: string): void {
     const that = this
     // FIXME change it to a InstallLog object ?
-    that.invoke("publishProgress", `${imageName} ${containerName}`)
+    that.installInfo(`${imageName} ${containerName}`)
     const createAndStartContainer = async (imageName: string, containerName: string) => {
       try {
         // Pull the image if it doesn't exist locally
@@ -194,6 +194,59 @@ export default class Docker extends Service {
     }
   }
 
+  runContainer = async (containerId: string) => {
+    const that = this
+    that.installInfo(`Running container ${containerId}.`)
+    try {
+      const container = this.docker.getContainer(containerId)
+      await container.run
+      that.installInfo(`Container ${containerId} started successfully.`)
+    } catch (err) {
+      that.installError(`Error starting container ${containerId}: ${err}`)
+    }
+  }
+
+  createAndRunContainer = async (imageId: string, containerName: string, cmd: string) => {
+    const that = this
+    that.installInfo(`creating and starting container ${imageId} ${containerName}.`)
+    try {
+      const container = await this.docker.createContainer({
+        Image: "alpine",
+        Cmd: ["/bin/sh"],
+        Tty: true,
+        name: containerName
+      })
+
+      let result = await container.start()
+      that.installInfo(`start ${containerName} ${result}`)
+
+      const exec = await container.exec({
+        Cmd: ["/bin/sh"],
+        AttachStdin: true,
+        AttachStdout: true,
+        AttachStderr: true,
+        Tty: true
+      })
+
+      const stream = await exec.start({ hijack: true, stdin: true })
+
+      // Attach container's output stream to the current process's stdout
+      container.modem.demuxStream(stream, process.stdout, process.stderr)
+
+      // Attach the current process's stdin to the container's input stream
+      process.stdin.pipe(stream)
+
+      // Make sure the container is removed when it's stopped
+      container.wait().then(() => {
+        container.remove()
+      })
+
+      that.installInfo(`Container ${containerName} started successfully.`)
+    } catch (err) {
+      that.installError(`Error starting container ${containerName}: ${err}`)
+    }
+  }
+
   stopContainer = async (containerId: string) => {
     const that = this
     that.installInfo(`Stopping container ${containerId}.`)
@@ -227,21 +280,6 @@ export default class Docker extends Service {
 
   publishImages(images: any): any[] {
     return this.images
-  }
-
-  publishError(str: any): any {
-    log.error(str)
-    return str
-  }
-
-  publishProgress(str: any): any {
-    log.info(str)
-    return str
-  }
-
-  publishFinished(str: any): any {
-    log.info(str)
-    return str
   }
 
   // Method to start the clock timer

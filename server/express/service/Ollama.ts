@@ -12,7 +12,10 @@ export default class Ollama extends Service {
   config = {
     installed: false,
     url: "http://localhost:11434",
-    model: "llama3"
+    model: "llama3",
+    maxHistory: 10,
+    wakeWord: "wake",
+    sleepWord: "sleep"
   }
 
   constructor(

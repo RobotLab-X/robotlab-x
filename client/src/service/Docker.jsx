@@ -28,6 +28,7 @@ export default function Docker({ fullname }) {
 
   const [checked, setChecked] = useState(false)
   const [imageName, setImageName] = useState("")
+  const [runCmd, setRunCmd] = useState("")
   const [showContainers, setShowContainers] = useState(false) // State for showing/hiding containers table
   const [showImages, setShowImages] = useState(false) // State for showing/hiding images table
   const [logEntries, setLogEntries] = useState([])
@@ -40,29 +41,14 @@ export default function Docker({ fullname }) {
   }
 
   const psMsg = useMessage(fullname, "publishPs")
-  const publishProgressMsg = useMessage(fullname, "publishProgress")
-  const publishFinishedMsg = useMessage(fullname, "publishFinished")
-  const publishErrorMsg = useMessage(fullname, "publishError")
   const publishImagesMsg = useMessage(fullname, "publishImages")
-
   const publishInstallLogMsg = useMessage(fullname, "publishInstallLog")
 
   // creates subscriptions to topics and returns the broadcastState message reference
-  const serviceMsg = useServiceSubscription(fullname, [
-    "publishPs",
-    "publishProgress",
-    "publishFinished",
-    "publishError",
-    "publishImages",
-    "publishInstallLog"
-  ])
+  const serviceMsg = useServiceSubscription(fullname, ["publishPs", "publishImages", "publishInstallLog"])
 
   // processes the msg.data[0] and returns the data
-  const service = useProcessedMessage(serviceMsg)
   const ps = useProcessedMessage(psMsg)
-  const publishProgress = useProcessedMessage(publishProgressMsg)
-  const publishFinished = useProcessedMessage(publishFinishedMsg)
-  const publishError = useProcessedMessage(publishErrorMsg)
   const publishImages = useProcessedMessage(publishImagesMsg)
 
   const publishInstallLog = useProcessedMessage(publishInstallLogMsg)
@@ -92,6 +78,10 @@ export default function Docker({ fullname }) {
     sendTo(fullname, "pullImage", imageName)
   }
 
+  const handleRun = () => {
+    sendTo(fullname, "createAndRunContainer", runCmd)
+  }
+
   const toggleShowContainers = () => {
     setShowContainers(!showContainers)
   }
@@ -105,18 +95,16 @@ export default function Docker({ fullname }) {
     sendTo(fullname, "createAndStartContainer", id, null)
   }
 
-  const tableContainerStyle = { display: "flex", flexDirection: "column", minWidth: "50%" }
-
   return (
     <>
       <h3 style={{ display: "flex", alignItems: "center", cursor: "pointer" }} onClick={toggleShowContainers}>
         Containers
         {showContainers ? <ExpandLessIcon /> : <ExpandMoreIcon />}
       </h3>
-      {showContainers && (
-        <div style={tableContainerStyle}>
+      <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "30%" } }}>
+        {showContainers && (
           <Paper style={{ display: "inline-block", overflowX: "auto", margin: "2px" }}>
-            <Table size="small" aria-label="a dense table">
+            <Table aria-label="container table">
               <TableBody>
                 <TableRow>
                   <TableCell>Id</TableCell>
@@ -165,16 +153,14 @@ export default function Docker({ fullname }) {
               label="Show All"
             />
           </Paper>
-        </div>
-      )}
-      <h3 style={{ display: "flex", alignItems: "center", cursor: "pointer" }} onClick={toggleShowImages}>
-        Images
-        {showImages ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-      </h3>
-      {showImages && (
-        <div style={tableContainerStyle}>
+        )}
+        <h3 style={{ display: "flex", alignItems: "center", cursor: "pointer" }} onClick={toggleShowImages}>
+          Images
+          {showImages ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+        </h3>
+        {showImages && (
           <Paper style={{ display: "inline-block", overflowX: "auto", margin: "2px" }}>
-            <Table size="small" aria-label="a dense table">
+            <Table aria-label="image table">
               <TableBody>
                 <TableRow>
                   <TableCell>Repo</TableCell>
@@ -212,31 +198,20 @@ export default function Docker({ fullname }) {
               </TableBody>
             </Table>
           </Paper>
-        </div>
-      )}
-      <br />
-      <Button variant="contained" color="primary" onClick={handlePull}>
-        Pull
-      </Button>
-      <TextField
-        label="Image Name"
-        value={imageName}
-        onChange={(e) => setImageName(e.target.value)}
-        sx={{
-          marginLeft: "8px",
-          "& .MuiInputBase-root": {
-            height: "36px" // Match the Button height
-          },
-          "& .MuiInputBase-input": {
-            padding: "10.5px 14px" // Vertically center text within the input
-          },
-          "& .MuiInputLabel-root": {
-            top: "-5px" // Adjust label position
-          }
-        }}
-      />{" "}
-      <br />
-      <LogTable entries={logEntries} />
+        )}
+        <br />
+        <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+          <Button variant="contained" color="primary" onClick={handlePull}>
+            Pull
+          </Button>
+          <TextField label="Image Name" value={imageName} onChange={(e) => setImageName(e.target.value)} />{" "}
+          <Button variant="contained" color="primary" onClick={handleRun}>
+            Run
+          </Button>
+          <TextField label="Run Command" value={imageName} onChange={(e) => setRunCmd(e.target.value)} /> <br />
+        </Box>
+        <LogTable entries={logEntries} />
+      </Box>
     </>
   )
 
