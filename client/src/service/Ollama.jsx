@@ -16,7 +16,7 @@ import {
   Typography
 } from "@mui/material"
 import React, { useEffect, useState } from "react"
-import ReactJson from "react-json-view"
+// import ReactJson from "react-json-view"
 import StepWizard from "react-step-wizard"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
 import { useStore } from "../store/store"
@@ -45,7 +45,7 @@ export default function Ollama({ fullname }) {
 
   useEffect(() => {
     // setService(processedService)
-    if (service?.config?.url) {
+    if (!installUrl && service?.config?.url) {
       setUrl(service.config.url)
       setInstallUrl(service.config.url) // Ensure installUrl is also initialized
     }
@@ -56,6 +56,8 @@ export default function Ollama({ fullname }) {
       // Add the new message to the log
       console.log("new install log msg:", chat)
       setChatLog((log) => [...log, chat])
+      const newMessage = { user: "Bot", message: chat }
+      setChatHistory([...chatHistory, newMessage])
     }
   }, [chat])
 
@@ -252,7 +254,7 @@ export default function Ollama({ fullname }) {
               </Table>
             </TableContainer>
           </Box>
-          {<ReactJson src={chatLog} name="chatLog" />}
+          {/* <ReactJson src={chatLog} name="chatLog" /> */}
         </>
       )}
     </>
