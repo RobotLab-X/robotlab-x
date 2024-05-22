@@ -66,15 +66,21 @@ export default class Ollama extends Service {
     return text
   }
 
+  public publishRequest(request: any): any {
+    log.info(`publishRequest ${JSON.stringify(request)}`)
+    return request
+  }
+
   public async chat(text: string): Promise<void> {
     try {
       const ola = new OllamaClient({ host: this.config.url })
-      let json = {
+      let request = {
         model: this.config.model,
         messages: [{ role: "user", content: text }]
       }
-      log.error(`chat ${JSON.stringify(json)}`)
-      let response: ChatResponse = await ola.chat(json)
+      this.invoke("publishRequest", request)
+      log.error(`chat ${JSON.stringify(request)}`)
+      let response: ChatResponse = await ola.chat(request)
       this.invoke("publishResponse", response)
       this.invoke("publishChat", response.message.content)
     } catch (error) {
