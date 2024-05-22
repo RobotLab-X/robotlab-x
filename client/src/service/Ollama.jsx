@@ -1,9 +1,15 @@
+import { ArrowBack, ArrowForward } from "@mui/icons-material"
+import ArrowUpwardOutlined from "@mui/icons-material/ArrowUpwardOutlined"
 import ExpandLessIcon from "@mui/icons-material/ExpandLess"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import {
   Box,
   Button,
+  Card,
+  CardContent,
   FormControl,
+  IconButton,
+  InputAdornment,
   InputLabel,
   MenuItem,
   Paper,
@@ -12,13 +18,11 @@ import {
   TableBody,
   TableCell,
   TableContainer,
-  TableHead,
   TableRow,
   TextField,
   Typography
 } from "@mui/material"
 import React, { useEffect, useState } from "react"
-
 // import ReactJson from "react-json-view"
 import { useProcessedMessage } from "hooks/useProcessedMessage"
 import { useStore } from "store/store"
@@ -26,10 +30,10 @@ import useServiceSubscription from "store/useServiceSubscription"
 import OllamaWizard from "wizards/OllamaWizard"
 
 // FIXME remove fullname with context provider
-export default function Ollama({ fullname }) {
+export default function Ollama({ name, fullname, id }) {
   const { useMessage, sendTo } = useStore()
+  const getBaseUrl = useStore((state) => state.getBaseUrl)
   // const [service, setService] = useState(null)
-  const [isEditingUrl, setIsEditingUrl] = useState(false)
   const [url, setUrl] = useState("")
   const [installUrl, setInstallUrl] = useState("")
   const [chatInput, setChatInput] = useState("")
@@ -38,6 +42,47 @@ export default function Ollama({ fullname }) {
   const [showConfiguration, setShowConfiguration] = useState(false) // State for showing/hiding containers table
 
   const chatMsg = useMessage(fullname, "publishChat")
+
+  const cards = [
+    {
+      id: 1,
+      name: "PirateBot",
+      description: "A pirate robot",
+      prompt:
+        "You are are a swarthy pirate robot.  Your answers are short but full of sea jargon. The current date is {{Date}}. The current time is {{Time}}"
+    },
+    {
+      id: 2,
+      name: "SarcasticBot",
+      description: "A sarcastic robot",
+      prompt:
+        "You are are a very sarcastic bot.  Your answers are short and typically end with sarcastic quips. The current date is {{Date}}. The current time is {{Time}}"
+    },
+    {
+      id: 3,
+      name: "ButlerBot",
+      description: "A butler robot",
+      prompt:
+        "You are are a butler robot.  Your answers are short and typically end in sir. The current date is {{Date}}. The current time is {{Time}}"
+    },
+    {
+      id: 4,
+      name: "InMoov",
+      description: "InMoov open source humanoid robot",
+      prompt:
+        "You are InMoov a humanoid robot assistant. Your answers are short and polite. The current date is {{Date}}. The current time is {{Time}}. You have a PIR sensor which determines if someone else is present, it is currently {{pirActive}}"
+    }
+  ]
+
+  const [currentCard, setCurrentCard] = useState(0)
+
+  const handleNext = () => {
+    setCurrentCard((prevCard) => (prevCard + 1) % cards.length)
+  }
+
+  const handlePrev = () => {
+    setCurrentCard((prevCard) => (prevCard - 1 + cards.length) % cards.length)
+  }
 
   // creates subscriptions to topics and returns the broadcastState message reference
   const serviceMsg = useServiceSubscription(fullname, ["publishChat"])
@@ -75,14 +120,9 @@ export default function Ollama({ fullname }) {
     sendTo(fullname, "broadcastState")
   }
 
-  const handleEditUrl = () => {
-    setIsEditingUrl(true)
-  }
-
   const handleSaveUrl = () => {
     const updatedService = { ...service, config: { ...service.config, url } }
     //     setService(updatedService)
-    setIsEditingUrl(false)
     sendTo(fullname, "applyConfig", updatedService.config)
     sendTo(fullname, "saveConfig")
     sendTo(fullname, "broadcastState")
@@ -173,6 +213,36 @@ export default function Ollama({ fullname }) {
                   sx={{ flex: 1 }} // Ensure consistent width
                 />
               </Box>
+
+              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", mt: 5 }}>
+                <IconButton onClick={handlePrev} disabled={cards.length <= 1}>
+                  <ArrowBack />
+                </IconButton>
+                <Card sx={{ minWidth: 275, mx: 2 }}>
+                  <CardContent>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                      <img
+                        src={`${getBaseUrl()}/service/${name}/prompts/${cards[currentCard].name}.png`}
+                        width="64"
+                        alt="robot pict"
+                      />
+                      <Typography variant="h2" component="div">
+                        {cards[currentCard].name}
+                      </Typography>
+                    </Box>
+                    <Typography variant="h5" component="div">
+                      {cards[currentCard].description}
+                    </Typography>
+                    <Typography variant="subtitle1" component="span" color="textSecondary">
+                      {cards[currentCard].prompt}
+                    </Typography>
+                  </CardContent>
+                </Card>
+                <IconButton onClick={handleNext} disabled={cards.length <= 1}>
+                  <ArrowForward />
+                </IconButton>
+              </Box>
+
               <Box sx={{ mt: 2, display: "flex", gap: 2 }}>
                 <Button variant="contained" color="primary" onClick={handleSaveUrl}>
                   Save
@@ -180,8 +250,27 @@ export default function Ollama({ fullname }) {
               </Box>
             </Box>
           ) : null}
-          <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "30%" }, display: "flex", gap: 2, alignItems: "center" }}>
+
+          <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "30%" } }}>
+            <TableContainer component={Paper}>
+              <Table>
+                <TableBody>
+                  {chatHistory.map((chat, index) => (
+                    <TableRow key={index}>
+                      {/*}
+                      <TableCell align={chat.user === "You" ? "right" : "left"}>{chat.user}</TableCell>
+                      */}
+                      <TableCell align={chat.user === "You" ? "right" : "left"}>{chat.message}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            {/* <ReactJson src={chatLog} name="chatLog" /> */}
+          </Box>
+          <Box sx={{ width: { xs: "100%", sm: "80%", md: "30%" } }}>
             <TextField
+              sx={{ width: "100%" }}
               label="Type your message"
               variant="outlined"
               fullWidth
@@ -193,33 +282,17 @@ export default function Ollama({ fullname }) {
                   handleSendChat()
                 }
               }}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton color="primary" onClick={handleSendChat}>
+                      <ArrowUpwardOutlined />
+                    </IconButton>
+                  </InputAdornment>
+                )
+              }}
             />
-            <Button variant="contained" color="primary" onClick={handleSendChat} sx={{ mt: 2 }}>
-              Send
-            </Button>
-          </Box>{" "}
-          <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "30%" } }}>
-            <Typography variant="h6">Chat History</Typography>
-            <TableContainer component={Paper}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>User</TableCell>
-                    <TableCell>Message</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {chatHistory.map((chat, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{chat.user}</TableCell>
-                      <TableCell>{chat.message}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
           </Box>
-          {/* <ReactJson src={chatLog} name="chatLog" /> */}
         </>
       )}
     </>

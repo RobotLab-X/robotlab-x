@@ -364,6 +364,7 @@ export default class Store {
     this.express.use(cors())
     this.express.use("/images", express.static(path.join(__dirname, "public/images")))
     this.express.use("/repo", express.static(path.join(__dirname, "public/repo")))
+    this.express.use("/service", express.static(path.join(__dirname, "public/service")))
     this.express.use(bodyParser.json())
     this.express.use(bodyParser.urlencoded({ extended: false }))
   }
