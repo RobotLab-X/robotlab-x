@@ -1,5 +1,5 @@
 import Service from "../framework/Service"
-export default class TestService extends Service {
+export default class MyRobotLabProxy extends Service {
   public uniqueId = "WOOT!"
 
   constructor(

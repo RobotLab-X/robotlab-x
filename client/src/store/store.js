@@ -17,6 +17,10 @@ const store = (set, get) => ({
 
   setId: (newId) => set({ id: newId }),
 
+  debug: true,
+
+  setDebug: (newDebug) => set({ debug: newDebug }),
+
   getMessageApiUrl: () => {
     return get().getWsUrl()
   },

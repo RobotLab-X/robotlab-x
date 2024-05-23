@@ -11,6 +11,13 @@ export default class MyRobotLabConnector extends Service {
 
   connecting = false
   connected = false
+  // FIXME - WRONG ! should all be handled through RobotLabXRuntime
+  repo = new Repo()
+
+  // FIXME remove the /api/messages - should be internal use only
+  config = {
+    wsUrl: "ws://localhost:8888/api/messages"
+  }
 
   constructor(
     public id: string,
@@ -20,6 +27,7 @@ export default class MyRobotLabConnector extends Service {
     public hostname: string
   ) {
     super(id, name, typeKey, version, hostname) // Call the base class constructor
+    this.repo.load()
   }
 
   // Method to establish a WebSocket connection
@@ -36,18 +44,20 @@ export default class MyRobotLabConnector extends Service {
     // Initialize WebSocket connection
     this.webSocket = new WebSocket(wsUrl)
 
+    const that = this
     // Event handler when connection is open
     this.webSocket.on("open", () => {
       this.connecting = false
       this.connected = true
       log.info("Connection successful!")
       const runtime: RobotLabXRuntime = RobotLabXRuntime.getInstance()
+      that.invoke("broadcastState")
       const addListenerOnServiceNamesMsg = {
         name: "runtime",
         method: "addListener",
         data: [
           '{"topicMethod":"getServiceNames","callbackName":"runtime@' +
-            runtime.getId() +
+            this.id +
             '","callbackMethod":"onServiceNames","class":"org.myrobotlab.framework.MRLListener"}'
         ],
         class: "org.myrobotlab.framework.Message"
@@ -58,7 +68,7 @@ export default class MyRobotLabConnector extends Service {
         method: "addListener",
         data: [
           '{"topicMethod":"registered","callbackName":"runtime@' +
-            runtime.getId() +
+            this.id +
             '","callbackMethod":"onRegistered","class":"org.myrobotlab.framework.MRLListener"}'
         ],
         class: "org.myrobotlab.framework.Message"
@@ -69,7 +79,7 @@ export default class MyRobotLabConnector extends Service {
         method: "addListener",
         data: [
           '{"topicMethod":"released","callbackName":"runtime@' +
-            runtime.getId() +
+            this.id +
             '","callbackMethod":"onReleased","class":"org.myrobotlab.framework.MRLListener"}'
         ],
         class: "org.myrobotlab.framework.Message"
@@ -80,7 +90,7 @@ export default class MyRobotLabConnector extends Service {
         method: "addListener",
         data: [
           '{"topicMethod":"getService","callbackName":"runtime@' +
-            runtime.getId() +
+            this.id +
             '","callbackMethod":"onService","class":"org.myrobotlab.framework.MRLListener"}'
         ],
         class: "org.myrobotlab.framework.Message"
@@ -142,9 +152,12 @@ export default class MyRobotLabConnector extends Service {
       } else if (msg.method == "addListener") {
         log.info("addListener message")
       } else if (msg.method == "onService") {
-        const repo = new Repo()
         let mrlService = msg.data[0]
-        let service = repo.getService(mrlService.id, mrlService.name, "MyRobotLabProxy", "0.0.1", "unknown")
+        // let service = this.repo.getService(mrlService.id, mrlService.name, "MyRobotLabProxy", "0.0.1", "unknown")
+        log.error(`mrlService ${JSON.stringify(mrlService)}`)
+        log.error(`mrlService.name ${JSON.stringify(mrlService.name)}`)
+        let service = this.repo.getService(mrlService.id, mrlService.name, "MyRobotLabProxy", "0.0.1", "unknown")
+        log.error("HERE !!!!!!!!!!!!!!!!!!!!!!!!")
         RobotLabXRuntime.getInstance().register(service)
       } else {
         log.error(`Unhandled message: ${message}`)
@@ -175,6 +188,31 @@ export default class MyRobotLabConnector extends Service {
       this.webSocket.send(JSON.stringify(message))
     } else {
       console.error("WebSocket is not connected.")
+    }
+  }
+
+  getRepo(): Repo {
+    return this.repo
+  }
+
+  getConfigName(): string {
+    return "default-test"
+  }
+
+  getConfigList(): string[] {
+    return ["default-test"]
+  }
+
+  toJSON() {
+    return {
+      id: this.id,
+      name: this.name,
+      typeKey: this.typeKey,
+      version: this.version,
+      hostname: this.hostname,
+      config: this.config,
+      connected: this.connected,
+      connecting: this.connecting
     }
   }
 }

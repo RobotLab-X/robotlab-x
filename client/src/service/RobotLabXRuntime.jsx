@@ -1,4 +1,6 @@
 import EastIcon from "@mui/icons-material/East"
+import ExpandLessIcon from "@mui/icons-material/ExpandLess"
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import InputOutlinedIcon from "@mui/icons-material/InputOutlined"
 import PlaylistAddIcon from "@mui/icons-material/PlaylistAddOutlined"
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined"
@@ -64,6 +66,12 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
 
   const [connectDialogOpen, setConnectDialogOpen] = useState(false)
   const [configurationDialogOpen, setConfigurationDialogOpen] = useState(false)
+
+  const [editMode, setEditMode] = useState(false)
+
+  const toggleEditMode = () => {
+    setEditMode(!editMode)
+  }
 
   const handleChange = (event, newValue) => {
     setActiveTab(newValue)
@@ -165,94 +173,88 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
 
   return (
     <>
-      <Box>
-        <Typography variant="subtitle1" component="span" color="textSecondary">
-          Config:
-        </Typography>{" "}
-        <Typography variant="body1" component="span">
-          {service?.configName}
+      <h3 style={{ display: "flex", alignItems: "center", cursor: "pointer" }} onClick={toggleEditMode}>
+        Configuration
+        {editMode ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+      </h3>
+      {editMode ? (
+        <div style={{ display: "flex", justifyContent: "flex-start" }}>
+          {/* Aligns content to the left */}
+          <Paper style={{ display: "inline-block", overflowX: "auto", margin: "2px" }}>
+            <Table size="small" aria-label="a dense table">
+              <TableBody>
+                <TableRow>
+                  <TableCell colSpan={"2"}>
+                    <Typography>Configuration Set</Typography>
+                  </TableCell>
+                  <TableCell colSpan={"2"}>
+                    <Typography>
+                      {service?.configName}
+                      <IconButton type="button" onClick={() => setConfigurationDialogOpen(true)}>
+                        <SettingsOutlinedIcon />
+                      </IconButton>
+                    </Typography>
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>
+                    <Typography>Hostname</Typography>
+                  </TableCell>
+                  <TableCell>{host?.hostname}</TableCell>
+                  <TableCell>
+                    <Typography>Platform</Typography>
+                  </TableCell>
+                  <TableCell>
+                    {host?.platform} {host?.architecture}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>
+                    <Typography>CPUs</Typography>
+                  </TableCell>
+                  <TableCell>{host?.numberOfCPUs}</TableCell>
+                  <TableCell>
+                    <Typography>Memory</Typography>
+                  </TableCell>
+                  <TableCell>{displayMemory} Gb</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>
+                    <Typography>Port</Typography>
+                  </TableCell>
+                  <TableCell>{service?.config?.port}</TableCell>
+                  <TableCell>
+                    <Typography>Free</Typography>
+                  </TableCell>
+                  <TableCell>{displayFreeMemory} Gb</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>
+                    <Typography>Network</Typography>
+                  </TableCell>
+                  <TableCell>
+                    {addresses.map((address, index) => (
+                      <React.Fragment key={index}>
+                        {address}
+                        <br />
+                      </React.Fragment>
+                    ))}
+                  </TableCell>
+                  <TableCell>
+                    <Typography>Load</Typography>
+                  </TableCell>
+                  <TableCell>
+                    {host?.loadAverage[0]} {host?.loadAverage[1]} {host?.loadAverage[2]}
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </Paper>
+        </div>
+      ) : (
+        <></>
+      )}
 
-          <IconButton type="button" onClick={() => setConfigurationDialogOpen(true)}>
-            <SettingsOutlinedIcon />
-          </IconButton>
-        </Typography>
-      </Box>
-      <div style={{ display: "flex", justifyContent: "flex-start" }}>
-        {/* Aligns content to the left */}
-        <Paper style={{ display: "inline-block", overflowX: "auto", margin: "2px" }}>
-          <Table size="small" aria-label="a dense table">
-            <TableBody>
-              <TableRow>
-                <TableCell>
-                  <Typography variant="subtitle1" color="textSecondary">
-                    Hostname
-                  </Typography>
-                </TableCell>
-                <TableCell>{host?.hostname}</TableCell>
-                <TableCell>
-                  <Typography variant="subtitle1" color="textSecondary">
-                    Platform
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  {host?.platform} {host?.architecture}
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>
-                  <Typography variant="subtitle1" color="textSecondary">
-                    CPUs
-                  </Typography>
-                </TableCell>
-                <TableCell>{host?.numberOfCPUs}</TableCell>
-                <TableCell>
-                  <Typography variant="subtitle1" color="textSecondary">
-                    Memory
-                  </Typography>
-                </TableCell>
-                <TableCell>{displayMemory} Gb</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>
-                  <Typography variant="subtitle1" color="textSecondary">
-                    Port
-                  </Typography>
-                </TableCell>
-                <TableCell>{service?.config?.port}</TableCell>
-                <TableCell>
-                  <Typography variant="subtitle1" color="textSecondary">
-                    Free
-                  </Typography>
-                </TableCell>
-                <TableCell>{displayFreeMemory} Gb</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>
-                  <Typography variant="subtitle1" color="textSecondary">
-                    Network
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  {addresses.map((address, index) => (
-                    <React.Fragment key={index}>
-                      {address}
-                      <br />
-                    </React.Fragment>
-                  ))}
-                </TableCell>
-                <TableCell>
-                  <Typography variant="subtitle1" color="textSecondary">
-                    Load
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  {host?.loadAverage[0]} {host?.loadAverage[1]} {host?.loadAverage[2]}
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </Paper>
-      </div>
       <Tabs value={activeTab} onChange={handleChange} aria-label="stats tabs">
         <Tab label={`Services ${Object.keys(registry).length}`} />
         <Tab label={`Processes ${processArray.length}`} />
@@ -429,7 +431,6 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
       <br />
       <Grid container spacing={2} alignItems="flex-start">
         <Grid item xs={12} sm={8} md={6} lg={4}>
-          Message Log:
           <div>
             {messageLog.map((msg, index) => {
               // Extract the prefix and the rest of the message

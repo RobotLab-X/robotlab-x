@@ -1,4 +1,6 @@
 ## TODO
+* Configuration : Put all configuration in a component .. react form builder ?
+* Borg - https://github.com/rhasspy/piper Small neural network
 * FIXME - install must move to Service.ts
 * each service "installs" .. or does a noop
 * open source 3d robotics simulator - gazebo, 
@@ -63,3 +65,6 @@ CoppeliaSim, formerly known as V-REP, is a versatile and powerful robot simulati
 ARGoS is a modular, multi-robot simulator that allows the simulation of large-scale robot swarms.
 
 OpenRAVE is a planning and simulation environment for robotics. It focuses on providing an environment for testing, developing, and deploying motion planning algorithms.
+
+
+docker run -d --network=host -v open-webui:/app/backend/data -e OLLAMA_BASE_URL=http://fast:11434 --name open-webui --restart always ghcr.io/open-webui/open-webui:main

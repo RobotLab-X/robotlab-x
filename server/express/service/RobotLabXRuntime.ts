@@ -415,8 +415,10 @@ export default class RobotLabXRuntime extends Service {
 
       log.info(`starting process ${targetDir}/${pkg.cmd} ${pkg.args}`)
       let service: Service = null
-      // spawn the process if none node process
-      if (pkg.platform === "node") {
+      // FIXME "all" types of platform have a corresponding node service ..
+      // the service may be used as an install wizard, connecting service, or some other wizard
+      // spawn the process if none node process .. this should be fixed ASAP
+      if (pkg.platform === "node" || pkg.platform === "myrobotlab") {
         this.installInfo(`node process ${serviceName} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
         service = this.repo.getService(this.getId(), serviceName, serviceType, version, this.getHostname())
         log.info(`service ${JSON.stringify(service)}`)

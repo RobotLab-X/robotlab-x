@@ -5,22 +5,27 @@ import Grid from "@mui/material/Grid"
 import TextField from "@mui/material/TextField"
 import Typography from "@mui/material/Typography"
 import React, { useState } from "react"
-import { useStore } from "../store/store"
+import { useProcessedMessage } from "../hooks/useProcessedMessage"
+// import { useStore } from "../store/store"
+import useServiceSubscription from "../store/useServiceSubscription"
 
 import useService from "framework/useService"
 
-export default function MyRobotLabConnector(props) {
-  const id = useStore((state) => state.id)
+export default function MyRobotLabConnector({ name, fullname, id }) {
   const [wsUrl, setWsUrl] = useState(`ws://localhost:8888/api/messages?id=${id}`)
-  const [connected, setConnected] = useState(false)
-  const [loading, setLoading] = useState(false)
   const [stats, setStats] = useState({ version: "", numberOfServices: 0 })
 
-  const sendTo = useStore((state) => state.sendTo)
-  const { getId, getName, send, getFullName } = useService(props.id, props.name)
+  const { send } = useService(id, name)
+
+  // const epochMsg = useMessage(fullname, "publishEpoch")
+
+  // creates subscriptions to topics and returns the broadcastState message reference
+  const serviceMsg = useServiceSubscription(fullname, [])
+
+  // processes the msg.data[0] and returns the data
+  const service = useProcessedMessage(serviceMsg)
 
   const handleConnect = async () => {
-    setLoading(true)
     send("connect", wsUrl)
   }
 
@@ -40,16 +45,16 @@ export default function MyRobotLabConnector(props) {
             variant="contained"
             color="primary"
             onClick={handleConnect}
-            disabled={connected || loading}
+            disabled={service?.connected || service?.connecting}
             sx={{ mb: 2 }}
           >
-            {loading ? <CircularProgress size={24} /> : "Connect"}
+            {service?.connecting ? <CircularProgress size={24} /> : "Connect"}
           </Button>
           <Box display="flex" alignItems="center" justifyContent="center" sx={{ mb: 2 }}>
-            <Box width={10} height={10} borderRadius="50%" bgcolor={connected ? "green" : "red"} mr={1} />
-            <Typography variant="body1">{connected ? "Connected" : "Disconnected"}</Typography>
+            <Box width={10} height={10} borderRadius="50%" bgcolor={service?.connected ? "green" : "red"} mr={1} />
+            <Typography variant="body1">{service?.connected ? "Connected" : "Disconnected"}</Typography>
           </Box>
-          {connected && (
+          {service?.connected && (
             <Box>
               <Typography variant="body2">Version: {stats.version}</Typography>
               <Typography variant="body2">Number of Services: {stats.numberOfServices}</Typography>
