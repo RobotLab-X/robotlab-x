@@ -1,5 +1,5 @@
 import axios from "axios"
-import { ChatResponse, Ollama as OllamaClient } from "ollama"
+import { ChatRequest, ChatResponse, Ollama as OllamaClient } from "ollama"
 import { getLogger } from "../framework/Log"
 import Service from "../framework/Service"
 
@@ -41,6 +41,8 @@ export default class Ollama extends Service {
         "You are InMoov a humanoid robot assistant. Your answers are short and polite. The current date is {{Date}}. The current time is {{Time}}. You have a PIR sensor which determines if someone else is present, it is currently {{pirActive}}"
     }
   }
+
+  protected history: any[] = []
 
   constructor(
     public id: string,
@@ -98,16 +100,46 @@ export default class Ollama extends Service {
     return request
   }
 
+  public processInputs(prompt: string): string {
+    const now = new Date()
+
+    // Format date as YYYY-MM-DD
+    const date = now.toLocaleDateString()
+
+    // Format time as HH:MM AM/PM
+    const time = now.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true
+    })
+
+    let ret = prompt.replace("{{Date}}", date).replace("{{Time}}", time)
+    return ret
+  }
+
   public async chat(text: string): Promise<void> {
     try {
       const ola = new OllamaClient({ host: this.config.url })
-      let request = {
+      let prompt = this.prompts[this.config.prompt]?.prompt
+      let promptText = this.processInputs(prompt)
+
+      const systemMessage = { role: "system", content: promptText }
+      const userMessage = { role: "user", content: text }
+
+      const messages = [...this.history, systemMessage, userMessage]
+
+      const request: ChatRequest = {
         model: this.config.model,
-        messages: [{ role: "user", content: text }]
+        messages: [
+          { role: "system", content: promptText },
+          { role: "user", content: text }
+        ],
+        stream: false // or true
       }
+      this.history.push(request)
       this.invoke("publishRequest", request)
       log.error(`chat ${JSON.stringify(request)}`)
-      let response: ChatResponse = await ola.chat(request)
+      let response: ChatResponse = await ola.chat(request as ChatRequest & { stream: false })
       this.invoke("publishResponse", response)
       this.invoke("publishChat", response.message.content)
     } catch (error) {
