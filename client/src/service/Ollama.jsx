@@ -40,47 +40,9 @@ export default function Ollama({ name, fullname, id }) {
 
   const chatMsg = useMessage(fullname, "publishChat")
 
-  // TODO - pull from public/service/${name}/prompts
-  const cards = [
-    {
-      id: 1,
-      name: "PirateBot",
-      description: "A pirate robot",
-      prompt:
-        "You are are a swarthy pirate robot.  Your answers are short but full of sea jargon. The current date is {{Date}}. The current time is {{Time}}"
-    },
-    {
-      id: 2,
-      name: "SarcasticBot",
-      description: "A sarcastic robot",
-      prompt:
-        "You are are a very sarcastic bot.  Your answers are short and typically end with sarcastic quips. The current date is {{Date}}. The current time is {{Time}}"
-    },
-    {
-      id: 3,
-      name: "ButlerBot",
-      description: "A butler robot",
-      prompt:
-        "You are are a butler robot.  Your answers are short and typically end in sir. The current date is {{Date}}. The current time is {{Time}}"
-    },
-    {
-      id: 4,
-      name: "InMoov",
-      description: "InMoov open source humanoid robot",
-      prompt:
-        "You are InMoov a humanoid robot assistant. Your answers are short and polite. The current date is {{Date}}. The current time is {{Time}}. You have a PIR sensor which determines if someone else is present, it is currently {{pirActive}}"
-    }
-  ]
-
-  const [currentCard, setCurrentCard] = useState(0)
-
-  const handleNext = () => {
-    setCurrentCard((prevCard) => (prevCard + 1) % cards.length)
-  }
-
-  const handlePrev = () => {
-    setCurrentCard((prevCard) => (prevCard - 1 + cards.length) % cards.length)
-  }
+  const [prompts, setPrompts] = useState({})
+  const [promptKeys, setPromptKeys] = useState([])
+  const [currentPromptIndex, setCurrentPromptIndex] = useState(0)
 
   const serviceMsg = useServiceSubscription(fullname, ["publishChat"])
   const service = useProcessedMessage(serviceMsg)
@@ -91,22 +53,38 @@ export default function Ollama({ name, fullname, id }) {
     if (service /* && config === null */) {
       // DEEP COPY !
       // setConfig(JSON.parse(JSON.stringify(service.config)))
-
+      setPrompts(service.prompts)
       // NOT A COPY !
       setConfig(service.config)
     }
   }, [service])
 
   useEffect(() => {
+    if (service?.prompts) {
+      setPrompts(service.prompts)
+      setPromptKeys(Object.keys(service.prompts))
+    }
+  }, [service])
+
+  const handleNext = () => {
+    setCurrentPromptIndex((prevIndex) => (prevIndex + 1) % promptKeys.length)
+  }
+
+  const handlePrev = () => {
+    setCurrentPromptIndex((prevIndex) => (prevIndex - 1 + promptKeys.length) % promptKeys.length)
+  }
+
+  const currentPromptKey = promptKeys[currentPromptIndex]
+  const currentPrompt = prompts[currentPromptKey]
+
+  useEffect(() => {
     if (config?.prompt) {
-      const cardIndex = cards.findIndex((card) => card.name === config.prompt)
+      const cardIndex = promptKeys.indexOf(config.prompt)
       if (cardIndex !== -1) {
-        setCurrentCard(cardIndex)
+        setCurrentPromptIndex(cardIndex)
       }
     }
-
-    // when config.prompt changes, update the currentCard
-  }, [config?.prompt])
+  }, [config?.prompt, promptKeys])
 
   useEffect(() => {
     if (chat) {
@@ -134,7 +112,7 @@ export default function Ollama({ name, fullname, id }) {
   const handleSaveConfig = () => {
     // const updatedService = { ...service, config: { ...service.config, url, maxHistory } }
     //     setService(updatedService)
-    config.prompt = cards[currentCard].name
+    config.prompt = currentPromptKey
     sendTo(fullname, "applyConfig", config)
     sendTo(fullname, "saveConfig")
     sendTo(fullname, "broadcastState")
@@ -229,30 +207,30 @@ export default function Ollama({ name, fullname, id }) {
               </Box>
 
               <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", mt: 5 }}>
-                <IconButton onClick={handlePrev} disabled={cards.length <= 1}>
+                <IconButton onClick={handlePrev} disabled={promptKeys.length <= 1}>
                   <ArrowBack />
                 </IconButton>
                 <Card sx={{ minWidth: 275, mx: 2 }}>
                   <CardContent>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                       <img
-                        src={`${getBaseUrl()}/service/${name}/prompts/${cards[currentCard].name}.png`}
+                        src={`${getBaseUrl()}/service/${name}/prompts/${currentPromptKey}.png`}
                         width="64"
                         alt="robot pict"
                       />
                       <Typography variant="h2" component="div">
-                        {cards[currentCard].name}
+                        {currentPromptKey}
                       </Typography>
                     </Box>
                     <Typography variant="h5" component="div">
-                      {cards[currentCard].description}
+                      {currentPrompt.description}
                     </Typography>
                     <Typography variant="subtitle1" component="span" color="textSecondary">
-                      {cards[currentCard].prompt}
+                      {currentPrompt.prompt}
                     </Typography>
                   </CardContent>
                 </Card>
-                <IconButton onClick={handleNext} disabled={cards.length <= 1}>
+                <IconButton onClick={handleNext} disabled={promptKeys.length <= 1}>
                   <ArrowForward />
                 </IconButton>
               </Box>
@@ -271,16 +249,12 @@ export default function Ollama({ name, fullname, id }) {
                 <TableBody>
                   {chatHistory.map((chat, index) => (
                     <TableRow key={index}>
-                      {/*}
-                      <TableCell align={chat.user === "You" ? "right" : "left"}>{chat.user}</TableCell>
-                      */}
                       <TableCell align={chat.user === "You" ? "right" : "left"}>{chat.message}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             </TableContainer>
-            {/* <ReactJson src={chatLog} name="chatLog" /> */}
           </Box>
           <Box sx={{ width: { xs: "100%", sm: "80%", md: "30%" } }}>
             <TextField
