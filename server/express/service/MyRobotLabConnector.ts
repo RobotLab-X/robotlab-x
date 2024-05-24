@@ -1,5 +1,6 @@
 import Message from "express/models/Message"
 import WebSocket from "ws" // Import WebSocket module
+import Store from "../Store"
 import { getLogger } from "../framework/Log"
 import { Repo } from "../framework/Repo"
 import Service from "../framework/Service"
@@ -41,6 +42,7 @@ export default class MyRobotLabConnector extends Service {
   // Method to establish a WebSocket connection
   connect(wsUrl: string): void {
     log.info(`Attempting to connect to ${wsUrl}`)
+    this.config.wsUrl = wsUrl
 
     if (this.connecting || this.connected) {
       log.error("Already connected or connecting")
@@ -60,10 +62,18 @@ export default class MyRobotLabConnector extends Service {
     const that = this
     // Event handler when connection is open
     this.webSocket.on("open", () => {
+      log.info("Connection successful!")
       this.connecting = false
       this.connected = true
-      log.info("Connection successful!")
       const runtime: RobotLabXRuntime = RobotLabXRuntime.getInstance()
+
+      // FIXME - can possibly have a "temporary" holding area for connections
+      // until a remoteId is established
+      // CANNOT BE ADDED UNTIL WE HAVE A REMOTE ID
+      // Store.getInstance().addClientConnection(remoteId, wsUrl, this.webSocket)
+      // runtime.addConnection()
+      // runtime.addRoute(this)
+
       that.invoke("broadcastState")
       const addListenerOnServiceNamesMsg = {
         name: "runtime",
@@ -168,6 +178,24 @@ export default class MyRobotLabConnector extends Service {
         let mrlService = msg.data[0]
         log.error(`mrlService ${JSON.stringify(mrlService)}`)
         log.error(`mrlService.name ${JSON.stringify(mrlService.name)}`)
+
+        // Resolved remoteId - can add connection now
+        // Other remote->remote services might be registered from the
+        // remote mrl instance "chain", so routeTable would need to adjusted
+        // for all "remote->remote" services they would all use this connection
+        // How to identify "local" remote runtime?
+        // Should be priority is ask local runtime for process id
+
+        // This filter has a bug, for remote->remote services, but should be worky
+        // for local->remote services
+
+        if (mrlService.name == "runtime") {
+          // add/register our connection
+          // Store.getInstance().addClientConnection(this.fullname, mrlService.id, this.config.wsUrl, this.webSocket)
+          // FIXME add gateway and move to Runtime
+          Store.getInstance().addClientConnection(mrlService.id, this.config.wsUrl, this.webSocket)
+        }
+
         let service: MyRobotLabProxy = this.repo.getService(
           mrlService.id,
           mrlService.name,

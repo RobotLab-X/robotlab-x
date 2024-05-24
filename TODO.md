@@ -1,4 +1,6 @@
 ## TODO
+* Make RobotLabXRuntime toJSON selectively serializable - make easy sync connectionArray and connections (non-serailizable)
+* Add gateway as a parameter to adding a connection
 * Configuration : Put all configuration in a component .. react form builder ?
 * Borg - https://github.com/rhasspy/piper Small neural network
 * FIXME - install must move to Service.ts

@@ -21,6 +21,7 @@ export default class Service {
   typeKey: string | null = null
   version: string | null = null
   hostname: string | null = null
+  fullname: string | null = null
 
   // notifyList = new Map<string, SubscriptionListener[]>()
   notifyList = {} as any
@@ -35,6 +36,7 @@ export default class Service {
     this.typeKey = typeKey
     this.version = version
     this.hostname = hostname
+    this.fullname = `${this.name}@${this.id}`
   }
 
   addListener(method: string, remoteName: string, remoteMethod: string) {

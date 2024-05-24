@@ -134,10 +134,13 @@ export default class Store {
 
   /**
    * For outbound client connections
+   * <--- I am connecting to someone (outbound connection)
    * @param clientId
    * @param ws
+   * FIXME - gatewayFullname: String,
    */
   addClientConnection(clientId: string, url: string, ws: WebSocket) {
+    log.error(`<--- adding outbound client connection ${clientId} ${url}`)
     this.clients.set(clientId, ws)
     this.runtime.registerConnection({
       clientId: clientId,
@@ -176,6 +179,7 @@ export default class Store {
       this.clients.set(clientId, ws)
 
       // FIXME - MAKE CONNECTION CLASS
+      // ---> someone has connected to me (inbound connection)
       this.runtime.registerConnection({
         clientId: clientId,
         ts: new Date().getTime(),
