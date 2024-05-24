@@ -713,12 +713,10 @@ export default class RobotLabXRuntime extends Service {
       clientId: clientId,
       ts: new Date().getTime(),
       uuid: uuidv4(),
-      ip: "localhost",
-      port: 0,
       url: url,
       type: "websocket",
       encoding: "json",
-      direction: "outbound"
+      direction: inboundOutbound
     }
     this.connections[`${clientId}`] = connection
     this.clients.set(clientId, ws)
