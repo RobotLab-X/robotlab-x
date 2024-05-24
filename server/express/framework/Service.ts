@@ -157,9 +157,9 @@ export default class Service {
       const json = JSON.stringify(msg)
       log.info(`<-- ${msgFullName}.${msg.method} <-- ${msg.sender}.${msg.method} ${JSON.stringify(msg.data)}`)
       // FIXME bork'd - need state information regarding connectivity of process/service, and its an "array" of connections
-      log.info(`clients / connections ${[...Store.getInstance().getClients().keys()]} `)
+      log.info(`clients / connections ${[...RobotLabXRuntime.getInstance().getClients().keys()]} `)
 
-      let conn: any = Store.getInstance().getClient(msgId)
+      let conn: any = RobotLabXRuntime.getInstance().getClient(msgId)
       if (conn) {
         // log.info(`sending to id ${msgId}`)
         conn.send(json)

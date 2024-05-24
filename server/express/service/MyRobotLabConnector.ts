@@ -1,6 +1,5 @@
 import Message from "express/models/Message"
 import WebSocket from "ws" // Import WebSocket module
-import Store from "../Store"
 import { getLogger } from "../framework/Log"
 import { Repo } from "../framework/Repo"
 import Service from "../framework/Service"
@@ -193,7 +192,13 @@ export default class MyRobotLabConnector extends Service {
           // add/register our connection
           // Store.getInstance().addClientConnection(this.fullname, mrlService.id, this.config.wsUrl, this.webSocket)
           // FIXME add gateway and move to Runtime
-          Store.getInstance().addClientConnection(mrlService.id, this.config.wsUrl, this.webSocket)
+          // Store.getInstance().addClientConnection(mrlService.id, this.config.wsUrl, this.webSocket)
+          RobotLabXRuntime.getInstance().registerConnection(
+            mrlService.id,
+            this.config.wsUrl,
+            "outbound",
+            this.webSocket
+          )
         }
 
         let service: MyRobotLabProxy = this.repo.getService(

@@ -7,6 +7,7 @@ import http from "http"
 import https from "https"
 import os from "os"
 import path from "path"
+import { v4 as uuidv4 } from "uuid"
 import { WebSocket } from "ws"
 import YAML from "yaml"
 import Main from "../../electron/ElectronStarter"
@@ -36,6 +37,9 @@ interface Error {
 // import Service from "@framework/Service"
 export default class RobotLabXRuntime extends Service {
   private static instance: RobotLabXRuntime
+
+  // NON SERIALIZABLE MAP OF CONNECTIONS
+  private clients: Map<string, WebSocket> = new Map()
 
   protected dataDir = "./data"
   protected configDir = "./config"
@@ -222,7 +226,8 @@ export default class RobotLabXRuntime extends Service {
               // Registering self to remote end ====================================
 
               // does url need to be unique ? e.g. connect(ws://localhost:3000/api/messages?id=happy-arduino&session_id=1234)
-              Store.getInstance().addClientConnection(remoteId, wsUrl, ws)
+              that.registerConnection(remoteId, wsUrl, "outbound", ws)
+              // that.addClientConnection(remoteId, wsUrl, ws)
               that.invoke("broadcastState")
             }
 
@@ -298,7 +303,7 @@ export default class RobotLabXRuntime extends Service {
   }
 
   getClientKeys() {
-    return [...Store.getInstance().getClients().keys()]
+    return [...this.getClients().keys()]
   }
 
   static getInstance(): RobotLabXRuntime {
@@ -521,11 +526,6 @@ export default class RobotLabXRuntime extends Service {
     return Store.getInstance().getService(fullName)
   }
 
-  registerConnection(connection: any) {
-    log.info(`register connection: ${JSON.stringify(connection)}`)
-    this.connections[`${connection.clientId}`] = connection
-  }
-
   registerHost(host: HostData) {
     this.hosts[`${host.hostname}`] = host
   }
@@ -675,7 +675,7 @@ export default class RobotLabXRuntime extends Service {
     }
     // FIXME make class schema for RouteEntry
     const routeEntry: any = this.routeTable[id]
-    let conn: any = Store.getInstance().getClient(routeEntry.clientId)
+    let conn: any = this.getClient(routeEntry.clientId)
     return conn
   }
 
@@ -690,5 +690,76 @@ export default class RobotLabXRuntime extends Service {
     } else {
       Main.mainWindow.webContents.closeDevTools()
     }
+  }
+
+  // registerConnection(connection: any) {
+  //   log.info(`register connection: ${JSON.stringify(connection)}`)
+  //   this.connections[`${connection.clientId}`] = connection
+  // }
+
+  /**
+   * For outbound client connections
+   * <--- I am connecting to someone (outbound connection)
+   * @param clientId
+   * @param ws
+   * FIXME - gatewayFullname: String,
+   */
+  registerConnection(clientId: string, url: string, inboundOutbound: string, ws: WebSocket) {
+    log.error(`registeristering connection ${clientId} ${url} ${inboundOutbound}`) // FIXME INBOUND OUTBOUND
+    this.clients.set(clientId, ws)
+    // ws.getRemoteAddress() etc.
+    // Note - ws is not added here because its not serializable
+    const connection = {
+      clientId: clientId,
+      ts: new Date().getTime(),
+      uuid: uuidv4(),
+      ip: "localhost",
+      port: 0,
+      url: url,
+      type: "websocket",
+      encoding: "json",
+      direction: "outbound"
+    }
+    this.connections[`${clientId}`] = connection
+    this.clients.set(clientId, ws)
+  }
+
+  removeConnection(clientId: string) {
+    log.error(`removing connection ${clientId}`)
+    // TODO - lots of possiblities with this
+    // "disabling" remote services and wait for reconnection
+    // removing services, etc.
+    if (!this.clients.has(clientId)) {
+      log.error(`client ${clientId} not found`)
+      return
+    }
+
+    this.clients.delete(clientId)
+    delete this.connections[`${clientId}`]
+  }
+
+  public getClient(clientId: string): WebSocket | undefined {
+    return this.clients.get(clientId)
+  }
+
+  public getClients(): Map<string, WebSocket> {
+    return this.clients
+  }
+
+  // FIXME - there is probably no Use Case for this - remove
+  // Deprecated if not used
+  public broadcastJsonMessage(message: string): void {
+    // Iterate over the set of clients and send the message to each
+    this.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(message)
+      }
+    })
+  }
+
+  // Deprecated if not used
+  public broadcast(message: Message): void {
+    let json = JSON.stringify(message)
+    this.broadcastJsonMessage(json)
   }
 }

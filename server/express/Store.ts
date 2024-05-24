@@ -41,8 +41,6 @@ export default class Store {
 
   private wss: WebSocketServer
 
-  private clients: Map<string, WebSocket> = new Map()
-
   private runtime: RobotLabXRuntime = null
 
   public static getInstance(): Store {
@@ -133,29 +131,6 @@ export default class Store {
   }
 
   /**
-   * For outbound client connections
-   * <--- I am connecting to someone (outbound connection)
-   * @param clientId
-   * @param ws
-   * FIXME - gatewayFullname: String,
-   */
-  addClientConnection(clientId: string, url: string, ws: WebSocket) {
-    log.error(`<--- adding outbound client connection ${clientId} ${url}`)
-    this.clients.set(clientId, ws)
-    this.runtime.registerConnection({
-      clientId: clientId,
-      ts: new Date().getTime(),
-      uuid: uuidv4(),
-      ip: "localhost",
-      port: 0,
-      url: url,
-      type: "websocket",
-      encoding: "json",
-      direction: "outbound"
-    })
-  }
-
-  /**
    * Accept "inbound" WebSocket connections
    */
   private initWebSocketServer() {
@@ -176,86 +151,35 @@ export default class Store {
       // FIXME - check for collisions
       // FIXME - Web UIs should have a single client id and an array of ws connections
       // unless the client id is associated with a "different" (non default) session
-      this.clients.set(clientId, ws)
+      // this.clients.set(clientId, ws)
 
       // FIXME - MAKE CONNECTION CLASS
       // ---> someone has connected to me (inbound connection)
-      this.runtime.registerConnection({
-        clientId: clientId,
-        ts: new Date().getTime(),
-        uuid: uuid,
-        ip: request.socket.remoteAddress,
-        port: request.socket.remotePort,
-        url: url,
-        type: "websocket",
-        encoding: "json",
-        direction: "inbound"
-      })
+      this.runtime.registerConnection(clientId, url, "inbound", ws)
+      // this.runtime.registerConnection({
+      //   clientId: clientId,
+      //   ts: new Date().getTime(),
+      //   uuid: uuid,
+      //   ip: request.socket.remoteAddress,
+      //   port: request.socket.remotePort,
+      //   url: url,
+      //   type: "websocket",
+      //   encoding: "json",
+      //   direction: "inbound",
+      //   ws: ws
+      // })
 
       // onmessage - server
       ws.on("message", this.handleWsMessage(ws, clientId))
 
       ws.on("close", () => {
-        // TODO - disconnecting a client should be associated
-        // with a disconnection policy
-        // webclients for example should be removed completely
-        // while server to server should be marked as disconnected
-        // and disable services
-        log.info(`connection closed by client ${clientId}`)
-        if (this.clients.has(clientId)) {
-          // iterate through services in the registry looking for this id
-          // and remove these services
-          // Object.entries(this.getRegistry()).forEach(([key:string, value: Service]) => {
-          //   if (service.id === clientId) {
-          //     // remove service
-          //     log.info(`removing service ${service.id}`)
-          //     this.releaseService(`${service.name}@${service.id}`)
-          //   }
-          // })
-
-          Object.entries(this.registry).forEach(([key, service]) => {
-            console.log(key, service)
-            if (service.id === clientId) {
-              // remove service
-              log.info(`removing service ${service.id}`)
-              this.releaseService(`${service.name}@${service.id}`)
-            }
-          })
-
-          this.clients.delete(clientId)
-        } else {
-          log.error(`====================== client ${clientId} not found ======================`)
-          log.error(`====================== routing problem ======================`)
-        }
+        this.runtime.removeConnection(clientId)
       })
 
       ws.on("error", (error) => {
         console.error("WebSocket error:", error)
       })
     })
-  }
-
-  public getClient(clientId: string): WebSocket | undefined {
-    return this.clients.get(clientId)
-  }
-
-  public getClients(): Map<string, WebSocket> {
-    return this.clients
-  }
-
-  // FIXME - there is probably no Use Case for this - remove
-  public broadcastJsonMessage(message: string): void {
-    // Iterate over the set of clients and send the message to each
-    this.clients.forEach((client) => {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(message)
-      }
-    })
-  }
-
-  public broadcast(message: Message): void {
-    let json = JSON.stringify(message)
-    this.broadcastJsonMessage(json)
   }
 
   /**
@@ -300,7 +224,7 @@ export default class Store {
       // check if msg destination is remote or local
       if (msgId !== this.runtime.getId()) {
         // "relay" send to remote
-        this.getClient(msgId).send(JSON.stringify(msg))
+        RobotLabXRuntime.getInstance().getClient(msgId).send(JSON.stringify(msg))
         return null
       }
 

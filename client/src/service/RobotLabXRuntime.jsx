@@ -420,7 +420,12 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
           </Grid>
         </Grid>
       </TabPanel>
-      <ConnectDialog id={id} open={connectDialogOpen} onClose={() => setConnectDialogOpen(false)} />
+      <ConnectDialog
+        id={id}
+        loopbackPort={service?.config.port}
+        open={connectDialogOpen}
+        onClose={() => setConnectDialogOpen(false)}
+      />
       {repo && <ServiceDialog packages={repo} fullname={fullname} open={open} setOpen={setOpen} />}
       <ConfigurationDialog
         fullname={fullname}
