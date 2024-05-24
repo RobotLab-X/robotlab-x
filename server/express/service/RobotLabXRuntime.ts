@@ -574,6 +574,10 @@ export default class RobotLabXRuntime extends Service {
     Store.getInstance().register(`${service.name}@${service.id}`, service)
     this.invoke("registered", service)
 
+    // FIXME you got things registering to getRegistry
+    // but they should be registering to registered
+    this.invoke("getRegistry")
+
     return service
   }
 

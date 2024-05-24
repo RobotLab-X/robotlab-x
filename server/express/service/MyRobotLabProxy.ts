@@ -1,6 +1,7 @@
 import Service from "../framework/Service"
 export default class MyRobotLabProxy extends Service {
-  public uniqueId = "WOOT!"
+  // MRL Service definition
+  public service: any = null
 
   constructor(
     public id: string,
@@ -9,11 +10,6 @@ export default class MyRobotLabProxy extends Service {
     public version: string,
     public hostname: string
   ) {
-    super(id, name, typeKey, version, hostname) // Call the base class constructor if needed
-  }
-
-  onUptime(msg: string): string {
-    console.log(`WOOOHOOO !!! ${this.name}.onUptime called ${msg}`)
-    return msg
+    super(id, name, typeKey, version, hostname)
   }
 }

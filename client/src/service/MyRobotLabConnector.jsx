@@ -4,29 +4,25 @@ import CircularProgress from "@mui/material/CircularProgress"
 import Grid from "@mui/material/Grid"
 import TextField from "@mui/material/TextField"
 import Typography from "@mui/material/Typography"
+import useService from "framework/useService"
 import React, { useState } from "react"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
-// import { useStore } from "../store/store"
 import useServiceSubscription from "../store/useServiceSubscription"
-
-import useService from "framework/useService"
 
 export default function MyRobotLabConnector({ name, fullname, id }) {
   const [wsUrl, setWsUrl] = useState(`ws://localhost:8888/api/messages?id=${id}`)
   const [stats, setStats] = useState({ version: "", numberOfServices: 0 })
 
   const { send } = useService(id, name)
-
-  // const epochMsg = useMessage(fullname, "publishEpoch")
-
-  // creates subscriptions to topics and returns the broadcastState message reference
   const serviceMsg = useServiceSubscription(fullname, [])
-
-  // processes the msg.data[0] and returns the data
   const service = useProcessedMessage(serviceMsg)
 
   const handleConnect = async () => {
     send("connect", wsUrl)
+  }
+
+  const handleDisconnect = async () => {
+    send("disconnect")
   }
 
   return (
@@ -40,19 +36,31 @@ export default function MyRobotLabConnector({ name, fullname, id }) {
             onChange={(e) => setWsUrl(e.target.value)}
             variant="outlined"
             margin="normal"
+            InputProps={{
+              readOnly: service?.connected
+            }}
+            disabled={service?.connected}
           />
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleConnect}
-            disabled={service?.connected || service?.connecting}
-            sx={{ mb: 2 }}
-          >
-            {service?.connecting ? <CircularProgress size={24} /> : "Connect"}
-          </Button>
-          <Box display="flex" alignItems="center" justifyContent="center" sx={{ mb: 2 }}>
-            <Box width={10} height={10} borderRadius="50%" bgcolor={service?.connected ? "green" : "red"} mr={1} />
-            <Typography variant="body1">{service?.connected ? "Connected" : "Disconnected"}</Typography>
+          <Box display="flex" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+            {!service?.connected ? (
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleConnect}
+                disabled={service?.connecting}
+                sx={{ mb: 2 }}
+              >
+                {service?.connecting ? <CircularProgress size={24} /> : "Connect"}
+              </Button>
+            ) : (
+              <Button variant="contained" color="secondary" onClick={handleDisconnect} sx={{ mb: 2 }}>
+                Disconnect
+              </Button>
+            )}
+            <Box display="flex" alignItems="center">
+              <Box width={10} height={10} borderRadius="50%" bgcolor={service?.connected ? "green" : "red"} mr={1} />
+              <Typography variant="body1">{service?.connected ? "Connected" : "Disconnected"}</Typography>
+            </Box>
           </Box>
           {service?.connected && (
             <Box>

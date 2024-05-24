@@ -3,11 +3,12 @@ import WebSocket from "ws" // Import WebSocket module
 import { getLogger } from "../framework/Log"
 import { Repo } from "../framework/Repo"
 import Service from "../framework/Service"
+import MyRobotLabProxy from "../service/MyRobotLabProxy"
 import RobotLabXRuntime from "../service/RobotLabXRuntime"
 
 const log = getLogger("MyRobotLabConnector")
 export default class MyRobotLabConnector extends Service {
-  private webSocket?: WebSocket // Optional WebSocket object
+  private webSocket?: WebSocket = null // Optional WebSocket object
 
   connecting = false
   connected = false
@@ -30,6 +31,13 @@ export default class MyRobotLabConnector extends Service {
     this.repo.load()
   }
 
+  disconnect() {
+    if (this.webSocket) {
+      this.webSocket.close()
+    }
+    this.webSocket = null
+  }
+
   // Method to establish a WebSocket connection
   connect(wsUrl: string): void {
     log.info(`Attempting to connect to ${wsUrl}`)
@@ -40,6 +48,11 @@ export default class MyRobotLabConnector extends Service {
     }
     this.connected = false
     this.connecting = true
+
+    if (this.webSocket) {
+      log.info("Already connected")
+      return
+    }
 
     // Initialize WebSocket connection
     this.webSocket = new WebSocket(wsUrl)
@@ -153,12 +166,19 @@ export default class MyRobotLabConnector extends Service {
         log.info("addListener message")
       } else if (msg.method == "onService") {
         let mrlService = msg.data[0]
-        // let service = this.repo.getService(mrlService.id, mrlService.name, "MyRobotLabProxy", "0.0.1", "unknown")
         log.error(`mrlService ${JSON.stringify(mrlService)}`)
         log.error(`mrlService.name ${JSON.stringify(mrlService.name)}`)
-        let service = this.repo.getService(mrlService.id, mrlService.name, "MyRobotLabProxy", "0.0.1", "unknown")
+        let service: MyRobotLabProxy = this.repo.getService(
+          mrlService.id,
+          mrlService.name,
+          "MyRobotLabProxy",
+          "0.0.1",
+          "unknown"
+        )
+        service.service = mrlService
         log.error("HERE !!!!!!!!!!!!!!!!!!!!!!!!")
         RobotLabXRuntime.getInstance().register(service)
+        // RobotLabXRuntime.getInstance().invoke("getRegistry")
       } else {
         log.error(`Unhandled message: ${message}`)
       }

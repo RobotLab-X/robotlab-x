@@ -5,7 +5,7 @@ import { useStore } from "../store/store"
 import useServiceSubscription from "../store/useServiceSubscription"
 
 // FIXME remove fullname with context provider
-export default function MyRobotLabProxy({ fullname }) {
+export default function MyRobotLabProxy({ name, fullname, id }) {
   const { useMessage, sendTo } = useStore()
 
   // makes reference to the message object in store
