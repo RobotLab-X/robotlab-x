@@ -22,7 +22,7 @@ const log = getLogger("RobotLabXRuntime")
 export default class Main {
   private static app: Electron.App
   private static BrowserWindow: typeof Electron.BrowserWindow
-  private static mainWindow: Electron.BrowserWindow
+  public static mainWindow: Electron.BrowserWindow
 
   // if this variable is set to true in the main constructor, the app will quit when closing it in macOS
   private static quitOnCloseOSX: boolean

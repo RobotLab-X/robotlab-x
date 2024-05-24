@@ -9,6 +9,7 @@ import os from "os"
 import path from "path"
 import { WebSocket } from "ws"
 import YAML from "yaml"
+import Main from "../../electron/ElectronStarter"
 import Store from "../../express/Store"
 import { CodecUtil } from "../framework/CodecUtil"
 import { getLogger } from "../framework/Log"
@@ -40,6 +41,8 @@ export default class RobotLabXRuntime extends Service {
   protected configDir = "./config"
   protected configName: string
   protected repo = new Repo()
+
+  protected debug = true
 
   // must be pid or userdefined {pid/id}
   protected processes: { [id: string]: ProcessData } = {}
@@ -570,6 +573,13 @@ export default class RobotLabXRuntime extends Service {
     // it can be directly registered
     // if its a remote service - we need to get the type from the remote
     // and construct a proxy
+    const key = `${service.name}@${service.id}`
+    if (Store.getInstance().getService(key) != null && this.id === service.id) {
+      // if another services registers "us" - it will destroy our service
+      // with a unecessary proxy - otherwise a new register or an updated proxy is fine
+      log.info(`service ${service.name}@${service.id} already exists`)
+      return service
+    }
 
     Store.getInstance().register(`${service.name}@${service.id}`, service)
     this.invoke("registered", service)
@@ -663,5 +673,18 @@ export default class RobotLabXRuntime extends Service {
     const routeEntry: any = this.routeTable[id]
     let conn: any = Store.getInstance().getClient(routeEntry.clientId)
     return conn
+  }
+
+  setDebug(debug: boolean) {
+    log.info(`setting debug: ${debug}`)
+    this.debug = debug
+    // TODO change winston's log level
+    /// log.setLevel(debug ? "debug" : "info")
+
+    if (debug) {
+      Main.mainWindow.webContents.openDevTools()
+    } else {
+      Main.mainWindow.webContents.closeDevTools()
+    }
   }
 }
