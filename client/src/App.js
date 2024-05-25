@@ -65,6 +65,12 @@ function App() {
   useEffect(() => {
     // send initial listeners when connected and id set
     if (connected && id) {
+      // Absolute first thing to do is to register this process
+      // IF this client doesn't register on the connection (really it happens in the ws url ?id=ui-rlx1) then
+      // the listening server will auto-generate a process id and register it similar to ROS
+      let prossessData = new ProcessData(id, "browser", "browser", browser.name.toLowerCase(), browser.version)
+      sendTo("runtime", "registerProcess", prossessData)
+
       // TODO make these "service" calls ??? or at least one shot calls
       // that future callbacks are not needed
       // setup server runtime subscriptions, register this runtime, get repo
@@ -73,8 +79,6 @@ function App() {
       subscribeTo("runtime", "registered")
       let service = new Service(id, name, typeKey, version, browser.name.toLowerCase())
       sendTo("runtime", "register", service)
-      let prossessData = new ProcessData(id, "browser", "browser", browser.name.toLowerCase(), browser.version)
-      sendTo("runtime", "registerProcess", prossessData)
       // FIXME - registerHost should be here?
       sendTo("runtime", "getRegistry")
       sendTo("runtime", "getRepo")

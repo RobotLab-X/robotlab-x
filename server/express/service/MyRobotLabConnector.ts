@@ -194,6 +194,7 @@ export default class MyRobotLabConnector extends Service {
           // FIXME add gateway and move to Runtime
           // Store.getInstance().addClientConnection(mrlService.id, this.config.wsUrl, this.webSocket)
           RobotLabXRuntime.getInstance().registerConnection(
+            this.fullname,
             mrlService.id,
             this.config.wsUrl,
             "outbound",

@@ -16,11 +16,18 @@ export default class Message {
   public type: string | null = null
 
   /**
-   * clientId is an "internal" identifier for the client that sent the message,
+   * gatewayId is an "internal" identifier for the client that sent the message,
    * its set by the process that's processing the message, not the remote process
    * @type {string}
    */
-  public clientId: string | null = null
+  public gatewayId: string | null = null
+
+  /**
+   * If the message is from a remote process, this was the
+   * immediate local gateway the msg came in from
+   * @type {string}
+   */
+  public gateway: string | null = null
 
   /**
    * Service name - name of the service the message is addressed to

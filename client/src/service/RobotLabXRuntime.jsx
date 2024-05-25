@@ -143,12 +143,6 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
     console.info("Card clicked", card)
   }
 
-  const [expanded, setExpanded] = useState(false)
-
-  const handleExpandClick = () => {
-    setExpanded(!expanded)
-  }
-
   const hostArray = service?.hosts ? Object.values(service.hosts) : []
   const processArray = service?.processes ? Object.values(service.processes) : []
   const connectionArray = service?.connections ? Object.values(service.connections) : []
@@ -384,7 +378,7 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
                     <CardContent>
                       <Box display="flex" alignItems="center" sx={{ marginBottom: 1 }}>
                         <Typography variant="h5" component="div">
-                          {connection.clientId}
+                          {connection.gatewayId}
                         </Typography>
                         {connection.direction === "inbound" ? (
                           <EastIcon sx={{ marginRight: 1, marginLeft: 1 }} />
@@ -403,12 +397,14 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
                 </Card>
               ))}
               Route Table
-              {routeTableArray.map((connection, index) => (
-                <Card key={index} onClick={() => handleHostClick(connection)} sx={{ margin: 1 }}>
+              {routeTableArray.map((routeEntry, index) => (
+                <Card key={index} onClick={() => handleHostClick(routeEntry)} sx={{ margin: 1 }}>
                   <CardActionArea>
                     <CardContent>
                       <Typography component="div" variant="body2" color="text.secondary">
-                        {connection.id} {connection.clientId}
+                        {routeEntry.remoteId} <WestIcon sx={{ marginRight: 1, marginLeft: 1, fontSize: 12 }} />{" "}
+                        {routeEntry.gatewayId} <WestIcon sx={{ marginRight: 1, marginLeft: 1, fontSize: 12 }} />{" "}
+                        {routeEntry.gateway}
                       </Typography>
                     </CardContent>
                   </CardActionArea>

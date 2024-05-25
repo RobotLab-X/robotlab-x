@@ -2,7 +2,7 @@ import InstallStatus from "express/models/InstallStatus"
 import Package from "express/models/Package"
 import fs from "fs"
 import YAML from "yaml"
-import Store from "../Store"
+import Gateway from "../interfaces/Gateway"
 import InstallLog from "../models/InstallLog"
 import Message from "../models/Message"
 import Status from "../models/Status"
@@ -13,7 +13,7 @@ import { getLogger } from "./Log"
 
 const log = getLogger("Service")
 
-export default class Service {
+export default class Service implements Gateway {
   protected startTime: number | null = null
 
   id: string | null = null
@@ -138,13 +138,28 @@ export default class Service {
     return this.invokeMsg(msg)
   }
 
-  invokeMsg(msg: Message) {
+  invokeMsg(msg: Message): any {
     const fullName = this.getFullName()
     const msgFullName = CodecUtil.getFullName(msg.name)
     const msgId = CodecUtil.getId(msgFullName)
+    const senderId = CodecUtil.getId(msg.sender)
+    const runtime = RobotLabXRuntime.getInstance()
     // this process's id
-    const id = RobotLabXRuntime.getInstance().getId()
+    const id = runtime.getId()
     let ret: any = null
+
+    // FIXME - building dynamic routes based on "registration"
+    // however this filter could be opened up to any id from sender that is not the same as the current id
+    // It should be done this way, and all external service connections should be registered with
+    // generated uuids, for sender process remoteIds
+
+    // TODO add if method === "register" regardless of sender
+    // adding routes must be done at the gateway it came in on
+    if (msg.gateway) {
+      // if (msg.method === "register") {
+      // log.info(`registering ===> ${msg.data[0].id} ${msg.gatewayId} =======================`)
+      runtime.addRoute(msgId, msg.gatewayId, msg.gateway)
+    }
 
     // log.error(`invokeMsg msgId ${msgId} id ${id} msgFullName ${msgFullName} fullName ${fullName}`)
     // ==== REMOTE ====
@@ -157,46 +172,38 @@ export default class Service {
       const json = JSON.stringify(msg)
       log.info(`<-- ${msgFullName}.${msg.method} <-- ${msg.sender}.${msg.method} ${JSON.stringify(msg.data)}`)
       // FIXME bork'd - need state information regarding connectivity of process/service, and its an "array" of connections
-      log.info(`clients / connections ${[...RobotLabXRuntime.getInstance().getClients().keys()]} `)
+      log.info(`connectionImpl / connections ${[...runtime.getClients().keys()]} `)
 
-      let conn: any = RobotLabXRuntime.getInstance().getClient(msgId)
-      if (conn) {
-        // log.info(`sending to id ${msgId}`)
-        conn.send(json)
-      } else {
-        // consult route table
-        // TODO - implement *metric* based routing
-        // log.info(`clients / connections ${[...Store.getInstance().getClients().keys()]} `)
-        conn = RobotLabXRuntime.getInstance().getRouteClient(msgId)
-        if (conn) {
-          conn.send(json)
-        } else {
-          log.error(`no route to ${msgId}`)
-        }
+      // fine the gateway for the message's remoteId
+      let gateway: Gateway = runtime.getGateway(msgId)
+      if (!gateway) {
+        log.error(`NO GATEWAY for remoteId ${msgId}`)
+        return null
       }
 
-      // FIXME !! - need to implement gateway
-      return null
+      // find the local process id for the message to be routed through
+      const gatewayRouteId = runtime.getRouteId(msgId)
+
+      // TODO - implement synchronous blocking
+      let blockingObject = gateway.sendRemote(gatewayRouteId, msg)
+
+      // TODO - implement synchronous blocking
+      return blockingObject
     }
 
     // ==== LOCAL PROCESS DIFFERENT SERVICE ====
     // get the service - asynchronous buffered or synchronous non-buffered
     // default synchronous non-buffered
     if (msgFullName !== fullName) {
-      let service = Store.getInstance().getService(msgFullName)
+      let service = runtime.getService(msgFullName)
       if (service === null) {
         log.error(`service ${msgFullName} not found`)
         return null
       } else {
         // relay to correct service
         // service.send(msg)
-        service.invokeMsg(msg)
+        return service.invokeMsg(msg)
       }
-
-      // invoke the method on the service
-      // log.info(`sending message to ${msgFullName}.${msg.method}`)
-      // return service.invokeMsgOn(this, msg)
-      return null
     }
 
     // ==== LOCAL ====
@@ -338,5 +345,14 @@ export default class Service {
 
   error(msg: string | null) {
     this.invoke("publishStatus", new Status("error", msg, this.name))
+  }
+
+  /**
+   * Requesting to send a message to a remote process
+   * @param msg
+   */
+  public sendRemote(gatewayRouteId: string, msg: Message): void {
+    // default is runtime's sendRemote
+    RobotLabXRuntime.getInstance().sendRemote(gatewayRouteId, msg)
   }
 }

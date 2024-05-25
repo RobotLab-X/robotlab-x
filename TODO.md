@@ -1,4 +1,6 @@
 ## TODO
+* Make diagram ... "registerProcess" is the first most important client new connection request .. and if it's NOT done, a registerProcess will
+  be generated auto-magically with a uuid for the register .. very similar to ROS !
 * Make RobotLabXRuntime toJSON selectively serializable - make easy sync connectionArray and connections (non-serailizable)
 * Add gateway as a parameter to adding a connection
 * Configuration : Put all configuration in a component .. react form builder ?
@@ -14,7 +16,7 @@
 * https://www.npmjs.com/package/opencv4nodejs
 * Ollama front end
 * Aliases at some point !
-* Robust disconnect, reconnect - grey/disable gui of clientId and all routes through client id
+* Robust disconnect, reconnect - grey/disable gui of gatewayId and all routes through client id
 * add defaultId onto any raw "runtime" reference sent by the ui
 * every incoming connection should identify a remote process, connecting with no additional info would mean the process definition should be generated
 * remove current "mac" terminal - replace with - https://www.npmjs.com/package/xterm-for-react - check Dashboard.jsx for details

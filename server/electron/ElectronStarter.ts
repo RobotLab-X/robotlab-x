@@ -8,6 +8,9 @@ import { getLogger } from "../express/framework/Log"
 import { HostData } from "../express/models/HostData"
 import { ProcessData } from "../express/models/ProcessData"
 import RobotLabXRuntime from "../express/service/RobotLabXRuntime"
+const { app } = require("electron")
+const asar = require("asar")
+const fs = require("fs-extra")
 
 // import minimist from "minimist"
 const minimist = require("minimist")
@@ -23,6 +26,11 @@ export default class Main {
   private static app: Electron.App
   private static BrowserWindow: typeof Electron.BrowserWindow
   public static mainWindow: Electron.BrowserWindow
+  public static isDev: boolean
+  public static isPackaged: boolean = app.isPackaged
+  // public static asarPath: string
+  public static extractPath: string
+  public static resource: string
 
   // if this variable is set to true in the main constructor, the app will quit when closing it in macOS
   private static quitOnCloseOSX: boolean
@@ -38,6 +46,32 @@ export default class Main {
   }
 
   private static onReady() {
+    let asarPath = Main.isPackaged ? path.join(process.resourcesPath, "app.asar") : null
+
+    // const asarPath = path.join(process.resourcesPath, 'app.asar');
+    // const asarPath = path.join(__dirname, "app.asar")
+    Main.extractPath = path.join(app.getPath("userData"), "resources")
+    log.error(`onReady: __dirname == ${__dirname}`)
+    log.error(`onReady: asarPath == ${asarPath}`)
+    log.error(`onReady: Main.extractPath == ${Main.extractPath}`)
+    log.error(`onReady: process.cwd() == ${process.cwd()}`)
+
+    // let resourcesPath = app.getPath("userData")
+
+    if (asarPath && fs.existsSync(asarPath)) {
+      // Extract the asar file if it hasn't been extracted already
+      if (!fs.existsSync(Main.extractPath)) {
+        log.error("Extracting asar archive...")
+        asar.extractAll(asarPath, Main.extractPath)
+      }
+      Main.resource = path.join(Main.extractPath, "dist")
+    } else {
+      log.error(`onReady: asarPath == ${asarPath} does not exist dev mod ???`)
+      Main.resource = process.cwd()
+    }
+
+    log.error(`onReady: Main.resource == ${Main.resource} !!!!`)
+
     Main.mainWindow = new Main.BrowserWindow({
       width: 800,
       height: 600,
@@ -86,7 +120,7 @@ export default class Main {
     // }
 
     let configName = argv.config ? argv.config : "default"
-    let runtime: RobotLabXRuntime = RobotLabXRuntime.createInstance(configName)
+    let runtime: RobotLabXRuntime = RobotLabXRuntime.createInstance("./config", configName)
     runtime.startService()
 
     // register the host

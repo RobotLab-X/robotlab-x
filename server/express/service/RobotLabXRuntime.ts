@@ -21,6 +21,7 @@ import { HostData } from "../models/HostData"
 import Message from "../models/Message"
 import Package from "../models/Package"
 import { ProcessData } from "../models/ProcessData"
+import RouteEntry from "../models/RouteEntry"
 import { ServiceTypeData } from "../models/ServiceTypeData"
 // import LaunchDescription from "express/framework/LaunchDescription"
 // const LaunchDescription = require("express/framework/LaunchDescription").default
@@ -39,7 +40,7 @@ export default class RobotLabXRuntime extends Service {
   private static instance: RobotLabXRuntime
 
   // NON SERIALIZABLE MAP OF CONNECTIONS
-  private clients: Map<string, WebSocket> = new Map()
+  private connectionImpl: Map<string, WebSocket> = new Map()
 
   protected dataDir = "./data"
   protected configDir = "./config"
@@ -69,12 +70,12 @@ export default class RobotLabXRuntime extends Service {
    *
    * currently:
    *
-   * destination id -> connection id (client id)
+   * destination id -> gateway id (client id)
    *
    * Can find a connection to a connected process by looking up the distantly remote process id
    *
    */
-  protected routeTable: { [id: string]: string } = {}
+  protected routeTable: { [id: string]: RouteEntry } = {}
 
   // OVERRIDES Service.ts
   config = {
@@ -109,8 +110,13 @@ export default class RobotLabXRuntime extends Service {
   }
 
   // FIXME - define route
-  addRoute(id: string, route: any) {
-    this.routeTable[id] = route
+  addRoute(remoteId: string, gatewayId: string, gateway: string) {
+    log.error(`addRoute remoteId:${remoteId} gatewayId:${gatewayId} gateway:${gateway}`)
+    if (!remoteId || !gatewayId || !gateway) {
+      log.error(`addRoute failed - missing parameter remoteId: ${remoteId} gatewayId: ${gatewayId} gateway: ${gateway}`)
+      return
+    }
+    this.routeTable[remoteId] = new RouteEntry(remoteId, gatewayId, gateway)
   }
 
   apply(config: any) {
@@ -226,7 +232,7 @@ export default class RobotLabXRuntime extends Service {
               // Registering self to remote end ====================================
 
               // does url need to be unique ? e.g. connect(ws://localhost:3000/api/messages?id=happy-arduino&session_id=1234)
-              that.registerConnection(remoteId, wsUrl, "outbound", ws)
+              that.registerConnection(that.fullname, remoteId, wsUrl, "outbound", ws)
               // that.addClientConnection(remoteId, wsUrl, ws)
               that.invoke("broadcastState")
             }
@@ -240,7 +246,7 @@ export default class RobotLabXRuntime extends Service {
                 const msg: Message = JSON.parse(json)
                 // DYNAMIC ROUTING - if a "sender" is found in the message
                 // add it to the routeTable with this connection
-                msg.clientId = remoteId
+                msg.gatewayId = remoteId
                 Store.getInstance().handleMessage(msg)
               } catch (e) {
                 // ui error - user should be informed
@@ -292,9 +298,29 @@ export default class RobotLabXRuntime extends Service {
     }
   }
 
-  static createInstance(configName: string): RobotLabXRuntime {
+  static createInstance(configDir: string, configName: string): RobotLabXRuntime {
+    // chicken and egg problem - can't use readConfig before an instance is created
+    // but need config to construct instance
+
+    let config = {
+      id: NameGenerator.getName(),
+      logLevel: "info",
+      port: 3001,
+      registry: [] as string[],
+      // list of processes to connect to
+      connect: [] as string[]
+    }
+
+    const filePath = path.join(configDir, configName, `runtime.yml`)
+    try {
+      const file = fs.readFileSync(filePath, "utf8")
+      config = YAML.parse(file)
+    } catch (error) {
+      log.info(`Failed to load runtime.yml config using default: ${config}`)
+    }
+
     if (!RobotLabXRuntime.instance) {
-      RobotLabXRuntime.instance = new RobotLabXRuntime("TEMP", "runtime", "RobotLabXRuntime", "0.0.1", os.hostname())
+      RobotLabXRuntime.instance = new RobotLabXRuntime(config.id, "runtime", "RobotLabXRuntime", "0.0.1", os.hostname())
       this.instance.configName = configName
     } else {
       log.error("RobotLabXRuntime instance already exists")
@@ -668,14 +694,14 @@ export default class RobotLabXRuntime extends Service {
    */
   getRouteClient(id: string) {
     // TODO "default" route
-    // const clientId = routeTable[id]?.clientId ?? "defaultClientId";
+    // const gatewayId = routeTable[id]?.gatewayId ?? "defaultClientId";
     if (!(id in this.routeTable)) {
       log.error(`no route to ${id} in keyset ${Object.keys(this.routeTable)}`)
       return null
     }
     // FIXME make class schema for RouteEntry
     const routeEntry: any = this.routeTable[id]
-    let conn: any = this.getClient(routeEntry.clientId)
+    let conn: any = this.getGatewayConnection(routeEntry.gatewayId)
     return conn
   }
 
@@ -692,63 +718,60 @@ export default class RobotLabXRuntime extends Service {
     }
   }
 
-  // registerConnection(connection: any) {
-  //   log.info(`register connection: ${JSON.stringify(connection)}`)
-  //   this.connections[`${connection.clientId}`] = connection
-  // }
-
   /**
    * For outbound client connections
    * <--- I am connecting to someone (outbound connection)
-   * @param clientId
+   * @param gatewayId
    * @param ws
    * FIXME - gatewayFullname: String,
    */
-  registerConnection(clientId: string, url: string, inboundOutbound: string, ws: WebSocket) {
-    log.error(`registeristering connection ${clientId} ${url} ${inboundOutbound}`) // FIXME INBOUND OUTBOUND
-    this.clients.set(clientId, ws)
+  registerConnection(gateway: string, gatewayId: string, url: string, inboundOutbound: string, ws: WebSocket) {
+    log.error(`registering connection gatewayId:${gatewayId} url:${url} inboundOutbound:${inboundOutbound}`) // FIXME INBOUND OUTBOUND
+    this.connectionImpl.set(gatewayId, ws)
     // ws.getRemoteAddress() etc.
     // Note - ws is not added here because its not serializable
     const connection = {
-      clientId: clientId,
+      gatewayId: gatewayId,
       ts: new Date().getTime(),
       uuid: uuidv4(),
       url: url,
       type: "websocket",
       encoding: "json",
+      gateway: gateway,
       direction: inboundOutbound
     }
-    this.connections[`${clientId}`] = connection
-    this.clients.set(clientId, ws)
+    this.connections[`${gatewayId}`] = connection
+    // new connection, new route
+    this.addRoute(gatewayId, gatewayId, gateway)
   }
 
-  removeConnection(clientId: string) {
-    log.error(`removing connection ${clientId}`)
+  removeConnection(gatewayId: string) {
+    log.error(`removing connection ${gatewayId}`)
     // TODO - lots of possiblities with this
     // "disabling" remote services and wait for reconnection
     // removing services, etc.
-    if (!this.clients.has(clientId)) {
-      log.error(`client ${clientId} not found`)
+    if (!this.connectionImpl.has(gatewayId)) {
+      log.error(`client ${gatewayId} not found`)
       return
     }
 
-    this.clients.delete(clientId)
-    delete this.connections[`${clientId}`]
+    this.connectionImpl.delete(gatewayId)
+    delete this.connections[`${gatewayId}`]
   }
 
-  public getClient(clientId: string): WebSocket | undefined {
-    return this.clients.get(clientId)
+  public getGatewayConnection(gatewayId: string): WebSocket | undefined {
+    return this.connectionImpl.get(gatewayId)
   }
 
   public getClients(): Map<string, WebSocket> {
-    return this.clients
+    return this.connectionImpl
   }
 
   // FIXME - there is probably no Use Case for this - remove
   // Deprecated if not used
   public broadcastJsonMessage(message: string): void {
     // Iterate over the set of clients and send the message to each
-    this.clients.forEach((client) => {
+    this.connectionImpl.forEach((client) => {
       if (client.readyState === WebSocket.OPEN) {
         client.send(message)
       }
@@ -759,5 +782,31 @@ export default class RobotLabXRuntime extends Service {
   public broadcast(message: Message): void {
     let json = JSON.stringify(message)
     this.broadcastJsonMessage(json)
+  }
+
+  public getGateway(remoteId: string): Service {
+    const entry: RouteEntry = this.routeTable[remoteId]
+    return this.getService(entry.gateway)
+  }
+
+  public getRouteId(remoteId: string): string {
+    // this is a local gateway id
+    // this is the id of the gateway that will route to the remoteId
+    return this.routeTable[remoteId].gatewayId
+  }
+
+  /**
+   * Requesting to send a message to a remote process
+   * @param msg
+   */
+  public sendRemote(gatewayRouteId: string, msg: Message): void {
+    // We should be the correct gateway to route this incoming message
+    // it "may" be the process (gatewayRouteId) were are connected directly to
+    // or it gatewayRouteId may be a gateway to msg.id remote process
+    let ws: any = this.connectionImpl.get(gatewayRouteId)
+    // we'll do the appropriate encoding based on the connection
+    let json = JSON.stringify(msg)
+    // and send it to the locally connected process for it to route
+    ws.send(json)
   }
 }
