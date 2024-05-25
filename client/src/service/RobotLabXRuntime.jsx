@@ -410,8 +410,18 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
                   </CardActionArea>
                 </Card>
               ))}
-              <ReactJson src={connectionArray} name="connections" />
-              <ReactJson src={routeTableArray} name="routeTableArray" />
+              <ReactJson
+                src={service?.connections}
+                name="connections"
+                displayDataTypes={false}
+                displayObjectSize={false}
+              />
+              <ReactJson
+                src={service?.routeTable}
+                name="routeTableArray"
+                displayDataTypes={false}
+                displayObjectSize={false}
+              />
             </Box>
           </Grid>
         </Grid>

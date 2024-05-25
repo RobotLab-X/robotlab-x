@@ -791,7 +791,16 @@ export default class RobotLabXRuntime extends Service {
   }
 
   public getGateway(remoteId: string): Service {
-    const entry: RouteEntry = this.routeTable[remoteId]
+    log.error(`getGateway remoteId:${remoteId}`)
+    let entry: RouteEntry = this.routeTable[remoteId]
+    // if (!entry) {
+    //   // spin through
+    //   log.error(`no route to ${remoteId}`)
+    //   return null
+    // }
+
+    // TODO - manage a "default" route
+
     return this.getService(entry.gateway)
   }
 
