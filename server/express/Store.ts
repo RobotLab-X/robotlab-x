@@ -8,6 +8,7 @@ import { WebSocket, Server as WebSocketServer } from "ws"
 import { getLogger } from "../express/framework/Log"
 import { CodecUtil } from "./framework/CodecUtil"
 import Service from "./framework/Service"
+import Gateway from "./interfaces/Gateway"
 import Message from "./models/Message"
 import RobotLabXRuntime from "./service/RobotLabXRuntime"
 
@@ -212,12 +213,30 @@ export default class Store {
       let fullName = CodecUtil.getFullName(msg.name)
       const msgId = CodecUtil.getId(fullName)
 
+      // FIXME - this is duplicate code inside of invokeMsg
+      // FIXME FIXME FIXME - this is a kludge - all this should be in Service
+      // in invokeMsg
       // check if msg destination is remote or local
-      // if (msgId !== this.runtime.getId()) {
-      //   // "relay" send to remote
-      //   RobotLabXRuntime.getInstance().getGatewayConnection(msgId).send(JSON.stringify(msg))
-      //   return null
-      // }
+      if (msgId !== this.runtime.getId()) {
+        // we need to immediately send a remote message away, because the registry
+        // won't have a real service to invokeMsg on it - chicken egg problem
+        // RobotLabXRuntime.getInstance().getGatewayConnection(msgId).send(JSON.stringify(msg))
+
+        // fine the gateway for the message's remoteId
+        let gateway: Gateway = this.runtime.getGateway(msgId)
+        if (!gateway) {
+          log.error(`NO GATEWAY for remoteId ${msgId}`)
+          return null
+        }
+
+        // find the local process id for the message to be routed through
+        const gatewayRouteId = this.runtime.getRouteId(msgId)
+
+        // TODO - implement synchronous blocking
+        let blockingObject = gateway.sendRemote(gatewayRouteId, msg)
+
+        return null
+      }
 
       // FIXME nameless service should be routed to runtime
       // find service in registry

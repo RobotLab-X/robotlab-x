@@ -169,8 +169,8 @@ export default class Service implements Gateway {
       // send message to remote service
       // log.info(`sending message to ${msgFullName}.${msg.method}`)
       // this.gateway.send(msg)
-      const json = JSON.stringify(msg)
-      log.info(`<-- ${msgFullName}.${msg.method} <-- ${msg.sender}.${msg.method} ${JSON.stringify(msg.data)}`)
+      // const json = JSON.stringify(msg)
+      log.info(`<-- ${msgFullName}.${msg.method} <-- ${msg.sender}.${msg.method}`)
       // FIXME bork'd - need state information regarding connectivity of process/service, and its an "array" of connections
       log.info(`connectionImpl / connections ${[...runtime.getClients().keys()]} `)
 
