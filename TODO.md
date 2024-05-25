@@ -1,4 +1,5 @@
 ## TODO
+* reduce Store.handleMessage to nothing
 * Make diagram ... "registerProcess" is the first most important client new connection request .. and if it's NOT done, a registerProcess will
   be generated auto-magically with a uuid for the register .. very similar to ROS !
 * Make RobotLabXRuntime toJSON selectively serializable - make easy sync connectionArray and connections (non-serailizable)
