@@ -153,19 +153,16 @@ export default class Service implements Gateway {
     // It should be done this way, and all external service connections should be registered with
     // generated uuids, for sender process remoteIds
 
-    // TODO add if method === "register" regardless of sender
-    // adding routes must be done at the gateway it came in on
-    if (msg.gateway) {
-      // if (msg.method === "register") {
-      // log.info(`registering ===> ${msg.data[0].id} ${msg.gatewayId} =======================`)
-      runtime.addRoute(msgId, msg.gatewayId, msg.gateway)
-    }
-
     // log.error(`invokeMsg msgId ${msgId} id ${id} msgFullName ${msgFullName} fullName ${fullName}`)
     // ==== REMOTE ====
     // FIXME - check if blocking or non-blocking
     // use gateway to send message to remote service
     if (msgId !== id) {
+      // dynamically add route to gateway
+      if (msg.gateway) {
+        runtime.addRoute(msgId, msg.gatewayId, msg.gateway)
+      }
+
       // send message to remote service
       // log.info(`sending message to ${msgFullName}.${msg.method}`)
       // this.gateway.send(msg)

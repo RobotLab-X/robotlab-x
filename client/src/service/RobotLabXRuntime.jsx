@@ -402,9 +402,9 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
                   <CardActionArea>
                     <CardContent>
                       <Typography component="div" variant="body2" color="text.secondary">
-                        {routeEntry.remoteId} <WestIcon sx={{ marginRight: 1, marginLeft: 1, fontSize: 12 }} />{" "}
-                        {routeEntry.gatewayId} <WestIcon sx={{ marginRight: 1, marginLeft: 1, fontSize: 12 }} />{" "}
-                        {routeEntry.gateway}
+                        {routeEntry.remoteId} id <WestIcon sx={{ marginRight: 1, marginLeft: 1, fontSize: 12 }} />{" "}
+                        {routeEntry.gatewayId} gwid <WestIcon sx={{ marginRight: 1, marginLeft: 1, fontSize: 12 }} />{" "}
+                        {routeEntry.gateway} gw
                       </Typography>
                     </CardContent>
                   </CardActionArea>

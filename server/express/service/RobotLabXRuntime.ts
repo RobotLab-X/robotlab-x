@@ -103,7 +103,7 @@ export default class RobotLabXRuntime extends Service {
       const yamlStr = YAML.stringify(this.config)
       fs.mkdirSync(path.dirname(filePath), { recursive: true })
       fs.writeFileSync(filePath, yamlStr, "utf8")
-      console.log("Config saved to", filePath)
+      log.info("Config saved to", filePath)
     } catch (error) {
       this.error(`Failed to save config: ${error}`)
     }
@@ -111,6 +111,9 @@ export default class RobotLabXRuntime extends Service {
 
   // FIXME - define route
   addRoute(remoteId: string, gatewayId: string, gateway: string) {
+    // if (remoteId === "rlx1") {
+    //   log.error(`WRONG ROUTE !!!!!! ============================================  ${remoteId} ${gatewayId} ${gateway}`)
+    // }
     log.error(`addRoute remoteId:${remoteId} gatewayId:${gatewayId} gateway:${gateway}`)
     if (!remoteId || !gatewayId || !gateway) {
       log.error(`addRoute failed - missing parameter remoteId: ${remoteId} gatewayId: ${gatewayId} gateway: ${gateway}`)
@@ -185,34 +188,37 @@ export default class RobotLabXRuntime extends Service {
         })
 
         res.on("end", () => {
-          const remoteId = JSON.parse(data)
-          log.info(`remoteId: ${remoteId}`)
+          const connectedId = JSON.parse(data)
+          log.info(`remoteId: ${connectedId}`)
 
-          if (remoteId) {
+          if (connectedId) {
             const ws: WebSocket = new WebSocket(wsUrl)
 
             // Open connection
             ws.onopen = function open() {
-              console.log("Connected to the server")
+              log.info("Connected to the server")
 
-              const remoteRuntime = `runtime@${remoteId}`
+              // does url need to be unique ? e.g. connect(ws://localhost:3000/api/messages?id=happy-arduino&session_id=1234)
+              that.registerConnection(that.fullname, connectedId, wsUrl, "outbound", ws)
+
+              const remoteRuntime = `runtime@${connectedId}`
 
               // TODO - use "synchronous service call"
               var msg = that.createMessage(remoteRuntime, "addListener", ["getRegistry", "runtime@" + that.getId()])
               var json = JSON.stringify(msg)
-              console.log("Sending addListener getRegistry: ", json)
+              log.info("Sending addListener getRegistry: ", json)
               ws.send(json)
 
               var msg = that.createMessage(remoteRuntime, "getRegistry", [])
               var json = JSON.stringify(msg)
-              console.log("Sending getRegistry: ", json)
+              log.info("Sending getRegistry: ", json)
               ws.send(json)
 
               // register the process - this one is critical ! doesn't matter if a service is registered, but a process is needed
               // to provide routing information
               msg = that.createMessage(remoteRuntime, "registerProcess", [that.getLocalProcessData()])
               json = JSON.stringify(msg)
-              console.log("Sending registerProcess: ", json)
+              log.info("Sending registerProcess: ", json)
               ws.send(json)
 
               // Registering self to remote begin ====================================
@@ -222,19 +228,17 @@ export default class RobotLabXRuntime extends Service {
                 // maybe only runtime, maybe only local services, maybe only services with a specific type
                 msg = that.createMessage(remoteRuntime, "register", [service])
                 json = JSON.stringify(msg)
-                console.log("Sending register: ", json)
+                log.info("Sending register: ", json)
                 ws.send(json)
               })
 
               // register the host
               msg = that.createMessage(remoteRuntime, "registerHost", [that.getHost()])
               json = JSON.stringify(msg)
-              console.log("Sending registerHost: ", json)
+              log.info("Sending registerHost: ", json)
               ws.send(json)
               // Registering self to remote end ====================================
 
-              // does url need to be unique ? e.g. connect(ws://localhost:3000/api/messages?id=happy-arduino&session_id=1234)
-              that.registerConnection(that.fullname, remoteId, wsUrl, "outbound", ws)
               // that.addClientConnection(remoteId, wsUrl, ws)
               that.invoke("broadcastState")
             }
@@ -242,7 +246,7 @@ export default class RobotLabXRuntime extends Service {
             // Listen for messages from the server
             // onmessage - client
             ws.onmessage = function (event) {
-              console.log("Message from server: ", event.data)
+              log.info("Message from server: ", event.data)
               try {
                 let json: string = event.data.toString()
                 const msg: Message = JSON.parse(json)
@@ -251,8 +255,19 @@ export default class RobotLabXRuntime extends Service {
                 // FIXME - addRoute should probably be here .. its currently in invokeMsg
                 // DYNAMIC ROUTING - if a "sender" is found in the message
                 // add it to the routeTable with this connection
-                msg.gatewayId = remoteId
+                msg.gatewayId = connectedId
                 msg.gateway = that.fullname
+
+                // if msg.sender is remote but not from this connection
+                // need to add a new route entry
+                log.error(
+                  `client dynamic add route: ${msg.sender} sender id: ${CodecUtil.getId(msg.sender)} remoteId: ${connectedId} that.fullname: ${that.fullname}`
+                )
+                if (msg.sender && CodecUtil.getId(msg.sender) !== connectedId) {
+                  log.error(`NEW ROUTE !!!!!!  ${msg.sender} ${connectedId} ${that.fullname}`)
+                  that.addRoute(CodecUtil.getId(msg.sender), connectedId, that.fullname)
+                }
+
                 let ret: any = Store.getInstance().handleMessage(msg)
               } catch (e) {
                 // ui error - user should be informed
@@ -268,7 +283,7 @@ export default class RobotLabXRuntime extends Service {
 
             // Handle WebSocket connection closed
             ws.onclose = function (event) {
-              console.log("WebSocket connection closed: ", event)
+              log.info("WebSocket connection closed: ", event)
             }
           } else {
             console.error("Failed to fetch remote ID")
@@ -298,7 +313,7 @@ export default class RobotLabXRuntime extends Service {
       const yamlStr = YAML.stringify(config)
       fs.mkdirSync(path.dirname(filePath), { recursive: true })
       fs.writeFileSync(filePath, yamlStr, "utf8")
-      console.log("Config saved to", filePath)
+      log.info("Config saved to", filePath)
     } catch (error) {
       this.error(`Failed to save config: ${error}`)
     }
@@ -732,7 +747,10 @@ export default class RobotLabXRuntime extends Service {
    * FIXME - gatewayFullname: String,
    */
   registerConnection(gateway: string, gatewayId: string, url: string, inboundOutbound: string, ws: WebSocket) {
-    log.error(`registering connection gatewayId:${gatewayId} url:${url} inboundOutbound:${inboundOutbound}`) // FIXME INBOUND OUTBOUND
+    log.error(`registering connection gatewayId:${gatewayId} url:${url} i/o:${inboundOutbound}`)
+    // new connection, new route
+    this.addRoute(gatewayId, gatewayId, gateway)
+
     this.connectionImpl.set(gatewayId, ws)
     // ws.getRemoteAddress() etc.
     // Note - ws is not added here because its not serializable
@@ -747,8 +765,6 @@ export default class RobotLabXRuntime extends Service {
       direction: inboundOutbound
     }
     this.connections[`${gatewayId}`] = connection
-    // new connection, new route
-    this.addRoute(gatewayId, gatewayId, gateway)
   }
 
   removeConnection(gatewayId: string) {

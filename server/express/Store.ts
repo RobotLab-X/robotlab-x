@@ -183,6 +183,15 @@ export default class Store {
         // setting connection/client id on message
         // its one of two points
         msg.gatewayId = gatewayId
+        msg.gateway = `runtime@${this.runtime.getId()}`
+        // FIX - probably not need on every single msg
+        // Dynamic Routing
+        // get the originating msg id
+        const remoteId = CodecUtil.getId(msg.sender)
+        if (remoteId && remoteId !== this.runtime.getId()) {
+          this.runtime.addRoute(remoteId, msg.gatewayId, msg.gateway)
+        }
+
         // log.info(`--> ws ${JSON.stringify(msg)}`)
         this.handleMessage(msg)
       } catch (e) {
@@ -338,7 +347,7 @@ export default class Store {
     })
 
     router.get(`${apiPrefix}/*`, (req, res, next) => {
-      log.info(`--> get ${req.originalUrl}`)
+      log.info(`--> incoming get ${req.originalUrl}`)
       const pathSegments = req.originalUrl.split("/").filter((segment) => segment.length > 0)
       if (pathSegments.length < 3) {
         res.json({
