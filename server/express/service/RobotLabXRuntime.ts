@@ -167,11 +167,15 @@ export default class RobotLabXRuntime extends Service {
     // Correctly determine the HTTP protocol to use based on the WebSocket protocol
     const isSecure = parsedUrl.protocol === "wss:"
     const httpProtocol = isSecure ? https : http
+    // RELATED TO HATEOS - VERY TOP OF THE QUERY SYSTEM IS ASK FOR REMOTE PROCESS ID
     const fetchIdUrl = `${isSecure ? "https" : "http"}://${parsedUrl.hostname}:${parsedUrl.port}/api/v1/services/runtime/getId`
     // Make the HTTP or HTTPS request based on the protocol
     log.info(`http getId to remote: ${fetchIdUrl}`)
     const that = this
 
+    // synchronous http call to get the remote process's "id"
+    // beginning of the HATEOS chain
+    // critical for msg routing
     httpProtocol
       .get(fetchIdUrl, (res) => {
         let data = ""
@@ -183,8 +187,6 @@ export default class RobotLabXRuntime extends Service {
         res.on("end", () => {
           const remoteId = JSON.parse(data)
           log.info(`remoteId: ${remoteId}`)
-
-          // remoteId is the only thing needed to register a runtime process
 
           if (remoteId) {
             const ws: WebSocket = new WebSocket(wsUrl)
@@ -244,10 +246,14 @@ export default class RobotLabXRuntime extends Service {
               try {
                 let json: string = event.data.toString()
                 const msg: Message = JSON.parse(json)
+                // THIS IS A PROCESS BOUNDARY
+                // required to put in the boundary connection details
+                // FIXME - addRoute should probably be here .. its currently in invokeMsg
                 // DYNAMIC ROUTING - if a "sender" is found in the message
                 // add it to the routeTable with this connection
                 msg.gatewayId = remoteId
-                Store.getInstance().handleMessage(msg)
+                msg.gateway = that.fullname
+                let ret: any = Store.getInstance().handleMessage(msg)
               } catch (e) {
                 // ui error - user should be informed
                 console.error("parsing message error")

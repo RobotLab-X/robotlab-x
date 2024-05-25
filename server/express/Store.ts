@@ -143,37 +143,25 @@ export default class Store {
 
       // Retrieve a specific query parameter (e.g., id)
       const urlParams = new URLSearchParams(url.split("?")[1]) // assuming your WS URL might contain query params
-      let clientId: string = urlParams.get("id") // Assuming 'id' is passed as a query parameter
+      let gatewayId: string = urlParams.get("id") // Assuming 'id' is passed as a query parameter
       const uuid = uuidv4()
-      if (!clientId) {
-        clientId = uuid
+      if (!gatewayId) {
+        gatewayId = uuid
       }
       // FIXME - check for collisions
       // FIXME - Web UIs should have a single client id and an array of ws connections
       // unless the client id is associated with a "different" (non default) session
-      // this.clients.set(clientId, ws)
+      // this.connectionImpl.set(gatewayId, ws)
 
       // FIXME - MAKE CONNECTION CLASS
       // ---> someone has connected to me (inbound connection)
-      this.runtime.registerConnection(clientId, url, "inbound", ws)
-      // this.runtime.registerConnection({
-      //   clientId: clientId,
-      //   ts: new Date().getTime(),
-      //   uuid: uuid,
-      //   ip: request.socket.remoteAddress,
-      //   port: request.socket.remotePort,
-      //   url: url,
-      //   type: "websocket",
-      //   encoding: "json",
-      //   direction: "inbound",
-      //   ws: ws
-      // })
+      this.runtime.registerConnection(`runtime@${this.runtime.getId()}`, gatewayId, url, "inbound", ws)
 
       // onmessage - server
-      ws.on("message", this.handleWsMessage(ws, clientId))
+      ws.on("message", this.handleWsMessage(ws, gatewayId))
 
       ws.on("close", () => {
-        this.runtime.removeConnection(clientId)
+        this.runtime.removeConnection(gatewayId)
       })
 
       ws.on("error", (error) => {
@@ -186,14 +174,14 @@ export default class Store {
    * Decode the message
    * @param ws
    */
-  // FIXME switch clientId to connection uuid !!!!
-  public handleWsMessage(ws: WebSocket, clientId: string) {
+  // FIXME switch gatewayId to connection uuid !!!!
+  public handleWsMessage(ws: WebSocket, gatewayId: string) {
     return (message: any) => {
       try {
-        const msg = JSON.parse(message)
+        const msg: Message = JSON.parse(message)
         // setting connection/client id on message
         // its one of two points
-        msg.clientId = clientId
+        msg.gatewayId = gatewayId
         // log.info(`--> ws ${JSON.stringify(msg)}`)
         this.handleMessage(msg)
       } catch (e) {
@@ -205,8 +193,11 @@ export default class Store {
   }
 
   /**
-   * Handles all message processing
+   * FIXME FIXME FIXME - reduce this function to nothing, all business logic should be
+   * in the Service class, including dynamic routing based on msg.gateway and msg.gatewayId
+   * Handles all message processing - probably should be moved into Service
    * @param msg
+   * @param gatewayId
    * @returns
    */
   public handleMessage(msg: Message) {
@@ -222,14 +213,15 @@ export default class Store {
       const msgId = CodecUtil.getId(fullName)
 
       // check if msg destination is remote or local
-      if (msgId !== this.runtime.getId()) {
-        // "relay" send to remote
-        RobotLabXRuntime.getInstance().getClient(msgId).send(JSON.stringify(msg))
-        return null
-      }
+      // if (msgId !== this.runtime.getId()) {
+      //   // "relay" send to remote
+      //   RobotLabXRuntime.getInstance().getGatewayConnection(msgId).send(JSON.stringify(msg))
+      //   return null
+      // }
 
+      // FIXME nameless service should be routed to runtime
       // find service in registry
-      let service = this.getService(fullName)
+      let service: Service = this.getService(fullName)
 
       if (service === null) {
         // ui error - user should be informed
@@ -247,22 +239,7 @@ export default class Store {
       // TODO - should be done in a service.invoke(msg) method so that subscriptions
       // can be processed
       let ret: Object = service.invokeMsg(msg)
-
-      // if (msg.data) {
-      //   ret = service[msg.method](msg.data)
-      // } else {
-      //   ret = service[msg.method]()
-      // }
       log.debug(`return ${JSON.stringify(ret)}`)
-
-      // DYNAMIC ROUTE UPDATES
-      // TODO - XXX
-      // if clientId is not in processes or "runtime".id services or connections
-      // register it ... make it accessible to routes
-      if (msg.method === "register") {
-        log.info(`registering ===> ${msg.data[0].id} ${msg.clientId} =======================`)
-        this.runtime.addRoute(msg.data[0].id, { id: msg.data[0].id, clientId: msg.clientId })
-      }
 
       return ret
 
