@@ -50,7 +50,7 @@ export default class RobotLabXRuntime extends Service {
 
   protected debug = true
 
-  protected defaultRoute:RouteEntry = null
+  protected defaultRoute: RouteEntry = null
 
   // must be pid or userdefined {pid/id}
   protected processes: { [id: string]: ProcessData } = {}
@@ -123,7 +123,7 @@ export default class RobotLabXRuntime extends Service {
       return
     }
 
-    if (!(remoteId in this.routeTable)){      
+    if (!(remoteId in this.routeTable)) {
       this.routeTable[remoteId] = new RouteEntry(remoteId, gatewayId, gateway)
       // updating route entry to the "latest route"
       this.defaultRoute = this.routeTable[remoteId]
@@ -819,7 +819,7 @@ export default class RobotLabXRuntime extends Service {
     let entry: RouteEntry = this.routeTable[remoteId]
 
     // default route currently is just the latest added route
-    if (!entry){
+    if (!entry) {
       return this.getService(this.defaultRoute.gateway)
     }
 
@@ -830,8 +830,8 @@ export default class RobotLabXRuntime extends Service {
     // this is a local gateway id
     // this is the id of the gateway that will route to the remoteId
     let entry: RouteEntry = this.routeTable[remoteId]
-    if (!entry){
-      return this.defaultRoute.gateway
+    if (!entry) {
+      return this.defaultRoute.gatewayId
     }
     return this.routeTable[remoteId].gatewayId
   }
