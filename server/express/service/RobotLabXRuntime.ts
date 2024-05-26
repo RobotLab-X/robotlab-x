@@ -49,6 +49,8 @@ export default class RobotLabXRuntime extends Service {
 
   protected debug = true
 
+  protected defaultRoute:RouteEntry = null
+
   // must be pid or userdefined {pid/id}
   protected processes: { [id: string]: ProcessData } = {}
 
@@ -119,7 +121,12 @@ export default class RobotLabXRuntime extends Service {
       log.error(`addRoute failed - missing parameter remoteId: ${remoteId} gatewayId: ${gatewayId} gateway: ${gateway}`)
       return
     }
-    this.routeTable[remoteId] = new RouteEntry(remoteId, gatewayId, gateway)
+
+    if (!(remoteId in this.routeTable)){      
+      this.routeTable[remoteId] = new RouteEntry(remoteId, gatewayId, gateway)
+      // updating route entry to the "latest route"
+      this.defaultRoute = this.routeTable[remoteId]
+    }
   }
 
   apply(config: any) {
@@ -809,13 +816,11 @@ export default class RobotLabXRuntime extends Service {
   public getGateway(remoteId: string): Service {
     // log.error(`getGateway remoteId:${remoteId}`)
     let entry: RouteEntry = this.routeTable[remoteId]
-    // if (!entry) {
-    //   // spin through
-    //   log.error(`no route to ${remoteId}`)
-    //   return null
-    // }
 
-    // TODO - manage a "default" route
+    // default route currently is just the latest added route
+    if (!entry){
+      return this.getService(this.defaultRoute.gateway)
+    }
 
     return this.getService(entry.gateway)
   }
