@@ -139,104 +139,122 @@ export default class Service implements Gateway {
   }
 
   invokeMsg(msg: Message): any {
-    const fullName = this.getFullName()
-    const msgFullName = CodecUtil.getFullName(msg.name)
-    const msgId = CodecUtil.getId(msgFullName)
-    const senderId = CodecUtil.getId(msg.sender)
-    const runtime = RobotLabXRuntime.getInstance()
-    // this process's id
-    const id = runtime.getId()
-    let ret: any = null
+    try {
+      const fullName = this.getFullName()
+      const msgFullName = CodecUtil.getFullName(msg.name)
+      const msgId = CodecUtil.getId(msgFullName)
+      const senderId = CodecUtil.getId(msg.sender)
+      const runtime = RobotLabXRuntime.getInstance()
+      // this process's id
+      const id = runtime.getId()
+      let ret: any = null
 
-    // FIXME - building dynamic routes based on "registration"
-    // however this filter could be opened up to any id from sender that is not the same as the current id
-    // It should be done this way, and all external service connections should be registered with
-    // generated uuids, for sender process remoteIds
-
-    // log.error(`invokeMsg msgId ${msgId} id ${id} msgFullName ${msgFullName} fullName ${fullName}`)
-    // ==== REMOTE ====
-    // FIXME - check if blocking or non-blocking
-    // use gateway to send message to remote service
-    if (msgId !== id) {
-      // dynamically add route to gateway
-      if (msg.gateway) {
-        runtime.addRoute(msgId, msg.gatewayId, msg.gateway)
-      }
-
-      // send message to remote service
-      // log.info(`sending message to ${msgFullName}.${msg.method}`)
-      // this.gateway.send(msg)
-      // const json = JSON.stringify(msg)
-      log.info(`<-- ${msgFullName}.${msg.method} <-- ${msg.sender}.${msg.method}`)
-      // FIXME bork'd - need state information regarding connectivity of process/service, and its an "array" of connections
-      log.info(`connectionImpl / connections ${[...runtime.getClients().keys()]} `)
-
-      // fine the gateway for the message's remoteId
-      let gateway: Gateway = runtime.getGateway(msgId)
-      if (!gateway) {
-        log.error(`NO GATEWAY for remoteId ${msgId}`)
-        return null
-      }
-
-      // find the local process id for the message to be routed through
-      const gatewayRouteId = runtime.getRouteId(msgId)
-
-      // TODO - implement synchronous blocking
-      let blockingObject = gateway.sendRemote(gatewayRouteId, msg)
-
-      // TODO - implement synchronous blocking
-      return blockingObject
-    }
-
-    // ==== LOCAL PROCESS DIFFERENT SERVICE ====
-    // get the service - asynchronous buffered or synchronous non-buffered
-    // default synchronous non-buffered
-    if (msgFullName !== fullName) {
-      let service = runtime.getService(msgFullName)
-      if (service === null) {
-        log.error(`service ${msgFullName} not found`)
-        return null
+      if (msg.data && msg.data.length > 0) {
+        log.info(`--> ${msg.sender} --> ${msg.name}.${msg.method}(${JSON.stringify(msg.data)})`)
       } else {
-        // relay to correct service
-        // service.send(msg)
-        return service.invokeMsg(msg)
+        log.info(`--> ${msg.sender} --> ${msg.name}.${msg.method}()`)
       }
-    }
 
-    // ==== LOCAL ====
-    // FIXME - check if blocking or non-blocking
-    // is this the service to invoke the method on ?
-    if (fullName === msgFullName) {
-      let obj: any = this // cast away typescript
+      // FIXME - building dynamic routes based on "registration"
+      // however this filter could be opened up to any id from sender that is not the same as the current id
+      // It should be done this way, and all external service connections should be registered with
+      // generated uuids, for sender process remoteIds
 
-      // invoke locally
-      log.debug(`invoking ${this.name}.${msg.method}`)
-      try {
-        if (msg.data && msg.data.length > 0) {
-          ret = obj[msg.method](...msg.data)
-        } else {
-          ret = obj[msg.method]()
+      // log.error(`invokeMsg msgId ${msgId} id ${id} msgFullName ${msgFullName} fullName ${fullName}`)
+      // ==== REMOTE ====
+      // FIXME - check if blocking or non-blocking
+      // use gateway to send message to remote service
+      if (msgId !== id) {
+        // dynamically add route to gateway
+        if (msg.gateway) {
+          runtime.addRoute(msgId, msg.gatewayId, msg.gateway)
         }
-      } catch (e) {
-        log.error(`failed to invoke ${this.name}.${msg.method} because ${e}`)
+
+        // send message to remote service
+        // log.info(`sending message to ${msgFullName}.${msg.method}`)
+        // this.gateway.send(msg)
+        // const json = JSON.stringify(msg)
+        log.info(`<-- ${msgFullName}.${msg.method} <-- ${msg.sender}.${msg.method}`)
+        // FIXME bork'd - need state information regarding connectivity of process/service, and its an "array" of connections
+        log.info(`connectionImpl / connections ${[...runtime.getClients().keys()]} `)
+
+        // fine the gateway for the message's remoteId
+        let gateway: Gateway = runtime.getGateway(msgId)
+        if (!gateway) {
+          log.error(`NO GATEWAY for remoteId ${msgId}`)
+          return null
+        }
+
+        // find the local process id for the message to be routed through
+        const gatewayRouteId = runtime.getRouteId(msgId)
+
+        // TODO - implement synchronous blocking
+        let blockingObject = gateway.sendRemote(gatewayRouteId, msg)
+
+        // TODO - implement synchronous blocking
+        return blockingObject
       }
 
-      // normalize undefined to null
-      if (ret === undefined) {
-        ret = null
+      // ==== LOCAL PROCESS DIFFERENT SERVICE ====
+      // get the service - asynchronous buffered or synchronous non-buffered
+      // default synchronous non-buffered
+      if (msgFullName !== fullName) {
+        let service = runtime.getService(msgFullName)
+        if (service === null) {
+          log.error(`service ${msgFullName} not found`)
+          return null
+        } else {
+          // relay to correct service
+          // service.send(msg)
+          return service.invokeMsg(msg)
+        }
       }
 
-      // TODO - process subscription
-      if (this.notifyList[msg.method]) {
-        this.notifyList[msg.method].forEach((listener: any) => {
-          let subMsg = new Message(listener.callbackName, listener.callbackMethod, [ret])
-          subMsg.sender = this.getFullName()
-          // log.info(`<- notify ${listener.callbackName}.${listener.callbackMethod}`)
-          this.invokeMsg(subMsg)
-        })
+      // ==== LOCAL ====
+      // FIXME - check if blocking or non-blocking
+      // is this the service to invoke the method on ?
+      if (fullName === msgFullName) {
+        let obj: any = this // cast away typescript
+
+        if (!msg.method) {
+          // ui error - user should be informed
+          console.error(`method ${msg.method} not found`)
+          return null
+        }
+
+        // invoke locally
+        log.debug(`invoking ${this.name}.${msg.method}`)
+        try {
+          if (msg.data && msg.data.length > 0) {
+            ret = obj[msg.method](...msg.data)
+          } else {
+            ret = obj[msg.method]()
+          }
+        } catch (e) {
+          log.error(`failed to invoke ${this.name}.${msg.method} because ${e}`)
+        }
+
+        // normalize undefined to null
+        if (ret === undefined) {
+          ret = null
+        }
+
+        // TODO - process subscription
+        if (this.notifyList[msg.method]) {
+          this.notifyList[msg.method].forEach((listener: any) => {
+            let subMsg = new Message(listener.callbackName, listener.callbackMethod, [ret])
+            subMsg.sender = this.getFullName()
+            // log.info(`<- notify ${listener.callbackName}.${listener.callbackMethod}`)
+            this.invokeMsg(subMsg)
+          })
+        }
+        return ret
       }
-      return ret
+    } catch (e) {
+      // ui error - user should be informed
+      log.error(e)
     }
+    return null
   }
 
   isReady(): boolean {

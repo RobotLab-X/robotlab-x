@@ -807,7 +807,7 @@ export default class RobotLabXRuntime extends Service {
   }
 
   public getGateway(remoteId: string): Service {
-    log.error(`getGateway remoteId:${remoteId}`)
+    // log.error(`getGateway remoteId:${remoteId}`)
     let entry: RouteEntry = this.routeTable[remoteId]
     // if (!entry) {
     //   // spin through

@@ -212,25 +212,15 @@ export default class Store {
    */
   public handleMessage(msg: Message) {
     try {
-      if (msg.data && msg.data.length > 0) {
-        log.info(`--> ${msg.sender} --> ${msg.name}.${msg.method}(${JSON.stringify(msg.data)})`)
-      } else {
-        log.info(`--> ${msg.sender} --> ${msg.name}.${msg.method}()`)
-      }
-
-      // fully address name
+      // can you relay without having that service in this registry ... "yes"
       let fullName = CodecUtil.getFullName(msg.name)
       const msgId = CodecUtil.getId(fullName)
 
-      // FIXME - this is duplicate code inside of invokeMsg
-      // FIXME FIXME FIXME - this is a kludge - all this should be in Service
-      // in invokeMsg
-      // check if msg destination is remote or local
+      // MESSAGE FROM REMOTE NEEDS TO BE SENT OUT REMOTE
+      // POTENTIALLY NO SERVICE DEFINED FOR THIS MESSAGE
       if (msgId !== this.runtime.getId()) {
         // we need to immediately send a remote message away, because the registry
         // won't have a real service to invokeMsg on it - chicken egg problem
-        // RobotLabXRuntime.getInstance().getGatewayConnection(msgId).send(JSON.stringify(msg))
-
         // fine the gateway for the message's remoteId
         let gateway: Gateway = this.runtime.getGateway(msgId)
         if (!gateway) {
@@ -243,36 +233,13 @@ export default class Store {
 
         // TODO - implement synchronous blocking
         let blockingObject = gateway.sendRemote(gatewayRouteId, msg)
-
-        return null
+        return blockingObject
       }
 
-      // FIXME nameless service should be routed to runtime
-      // find service in registry
       let service: Service = this.getService(fullName)
-
-      if (service === null) {
-        // ui error - user should be informed
-        console.error(`service ${fullName} not found`)
-        return null
-      }
-
-      if (msg.method === null) {
-        // ui error - user should be informed
-        console.error(`method ${msg.method} not found`)
-        return null
-      }
-
-      // execute method with parameters on service
-      // TODO - should be done in a service.invoke(msg) method so that subscriptions
-      // can be processed
       let ret: Object = service.invokeMsg(msg)
-      log.debug(`return ${JSON.stringify(ret)}`)
 
       return ret
-
-      // Example of sending a message back to the client
-      // ws.send(`Server received: ${message}`);
     } catch (e) {
       // ui error - user should be informed
       console.error(e)
