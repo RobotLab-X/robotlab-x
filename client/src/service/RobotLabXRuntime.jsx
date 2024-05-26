@@ -397,8 +397,23 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
                 </Card>
               ))}
               Route Table
+              {service && service.defaultRoute && (
+                <Card key={0} onClick={() => handleHostClick(service.defaultRoute)} sx={{ margin: 1 }}>
+                  <CardActionArea>
+                    <CardContent>
+                      <Typography component="div" variant="body2" color="text.secondary">
+                        {service.defaultRoute.remoteId} id{" "}
+                        <WestIcon sx={{ marginRight: 1, marginLeft: 1, fontSize: 12 }} />{" "}
+                        {service.defaultRoute.gatewayId} gwid
+                        <WestIcon sx={{ marginRight: 1, marginLeft: 1, fontSize: 12 }} /> {service.defaultRoute.gateway}{" "}
+                        gw <b>default</b>
+                      </Typography>
+                    </CardContent>
+                  </CardActionArea>
+                </Card>
+              )}
               {routeTableArray.map((routeEntry, index) => (
-                <Card key={index} onClick={() => handleHostClick(routeEntry)} sx={{ margin: 1 }}>
+                <Card key={index + 1} onClick={() => handleHostClick(routeEntry)} sx={{ margin: 1 }}>
                   <CardActionArea>
                     <CardContent>
                       <Typography component="div" variant="body2" color="text.secondary">
