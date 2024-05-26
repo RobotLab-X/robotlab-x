@@ -185,11 +185,8 @@ export default class Service implements Gateway {
           return null
         }
 
-        // find the local process id for the message to be routed through
-        const gatewayRouteId = runtime.getRouteId(msgId)
-
         // TODO - implement synchronous blocking
-        let blockingObject = gateway.sendRemote(gatewayRouteId, msg)
+        let blockingObject = gateway.sendRemote(msg)
 
         // TODO - implement synchronous blocking
         return blockingObject
@@ -366,8 +363,8 @@ export default class Service implements Gateway {
    * Requesting to send a message to a remote process
    * @param msg
    */
-  public sendRemote(gatewayRouteId: string, msg: Message): void {
+  public sendRemote(msg: Message): void {
     // default is runtime's sendRemote
-    RobotLabXRuntime.getInstance().sendRemote(gatewayRouteId, msg)
+    RobotLabXRuntime.getInstance().sendRemote(msg)
   }
 }

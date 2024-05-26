@@ -228,11 +228,8 @@ export default class Store {
           return null
         }
 
-        // find the local process id for the message to be routed through
-        const gatewayRouteId = this.runtime.getRouteId(msgId)
-
         // TODO - implement synchronous blocking
-        let blockingObject = gateway.sendRemote(gatewayRouteId, msg)
+        let blockingObject = gateway.sendRemote(msg)
         return blockingObject
       }
 

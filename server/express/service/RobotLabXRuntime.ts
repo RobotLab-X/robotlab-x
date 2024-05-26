@@ -2,6 +2,7 @@
 // FIXME - aliases don't appear to be work, neither does root reference path
 import { spawn } from "child_process"
 import { LaunchAction } from "express/framework/LaunchDescription"
+import Gateway from "express/interfaces/Gateway"
 import fs from "fs"
 import http from "http"
 import https from "https"
@@ -813,7 +814,7 @@ export default class RobotLabXRuntime extends Service {
     this.broadcastJsonMessage(json)
   }
 
-  public getGateway(remoteId: string): Service {
+  public getGateway(remoteId: string): Gateway {
     // log.error(`getGateway remoteId:${remoteId}`)
     let entry: RouteEntry = this.routeTable[remoteId]
 
@@ -835,7 +836,10 @@ export default class RobotLabXRuntime extends Service {
    * Requesting to send a message to a remote process
    * @param msg
    */
-  public sendRemote(gatewayRouteId: string, msg: Message): void {
+  public sendRemote(msg: Message): any {
+    const msgId = CodecUtil.getId(msg.name)
+    const gatewayRouteId = this.getRouteId(msgId)
+
     // We should be the correct gateway to route this incoming message
     // it "may" be the process (gatewayRouteId) were are connected directly to
     // or it gatewayRouteId may be a gateway to msg.id remote process
@@ -844,5 +848,6 @@ export default class RobotLabXRuntime extends Service {
     let json = JSON.stringify(msg)
     // and send it to the locally connected process for it to route
     ws.send(json)
+    return null
   }
 }
