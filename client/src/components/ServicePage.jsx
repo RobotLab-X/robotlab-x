@@ -19,7 +19,7 @@ import { useStore } from "../store/store"
 export default function ServicePage({ fullname, name, id }) {
   const registry = useStore((state) => state.registry)
   let service = registry[fullname]
-  let type = service.typeKey
+  let type = service ? service.typeKey : "Unknown"
   const getRepoUrl = useStore((state) => state.getRepoUrl)
   const [showJson, setShowJson] = useState(false)
   const [open, setOpen] = useState(false)
