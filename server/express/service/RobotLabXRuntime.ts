@@ -829,6 +829,10 @@ export default class RobotLabXRuntime extends Service {
   public getRouteId(remoteId: string): string {
     // this is a local gateway id
     // this is the id of the gateway that will route to the remoteId
+    let entry: RouteEntry = this.routeTable[remoteId]
+    if (!entry){
+      return this.defaultRoute.gateway
+    }
     return this.routeTable[remoteId].gatewayId
   }
 
