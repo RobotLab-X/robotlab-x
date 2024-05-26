@@ -26,7 +26,7 @@ class CodecUtil {
    * @returns The ID as a string or null if no ID is present.
    */
   public static getId(name: string | null): string | null {
-    if (name === null) {
+    if (!name) {
       return null
     }
     const atIndex = name.lastIndexOf("@")
