@@ -13,6 +13,10 @@ import { getLogger } from "./Log"
 
 const log = getLogger("Service")
 
+interface NotifyList {
+  [key: string]: SubscriptionListener[]
+}
+
 export default class Service implements Gateway {
   protected startTime: number | null = null
 
@@ -23,8 +27,7 @@ export default class Service implements Gateway {
   hostname: string | null = null
   fullname: string | null = null
 
-  // notifyList = new Map<string, SubscriptionListener[]>()
-  notifyList = {} as any
+  notifyList: NotifyList = {}
 
   pkg: Package | null = null
 
@@ -246,7 +249,12 @@ export default class Service implements Gateway {
       }
     } catch (e) {
       // ui error - user should be informed
-      log.error(e)
+      log.error(`failed to invoke ${this.name}.${msg.method} because ${e}`)
+      if (e instanceof Error) {
+        log.error(e.stack)
+      } else {
+        log.error("Caught an unknown error type:", e)
+      }
     }
     return null
   }
