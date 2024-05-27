@@ -114,16 +114,13 @@ export default class RobotLabXRuntime extends Service {
 
   // FIXME - define route
   addRoute(remoteId: string, gatewayId: string, gateway: string) {
-    // if (remoteId === "rlx1") {
-    //   log.error(`WRONG ROUTE !!!!!! ============================================  ${remoteId} ${gatewayId} ${gateway}`)
-    // }
-    log.error(`addRoute remoteId:${remoteId} gatewayId:${gatewayId} gateway:${gateway}`)
     if (!remoteId || !gatewayId || !gateway) {
       log.error(`addRoute failed - missing parameter remoteId: ${remoteId} gatewayId: ${gatewayId} gateway: ${gateway}`)
       return
     }
 
     if (!(remoteId in this.routeTable)) {
+      log.info(`addRoute - new default route remoteId:${remoteId} gatewayId:${gatewayId} gateway:${gateway}`)
       this.routeTable[remoteId] = new RouteEntry(remoteId, gatewayId, gateway)
       // updating route entry to the "latest route"
       this.defaultRoute = this.routeTable[remoteId]
@@ -435,7 +432,6 @@ export default class RobotLabXRuntime extends Service {
     }
   }
 
-  // TODO - remove version
   startServiceType(serviceName: string, serviceType: string): Service {
     try {
       const check = this.getService(serviceName)
@@ -582,10 +578,12 @@ export default class RobotLabXRuntime extends Service {
   }
 
   registerHost(host: HostData) {
+    log.info(`==== registering host: ${host.hostname} ====`)
     this.hosts[`${host.hostname}`] = host
   }
 
   registerProcess(process: ProcessData) {
+    log.info(`==== registering process: ${process.id}@${process.hostname} ====`)
     this.processes[`${process.id}@${process.hostname}`] = process
   }
 
@@ -620,9 +618,7 @@ export default class RobotLabXRuntime extends Service {
    * @returns
    */
   register(service: Service) {
-    // log.info(`registering service: ${service.name} ${service.constructor.name}`)
-    // log.error(`registering service: ${JSON.stringify(service)}`)
-    log.error(`registering service: ${service.name}@${service.id}`)
+    log.info(`==== registering service: ${service.name}@${service.id} ====`)
 
     // if its a local service - then we understand the type and
     // it can be directly registered
@@ -755,7 +751,7 @@ export default class RobotLabXRuntime extends Service {
    * FIXME - gatewayFullname: String,
    */
   registerConnection(gateway: string, gatewayId: string, url: string, inboundOutbound: string, ws: WebSocket) {
-    log.error(`registering connection gatewayId:${gatewayId} url:${url} i/o:${inboundOutbound}`)
+    log.info(`==== registering connection gatewayId:${gatewayId} url:${url} i/o:${inboundOutbound} ====`)
     // new connection, new route
     this.addRoute(gatewayId, gatewayId, gateway)
 

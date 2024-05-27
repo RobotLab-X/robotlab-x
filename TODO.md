@@ -1,4 +1,9 @@
 ## TODO
+* FIX - services/api/c1  will return blank if its a foriegn ID ... "if" unique should return c1@vigorous-robby
+* Change Runtime to "Nodes" from title .. hide runtime .. so Node rlx1, Node rlx2 ...
+* Make node graph
+* Make reconnect
+* Release Service
 * reduce Store.handleMessage to nothing
 * Make diagram ... "registerProcess" is the first most important client new connection request .. and if it's NOT done, a registerProcess will
   be generated auto-magically with a uuid for the register .. very similar to ROS !

@@ -23,6 +23,7 @@ import {
 } from "@mui/material"
 import ConfigurationDialog from "components/ConfigurationDialog"
 import ConnectDialog from "components/ConnectDialog"
+import RouteTable from "components/RouteTable"
 import ServiceDialog from "components/ServiceDialog"
 import { useProcessedMessage } from "hooks/useProcessedMessage"
 import React, { useEffect, useState } from "react"
@@ -398,33 +399,10 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
               ))}
               Route Table
               {service && service.defaultRoute && (
-                <Card key={0} onClick={() => handleHostClick(service.defaultRoute)} sx={{ margin: 1 }}>
-                  <CardActionArea>
-                    <CardContent>
-                      <Typography component="div" variant="body2" color="text.secondary">
-                        {service.defaultRoute.remoteId} id{" "}
-                        <WestIcon sx={{ marginRight: 1, marginLeft: 1, fontSize: 12 }} />{" "}
-                        {service.defaultRoute.gatewayId} gwid
-                        <WestIcon sx={{ marginRight: 1, marginLeft: 1, fontSize: 12 }} /> {service.defaultRoute.gateway}{" "}
-                        gw <b>default</b>
-                      </Typography>
-                    </CardContent>
-                  </CardActionArea>
-                </Card>
+                <>
+                  <RouteTable service={service} routeTableArray={routeTableArray} handleHostClick={handleHostClick} />
+                </>
               )}
-              {routeTableArray.map((routeEntry, index) => (
-                <Card key={index + 1} onClick={() => handleHostClick(routeEntry)} sx={{ margin: 1 }}>
-                  <CardActionArea>
-                    <CardContent>
-                      <Typography component="div" variant="body2" color="text.secondary">
-                        {routeEntry.remoteId} id <WestIcon sx={{ marginRight: 1, marginLeft: 1, fontSize: 12 }} />{" "}
-                        {routeEntry.gatewayId} gwid <WestIcon sx={{ marginRight: 1, marginLeft: 1, fontSize: 12 }} />{" "}
-                        {routeEntry.gateway} gw
-                      </Typography>
-                    </CardContent>
-                  </CardActionArea>
-                </Card>
-              ))}
               <ReactJson
                 src={service?.connections}
                 name="connections"

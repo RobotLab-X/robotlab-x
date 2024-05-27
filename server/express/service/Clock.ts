@@ -70,7 +70,8 @@ export default class Clock extends Service {
       typeKey: this.typeKey,
       version: this.version,
       hostname: this.hostname,
-      config: this.config
+      config: this.config,
+      notifyList: this.notifyList
     }
   }
 }

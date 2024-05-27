@@ -129,10 +129,6 @@ export default class Service implements Gateway {
     return `uptime: ${uptime / 1000} seconds`
   }
 
-  getFullName(): string {
-    return CodecUtil.getFullName(this.name)
-  }
-
   invoke(methodName: string, ...args: any[]): any {
     let msg = new Message(this.name, methodName, args)
     return this.invokeMsg(msg)
@@ -140,7 +136,7 @@ export default class Service implements Gateway {
 
   invokeMsg(msg: Message): any {
     try {
-      const fullName = this.getFullName()
+      const fullName = this.fullname //this.getFullName()
       const msgFullName = CodecUtil.getFullName(msg.name)
       const msgId = CodecUtil.getId(msgFullName)
       const senderId = CodecUtil.getId(msg.sender)
@@ -150,7 +146,8 @@ export default class Service implements Gateway {
       let ret: any = null
 
       if (msg.data && msg.data.length > 0) {
-        log.info(`--> ${msg.sender} --> ${msg.name}.${msg.method}(${JSON.stringify(msg.data)})`)
+        // log.info(`--> ${msg.sender} --> ${msg.name}.${msg.method}(${JSON.stringify(msg.data)})`)
+        log.info(`--> ${msg.sender} --> ${msg.name}.${msg.method}(...)`)
       } else {
         log.info(`--> ${msg.sender} --> ${msg.name}.${msg.method}()`)
       }
@@ -240,7 +237,7 @@ export default class Service implements Gateway {
         if (this.notifyList[msg.method]) {
           this.notifyList[msg.method].forEach((listener: any) => {
             let subMsg = new Message(listener.callbackName, listener.callbackMethod, [ret])
-            subMsg.sender = this.getFullName()
+            subMsg.sender = this.fullname
             // log.info(`<- notify ${listener.callbackName}.${listener.callbackMethod}`)
             this.invokeMsg(subMsg)
           })
