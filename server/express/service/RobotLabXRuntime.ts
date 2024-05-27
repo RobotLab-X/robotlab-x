@@ -850,4 +850,8 @@ export default class RobotLabXRuntime extends Service {
     ws.send(json)
     return null
   }
+
+  public getConfigName(): string {
+    return this.configName
+  }
 }

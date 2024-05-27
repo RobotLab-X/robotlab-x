@@ -1,8 +1,8 @@
-import Message from "express/models/Message"
 import WebSocket from "ws" // Import WebSocket module
 import { getLogger } from "../framework/Log"
 import { Repo } from "../framework/Repo"
 import Service from "../framework/Service"
+import Message from "../models/Message"
 import MyRobotLabProxy from "../service/MyRobotLabProxy"
 import RobotLabXRuntime from "../service/RobotLabXRuntime"
 
@@ -10,8 +10,15 @@ const log = getLogger("MyRobotLabConnector")
 export default class MyRobotLabConnector extends Service {
   private webSocket?: WebSocket = null // Optional WebSocket object
 
-  connecting = false
-  connected = false
+  connecting: boolean = false
+
+  connected: boolean = false
+
+  mrlId: string = null
+
+  // notifyList = new Map<string, SubscriptionListener[]>()
+  proxyNotifyList = {} as any
+
   // FIXME - WRONG ! should all be handled through RobotLabXRuntime
   repo = new Repo()
 
@@ -141,7 +148,6 @@ export default class MyRobotLabConnector extends Service {
         log.info("Received Atmosphere X")
         return
       }
-      log.info(`mrl --> ${this.name} ${str}`)
       this.onMessageReceived(str)
     })
 
@@ -156,17 +162,28 @@ export default class MyRobotLabConnector extends Service {
       this.connected = false
       this.connecting = false
       this.webSocket = undefined
+      this.invoke("broadcastState")
     })
   }
 
-  // Method to handle received messages
+  /**
+   * me <--- mrl method to handle received messages from mrl instance
+   * Decode the message (twice) and address and route it to the correct service
+   * @param message
+   * @returns
+   */
   private onMessageReceived(message: string) {
     try {
+      // double decode
       let msg = JSON.parse(message)
-      // double pars :(
       if (msg.data) {
-        msg.data[0] = JSON.parse(msg.data[0])
+        for (let i = 0; i < msg.data.length; i++) {
+          msg.data[i] = JSON.parse(msg.data[i])
+        }
       }
+
+      log.error(`---> ${this.name} <--- mrl ${msg.name}.${msg.method} from ${msg.sender}`)
+
       if (msg.method == "onServiceNames") {
         this.onServiceNames(msg)
       } else if (msg.method == "describe") {
@@ -175,24 +192,8 @@ export default class MyRobotLabConnector extends Service {
         log.info("addListener message")
       } else if (msg.method == "onService") {
         let mrlService = msg.data[0]
-        log.error(`mrlService ${JSON.stringify(mrlService)}`)
-        log.error(`mrlService.name ${JSON.stringify(mrlService.name)}`)
-
-        // Resolved remoteId - can add connection now
-        // Other remote->remote services might be registered from the
-        // remote mrl instance "chain", so routeTable would need to adjusted
-        // for all "remote->remote" services they would all use this connection
-        // How to identify "local" remote runtime?
-        // Should be priority is ask local runtime for process id
-
-        // This filter has a bug, for remote->remote services, but should be worky
-        // for local->remote services
 
         if (mrlService.name == "runtime") {
-          // add/register our connection
-          // Store.getInstance().addClientConnection(this.fullname, mrlService.id, this.config.wsUrl, this.webSocket)
-          // FIXME add gateway and move to Runtime
-          // Store.getInstance().addClientConnection(mrlService.id, this.config.wsUrl, this.webSocket)
           RobotLabXRuntime.getInstance().registerConnection(
             this.fullname,
             mrlService.id,
@@ -202,19 +203,36 @@ export default class MyRobotLabConnector extends Service {
           )
         }
 
-        let service: MyRobotLabProxy = this.repo.getService(
+        // FIXME - try to make "unknown" type
+        // THIS IS REALLY JUST A PLACE HOLDER WITH NAME AND ID INFO
+
+        let service: MyRobotLabProxy = new MyRobotLabProxy(
           mrlService.id,
           mrlService.name,
           "MyRobotLabProxy",
           "0.0.1",
           "unknown"
         )
+
+        this.mrlId = mrlService.id
         service.service = mrlService
-        log.error("HERE !!!!!!!!!!!!!!!!!!!!!!!!")
+        service.connectorName = this.name
+        service.connectorId = this.id
+        // TODO - add MrlType to the root of the MyRobotLabProxy
+        log.info(`==== proxy registering ${JSON.stringify(mrlService.name)} ====`)
         RobotLabXRuntime.getInstance().register(service)
-        // RobotLabXRuntime.getInstance().invoke("getRegistry")
       } else {
-        log.error(`Unhandled message: ${message}`)
+        log.error(
+          `---> message for proxy: sender ${msg.sender} (${msg.name}.${msg.method} <--- ${msg.sender} ${JSON.stringify(msg.data)}`
+        )
+        this.invokeMsg(msg)
+        // MRL identifies this proxy as "name":"runtime@webgui-client" ... which it broadcasts to all
+        // not willing to fix it !!!
+
+        // Make a RLX proxy message wrapper for the decoded MRL message
+
+        // Address the message correctly (mrl does not address the message correctly)
+        // So the connector must maintain a notifyList for all mrl services
       }
     } catch (error) {
       console.error("Failed to parse message:", error, message)
@@ -266,7 +284,34 @@ export default class MyRobotLabConnector extends Service {
       hostname: this.hostname,
       config: this.config,
       connected: this.connected,
-      connecting: this.connecting
+      connecting: this.connecting,
+      notifyList: this.notifyList
     }
+  }
+
+  /**
+   * rlx ---> mrl
+   * Encode the message and send it to the mrl remote process
+   * @param msg rlx message
+   */
+  public sendRemote(msg: Message): any {
+    // Message sent to proxy service
+    log.error(`mrl <--- rlx sendRemote name ${msg.name} method ${msg.method} data ${msg.data ?? ""}`)
+    // let proxy: Service = RobotLabXRuntime.getInstance().getService(msg.name)
+    // proxy.invoke("onMessage", msg)
+
+    // Encode each item in the msg.data array
+    if (msg.data) {
+      msg.data = msg.data.map((item) => JSON.stringify(item))
+    }
+
+    // Message sent to remote service
+    let json = JSON.stringify(msg)
+    this.webSocket.send(json)
+    return null
+  }
+
+  publishMessage(mrlMessage: any) {
+    return mrlMessage
   }
 }

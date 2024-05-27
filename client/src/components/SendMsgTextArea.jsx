@@ -1,4 +1,4 @@
-import { Box } from "@mui/material"
+import { Box, TextField } from "@mui/material"
 import Button from "@mui/material/Button"
 import React, { useState } from "react"
 import { useStore } from "store/store"
@@ -17,12 +17,19 @@ const SendMsgTextArea = ({ msg }) => {
 
   return (
     <Box sx={{ maxWidth: 300, margin: "auto", paddingTop: 2 }}>
-      <textarea
-        rows={10}
-        placeholder="Type your message here..."
+      <TextField
+        id="adhoc-message"
+        label="Send adhoc message"
+        multiline
+        rows={4}
+        placeholder="Enter your message here"
+        variant="outlined"
         value={message}
+        fullWidth
         onChange={(e) => setMessage(e.target.value)}
-      /><br/>
+      />
+
+      <br />
       <Button variant="contained" color="primary" onClick={handleSendClick} disabled={message.trim() === ""}>
         Send
       </Button>
