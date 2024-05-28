@@ -12,13 +12,7 @@ import {
   InputAdornment,
   InputLabel,
   MenuItem,
-  Paper,
   Select,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableRow,
   TextField,
   Typography
 } from "@mui/material"
@@ -189,7 +183,7 @@ export default function Ollama({ name, fullname, id }) {
                   variant="outlined"
                   fullWidth
                   margin="normal"
-                  value={config?.url}
+                  value={config?.url ?? ""}
                   onChange={handleConfigChange}
                   sx={{ flex: 1 }} // Ensure consistent width
                 />
@@ -200,7 +194,7 @@ export default function Ollama({ name, fullname, id }) {
                   fullWidth
                   margin="normal"
                   type="number"
-                  value={config?.maxHistory}
+                  value={config?.maxHistory ?? 0}
                   onChange={handleConfigChange}
                   sx={{ flex: 1 }} // Ensure consistent width
                 />
@@ -242,23 +236,35 @@ export default function Ollama({ name, fullname, id }) {
               </Box>
             </Box>
           ) : null}
-
-          <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "30%" } }}>
-            <TableContainer component={Paper}>
-              <Table>
-                <TableBody>
-                  {chatHistory.map((chat, index) => (
-                    <TableRow key={index}>
-                      <TableCell align={chat.user === "You" ? "right" : "left"}>{chat.message}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Box>
-          <Box sx={{ width: { xs: "100%", sm: "80%", md: "30%" } }}>
+          <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "50%" }, mx: "auto", textAlign: "left" }}>
+            <Box sx={{ p: 2 }}>
+              {chatHistory.map((chat, index) => (
+                <Box
+                  key={index}
+                  sx={{
+                    display: "flex",
+                    justifyContent: chat.user === "You" ? "flex-end" : "flex-start",
+                    mb: 1
+                  }}
+                >
+                  <Box
+                    sx={{
+                      backgroundColor: chat.user === "You" ? "lightblue" : "#d4edda", // Muted green color
+                      color: "black",
+                      borderRadius: 2,
+                      maxWidth: "75%",
+                      wordBreak: "break-word",
+                      padding: 1,
+                      display: "inline-block"
+                    }}
+                  >
+                    {chat.message}
+                  </Box>
+                </Box>
+              ))}
+            </Box>
             <TextField
-              sx={{ width: "100%" }}
+              sx={{ width: "100%", mt: 2 }} // Added margin-top for spacing
               label="Type your message"
               variant="outlined"
               fullWidth

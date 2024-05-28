@@ -123,8 +123,8 @@ const AppSidebar = () => {
             Tabs
           </MenuItem>
 
-          <MenuItem component={<Link to="/graph" />} icon={<HubOutlinedIcon />}>
-            Graph
+          <MenuItem component={<Link to="/nodes" />} icon={<HubOutlinedIcon />}>
+            Nodes
           </MenuItem>
 
           <MenuItem component={<Link to="/network" />} icon={<TroubleshootOutlinedIcon />}>

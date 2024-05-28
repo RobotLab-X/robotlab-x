@@ -6,16 +6,21 @@ import TextField from "@mui/material/TextField"
 import Typography from "@mui/material/Typography"
 import useService from "framework/useService"
 import React, { useState } from "react"
+import ReactJson from "react-json-view"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
+import { useStore } from "../store/store"
 import useServiceSubscription from "../store/useServiceSubscription"
 
 export default function MyRobotLabConnector({ name, fullname, id }) {
   const [wsUrl, setWsUrl] = useState(`ws://localhost:8888/api/messages?id=${id}`)
   const [stats, setStats] = useState({ version: "", numberOfServices: 0 })
 
+  const { useMessage, sendTo } = useStore()
   const { send } = useService(id, name)
-  const serviceMsg = useServiceSubscription(fullname, [])
+  const publishMessageMsg = useMessage(fullname, "publishMessage")
+  const serviceMsg = useServiceSubscription(fullname, ["publishMessage"])
   const service = useProcessedMessage(serviceMsg)
+  const publishMessage = useProcessedMessage(publishMessageMsg)
 
   const handleConnect = async () => {
     send("connect", wsUrl)
@@ -69,6 +74,9 @@ export default function MyRobotLabConnector({ name, fullname, id }) {
             </Box>
           )}
         </Box>
+        {publishMessage && (
+          <ReactJson src={publishMessage} name="service" displayDataTypes={false} displayObjectSize={false} />
+        )}
       </Grid>
     </Grid>
   )

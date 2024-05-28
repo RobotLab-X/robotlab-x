@@ -15,6 +15,23 @@ import AppSidebar from "./layout/global/AppSidebar"
 import Topbar from "./layout/global/Topbar"
 import { ColorModeContext, useMode } from "./theme"
 
+// Suppress the ResizeObserver loop error globally
+window.addEventListener("error", (event) => {
+  if (event.message && event.message.startsWith("ResizeObserver loop completed with undelivered notifications.")) {
+    event.stopImmediatePropagation()
+  }
+})
+
+window.addEventListener("unhandledrejection", (event) => {
+  if (
+    event.reason &&
+    event.reason.message &&
+    event.reason.message.startsWith("ResizeObserver loop completed with undelivered notifications.")
+  ) {
+    event.stopImmediatePropagation()
+  }
+})
+
 /**
  * This effectively is the implementation of RobotLabXUI type "runtime"
  * TODO - needs similar properties as all services
@@ -103,7 +120,8 @@ function App() {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/tabs" element={<TabLayout tabName="" />} />
               <Route path="/tabs/:tabName" element={<TabLayout />} />
-              <Route path="/nodes/:nodeName" element={<Nodes />} />
+              <Route path="/nodes" element={<Nodes nodeName="" />} />
+              <Route path="/nodes/:nodeId" element={<Nodes />} />
               <Route path="/network" element={<Network />} />
               <Route path="/webxr/:tabName" element={<WebXR />} />
             </Routes>

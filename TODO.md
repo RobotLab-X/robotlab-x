@@ -1,4 +1,6 @@
 ## TODO
+* DETERMINISTIC UNIT TESTS !!!
+* click on left card on Home.jsx and it collapses to only the services that are in that Node
 * FIX - services/api/c1  will return blank if its a foriegn ID ... "if" unique should return c1@vigorous-robby
 * Change Runtime to "Nodes" from title .. hide runtime .. so Node rlx1, Node rlx2 ...
 * Make node graph
@@ -75,6 +77,10 @@ CoppeliaSim, formerly known as V-REP, is a versatile and powerful robot simulati
 ARGoS is a modular, multi-robot simulator that allows the simulation of large-scale robot swarms.
 
 OpenRAVE is a planning and simulation environment for robotics. It focuses on providing an environment for testing, developing, and deploying motion planning algorithms.
+
+Unreal
+
+Unity
 
 
 docker run -d --network=host -v open-webui:/app/backend/data -e OLLAMA_BASE_URL=http://fast:11434 --name open-webui --restart always ghcr.io/open-webui/open-webui:main

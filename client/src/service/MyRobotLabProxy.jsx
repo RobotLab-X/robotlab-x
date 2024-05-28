@@ -1,6 +1,8 @@
 // MyRobotLabProxy.jsx
-import { Box, Button, Paper, Typography } from "@mui/material"
+import React, { useState } from "react"
 import ReactJson from "react-json-view"
+import Clock from "../components/myrobotlabconnector/Clock"
+import ProgramAB from "../components/myrobotlabconnector/ProgramAB"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
 import { useStore } from "../store/store"
 import useServiceSubscription from "../store/useServiceSubscription"
@@ -15,14 +17,18 @@ export default function MyRobotLabProxy({ name, fullname, id }) {
   // rlx uses broadcastState/onBroadcastState to broadcast state changes
   const proxyMsg = useMessage(fullname, "publishMessage")
   const epochMsg = useMessage(fullname, "publishEpoch")
+  const responseMsg = useMessage(fullname, "getResponse")
 
   // creates subscriptions to topics and returns the broadcastState message reference
-  const serviceMsg = useServiceSubscription(fullname, ["publishMessage", "publishEpoch"])
+  const serviceMsg = useServiceSubscription(fullname, ["publishMessage", "publishEpoch", "getResponse"])
 
   // processes the msg.data[0] and returns the data
   const proxy = useProcessedMessage(proxyMsg)
   const service = useProcessedMessage(serviceMsg)
   const epoch = useProcessedMessage(epochMsg)
+  const response = useProcessedMessage(responseMsg)
+
+  const [inputValue, setInputValue] = useState("")
 
   // clock start
   const handleStart = () => {
@@ -32,6 +38,17 @@ export default function MyRobotLabProxy({ name, fullname, id }) {
   // clock stop
   const handleStop = () => {
     sendTo(fullname, "stopClock")
+  }
+
+  const handleInputSubmit = (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault()
+      // Handle the input value here
+      console.log("Input submitted:", inputValue)
+      sendTo(fullname, "getResponse", inputValue)
+      // Clear the input field
+      setInputValue("")
+    }
   }
 
   return (
@@ -52,30 +69,18 @@ export default function MyRobotLabProxy({ name, fullname, id }) {
       */}
 
       {service?.serviceType.simpleName === "Clock" && (
-        <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "30%" } }}>
-          <Paper elevation={3} sx={{ p: 2, m: 2 }}>
-            <Box sx={{ m: 2 }}>
-              <Typography variant="h4" sx={{ mb: 2 }}>
-                Interval (ms) <br /> {service?.config.interval}&nbsp;
-              </Typography>
-              <Typography variant="h4" sx={{ mb: 2 }}>
-                Timestamp (ms) <br /> {epoch}&nbsp;
-              </Typography>
-              <Typography variant="h4" sx={{ mb: 2 }}>
-                Formatted Date/Time
-                <br /> {epoch}&nbsp;
-              </Typography>
-              <Box>
-                <Button variant="contained" color="primary" onClick={handleStart}>
-                  Start
-                </Button>
-                <Button variant="contained" color="secondary" onClick={handleStop} sx={{ ml: 2 }}>
-                  Stop
-                </Button>
-              </Box>
-            </Box>
-          </Paper>
-        </Box>
+        <Clock service={service} epoch={epoch} handleStart={handleStart} handleStop={handleStop} />
+      )}
+
+      {service?.serviceType.simpleName === "ProgramAB" && (
+        <ProgramAB
+          service={service}
+          epoch={epoch}
+          handleInputSubmit={handleInputSubmit}
+          inputValue={inputValue}
+          setInputValue={setInputValue}
+          response={response}
+        />
       )}
     </>
   )
