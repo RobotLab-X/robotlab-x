@@ -1,5 +1,9 @@
 ## TODO
+* change the repo/service/{serviceName}/ -- all filenames same --- including config.yml
 * DETERMINISTIC UNIT TESTS !!!
+* add Ollama OpenAI Grok
+* https://www.npmjs.com/package/rclnodejs ROS2 Node would be nice, but explodes in build
+* Faster-Whisper -> https://www.youtube.com/watch?v=mdV8lETtGY4 (interesting demo)
 * click on left card on Home.jsx and it collapses to only the services that are in that Node
 * FIX - services/api/c1  will return blank if its a foriegn ID ... "if" unique should return c1@vigorous-robby
 * Change Runtime to "Nodes" from title .. hide runtime .. so Node rlx1, Node rlx2 ...
