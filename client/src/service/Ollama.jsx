@@ -16,6 +16,8 @@ import {
   TextField,
   Typography
 } from "@mui/material"
+import ReactJson from "react-json-view"
+
 import React, { useEffect, useState } from "react"
 // import ReactJson from "react-json-view"
 import { useProcessedMessage } from "hooks/useProcessedMessage"
@@ -157,7 +159,7 @@ export default function Ollama({ name, fullname, id }) {
             {editMode ? <ExpandLessIcon /> : <ExpandMoreIcon />}
           </h3>
           {editMode ? (
-            <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "30%" } }}>
+            <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "80%" } }}>
               <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                 <FormControl variant="outlined" sx={{ minWidth: 200 }}>
                   <InputLabel id="model-select-label">Model</InputLabel>
@@ -175,7 +177,6 @@ export default function Ollama({ name, fullname, id }) {
                   </Select>
                 </FormControl>
               </Box>
-
               <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
                 <TextField
                   label="URL"
@@ -199,7 +200,6 @@ export default function Ollama({ name, fullname, id }) {
                   sx={{ flex: 1 }} // Ensure consistent width
                 />
               </Box>
-
               <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", mt: 5 }}>
                 <IconButton onClick={handlePrev} disabled={promptKeys.length <= 1}>
                   <ArrowBack />
@@ -219,8 +219,25 @@ export default function Ollama({ name, fullname, id }) {
                     <Typography variant="h5" component="div">
                       {currentPrompt.description}
                     </Typography>
+                    <Typography variant="h5" component="div">
+                      Prompt
+                    </Typography>
                     <Typography variant="subtitle1" component="span" color="textSecondary">
-                      {currentPrompt.prompt}
+                      {currentPrompt.messages[0].content}
+                    </Typography>
+                    <Typography variant="h5" component="div">
+                      Tools
+                    </Typography>
+                    <Typography variant="subtitle1" component="span" color="textSecondary">
+                      <pre>{currentPrompt.tools}</pre>
+                      {currentPrompt.tools && (
+                        <ReactJson
+                          src={currentPrompt.tools}
+                          name="tools"
+                          displayDataTypes={false}
+                          displayObjectSize={false}
+                        />
+                      )}
                     </Typography>
                   </CardContent>
                 </Card>
@@ -228,15 +245,14 @@ export default function Ollama({ name, fullname, id }) {
                   <ArrowForward />
                 </IconButton>
               </Box>
-
-              <Box sx={{ mt: 2, display: "flex", gap: 2 }}>
+              <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end", gap: 2 }}>
                 <Button variant="contained" color="primary" onClick={handleSaveConfig}>
                   Save
                 </Button>
-              </Box>
+              </Box>{" "}
             </Box>
           ) : null}
-          <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "50%" }, mx: "auto", textAlign: "left" }}>
+          <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "50%" }, mx: "auto" }}>
             <Box sx={{ p: 2 }}>
               {chatHistory.map((chat, index) => (
                 <Box
