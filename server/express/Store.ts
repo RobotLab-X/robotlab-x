@@ -268,9 +268,9 @@ export default class Store {
       this.express.use("/", express.static(path.join(Main.distRoot, "client")))
     }
     // BELOW - is this API RELATED ONLY?
-    this.express.use("/images", express.static(path.join(Main.expreessRoot, "images")))
-    this.express.use("/repo", express.static(path.join(Main.expreessRoot, "repo")))
-    this.express.use("/service", express.static(path.join(Main.expreessRoot, "service")))
+    this.express.use("/images", express.static(path.join(Main.expressRoot, "images")))
+    this.express.use("/repo", express.static(path.join(Main.expressRoot, "repo")))
+    this.express.use("/service", express.static(path.join(Main.expressRoot, "service")))
     this.express.use(bodyParser.json())
     this.express.use(bodyParser.urlencoded({ extended: false }))
   }

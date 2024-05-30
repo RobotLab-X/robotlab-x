@@ -342,12 +342,37 @@ export default class RobotLabXRuntime extends Service {
 
     id = readConfig?.id ?? NameGenerator.getName()
 
+    let instance: RobotLabXRuntime = null
+
     if (!RobotLabXRuntime.instance) {
       RobotLabXRuntime.instance = new RobotLabXRuntime(id, "runtime", "RobotLabXRuntime", "0.0.1", os.hostname())
-      this.instance.configName = configName
+      instance = RobotLabXRuntime.instance
+      Store.createInstance(RobotLabXRuntime.instance)
+      instance.configName = configName
     } else {
       log.error("RobotLabXRuntime instance already exists")
     }
+
+    // FIXME - have a Repo.createInstance() and have it load in ElectronStarter
+    instance.repo.load()
+
+    // FIXME remove this
+    fs.mkdir(instance.dataDir, { recursive: true }, (err) => {
+      if (err) {
+        log.error(`Error creating data directory: ${err}`)
+      }
+    })
+    fs.mkdir(path.join(instance.configDir, instance.configName), { recursive: true }, (err) => {
+      if (err) {
+        log.error(`Error creating data directory: ${err}`)
+      }
+    })
+
+    // HANDLED BY createInstance
+    // this.config = this.readConfig("runtime", this.config)
+    // log.info(`Runtime config loaded ${JSON.stringify(this.config)}`)
+    // this.id = this.config.id
+
     return RobotLabXRuntime.instance
   }
 
@@ -372,26 +397,8 @@ export default class RobotLabXRuntime extends Service {
 
   startService(): void {
     log.info("starting runtime")
-
-    this.repo.load()
-
-    fs.mkdir(this.dataDir, { recursive: true }, (err) => {
-      if (err) {
-        log.error(`Error creating data directory: ${err}`)
-      }
-    })
-    fs.mkdir(path.join(this.configDir, this.configName), { recursive: true }, (err) => {
-      if (err) {
-        log.error(`Error creating data directory: ${err}`)
-      }
-    })
-
-    this.config = this.readConfig("runtime", this.config)
-    log.info(`Runtime config loaded ${JSON.stringify(this.config)}`)
-    this.id = this.config.id
-    Store.createInstance(RobotLabXRuntime.instance)
     super.startService()
-    log.info("starting runtime")
+    log.info("started runtime")
   }
 
   installInfo(msg: string) {
@@ -430,6 +437,7 @@ export default class RobotLabXRuntime extends Service {
   }
 
   startServiceType(serviceName: string, serviceType: string): Service {
+    log.error(`startServiceType: ${serviceName}, type: ${serviceType}`)
     try {
       const check = this.getService(serviceName)
       if (check != null) {
@@ -440,7 +448,7 @@ export default class RobotLabXRuntime extends Service {
       log.info(`starting service: ${serviceName}, type: ${serviceType} in ${process.cwd()}`)
 
       // repo should be immutable - make a copy to service/{name} if one doesn't already exist
-      const targetDir = path.join(Main.expreessRoot, `service/${serviceName}`)
+      const targetDir = path.join(Main.expressRoot, `service/${serviceName}`)
 
       this.repo.copyPackage(serviceName, serviceType)
       log.info(`successful ${targetDir}`)
@@ -477,7 +485,12 @@ export default class RobotLabXRuntime extends Service {
       // if (pkg.platform === "node" || pkg.platform === "myrobotlab") {
       this.installInfo(`node process ${serviceName} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
       try {
-        service = this.repo.getService(this.getId(), serviceName, serviceType, version, this.getHostname())
+        if (serviceName === "runtime" && serviceType === "RobotLabXRuntime") {
+          log.info("system starting - local runtime already created")
+          service = RobotLabXRuntime.instance
+        } else {
+          service = this.repo.getService(this.getId(), serviceName, serviceType, version, this.getHostname())
+        }
       } catch (e: unknown) {
         const error = e as Error
 

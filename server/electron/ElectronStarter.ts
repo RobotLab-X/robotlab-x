@@ -27,7 +27,7 @@ export default class Main {
   // The root directory of the app in both development and production
   public static distRoot: string = null
   // The root directory of the express server in both development and production
-  public static expreessRoot: string = null
+  public static expressRoot: string = null
   // The root of the extracted asar file if it exists
   public static extractPath: string
 
@@ -85,13 +85,13 @@ export default class Main {
 
   private static bootServer() {
     log.info("bootServer: starting server")
-    log.error(`bootServer: Main.isPackaged == ${Main.isPackaged}`)
+    log.info(`bootServer: Main.isPackaged == ${Main.isPackaged}`)
     let asarPath = Main.isPackaged ? path.join(process.resourcesPath, "app.asar") : null
     Main.extractPath = path.join(app.getPath("userData"), "resources")
-    log.error(`bootServer: Main.extractPath == ${Main.extractPath} ==`)
-    log.error(`bootServer: __dirname == ${__dirname}`)
-    log.error(`bootServer: asarPath == ${asarPath}`)
-    log.error(`bootServer: process.cwd() == ${process.cwd()}`)
+    log.info(`bootServer: Main.extractPath == ${Main.extractPath} ==`)
+    log.info(`bootServer: __dirname == ${__dirname}`)
+    log.info(`bootServer: asarPath == ${asarPath}`)
+    log.info(`bootServer: process.cwd() == ${process.cwd()}`)
 
     if (asarPath && fs.existsSync(asarPath)) {
       // FIXME - make a flag based on major/minor version which replaces repo if changed
@@ -99,18 +99,17 @@ export default class Main {
       // Extract the asar file if it hasn't been extracted already
       if (!fs.existsSync(Main.extractPath)) {
         // fs.mkdirSync(Main.extractPath, { recursive: true })
-        log.error(`Extracting asar ${asarPath} ... to ${Main.extractPath}`)
+        log.error(`bootServer: extracting asar ${asarPath} ... to ${Main.extractPath}`)
         asar.extractAll(asarPath, Main.extractPath)
       }
       Main.distRoot = path.join(Main.extractPath, "dist")
     } else {
-      log.error(`onReady: asarPath == ${asarPath} does not exist dev mod ???`)
       Main.distRoot = path.join(process.cwd())
     }
 
     log.error(`bootServer: Main.distRoot ==== ${Main.distRoot} ====`)
-    Main.expreessRoot = path.join(Main.distRoot, "express/public")
-    log.error(`bootServer: Main.expressRoot == ${Main.expreessRoot}`)
+    Main.expressRoot = path.join(Main.distRoot, "express/public")
+    log.error(`bootServer: Main.expressRoot == ${Main.expressRoot}`)
 
     const argv = minimist(process.argv.slice(2))
     log.info(`bootServer: argv: ${JSON.stringify(argv)}`)
@@ -120,8 +119,15 @@ export default class Main {
     }
 
     let configName = argv.config ? argv.config : "default"
+    // must create instance before startServiceType to fix chicken egg problem
     let runtime: RobotLabXRuntime = RobotLabXRuntime.createInstance("./config", configName)
-    runtime.startService()
+    // Store needs getId/id to be set
+
+    // starting self .. chicken egg problem
+    // but starting self is a good way to have runtime follow the same processes
+    // as other services and have a consistent lifecycle
+    // runtime.startService()
+    runtime.startServiceType("runtime", "RobotLabXRuntime")
 
     // register the host
     let host = HostData.getLocalHostData(os)

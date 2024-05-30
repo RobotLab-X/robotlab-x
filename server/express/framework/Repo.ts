@@ -24,7 +24,7 @@ export class Repo {
     // FIXME - needs to be {dist}/espress/public /repo
     // FIXME - express root is {dist}/express/public /service
     // FIXME - express root is {dist}/express/public /images
-    this.processRepoDirectory(path.join(Main.expreessRoot, "repo"))
+    this.processRepoDirectory(path.join(Main.expressRoot, "repo"))
     this.loadServices()
   }
 
@@ -135,8 +135,8 @@ export class Repo {
   }
 
   public copyPackage(name: string, typeKey: string) {
-    const source = path.join(Main.expreessRoot, `repo/${typeKey}/`)
-    const target = path.join(Main.expreessRoot, `/service/${name}`)
+    const source = path.join(Main.expressRoot, `repo/${typeKey}/`)
+    const target = path.join(Main.expressRoot, `/service/${name}`)
     this.copyRecursiveSync(source, target)
     log.info("copy operation completed successfully")
   }

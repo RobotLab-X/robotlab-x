@@ -70,17 +70,13 @@ export default class Service implements Gateway {
   getPackage() {
     try {
       log.info(`${this.name} getting package`)
-      const targetDir = path.join(Main.expreessRoot, `service/${this.name}`)
-
-      // RobotLabXRuntime.getInstance().getRepo().copyPackage(serviceName, serviceType)
-      // this.repo.copyPackage(serviceName, serviceType)
+      const targetDir = path.join(Main.expressRoot, `service/${this.name}`)
       log.info(`successful ${targetDir}`)
 
       const pkgYmlFile = `${targetDir}/package.yml`
 
       // loading type info
       log.info(`loading type data from ${pkgYmlFile}`)
-
       const file = fs.readFileSync(pkgYmlFile, "utf8")
       this.pkg = YAML.parse(file)
     } catch (e) {
