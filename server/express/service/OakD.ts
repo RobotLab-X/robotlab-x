@@ -5,7 +5,13 @@ import Service from "../framework/Service"
 const log = getLogger("OakD")
 
 export default class OakD extends Service {
-  config = {}
+  config = {
+    installed: false
+  }
+
+  installer: InstallerPython = null
+
+  pythonVersion: string = null
 
   constructor(
     public id: string,
@@ -20,8 +26,16 @@ export default class OakD extends Service {
   startService(): void {
     // log.info(`Starting OakD service`)
     super.startService()
-    let installer = new InstallerPython(this)
+    this.installer = new InstallerPython(this)
     // platformInfo = installer.install(this.pkg)
+  }
+
+  checkPythonVersion(): any {
+    this.installer.checkPythonVersion("3.6")
+  }
+
+  checkPipVersion(): any {
+    this.installer.checkPipVersion("19.0")
   }
 
   // Not sure if this is the best way to exclude members from serialization

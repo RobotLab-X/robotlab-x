@@ -1,6 +1,7 @@
 import fs from "fs"
 import path from "path"
 import yaml from "yaml"
+import Main from "../../electron/ElectronStarter"
 import { getLogger } from "./Log"
 
 const log = getLogger("Repo")
@@ -12,7 +13,18 @@ export class Repo {
 
   load() {
     log.info("loading repo")
-    this.processRepoDirectory("./express/public/repo")
+    // DEV
+    // client is client/{dist} -> copied to  project-root/server/dist/client
+    // {dist} will be project-root/server/dist
+
+    // CLIENT
+    // FIXME - client is {dist}/client
+
+    // SERVER
+    // FIXME - needs to be {dist}/espress/public /repo
+    // FIXME - express root is {dist}/express/public /service
+    // FIXME - express root is {dist}/express/public /images
+    this.processRepoDirectory(path.join(Main.expreessRoot, "repo"))
     this.loadServices()
   }
 
@@ -123,8 +135,8 @@ export class Repo {
   }
 
   public copyPackage(name: string, typeKey: string) {
-    const source = `./express/public/repo/${typeKey}/`
-    const target = `./express/public/service/${name}`
+    const source = path.join(Main.expreessRoot, `repo/${typeKey}/`)
+    const target = path.join(Main.expreessRoot, `/service/${name}`)
     this.copyRecursiveSync(source, target)
     log.info("copy operation completed successfully")
   }

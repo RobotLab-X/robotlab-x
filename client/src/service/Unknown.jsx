@@ -1,3 +1,4 @@
+import { Typography } from "@mui/material"
 import * as React from "react"
 import { useStore } from "../store/store"
 
@@ -12,5 +13,14 @@ export default function Unknown({ name, fullname, id }) {
   let registry = useStore((state) => state.registry)
   let service = registry[fullname]
 
-  return <>Unknown - This type of service does not have a defined ui below is its data</>
+  return (
+    <>
+      <Typography variant="h3" component="div">
+        Node {service?.id} could not find requested service type {service?.requestTypeKey} in the local repository.
+      </Typography>
+      <Typography variant="h6" component="div">
+        A minimal service definition was created for this service and will provide routing and network services.
+      </Typography>
+    </>
+  )
 }

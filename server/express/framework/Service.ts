@@ -1,7 +1,9 @@
 import InstallStatus from "express/models/InstallStatus"
 import Package from "express/models/Package"
 import fs from "fs"
+import path from "path"
 import YAML from "yaml"
+import Main from "../../electron/ElectronStarter"
 import Gateway from "../interfaces/Gateway"
 import InstallLog from "../models/InstallLog"
 import Message from "../models/Message"
@@ -68,7 +70,7 @@ export default class Service implements Gateway {
   getPackage() {
     try {
       log.info(`${this.name} getting package`)
-      const targetDir = `./express/public/service/${this.name}`
+      const targetDir = path.join(Main.expreessRoot, `service/${this.name}`)
 
       // RobotLabXRuntime.getInstance().getRepo().copyPackage(serviceName, serviceType)
       // this.repo.copyPackage(serviceName, serviceType)
@@ -165,6 +167,7 @@ export default class Service implements Gateway {
       // FIXME - check if blocking or non-blocking
       // use gateway to send message to remote service
       if (msgId !== id) {
+        log.info(`remote message ${msgFullName}.${msg.method} from ${msg.sender}.${msg.method}`)
         // dynamically add route to gateway
         if (msg.gateway) {
           runtime.addRoute(msgId, msg.gatewayId, msg.gateway)
@@ -196,6 +199,9 @@ export default class Service implements Gateway {
       // get the service - asynchronous buffered or synchronous non-buffered
       // default synchronous non-buffered
       if (msgFullName !== fullName) {
+        log.info(
+          `message to different service ${msgFullName} !== ${fullName} ${msgFullName}.${msg.method} from ${msg.sender}.${msg.method}`
+        )
         let service = runtime.getService(msgFullName)
         if (service === null) {
           log.error(`service ${msgFullName} not found`)
@@ -211,6 +217,7 @@ export default class Service implements Gateway {
       // FIXME - check if blocking or non-blocking
       // is this the service to invoke the method on ?
       if (fullName === msgFullName) {
+        log.info(`local message ${msgFullName}.${msg.method} from ${msg.sender}.${msg.method}`)
         let obj: any = this // cast away typescript
 
         if (!msg.method) {

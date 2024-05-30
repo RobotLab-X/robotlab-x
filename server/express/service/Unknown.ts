@@ -3,6 +3,10 @@ import Service from "../framework/Service"
 
 const log = getLogger("Unknown")
 
+/**
+ * This is a placeholder for an unknown service
+ * The requested typeKey might be available in requestedTypeKey
+ */
 export default class Unknown extends Service {
   constructor(
     public id: string,
@@ -14,8 +18,8 @@ export default class Unknown extends Service {
     super(id, name, typeKey, version, hostname) // Call the base class constructor if needed
   }
 
-  onUptime(str: string): string {
-    log.info(`WOOOHOOO !!! ${this.name}.onUptime called ${str}`)
-    return str
-  }
+  /**
+   * The requested type which the local repo could not find.
+   */
+  public requestTypeKey: string = ""
 }

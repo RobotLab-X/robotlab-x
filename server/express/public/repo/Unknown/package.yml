@@ -1,8 +1,8 @@
-typeKey: "MyRobotLabProxy"
-title: "MyRobotLab Proxy"
-platform: "myrobotlab"
+typeKey: "Unknown"
+title: "Unknown"
+platform: "node"
 platformVersion: "v20.9.0"
-description: "A proxy wrapper to interconnect to MyRobotLab services."
+description: "Unknown service type."
 version: "0.0.1"
 interfaces:
   restAPI:
@@ -10,10 +10,7 @@ interfaces:
       method: "GET"
       description: "Retrieves list of resources."
 author: "GroG"
-license: "MPL-2.0"
+license: "MIT"
 categories:
-- "web"
-- "http"
-- "service manager"
-- "framework"
+- "programming"
 dependencies: null

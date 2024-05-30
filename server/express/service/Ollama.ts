@@ -2,7 +2,6 @@ import axios from "axios"
 import { ChatRequest, ChatResponse, Ollama as OllamaClient } from "ollama"
 import { getLogger } from "../framework/Log"
 import Service from "../framework/Service"
-
 // FIXME - should be an instance logger not a Type logger
 const log = getLogger("Ollama")
 
@@ -44,17 +43,11 @@ export default class Ollama extends Service {
 
   protected history: any[] = []
 
-  constructor(
-    public id: string,
-    public name: string,
-    public typeKey: string,
-    public version: string,
-    public hostname: string
-  ) {
+  constructor(id: string, name: string, typeKey: string, version: string, hostname: string) {
     super(id, name, typeKey, version, hostname)
   }
 
-  public setModel(model?: string): void {
+  setModel(model?: string): void {
     this.config.model = model
   }
 
@@ -78,29 +71,29 @@ export default class Ollama extends Service {
     }
   }
 
-  public stopCheckTimer(): void {
+  stopCheckTimer(): void {
     if (this.intervalId) {
       clearInterval(this.intervalId)
       this.intervalId = null
     }
   }
 
-  public publishResponse(response: any): any {
+  publishResponse(response: any): any {
     log.info(`publishResponse ${JSON.stringify(response)}`)
     return response
   }
 
-  public publishChat(text: string): string {
+  publishChat(text: string): string {
     log.info(`publishResponse ${text}`)
     return text
   }
 
-  public publishRequest(request: any): any {
+  publishRequest(request: any): any {
     log.info(`publishRequest ${JSON.stringify(request)}`)
     return request
   }
 
-  public processInputs(prompt: string): string {
+  processInputs(prompt: string): string {
     const now = new Date()
 
     // Format date as YYYY-MM-DD
@@ -117,7 +110,7 @@ export default class Ollama extends Service {
     return ret
   }
 
-  public async chat(text: string): Promise<void> {
+  async chat(text: string): Promise<void> {
     try {
       const ola = new OllamaClient({ host: this.config.url })
       let prompt = this.prompts[this.config.prompt]?.prompt
@@ -134,12 +127,13 @@ export default class Ollama extends Service {
           { role: "system", content: promptText },
           { role: "user", content: text }
         ],
-        stream: false // or true
+        stream: false, // or true
+        format: "json"
       }
       this.history.push(request)
       this.invoke("publishRequest", request)
       log.error(`chat ${JSON.stringify(request)}`)
-      let response: ChatResponse = await ola.chat(request as ChatRequest & { stream: false })
+      let response: ChatResponse = await ola.chat(request as ChatRequest & { stream: false; format: "json" })
       this.invoke("publishResponse", response)
       this.invoke("publishChat", response.message.content)
     } catch (error) {
@@ -147,7 +141,7 @@ export default class Ollama extends Service {
     }
   }
 
-  public async getResponse(request: any): Promise<void> {
+  async getResponse(request: any): Promise<void> {
     try {
       const response = await axios.get(`${this.config.url}/chat`)
       log.info(`Response from ${this.config.url}:${response.data}`)
@@ -155,17 +149,33 @@ export default class Ollama extends Service {
       log.error(`Error fetching from ${this.config.url}:${error}`)
     }
   }
-  public loadPrompt(name: string): void {
-    this.config.prompt = name
-  }
 
-  public loadPrompts(): void {
-    log.info("loadPrompts")
-    // Load the prompts from service directory after copy from repo
-  }
-
-  public setPrompt(name: string, prompt: any): void {
+  setPrompt(name: string, prompt: any): void {
     this.prompts[name] = prompt
+  }
+
+  /**
+   * Python callback from llm response
+   * @param callback
+   */
+  publishPythonCall(callback: any): void {
+    log.info(`publishPythonCall ${callback}`)
+  }
+
+  /**
+   * Node callback from llm response
+   * @param callback
+   */
+  publishNodeCall(callback: any): void {
+    log.info(`publishNodeCall ${callback}`)
+  }
+
+  loadPrompts(): void {
+    log.info("loadPrompts")
+    // FIXME - figure out the prod & dev paths
+    // Load the prompts from service directory after copy from repo
+    // const file = fs.readFileSync(pkgYmlFile, "utf8")
+    // this.pkg = YAML.parse(file)
   }
 
   toJSON() {

@@ -5,6 +5,7 @@ import http, { Server as HTTPServer } from "http"
 import path from "path"
 import { v4 as uuidv4 } from "uuid"
 import { WebSocket, Server as WebSocketServer } from "ws"
+import Main from "../electron/ElectronStarter"
 import { getLogger } from "../express/framework/Log"
 import { CodecUtil } from "./framework/CodecUtil"
 import Service from "./framework/Service"
@@ -259,9 +260,17 @@ export default class Store {
     )
 
     this.express.use(cors())
-    this.express.use("/images", express.static(path.join(__dirname, "public/images")))
-    this.express.use("/repo", express.static(path.join(__dirname, "public/repo")))
-    this.express.use("/service", express.static(path.join(__dirname, "public/service")))
+
+    if (Main.isPackaged) {
+      // The dev express server does not serve the client, instead the npm dev server does
+      // and api requests are proxied to the express server, however, when packaged
+      // the express server needs to serve the client
+      this.express.use("/", express.static(path.join(Main.distRoot, "client")))
+    }
+    // BELOW - is this API RELATED ONLY?
+    this.express.use("/images", express.static(path.join(Main.expreessRoot, "images")))
+    this.express.use("/repo", express.static(path.join(Main.expreessRoot, "repo")))
+    this.express.use("/service", express.static(path.join(Main.expreessRoot, "service")))
     this.express.use(bodyParser.json())
     this.express.use(bodyParser.urlencoded({ extended: false }))
   }

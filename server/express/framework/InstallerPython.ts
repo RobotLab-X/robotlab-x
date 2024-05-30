@@ -18,11 +18,23 @@ export default class InstallerPython {
   private server: Service = null
 
   useVenv = true
-  pythonExe: string = "python"
-  pythonExeVersion: string = null
+  pythonCmd: string = "python"
+  installedPythonVersion: string = null
+  requestedPythonVersion: string = null
+  installedPipeVersion: string = null
+  isPythonInstalled = false
+  isPythonInstalledCheckDone = false
+  isInstalledPythonVersionValid = false
+  isInstalledPythonVersionValidCheckDone = false
+  isPipInstalled = false
+  installedPipVersion: string = null
+  isPipInstalledCheckDone = false
+  requestedPipVersion: string = null
+  isInstalledPipVersionValid = false
+  isInstalledPipVersionValidCheckDone = false
   pipVersion: string = null
   ready = false
-  optons = {}
+  options = {}
   pkg: Package = null
 
   constructor(public service: Service) {
@@ -33,7 +45,7 @@ export default class InstallerPython {
     this.info(`Installer processing package ${pkg.title} ${pkg.typeKey} ${pkg.version}`)
     this.info("Checking python version")
     this.pkg = pkg
-    this.optons = { cwd: pkg.cwd }
+    this.options = { cwd: pkg.cwd }
     let platformInfo = { platform: "python", platformVersion: "unknown" }
     platformInfo.platformVersion = this.getPythonVersion()
     this.getPipVersion()
@@ -41,7 +53,7 @@ export default class InstallerPython {
     this.installRequirements()
     this.createShell()
     this.activateVenv("venv")
-    // pythonExe should be set and the version known
+    // pythonCmd should be set and the version known
     if (this.useVenv) {
       this.createVenv()
     }
@@ -53,7 +65,9 @@ export default class InstallerPython {
   installRequirements() {
     if (this.pkg.requirements) {
       this.info("Installing requirements")
-      this.info(execSync(`${this.pythonExe} -m ${this.pkg.requirements}`, this.optons))
+      const cmd = `${this.pythonCmd} -m pip install -r ${this.pkg.requirements}`
+      this.info(cmd)
+      this.info(execSync(cmd, this.options))
     }
   }
 
@@ -85,23 +99,25 @@ export default class InstallerPython {
     let versionOutput = "unknown"
 
     try {
-      // versionOutput = execSync("/usr/bin/python --version", this.optons).toString()
-      this.info(`trying python using options ${JSON.stringify(this.optons)}`)
-      versionOutput = execSync("python --version", this.optons).toString()
+      this.info(`trying python using options ${JSON.stringify(this.options)}`)
+      const cmd = `${this.pythonCmd} --version`
+      versionOutput = execSync(cmd, this.options).toString()
       this.info(`python found ${versionOutput}`)
-      this.pythonExe = "python"
+      this.pythonCmd = "python"
     } catch (error) {
       this.info("python not found, trying python3")
       log.error(`exec error: ${error}`)
 
       try {
-        versionOutput = execSync("python3 --version", this.optons).toString()
+        const cmd = "python3 --version"
+        this.info(cmd)
+        versionOutput = execSync(cmd, this.options).toString()
         this.info(`python3 found ${versionOutput}`)
-        this.pythonExe = "python3"
+        this.pythonCmd = "python3"
       } catch (innerError) {
         this.info("giving up - send instructions to install python to user")
-        this.info(
-          "Python is required but not installed. Download it from https://python.org/downloads and follow the installation steps for your operating system. Make sure to add Python to your system's PATH."
+        this.error(
+          "Python is required but not installed. Download it from <a target='_blank' href='https://python.org/downloads'>https://python.org/downloads</a> and follow the installation steps for your operating system. Make sure to add Python to your system's PATH."
         )
         log.error(`${innerError}`)
         throw new Error(
@@ -115,11 +131,11 @@ export default class InstallerPython {
     const versionMatch = versionOutput.match(/Python (\d+\.\d+\.\d+)/)
     if (versionMatch) {
       this.info(`Parsed Version: ${versionMatch[1]}`)
-      this.pythonExeVersion = versionMatch[1]
+      this.installedPythonVersion = versionMatch[1]
     } else {
       this.info("Python version could not be parsed.")
     }
-    return this.pythonExeVersion
+    return this.installedPythonVersion
   }
 
   public getPipVersion() {
@@ -127,8 +143,8 @@ export default class InstallerPython {
 
     try {
       // Check if pip is available with Python
-      this.info(`Checking pip version using ${this.pythonExe}`)
-      versionOutput = execSync(`${this.pythonExe} -m pip --version`, this.optons).toString()
+      this.info(`Checking pip version using ${this.pythonCmd}`)
+      versionOutput = execSync(`${this.pythonCmd} -m pip --version`, this.options).toString()
       this.info(`pip found: ${versionOutput}`)
     } catch (error) {
       this.info("pip not found or not installed correctly.")
@@ -143,14 +159,28 @@ export default class InstallerPython {
   }
 
   // FIXME - promote to general utilities
-  public compareVersions(v1: string, v2: string) {
-    const parts1 = v1.split(".").map(Number)
-    const parts2 = v2.split(".").map(Number)
-    for (let i = 0; i < 3; i++) {
-      if (parts1[i] > parts2[i]) return 1
-      if (parts1[i] < parts2[i]) return -1
+  compareVersions(version: string, requiredVersion: string): boolean {
+    const normalizeVersion = (ver: string) => {
+      const parts = ver.split(".").map(Number)
+      while (parts.length < 3) {
+        parts.push(0)
+      }
+      return parts
     }
-    return 0
+
+    const [vMajor, vMinor, vPatch] = normalizeVersion(version)
+    const [rMajor, rMinor, rPatch] = normalizeVersion(requiredVersion)
+
+    if (vMajor > rMajor) return true
+    if (vMajor < rMajor) return false
+
+    if (vMinor > rMinor) return true
+    if (vMinor < rMinor) return false
+
+    if (vPatch > rPatch) return true
+    if (vPatch < rPatch) return false
+
+    return true // versions are equal
   }
 
   public provideInstallationSteps() {
@@ -180,9 +210,9 @@ export default class InstallerPython {
   public createVenv() {
     const venvPath = "venv" // Path where the virtual environment should be created
     try {
-      let cmd = `${this.pythonExe} -m venv ${venvPath}`
+      let cmd = `${this.pythonCmd} -m venv ${venvPath}`
       this.info(cmd)
-      this.info(execSync(cmd, this.optons))
+      this.info(execSync(cmd, this.options))
     } catch (error: unknown) {
       // TODO standard error format for robotlab-x
       this.error(`Failed to create a Python virtual environment.`)
@@ -222,12 +252,12 @@ export default class InstallerPython {
     // Example of running a command using the venv's Python executable
     // Adjust the paths according to your setup
     const activate =
-      os.platform() === "win32" ? `${venvPath}\\Scripts\\${this.pythonExe}` : `${venvPath}/bin/${this.pythonExe}`
+      os.platform() === "win32" ? `${venvPath}\\Scripts\\${this.pythonCmd}` : `${venvPath}/bin/${this.pythonCmd}`
 
     let stdout = null
     try {
       this.info(activate)
-      this.info(execSync(activate, this.optons))
+      this.info(execSync(activate, this.options))
     } catch (error) {
       this.error(`Failed to run python command using the virtual environment.`)
       this.error(`${error}`)
@@ -235,5 +265,79 @@ export default class InstallerPython {
     }
 
     this.info(`Python version (from venv): ${stdout}`)
+  }
+
+  public checkPythonVersion(requestedPythonVersion: string): boolean {
+    this.installedPythonVersion = this.getPythonVersion()
+    if (this.installedPythonVersion !== null) {
+      this.isPythonInstalled = true
+    } else {
+      this.isPythonInstalled = false
+      this.isInstalledPythonVersionValid = false
+      this.error("Python is not installed")
+      this.service.invoke("broadcastState")
+      return false
+    }
+    this.requestedPythonVersion = requestedPythonVersion
+    const valid = this.compareVersions(this.installedPythonVersion, requestedPythonVersion)
+    if (valid) {
+      this.isInstalledPythonVersionValid = true
+      this.info(`Python version ${this.installedPythonVersion} is valid for required version ${requestedPythonVersion}`)
+    } else {
+      this.isInstalledPythonVersionValid = false
+      this.error(
+        `Python version ${this.installedPythonVersion} is not valid for required version ${requestedPythonVersion}`
+      )
+    }
+    this.service.invoke("broadcastState")
+    return valid
+  }
+
+  public checkPipVersion(requestedPipVersion: string): boolean {
+    this.installedPipVersion = this.getPipVersion()
+    if (this.installedPipVersion !== null) {
+      this.isPipInstalled = true
+    } else {
+      this.isPipInstalled = false
+      this.isInstalledPipVersionValid = false
+      this.error("Pip is not installed")
+      this.service.invoke("broadcastState")
+      return false
+    }
+    this.requestedPipVersion = requestedPipVersion
+    const valid = this.compareVersions(this.installedPipVersion, requestedPipVersion)
+    if (valid) {
+      this.isInstalledPipVersionValid = true
+      this.info(`Pip version ${this.installedPipVersion} is valid for required version ${requestedPipVersion}`)
+    } else {
+      this.isInstalledPipVersionValid = false
+      this.error(`Pip version ${this.installedPipVersion} is not valid for required version ${requestedPipVersion}`)
+    }
+    this.service.invoke("broadcastState")
+    return valid
+  }
+
+  toJSON() {
+    return {
+      useVenv: this.useVenv,
+      pythonCmd: this.pythonCmd,
+      installedPythonVersion: this.installedPythonVersion,
+      requestedPythonVersion: this.requestedPythonVersion,
+      installedPipeVersion: this.installedPipeVersion,
+      isPythonInstalled: this.isPythonInstalled,
+      isPythonInstalledCheckDone: this.isPythonInstalledCheckDone,
+      isInstalledPythonVersionValid: this.isInstalledPythonVersionValid,
+      isInstalledPythonVersionValidCheckDone: this.isInstalledPythonVersionValidCheckDone,
+      isPipInstalled: this.isPipInstalled,
+      installedPipVersion: this.installedPipVersion,
+      isPipInstalledCheckDone: this.isPipInstalledCheckDone,
+      requestedPipVersion: this.requestedPipVersion,
+      isInstalledPipVersionValid: this.isInstalledPipVersionValid,
+      isInstalledPipVersionValidCheckDone: this.isInstalledPipVersionValidCheckDone,
+      pipVersion: this.pipVersion,
+      ready: this.ready,
+      options: this.options,
+      pkg: this.pkg
+    }
   }
 }

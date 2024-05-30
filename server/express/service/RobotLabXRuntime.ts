@@ -1,6 +1,5 @@
 // import Service from "express/framework/Service"
 // FIXME - aliases don't appear to be work, neither does root reference path
-import { spawn } from "child_process"
 import { LaunchAction } from "express/framework/LaunchDescription"
 import Gateway from "express/interfaces/Gateway"
 import fs from "fs"
@@ -24,6 +23,7 @@ import Package from "../models/Package"
 import { ProcessData } from "../models/ProcessData"
 import RouteEntry from "../models/RouteEntry"
 import { ServiceTypeData } from "../models/ServiceTypeData"
+import Unknown from "../service/Unknown"
 // import LaunchDescription from "express/framework/LaunchDescription"
 // const LaunchDescription = require("express/framework/LaunchDescription").default
 
@@ -82,7 +82,7 @@ export default class RobotLabXRuntime extends Service {
 
   // OVERRIDES Service.ts
   config = {
-    id: NameGenerator.getName(),
+    id: null as string,
     logLevel: "info",
     port: 3001,
     registry: [] as string[],
@@ -98,6 +98,10 @@ export default class RobotLabXRuntime extends Service {
     public hostname: string
   ) {
     super(id, name, typeKey, version, hostname) // Call the base class constructor if needed
+    this.config.id = id
+
+    // TODO - save config if it doesn't exist, also if passed in id is different from config.id
+    // will need to resolve
   }
 
   save() {
@@ -325,28 +329,21 @@ export default class RobotLabXRuntime extends Service {
   }
 
   static createInstance(configDir: string, configName: string): RobotLabXRuntime {
-    // chicken and egg problem - can't use readConfig before an instance is created
-    // but need config to construct instance
-
-    let config = {
-      id: NameGenerator.getName(),
-      logLevel: "info",
-      port: 3001,
-      registry: [] as string[],
-      // list of processes to connect to
-      connect: [] as string[]
-    }
+    let id: string = null
+    let readConfig = null
 
     const filePath = path.join(configDir, configName, `runtime.yml`)
     try {
       const file = fs.readFileSync(filePath, "utf8")
-      config = YAML.parse(file)
+      readConfig = YAML.parse(file)
     } catch (error) {
-      log.info(`Failed to load runtime.yml config using default: ${config}`)
+      log.info(`Failed to load runtime.yml  will use default config`)
     }
 
+    id = readConfig?.id ?? NameGenerator.getName()
+
     if (!RobotLabXRuntime.instance) {
-      RobotLabXRuntime.instance = new RobotLabXRuntime(config.id, "runtime", "RobotLabXRuntime", "0.0.1", os.hostname())
+      RobotLabXRuntime.instance = new RobotLabXRuntime(id, "runtime", "RobotLabXRuntime", "0.0.1", os.hostname())
       this.instance.configName = configName
     } else {
       log.error("RobotLabXRuntime instance already exists")
@@ -443,7 +440,7 @@ export default class RobotLabXRuntime extends Service {
       log.info(`starting service: ${serviceName}, type: ${serviceType} in ${process.cwd()}`)
 
       // repo should be immutable - make a copy to service/{name} if one doesn't already exist
-      const targetDir = `./express/public/service/${serviceName}`
+      const targetDir = path.join(Main.expreessRoot, `service/${serviceName}`)
 
       this.repo.copyPackage(serviceName, serviceType)
       log.info(`successful ${targetDir}`)
@@ -477,78 +474,98 @@ export default class RobotLabXRuntime extends Service {
       // FIXME "all" types of platform have a corresponding node service ..
       // the service may be used as an install wizard, connecting service, or some other wizard
       // spawn the process if none node process .. this should be fixed ASAP
-      if (pkg.platform === "node" || pkg.platform === "myrobotlab") {
-        this.installInfo(`node process ${serviceName} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
+      // if (pkg.platform === "node" || pkg.platform === "myrobotlab") {
+      this.installInfo(`node process ${serviceName} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
+      try {
         service = this.repo.getService(this.getId(), serviceName, serviceType, version, this.getHostname())
-        log.info(`service ${JSON.stringify(service)}`)
-        this.installInfo(`platform is ok`)
-        this.register(service)
-        this.installInfo(`registered service ${serviceName}`)
-      } else if (dependenciesMet) {
-        // FIXME - REMOVE ALL BELOW - because starting a new process should ALWAYS
-        // be in the context of the node service ..
-        log.info(`dependencies met for ${serviceName} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
-        // spawn the process
-        log.info(`spawning process ${pkg.cmd} ${pkg.args} in ${targetDir}`)
-        const childProcess = spawn(pkg.cmd, pkg.args, { cwd: targetDir, shell: true })
+      } catch (e: unknown) {
+        const error = e as Error
 
-        childProcess.on("error", (err) => {
-          log.error(`failed to start subprocess. ${err}`)
-          // send message with error to UI
-          return
-        })
-
-        if (childProcess.pid) {
-          // register the service
-          service = new Service(childProcess.pid.toString(), serviceName, serviceType, version, this.getHostname())
-        } else {
-          log.error("Process PID is undefined, indicating an issue with spawning the process.")
-          return
+        let errStr = `error: ${error} ${error.stack}`
+        log.error(errStr)
+        this.invoke("publishInstallLog", errStr)
+        this.invoke("publishInstallLog", "warn: using default Unknown service type")
+        service = this.repo.getService(this.getId(), serviceName, "Unknown", version, this.getHostname())
+        if (service instanceof Unknown) {
+          service.requestTypeKey = serviceType
         }
-
-        // Stream stdout and stderr
-        childProcess.stdout.on("data", (data) => {
-          log.info(`STDOUT: ${data}`)
-          // TODO more structured publishStdOutRecord
-          // where record.level record.ts record.msg
-          service.invoke("publishStdOut", data.toString())
-        })
-
-        childProcess.stderr.on("data", (data) => {
-          log.error(`STDERR: ${data}`)
-          service.invoke("publishStdOut", data.toString())
-        })
-
-        // Handle process exit
-        childProcess.on("close", (code) => {
-          log.info(`Subprocess exited with code ${code}`)
-          // Optionally handle process cleanup or restart
-        })
-
-        // register the process
-        let platformVersion = "0.0.0" // platformInfo?.platformVersion
-        const pd: ProcessData = new ProcessData(
-          serviceName,
-          childProcess.pid.toString(),
-          this.getHostname(),
-          pkg.platform,
-          platformVersion ? platformVersion : pkg.platformVersion // actual vs requested version
-        )
-        this.registerProcess(pd)
-
-        // service = new Service(childProcess.pid.toString(), serviceName, serviceType, version, this.getHostname())
-        // for unaliased ids for services - single process services will be serviceName@serviceName
-        // FIXME MAKE A PROXY TYPE !!!
-        service = new Service(this.getId(), serviceName, serviceType, version, this.getHostname())
-
-        log.info(`process ${JSON.stringify(childProcess)}`)
-      } else {
-        log.error(`dependencies not met for ${serviceName} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
-        return null
       }
 
-      // register and start the service
+      // service.load(pkg)
+      // service.applyConfig(this.readConfig(serviceName, {})
+      // config to start or not to start
+      service.startService()
+      log.info(`service ${JSON.stringify(service)}`)
+      this.installInfo(`platform is ok`)
       this.register(service)
+      this.installInfo(`registered service ${serviceName}`)
+      // }
+      // SAVE FOR PYTHON SERVICES - which could be proxied
+      //  else if (dependenciesMet) {
+      //   // FIXME - REMOVE ALL BELOW - because starting a new process should ALWAYS
+      //   // be in the context of the node service ..
+      //   log.info(`dependencies met for ${serviceName} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
+      //   // spawn the process
+      //   log.info(`spawning process ${pkg.cmd} ${pkg.args} in ${targetDir}`)
+      //   const childProcess = spawn(pkg.cmd, pkg.args, { cwd: targetDir, shell: true })
+
+      //   childProcess.on("error", (err) => {
+      //     log.error(`failed to start subprocess. ${err}`)
+      //     // send message with error to UI
+      //     return
+      //   })
+
+      //   if (childProcess.pid) {
+      //     // register the service
+      //     service = new Service(childProcess.pid.toString(), serviceName, serviceType, version, this.getHostname())
+      //   } else {
+      //     log.error("Process PID is undefined, indicating an issue with spawning the process.")
+      //     return
+      //   }
+
+      //   // Stream stdout and stderr
+      //   childProcess.stdout.on("data", (data) => {
+      //     log.info(`STDOUT: ${data}`)
+      //     // TODO more structured publishStdOutRecord
+      //     // where record.level record.ts record.msg
+      //     service.invoke("publishStdOut", data.toString())
+      //   })
+
+      //   childProcess.stderr.on("data", (data) => {
+      //     log.error(`STDERR: ${data}`)
+      //     service.invoke("publishStdOut", data.toString())
+      //   })
+
+      //   // Handle process exit
+      //   childProcess.on("close", (code) => {
+      //     log.info(`Subprocess exited with code ${code}`)
+      //     // Optionally handle process cleanup or restart
+      //   })
+
+      //   // register the process
+      //   let platformVersion = "0.0.0" // platformInfo?.platformVersion
+      //   const pd: ProcessData = new ProcessData(
+      //     serviceName,
+      //     childProcess.pid.toString(),
+      //     this.getHostname(),
+      //     pkg.platform,
+      //     platformVersion ? platformVersion : pkg.platformVersion // actual vs requested version
+      //   )
+      //   this.registerProcess(pd)
+
+      //   // service = new Service(childProcess.pid.toString(), serviceName, serviceType, version, this.getHostname())
+      //   // for unaliased ids for services - single process services will be serviceName@serviceName
+      //   // FIXME MAKE A PROXY TYPE !!!
+      //   service = new Service(this.getId(), serviceName, serviceType, version, this.getHostname())
+
+      //   log.info(`process ${JSON.stringify(childProcess)}`)
+      // } else {
+      //   log.error(`dependencies not met for ${serviceName} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
+      //   return null
+      // }
+
+      // register and start the service
+      // this.register(service)
       return service
     } catch (e: unknown) {
       const error = e as Error
