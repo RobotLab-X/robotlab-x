@@ -1,7 +1,11 @@
 import axios from "axios"
+import fs from "fs"
 import { ChatRequest, ChatResponse, Ollama as OllamaClient } from "ollama"
+import path from "path"
+import yaml from "yaml"
 import { getLogger } from "../framework/Log"
 import Service from "../framework/Service"
+
 // FIXME - should be an instance logger not a Type logger
 const log = getLogger("Ollama")
 
@@ -18,28 +22,8 @@ export default class Ollama extends Service {
     prompt: "PirateBot"
   }
 
-  protected prompts: any = {
-    PirateBot: {
-      description: "A pirate robot",
-      prompt:
-        "You are are a swarthy pirate robot.  Your answers are short but full of sea jargon. The current date is {{Date}}. The current time is {{Time}}"
-    },
-    SarcasticBot: {
-      description: "A sarcastic robot",
-      prompt:
-        "You are are a very sarcastic bot.  Your answers are short and typically end with sarcastic quips. The current date is {{Date}}. The current time is {{Time}}"
-    },
-    ButlerBot: {
-      description: "A butler robot",
-      prompt:
-        "You are are a butler robot.  Your answers are short and typically end in sir. The current date is {{Date}}. The current time is {{Time}}"
-    },
-    InMoov: {
-      description: "InMoov open source humanoid robot",
-      prompt:
-        "You are InMoov a humanoid robot assistant. Your answers are short and polite. The current date is {{Date}}. The current time is {{Time}}. You have a PIR sensor which determines if someone else is present, it is currently {{pirActive}}"
-    }
-  }
+  // loaded by Ollama.ts loadPrompts
+  protected prompts: any = {}
 
   protected history: any[] = []
 
@@ -112,8 +96,30 @@ export default class Ollama extends Service {
 
   async chat(text: string): Promise<void> {
     try {
-      const ola = new OllamaClient({ host: this.config.url })
-      let prompt = this.prompts[this.config.prompt]?.prompt
+      // create a chat client
+      const oc = new OllamaClient({ host: this.config.url })
+      let request: ChatRequest = null
+      log.info(`chat ${this.config.prompt}`)
+      let prompt = this.prompts[this.config.prompt]
+
+      // consider calling in parallel, or different order
+      // currently we'll just serialally call the two chat completions
+      // if tools has data
+      if (prompt.tools) {
+        log.info(`tools would do a tools request`)
+        // request = {
+        //   model: this.config.model,
+        //   messages: [
+        //     { role: "system", content: promptText },
+        //     { role: "user", content: text }
+        //   ],
+        //   stream: false, // or true
+        //   format: "json"
+        // }
+      }
+
+      // call now with regular system prompt - no json output
+
       let promptText = this.processInputs(prompt)
 
       const systemMessage = { role: "system", content: promptText }
@@ -121,19 +127,19 @@ export default class Ollama extends Service {
 
       const messages = [...this.history, systemMessage, userMessage]
 
-      const request: ChatRequest = {
+      request = {
         model: this.config.model,
         messages: [
           { role: "system", content: promptText },
           { role: "user", content: text }
         ],
-        stream: false, // or true
-        format: "json"
+        stream: false
       }
       this.history.push(request)
       this.invoke("publishRequest", request)
       log.error(`chat ${JSON.stringify(request)}`)
-      let response: ChatResponse = await ola.chat(request as ChatRequest & { stream: false; format: "json" })
+
+      let response: ChatResponse = await oc.chat(request as ChatRequest & { stream: false; format: "json" })
       this.invoke("publishResponse", response)
       this.invoke("publishChat", response.message.content)
     } catch (error) {
@@ -172,10 +178,35 @@ export default class Ollama extends Service {
 
   loadPrompts(): void {
     log.info("loadPrompts")
-    // FIXME - figure out the prod & dev paths
-    // Load the prompts from service directory after copy from repo
-    // const file = fs.readFileSync(pkgYmlFile, "utf8")
-    // this.pkg = YAML.parse(file)
+
+    const promptsDir = path.join(this.dataPath, "prompts")
+    if (!fs.existsSync(promptsDir)) {
+      log.error(`Prompts directory not found: ${promptsDir}`)
+      return
+    }
+
+    this.prompts = {}
+
+    const files = fs.readdirSync(promptsDir)
+
+    files.forEach((file) => {
+      const filePath = path.join(promptsDir, file)
+
+      if (fs.lstatSync(filePath).isFile() && path.extname(file) === ".yml") {
+        const content = fs.readFileSync(filePath, "utf-8")
+
+        const parsedContent = yaml.parse(content)
+        const key = path.parse(file).name
+        this.prompts[key] = parsedContent
+      }
+    })
+
+    log.info("Prompts loaded successfully")
+  }
+
+  startService(): void {
+    super.startService()
+    this.loadPrompts()
   }
 
   toJSON() {

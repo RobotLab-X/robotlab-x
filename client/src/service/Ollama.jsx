@@ -229,13 +229,14 @@ export default function Ollama({ name, fullname, id }) {
                       Tools
                     </Typography>
                     <Typography variant="subtitle1" component="span" color="textSecondary">
-                      <pre>{currentPrompt.tools}</pre>
-                      {currentPrompt.tools && (
+                      {currentPrompt?.tools && (
                         <ReactJson
                           src={currentPrompt.tools}
                           name="tools"
                           displayDataTypes={false}
                           displayObjectSize={false}
+                          style={{ fontSize: "12px" }}
+                          collapsed={false}
                         />
                       )}
                     </Typography>
