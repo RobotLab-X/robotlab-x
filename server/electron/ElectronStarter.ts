@@ -57,7 +57,7 @@ export default class Main {
     // const startUrl = process.env.ELECTRON_START_URL || `file://${path.join(__dirname, "../client/index.html")}`
     const startUrl = process.env.ELECTRON_START_URL || "http://localhost:3001/"
     // FIXME - startUrl is not correct when packaged
-    log.error(`onReady: startUrl == ${startUrl}`)
+    log.info(`onReady: startUrl == ${startUrl}`)
     Main.mainWindow.loadURL(startUrl)
     if (!Main.isPackaged) {
       Main.mainWindow.webContents.openDevTools()
@@ -107,9 +107,9 @@ export default class Main {
       Main.distRoot = path.join(process.cwd())
     }
 
-    log.error(`bootServer: Main.distRoot ==== ${Main.distRoot} ====`)
+    log.info(`bootServer: Main.distRoot ==== ${Main.distRoot} ====`)
     Main.expressRoot = path.join(Main.distRoot, "express/public")
-    log.error(`bootServer: Main.expressRoot == ${Main.expressRoot}`)
+    log.info(`bootServer: Main.expressRoot == ${Main.expressRoot}`)
 
     const argv = minimist(process.argv.slice(2))
     log.info(`bootServer: argv: ${JSON.stringify(argv)}`)

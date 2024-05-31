@@ -29,6 +29,9 @@ export default class Service implements Gateway {
   hostname: string | null = null
   fullname: string | null = null
 
+  // User "owned" data path for resources for the service
+  dataPath: string | null = null
+
   notifyList: NotifyList = {}
 
   pkg: Package | null = null
@@ -42,6 +45,8 @@ export default class Service implements Gateway {
     this.version = version
     this.hostname = hostname
     this.fullname = `${this.name}@${this.id}`
+    // FIXME should be expressRoot/data
+    this.dataPath = path.join(Main.expressRoot, `service/${this.name}`)
   }
 
   addListener(method: string, remoteName: string, remoteMethod: string) {

@@ -18,9 +18,8 @@ import {
 } from "@mui/material"
 import ReactJson from "react-json-view"
 
-import React, { useEffect, useState } from "react"
-// import ReactJson from "react-json-view"
 import { useProcessedMessage } from "hooks/useProcessedMessage"
+import React, { useEffect, useState } from "react"
 import { useStore } from "store/store"
 import useServiceSubscription from "store/useServiceSubscription"
 import OllamaWizard from "wizards/OllamaWizard"
@@ -217,14 +216,23 @@ export default function Ollama({ name, fullname, id }) {
                       </Typography>
                     </Box>
                     <Typography variant="h5" component="div">
-                      {currentPrompt.description}
+                      {currentPrompt?.description}
                     </Typography>
                     <Typography variant="h5" component="div">
-                      Prompt
+                      Prompts
                     </Typography>
-                    <Typography variant="subtitle1" component="span" color="textSecondary">
-                      {currentPrompt.messages[0].content}
-                    </Typography>
+                    {currentPrompt?.messages &&
+                      Object.entries(currentPrompt.messages).map(([key, message]) => (
+                        <Box key={key}>
+                          <Typography variant="subtitle1" component="div">
+                            {key}
+                          </Typography>
+
+                          <Typography key={key} variant="subtitle1" component="span" color="textSecondary">
+                            {message.content}
+                          </Typography>
+                        </Box>
+                      ))}
                     <Typography variant="h5" component="div">
                       Tools
                     </Typography>
@@ -250,7 +258,7 @@ export default function Ollama({ name, fullname, id }) {
                 <Button variant="contained" color="primary" onClick={handleSaveConfig}>
                   Save
                 </Button>
-              </Box>{" "}
+              </Box>
             </Box>
           ) : null}
           <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "50%" }, mx: "auto" }}>
