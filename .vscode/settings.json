@@ -1,4 +1,9 @@
 {
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": false,
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
   "terminal.integrated.scrollback": 9999,
   "jest.rootPath": "app",
   "jest.jestCommandLine": "npx jest --runInBand --verbose",
@@ -12,7 +17,6 @@
   },
   "typescript.tsdk": "./app/node_modules/typescript/lib",
   "typescript.enablePromptUseWorkspaceTsdk": true,
-  "editor.tabSize": 2,
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
@@ -24,6 +28,6 @@
   },
   "[javascriptreact]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
-  } 
-  
+  }
+
 }

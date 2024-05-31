@@ -1,4 +1,7 @@
 ## TODO
+* npm install googleapis - "is there an http api i can query to get my unread gmail ?"
+* Xstate - npm - state machine and display !
+* Repo copy into /service dataPath Overwrites !  .. convienent for now - can't be done to users
 * change the repo/service/{serviceName}/ -- all filenames same --- including config.yml
 * DETERMINISTIC UNIT TESTS !!!
 * add Ollama OpenAI Grok
@@ -19,7 +22,7 @@
 * Borg - https://github.com/rhasspy/piper Small neural network
 * FIXME - install must move to Service.ts
 * each service "installs" .. or does a noop
-* open source 3d robotics simulator - gazebo, 
+* open source 3d robotics simulator - gazebo,
 * install - would you like to start ros ? would you like to use docker ?  install.yml ?
 * state.yml and config.yml .. one is state the other config, one is how it currently is, the other is how you want it to be
 * prefer https://www.npmjs.com/package/react-step-wizard or https://www.npmjs.com/package/react-use-wizard
@@ -50,7 +53,7 @@
 * get exe builds working
 
 ### From ROS ROS2
-* remapping - defaults are root names e.g. service@id@host/someOutput - how to remap and to what ? 
+* remapping - defaults are root names e.g. service@id@host/someOutput - how to remap and to what ?
 never needed to remap because root names change with names of services - my topic heirarchy is very flat.
 implementation of re-mapping would be aliasing and managing alias in the nofiyLists and subscription system.
 which would be possible ... but may not be worth the trouble
@@ -63,7 +66,7 @@ a nice LifeCycleNode
 * services with platform icon - make it 1/2 in both dimentions and put it in right upper corner (transparent)
 * connections (many per process at least 1), processes (many per host), hosts, services (1 to many per process)
 * check put and get - add to unit tests
-* subscriptions and even handling in node server 
+* subscriptions and even handling in node server
 * copy default.yml config --> config/configSet and any data created by service leave the rest immutable in repo
 * home / dashboard with spash screen - with tutorial sets
 * Mic - https://www.npmjs.com/package/mic

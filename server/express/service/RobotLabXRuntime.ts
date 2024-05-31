@@ -437,7 +437,7 @@ export default class RobotLabXRuntime extends Service {
   }
 
   startServiceType(serviceName: string, serviceType: string): Service {
-    log.error(`startServiceType: ${serviceName}, type: ${serviceType}`)
+    log.info(`startServiceType: ${serviceName}, type: ${serviceType}`)
     try {
       const check = this.getService(serviceName)
       if (check != null) {

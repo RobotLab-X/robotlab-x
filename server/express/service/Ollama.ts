@@ -77,7 +77,7 @@ export default class Ollama extends Service {
     return request
   }
 
-  processInputs(prompt: string): string {
+  processInputs(inputs: any, content: string): string {
     const now = new Date()
 
     // Format date as YYYY-MM-DD
@@ -90,7 +90,14 @@ export default class Ollama extends Service {
       hour12: true
     })
 
-    let ret = prompt.replace("{{Date}}", date).replace("{{Time}}", time)
+    let ret = content.replace("{{Date}}", date).replace("{{Time}}", time)
+
+    if (inputs) {
+      for (const key in inputs) {
+        ret = ret.replace(`{{${key}}}`, inputs[key])
+      }
+    }
+
     return ret
   }
 
@@ -118,9 +125,10 @@ export default class Ollama extends Service {
         // }
       }
 
-      // call now with regular system prompt - no json output
+      // call the default now with regular system prompt - no json output
+      let defaultMessage = prompt.messages.default
 
-      let promptText = this.processInputs(prompt)
+      let promptText = this.processInputs(prompt.inputs, defaultMessage.content)
 
       const systemMessage = { role: "system", content: promptText }
       const userMessage = { role: "user", content: text }
@@ -207,6 +215,10 @@ export default class Ollama extends Service {
   startService(): void {
     super.startService()
     this.loadPrompts()
+  }
+
+  addInput(prompt: string, key: string, value: any): void {
+    this.prompts[prompt][key] = value
   }
 
   toJSON() {
