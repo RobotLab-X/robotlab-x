@@ -1,6 +1,6 @@
 import React, { useState } from "react"
 // import { ProSidebar, Menu, MenuItem } from "react-pro-sidebar"
-import { Box, IconButton, Typography, useTheme } from "@mui/material"
+import { Box, IconButton, Tooltip, Typography, useTheme } from "@mui/material"
 import { Menu, MenuItem, Sidebar } from "react-pro-sidebar"
 
 import { Link } from "react-router-dom"
@@ -66,14 +66,9 @@ const AppSidebar = () => {
         <Menu iconShape="square">
           <br />
           <Box align="center">
-            <img
-              alt={connected ? `connected` : `disconnected`}
-              style={{
-                width: "22px",
-                alighn: "center"
-              }}
-              src={connected ? `green.png` : `red.png`}
-            />
+            <Tooltip title={connected ? "Connected" : "Disconnected"}>
+              <Box width={18} height={18} borderRadius="50%" bgcolor={connected ? "green" : "red"} mr={1} />
+            </Tooltip>
           </Box>
 
           {/* LOGO AND MENU ICON */}

@@ -36,6 +36,8 @@ export default class Service implements Gateway {
 
   pkg: Package | null = null
 
+  ready: boolean = false
+
   config: any = {}
 
   constructor(id: string, name: string, typeKey: string, version: string, hostname: string | null = null) {
@@ -268,7 +270,7 @@ export default class Service implements Gateway {
   }
 
   isReady(): boolean {
-    return this.startTime !== null
+    return this.ready
   }
 
   publishStdOut(msg: string): string {
@@ -351,12 +353,13 @@ export default class Service implements Gateway {
   // Example of a shared method
   startService() {
     this.startTime = new Date().getTime()
+    this.ready = true
     log.info(`========= started service ${this.name} ===========`)
-    this.getPackage()
   }
 
   stopService() {
     this.startTime = null
+    this.ready = false
     log.info(`========= stopped service ${this.name} ===========`)
   }
 

@@ -49,9 +49,21 @@ export default class Ollama extends Service {
   private async check(): Promise<void> {
     try {
       const response = await axios.get(this.config.url)
-      log.info(`Response from ${this.config.url}:${response.data}`)
+      if (this.ready === false) {
+        // state change to ready
+        this.ready = true
+        this.invoke("broadcastState")
+        log.info("Ollama is ready")
+      }
+      log.debug(`Response from ${this.config.url}:${response.data}`)
     } catch (error) {
-      log.error(`Error fetching from ${this.config.url}:${error}`)
+      if (this.ready === true) {
+        // state change to ready
+        this.ready = false
+        this.invoke("broadcastState")
+        log.error("Ollama is not ready")
+      }
+      log.debug(`Error fetching from ${this.config.url}:${error}`)
     }
   }
 
@@ -112,44 +124,65 @@ export default class Ollama extends Service {
       // consider calling in parallel, or different order
       // currently we'll just serialally call the two chat completions
       // if tools has data
-      if (prompt.tools) {
+      if (prompt?.messages?.tools) {
         log.info(`tools would do a tools request`)
-        // request = {
-        //   model: this.config.model,
-        //   messages: [
-        //     { role: "system", content: promptText },
-        //     { role: "user", content: text }
-        //   ],
-        //   stream: false, // or true
-        //   format: "json"
-        // }
+        // let toolsPrompt = prompt.messages.tools?.content
+        //             { role: "system", content: toolsPrompt + " " + JSON.stringify(prompt.tools) },
+
+        let request: ChatRequest = {
+          model: this.config.model,
+          messages: [
+            // { role: "system", content: JSON.stringify(prompt.tools) },
+            // { role: "system", content: toolsPrompt },
+            ...prompt.messages.tools,
+            { role: "user", content: text }
+          ],
+          format: "json",
+          stream: false
+        }
+
+        // get tools system prompt
+
+        this.invoke("publishRequest", request)
+        log.info(`tools chat requst ${JSON.stringify(request)}`)
+
+        let response: ChatResponse = await oc.chat(request as ChatRequest & { stream: false; format: "json" })
+
+        log.info(`tools chat response ${JSON.stringify(response)}`)
+
+        this.invoke("publishResponse", response)
+        this.invoke("publishChat", response.message.content)
+      } else {
+        log.error("No tools prompt")
       }
 
-      // call the default now with regular system prompt - no json output
-      let defaultMessage = prompt.messages.default
+      if (prompt?.messages?.default) {
+        // call the default now with regular system prompt - no json output
+        let defaultMessage = prompt.messages.default
 
-      let promptText = this.processInputs(prompt.inputs, defaultMessage.content)
+        let promptText = this.processInputs(prompt.inputs, defaultMessage.content)
 
-      const systemMessage = { role: "system", content: promptText }
-      const userMessage = { role: "user", content: text }
+        const systemMessage = { role: "system", content: promptText }
+        const userMessage = { role: "user", content: text }
 
-      const messages = [...this.history, systemMessage, userMessage]
+        const messages = [systemMessage, ...this.history, userMessage]
 
-      request = {
-        model: this.config.model,
-        messages: [
-          { role: "system", content: promptText },
-          { role: "user", content: text }
-        ],
-        stream: false
+        request = {
+          model: this.config.model,
+          messages: messages,
+          stream: false
+        }
+        this.history.push(userMessage)
+        this.invoke("publishRequest", request)
+        log.info(`chat ${JSON.stringify(request)}`)
+
+        let response: ChatResponse = await oc.chat(request as ChatRequest & { stream: false })
+        this.history.push(response.message)
+        this.invoke("publishResponse", response)
+        this.invoke("publishChat", response.message.content)
+      } else {
+        log.error("No default prompt")
       }
-      this.history.push(request)
-      this.invoke("publishRequest", request)
-      log.error(`chat ${JSON.stringify(request)}`)
-
-      let response: ChatResponse = await oc.chat(request as ChatRequest & { stream: false; format: "json" })
-      this.invoke("publishResponse", response)
-      this.invoke("publishChat", response.message.content)
     } catch (error) {
       log.error(`Error fetching from ${this.config.url}:${error}`)
     }
@@ -214,7 +247,15 @@ export default class Ollama extends Service {
 
   startService(): void {
     super.startService()
+    // not ready
+    // until connected and pinging ollama
+    this.ready = false
     this.loadPrompts()
+  }
+
+  stopService(): void {
+    super.stopService()
+    this.stopCheckTimer()
   }
 
   addInput(prompt: string, key: string, value: any): void {
@@ -229,7 +270,9 @@ export default class Ollama extends Service {
       version: this.version,
       hostname: this.hostname,
       config: this.config,
-      prompts: this.prompts
+      prompts: this.prompts,
+      ready: this.ready,
+      history: this.history
     }
   }
 }

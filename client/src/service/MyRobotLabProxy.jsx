@@ -56,7 +56,7 @@ export default function MyRobotLabProxy({ name, fullname, id }) {
       <br />
       {service && (
         <img
-          src={`${getRepoUrl()}/MyRobotLabConnector/images/${service?.serviceType.simpleName}.png`}
+          src={`${getRepoUrl()}/MyRobotLabConnector/images/${service?.serviceType?.simpleName}.png`}
           alt={service.name}
           width="32"
           style={{ verticalAlign: "middle" }}
@@ -68,11 +68,11 @@ export default function MyRobotLabProxy({ name, fullname, id }) {
       <ReactJson src={proxy} name="proxyMsg" displayDataTypes={false} displayObjectSize={false} />
       */}
 
-      {service?.serviceType.simpleName === "Clock" && (
+      {service?.serviceType?.simpleName === "Clock" && (
         <Clock service={service} epoch={epoch} handleStart={handleStart} handleStop={handleStop} />
       )}
 
-      {service?.serviceType.simpleName === "ProgramAB" && (
+      {service?.serviceType?.simpleName === "ProgramAB" && (
         <ProgramAB
           service={service}
           epoch={epoch}

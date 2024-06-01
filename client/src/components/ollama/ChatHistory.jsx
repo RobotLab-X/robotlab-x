@@ -18,13 +18,14 @@ const ChatHistory = ({ chatHistory }) => {
 
   return (
     <Box sx={{ p: 2 }}>
+      {chatHistory.length}
       {chatHistory.map((chat, index) => {
         let type = null
         let content = null
         if (chat?.messages) {
           type = "request"
           // not [0] system content but [1] user content
-          content = chat.messages[1].content
+          content = chat.messages.filter((message) => message.role === "user").slice(-1)[0].content
         }
         if (chat?.message) {
           type = "response"

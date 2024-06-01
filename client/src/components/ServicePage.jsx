@@ -2,6 +2,7 @@ import loadable from "@loadable/component"
 import DeleteIcon from "@mui/icons-material/Delete"
 import SettingsIcon from "@mui/icons-material/Settings"
 import {
+  Box,
   Button,
   Dialog,
   DialogActions,
@@ -9,17 +10,22 @@ import {
   DialogContentText,
   DialogTitle,
   IconButton,
+  Tooltip,
   Typography
 } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import ReactJson from "react-json-view"
+import { useProcessedMessage } from "../hooks/useProcessedMessage"
 import { useStore } from "../store/store"
+import useServiceSubscription from "../store/useServiceSubscription"
 
 // TODO - React.lazy vs react-loadable
 export default function ServicePage({ fullname, name, id }) {
-  const registry = useStore((state) => state.registry)
-  let service = registry[fullname]
-  let type = service ? service.typeKey : "Unknown"
+  // const registry = useStore((state) => state.registry)
+  const serviceMsg = useServiceSubscription(fullname, ["publishEpoch"])
+  const service = useProcessedMessage(serviceMsg)
+
+  let type = service ? service?.typeKey : "Unknown"
   const getRepoUrl = useStore((state) => state.getRepoUrl)
   const [showJson, setShowJson] = useState(false)
   const [open, setOpen] = useState(false)
@@ -59,7 +65,12 @@ export default function ServicePage({ fullname, name, id }) {
   ]
 
   if (!types.includes(type)) {
-    type = "Unknown"
+    console.error(`============================Service type not found: ${type} =============================`)
+    if (type.includes(".")) {
+      type = "MyRobotLabProxy"
+    } else {
+      type = "Unknown"
+    }
   }
 
   const handleDeleteClick = () => {
@@ -83,18 +94,23 @@ export default function ServicePage({ fullname, name, id }) {
   return (
     <div className="service-content-div">
       <Typography variant="h4" component="div" sx={{ display: "flex", alignItems: "center" }}>
-        <img
-          src={`${getRepoUrl()}/${service.typeKey}/${service.typeKey}.png`}
-          alt={service.name}
-          width="32"
-          style={{ verticalAlign: "middle" }}
-        />{" "}
-        <span style={{ color: "grey", margin: "0 8px" }}>{service.id}</span>
-        {service.name}
-        <IconButton onClick={handleSettingsClick} aria-label="settings" sx={{ ml: 1 }}>
+        {type && type !== "MyRobotLabProxy" && (
+          <img
+            src={`${getRepoUrl()}/${service?.typeKey}/${service?.typeKey}.png`}
+            alt={service?.name}
+            width="32"
+            style={{ verticalAlign: "middle" }}
+          />
+        )}
+        <span style={{ color: "grey", margin: "0 8px" }}>{service?.id}</span>
+        {service?.name}
+        <IconButton onClick={handleSettingsClick} aria-label="settings">
           <SettingsIcon />
         </IconButton>
-        <IconButton onClick={handleDeleteClick} aria-label="delete" sx={{ ml: 2 }}>
+        <Tooltip title={service?.ready ? "Ready" : "Not Ready"}>
+          <Box width={10} height={10} borderRadius="50%" bgcolor={service?.ready ? "green" : "red"} mr={1} />
+        </Tooltip>
+        <IconButton onClick={handleDeleteClick} aria-label="delete">
           <DeleteIcon />
         </IconButton>
       </Typography>
