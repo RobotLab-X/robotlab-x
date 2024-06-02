@@ -14,14 +14,14 @@ export default function Arduino({ fullname }) {
   const { useMessage, sendTo } = useStore()
 
   // makes reference to the message object in store
-  const epochMsg = useMessage(fullname, "publishEpoch")
+  const digitalReadMsg = useMessage(fullname, "digitalRead")
 
   // creates subscriptions to topics and returns the broadcastState message reference
-  const serviceMsg = useServiceSubscription(fullname, ["publishEpoch"])
+  const serviceMsg = useServiceSubscription(fullname, ["analogRead", "digitalRead"])
 
   // processes the msg.data[0] and returns the data
   const service = useProcessedMessage(serviceMsg)
-  const timestamp = useProcessedMessage(epochMsg)
+  const digitalRead = useProcessedMessage(digitalReadMsg)
 
   const toggleEditMode = () => {
     setEditMode(!editMode)
@@ -45,8 +45,6 @@ export default function Arduino({ fullname }) {
     // sendTo(fullname, "broadcastState")
     setEditMode(false)
   }
-
-  let dateStr = (timestamp && new Date(timestamp).toLocaleString()) || ""
 
   return (
     <>

@@ -15,6 +15,7 @@ export default class Arduino extends Service {
   protected boardInfo: any = null
   protected servo: Servo = null
   protected ports: string[] = []
+  protected pins: string[] = []
 
   constructor(
     public id: string,
@@ -44,11 +45,6 @@ export default class Arduino extends Service {
       path: port
     })
 
-    // if (this.board) {
-    //   this.board.io.transport.close()
-    //   this.board = null
-    // }
-
     if (!this.board) {
       this.board = new Board({
         //         port: this.config.port,
@@ -62,27 +58,6 @@ export default class Arduino extends Service {
       this.getBoardInfo()
       this.invoke("broadcastState")
     })
-
-    // if (this.board.isReady) {
-    //   console.log("Board is ready")
-
-    //   // Create a new servo instance on pin 10
-    //   const servo = new Servo(9)
-
-    //   // Move the servo to 90 degrees
-    //   servo.to(90)
-
-    //   // Add your other servo control logic here
-    //   this.board.wait(1000, () => {
-    //     servo.to(120)
-    //   })
-
-    //   this.board.wait(2000, () => {
-    //     servo.to(10)
-    //   })
-    // } else {
-    //   log.error("Board is not ready")
-    // }
   }
 
   moveTo(degrees: number): void {
@@ -115,6 +90,7 @@ export default class Arduino extends Service {
     if (this.board && this.board.isReady) {
       // const board = new Board({ port, repl: false });
 
+      // get board info
       this.boardInfo = {
         id: this.board.id,
         port: this.board.port,
@@ -126,12 +102,42 @@ export default class Arduino extends Service {
         },
         serialNumber: this.board.io.serialNumber
       }
+
+      // get pin info
+      this.getPinInfo()
+
       log.info(`Board info: ${JSON.stringify(this.boardInfo)}`)
       this.invoke("broadcastState")
     } else {
       log.error("Board is not ready")
     }
     return this.boardInfo
+  }
+
+  public getPinInfo(): any {
+    if (!this.board || !this.board.isReady) {
+      log.error("Board is not ready")
+      return null
+    }
+
+    this.pins = this.board.io.pins.map((pin: any, index: number) => {
+      return {
+        index,
+        supportedModes: pin.supportedModes,
+        mode: pin.mode,
+        value: pin.value
+      }
+    })
+
+    // If your board has string identifiers for pins, create a dictionary
+    // const pinDictionary = {};
+    // for (const pin of pinInfo) {
+    //   pinDictionary[`pin${pin.index}`] = pin;
+    // }
+
+    // If the board has numeric pin identifiers, return an array
+    // return Array.isArray(this.board.io.pins) ? pinInfo : pinDictionary;
+    return this.pins
   }
 
   // Not sure if this is the best way to exclude members from serialization
@@ -146,7 +152,8 @@ export default class Arduino extends Service {
       notifyList: this.notifyList,
       ports: this.ports,
       boardInfo: this.boardInfo,
-      ready: this.ready
+      ready: this.ready,
+      pins: this.pins
     }
   }
 }
