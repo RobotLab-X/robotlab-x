@@ -1,13 +1,14 @@
 import ExpandLessIcon from "@mui/icons-material/ExpandLess"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
-import { Box, Button, Paper, TextField, Typography } from "@mui/material"
+import { Box, Button, Paper, TextField } from "@mui/material"
 import React, { useState } from "react"
+import SerialPortSelector from "../components/serialport/SerialPortSelector"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
 import { useStore } from "../store/store"
 import useServiceSubscription from "../store/useServiceSubscription"
 
 // FIXME remove fullname with context provider
-export default function Clock({ fullname }) {
+export default function Arduino({ fullname }) {
   const [editMode, setEditMode] = useState(false)
 
   const { useMessage, sendTo } = useStore()
@@ -24,14 +25,6 @@ export default function Clock({ fullname }) {
 
   const toggleEditMode = () => {
     setEditMode(!editMode)
-  }
-
-  const handleStart = () => {
-    sendTo(fullname, "startClock")
-  }
-
-  const handleStop = () => {
-    sendTo(fullname, "stopClock")
   }
 
   // FIXME put all Configuration in a Component
@@ -62,7 +55,7 @@ export default function Clock({ fullname }) {
         {editMode ? <ExpandLessIcon /> : <ExpandMoreIcon />}
       </h3>
       {editMode ? (
-        <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "80%" } }}>
+        <Box>
           <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
             <TextField
               label="Interval (ms)"
@@ -86,26 +79,8 @@ export default function Clock({ fullname }) {
 
       <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "80%" } }}>
         <Paper elevation={3} sx={{ p: 2, m: 2 }}>
-          <Box sx={{ m: 2 }}>
-            <Typography variant="h4" sx={{ mb: 2 }}>
-              Interval (ms) <br /> {service?.config.intervalMs}&nbsp;
-            </Typography>
-            <Typography variant="h4" sx={{ mb: 2 }}>
-              Timestamp (ms) <br /> {timestamp}&nbsp;
-            </Typography>
-            <Typography variant="h4" sx={{ mb: 2 }}>
-              Formatted Date/Time
-              <br /> {dateStr}&nbsp;
-            </Typography>
-            <Box>
-              <Button variant="contained" color="primary" onClick={handleStart}>
-                Start
-              </Button>
-              <Button variant="contained" color="secondary" onClick={handleStop} sx={{ ml: 2 }}>
-                Stop
-              </Button>
-            </Box>
-          </Box>
+          <SerialPortSelector fullname={fullname} ports={service?.ports ?? []} ready={service?.ready ?? false} />
+          <Box sx={{ m: 2 }}></Box>
         </Paper>
       </Box>
     </>

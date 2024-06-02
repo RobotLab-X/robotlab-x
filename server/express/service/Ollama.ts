@@ -262,6 +262,8 @@ export default class Ollama extends Service {
     this.prompts[prompt][key] = value
   }
 
+  // FIXME .. just find a list of all Service properties  e.g. ObjectKeys(this)
+
   toJSON() {
     return {
       id: this.id,
@@ -270,6 +272,8 @@ export default class Ollama extends Service {
       version: this.version,
       hostname: this.hostname,
       config: this.config,
+      notifyList: this.notifyList,
+      dataPath: this.dataPath,
       prompts: this.prompts,
       ready: this.ready,
       history: this.history

@@ -49,6 +49,8 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
   const [open, setOpen] = useState(false)
   const { subscribeTo, unsubscribeFrom, useMessage, sendTo } = useStore()
 
+  const debug = useStore((state) => state.debug)
+
   // ui states
   const [activeTab, setActiveTab] = useState(0)
 
@@ -403,18 +405,22 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
                   <RouteTable service={service} routeTableArray={routeTableArray} handleHostClick={handleHostClick} />
                 </>
               )}
-              <ReactJson
-                src={service?.connections}
-                name="connections"
-                displayDataTypes={false}
-                displayObjectSize={false}
-              />
-              <ReactJson
-                src={service?.routeTable}
-                name="routeTableArray"
-                displayDataTypes={false}
-                displayObjectSize={false}
-              />
+              {debug && (
+                <>
+                  <ReactJson
+                    src={service?.connections}
+                    name="connections"
+                    displayDataTypes={false}
+                    displayObjectSize={false}
+                  />
+                  <ReactJson
+                    src={service?.routeTable}
+                    name="routeTableArray"
+                    displayDataTypes={false}
+                    displayObjectSize={false}
+                  />
+                </>
+              )}
             </Box>
           </Grid>
         </Grid>

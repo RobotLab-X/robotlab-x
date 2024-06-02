@@ -55,6 +55,7 @@ export default function ServicePage({ fullname, name, id }) {
     "Docker",
     "MyRobotLabConnector",
     "MyRobotLabProxy",
+    "Arduino",
     "OakD",
     "Ollama",
     "RobotLabXRuntime",

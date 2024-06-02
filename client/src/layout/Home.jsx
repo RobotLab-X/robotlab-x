@@ -74,9 +74,7 @@ function Home() {
             </Card>
           ))}
 
-          {debug && (
-            <SendMsgTextArea msg={JSON.stringify({ name: "c1@vigorous-robby", method: "broadcastState" }, null, 2)} />
-          )}
+          {debug && <SendMsgTextArea msg={JSON.stringify({ name: "j1", method: "broadcastState" }, null, 2)} />}
         </Box>
         <Box sx={{ flexGrow: 1, p: 3 }}>
           {selectedCard ? (
