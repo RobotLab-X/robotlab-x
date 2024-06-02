@@ -1,6 +1,6 @@
 import ExpandLessIcon from "@mui/icons-material/ExpandLess"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
-import { Box, Button, Paper, TextField } from "@mui/material"
+import { Box, Button, Paper, TextField, Typography } from "@mui/material"
 import React, { useState } from "react"
 import SerialPortSelector from "../components/serialport/SerialPortSelector"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
@@ -46,6 +46,24 @@ export default function Arduino({ fullname }) {
     setEditMode(false)
   }
 
+  // Map of mode values to their corresponding names in Johnny-Five
+  const modeNames = {
+    0: "INPUT",
+    1: "OUTPUT",
+    2: "ANALOG",
+    3: "PWM",
+    4: "SERVO",
+    5: "SHIFT",
+    6: "I2C",
+    7: "ONEWIRE",
+    8: "STEPPER",
+    9: "UNKNOWN",
+    10: "IGNORE",
+    11: "PULSE",
+    12: "CONTROL",
+    13: "PWM_HIGH_RES"
+  }
+
   return (
     <>
       <h3 style={{ display: "flex", alignItems: "center", cursor: "pointer" }} onClick={toggleEditMode}>
@@ -79,6 +97,21 @@ export default function Arduino({ fullname }) {
         <Paper elevation={3} sx={{ p: 2, m: 2 }}>
           <SerialPortSelector fullname={fullname} ports={service?.ports ?? []} ready={service?.ready ?? false} />
           <Box sx={{ m: 2 }}></Box>
+
+          {/* Display pin buttons */}
+          {service?.pins?.map((pin) => (
+            <Box key={pin.index} sx={{ mb: 2 }}>
+              <Typography variant="h6">Pin {pin.index}</Typography>
+              <Box sx={{ display: "flex", gap: 1 }}>
+                {pin.supportedModes.map((mode) => (
+                  <Button key={mode} variant="outlined">
+                    {modeNames[mode]}
+                  </Button>
+                ))}
+              </Box>
+              <Typography variant="body2">Current Value: {pin.value}</Typography>
+            </Box>
+          ))}
         </Paper>
       </Box>
     </>
