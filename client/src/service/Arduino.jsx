@@ -1,25 +1,23 @@
 import ExpandLessIcon from "@mui/icons-material/ExpandLess"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
-import { Box, Button, Paper, TextField, Typography } from "@mui/material"
+import { Box, Button, Paper, Slider, TextField, Typography } from "@mui/material"
 import React, { useState } from "react"
 import SerialPortSelector from "../components/serialport/SerialPortSelector"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
 import { useStore } from "../store/store"
 import useServiceSubscription from "../store/useServiceSubscription"
 
-// FIXME remove fullname with context provider
 export default function Arduino({ fullname }) {
   const [editMode, setEditMode] = useState(false)
+  const [pwmValue, setPwmValue] = useState({})
+  const [showSlider, setShowSlider] = useState({})
 
   const { useMessage, sendTo } = useStore()
 
-  // makes reference to the message object in store
   const digitalReadMsg = useMessage(fullname, "digitalRead")
 
-  // creates subscriptions to topics and returns the broadcastState message reference
   const serviceMsg = useServiceSubscription(fullname, ["analogRead", "digitalRead"])
 
-  // processes the msg.data[0] and returns the data
   const service = useProcessedMessage(serviceMsg)
   const digitalRead = useProcessedMessage(digitalReadMsg)
 
@@ -27,29 +25,26 @@ export default function Arduino({ fullname }) {
     setEditMode(!editMode)
   }
 
-  // FIXME put all Configuration in a Component
-  // can handle any config field change if the edit name matches the config name
   const handleConfigChange = (event) => {
     const { name, value, type } = event.target
     const newValue = type === "number" ? Number(value) : value
-    // service?.config.intervalMs = newValue
-    // setConfig((prevConfig) => ({
-    //   ...prevConfig,
-    //   [name]: newValue
-    // }))
   }
 
   const handleSaveConfig = () => {
-    // sendTo(fullname, "applyConfig", config)
-    // sendTo(fullname, "saveConfig")
-    // sendTo(fullname, "broadcastState")
     setEditMode(false)
   }
 
-  // Map of mode values to their corresponding names in Johnny-Five
+  const handlePwmChange = (event, newValue, pinIndex) => {
+    setPwmValue((prev) => ({ ...prev, [pinIndex]: newValue }))
+  }
+
+  const toggleSlider = (pinIndex) => {
+    setShowSlider((prev) => ({ ...prev, [pinIndex]: !prev[pinIndex] }))
+  }
+
   const modeNames = {
-    0: "R", // INPUT -> R
-    1: "W", // OUTPUT -> W
+    0: "R",
+    1: "W",
     2: "ANALOG",
     3: "PWM",
     4: "SERVO",
@@ -81,7 +76,7 @@ export default function Arduino({ fullname }) {
               margin="normal"
               value={service?.config?.intervalMs}
               onChange={handleConfigChange}
-              sx={{ flex: 1 }} // Ensure consistent width
+              sx={{ flex: 1 }}
             />
           </Box>
 
@@ -98,10 +93,13 @@ export default function Arduino({ fullname }) {
           <SerialPortSelector fullname={fullname} ports={service?.ports ?? []} ready={service?.ready ?? false} />
           <Box sx={{ m: 2 }}></Box>
 
-          {/* Display pin buttons */}
           {service?.pins?.map((pin) => (
             <Box key={pin.index} sx={{ mb: 2 }}>
-              <Typography variant="h6">Pin {pin.index}</Typography>
+              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <Typography variant="h6">
+                  Pin {pin.index} &nbsp;&nbsp; Value: {pin.value}
+                </Typography>
+              </Box>
               <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0, m: 0 }}>
                 {pin.supportedModes.map((mode, index) => (
                   <Button
@@ -110,20 +108,32 @@ export default function Arduino({ fullname }) {
                     size="small"
                     sx={{
                       m: 0,
-                      p: "4px 8px", // Add some padding inside the buttons
+                      p: "4px 8px",
                       minWidth: "30px",
-                      borderRadius: 0, // Square corners
-                      borderLeft: index === 0 ? "1px solid rgba(0, 0, 0, 0.23)" : "none", // Add left border only to the first button
+                      borderRadius: 0,
+                      borderLeft: index === 0 ? "1px solid rgba(0, 0, 0, 0.23)" : "none",
                       "&:not(:last-of-type)": {
-                        borderRight: "none" // Remove right border for all but the last button
-                      }
+                        borderRight: "none"
+                      },
+                      backgroundColor: showSlider[pin.index] && mode === 3 ? "rgba(0, 0, 0, 0.08)" : "inherit"
                     }}
+                    onClick={() => mode === 3 && toggleSlider(pin.index)}
                   >
                     {modeNames[mode]}
                   </Button>
                 ))}
               </Box>
-              <Typography variant="body2">Current Value: {pin.value}</Typography>
+              {showSlider[pin.index] && (
+                <Box sx={{ mt: 2 }}>
+                  <Slider
+                    value={pwmValue[pin.index] ?? 0}
+                    min={0}
+                    max={254}
+                    onChange={(event, newValue) => handlePwmChange(event, newValue, pin.index)}
+                    valueLabelDisplay="auto"
+                  />
+                </Box>
+              )}
             </Box>
           ))}
         </Paper>
