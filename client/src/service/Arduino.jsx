@@ -1,6 +1,6 @@
 import ExpandLessIcon from "@mui/icons-material/ExpandLess"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
-import { Box, Button, Paper, Slider, TextField, Typography } from "@mui/material"
+import { Box, Button, FormControlLabel, Paper, Slider, Switch, TextField, Typography } from "@mui/material"
 import React, { useState } from "react"
 import SerialPortSelector from "../components/serialport/SerialPortSelector"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
@@ -10,7 +10,10 @@ import useServiceSubscription from "../store/useServiceSubscription"
 export default function Arduino({ fullname }) {
   const [editMode, setEditMode] = useState(false)
   const [pwmValue, setPwmValue] = useState({})
+  const [digitalValue, setDigitalValue] = useState({})
   const [showSlider, setShowSlider] = useState({})
+  const [showSwitch, setShowSwitch] = useState({})
+  const [pinModes, setPinModes] = useState({})
 
   const { useMessage, sendTo } = useStore()
 
@@ -40,8 +43,20 @@ export default function Arduino({ fullname }) {
     setPwmValue((prev) => ({ ...prev, [pinIndex]: newValue }))
   }
 
+  const handleDigitalChange = (event, pinIndex) => {
+    const newValue = event.target.checked ? 1 : 0
+    setDigitalValue((prev) => ({ ...prev, [pinIndex]: newValue }))
+    sendTo(fullname, "digitalWrite", { pin: pinIndex, value: newValue })
+  }
+
   const toggleSlider = (pinIndex) => {
     setShowSlider((prev) => ({ ...prev, [pinIndex]: !prev[pinIndex] }))
+    setPinModes((prev) => ({ ...prev, [pinIndex]: 3 }))
+  }
+
+  const toggleSwitch = (pinIndex) => {
+    setShowSwitch((prev) => ({ ...prev, [pinIndex]: !prev[pinIndex] }))
+    setPinModes((prev) => ({ ...prev, [pinIndex]: 1 }))
   }
 
   const modeNames = {
@@ -132,9 +147,17 @@ export default function Arduino({ fullname }) {
                         "&:not(:last-of-type)": {
                           borderRight: "none"
                         },
-                        backgroundColor: showSlider[pin.index] && mode === 3 ? "rgba(0, 0, 0, 0.08)" : "inherit"
+                        backgroundColor:
+                          showSlider[pin.index] && mode === 3
+                            ? "rgba(0, 0, 0, 0.08)"
+                            : showSwitch[pin.index] && mode === 1
+                              ? "rgba(0, 0, 0, 0.08)"
+                              : "inherit"
                       }}
-                      onClick={() => mode === 3 && toggleSlider(pin.index)}
+                      onClick={() => {
+                        if (mode === 3) toggleSlider(pin.index)
+                        if (mode === 1) toggleSwitch(pin.index)
+                      }}
                     >
                       {modeNames[mode]}
                     </Button>
@@ -149,6 +172,20 @@ export default function Arduino({ fullname }) {
                       onChange={(event, newValue) => handlePwmChange(event, newValue, pin.index)}
                       valueLabelDisplay="auto"
                     />
+                  </Box>
+                )}
+                {showSwitch[pin.index] && (
+                  <Box sx={{ mt: 2 }}>
+                    0 &nbsp;&nbsp;&nbsp;&nbsp;
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={digitalValue[pin.index] === 1}
+                          onChange={(event) => handleDigitalChange(event, pin.index)}
+                        />
+                      }
+                    />
+                    1
                   </Box>
                 )}
               </Box>

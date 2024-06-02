@@ -1,11 +1,15 @@
 import { Button, FormControl, InputLabel, MenuItem, Select } from "@mui/material"
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { useStore } from "../../store/store"
 
-const SerialPortSelector = ({ fullname, ports, ready }) => {
-  const [selectedPort, setSelectedPort] = useState("")
+const SerialPortSelector = ({ fullname, value, ports, ready }) => {
+  const [selectedPort, setSelectedPort] = useState(value || "")
   const [isConnected, setIsConnected] = useState(false)
   const { useMessage, sendTo } = useStore()
+
+  useEffect(() => {
+    setSelectedPort(value)
+  }, [value])
 
   const handlePortChange = (event) => {
     setSelectedPort(event.target.value)
