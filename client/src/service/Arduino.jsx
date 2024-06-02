@@ -11,9 +11,9 @@ export default function Arduino({ fullname }) {
   const [editMode, setEditMode] = useState(false)
   const [pwmValue, setPwmValue] = useState({})
   const [digitalValue, setDigitalValue] = useState({})
-  const [showSlider, setShowSlider] = useState({})
-  const [showSwitch, setShowSwitch] = useState({})
-  const [pinModes, setPinModes] = useState({})
+  const [servoValue, setServoValue] = useState({})
+  const [pulseTime, setPulseTime] = useState({})
+  const [activeMode, setActiveMode] = useState({})
 
   const { useMessage, sendTo } = useStore()
 
@@ -49,14 +49,19 @@ export default function Arduino({ fullname }) {
     sendTo(fullname, "digitalWrite", { pin: pinIndex, value: newValue })
   }
 
-  const toggleSlider = (pinIndex) => {
-    setShowSlider((prev) => ({ ...prev, [pinIndex]: !prev[pinIndex] }))
-    setPinModes((prev) => ({ ...prev, [pinIndex]: 3 }))
+  const handleServoChange = (event, newValue, pinIndex) => {
+    setServoValue((prev) => ({ ...prev, [pinIndex]: newValue }))
+    sendTo(fullname, "servoWrite", { pin: pinIndex, value: newValue })
   }
 
-  const toggleSwitch = (pinIndex) => {
-    setShowSwitch((prev) => ({ ...prev, [pinIndex]: !prev[pinIndex] }))
-    setPinModes((prev) => ({ ...prev, [pinIndex]: 1 }))
+  const handlePulseButton = (pinIndex) => {
+    sendTo(fullname, "pulseRead", { pin: pinIndex })
+    // Mock pulse time for illustration
+    setPulseTime((prev) => ({ ...prev, [pinIndex]: Math.floor(Math.random() * 1000) }))
+  }
+
+  const handleModeSelect = (pinIndex, mode) => {
+    setActiveMode((prev) => ({ ...prev, [pinIndex]: mode }))
   }
 
   const modeNames = {
@@ -147,23 +152,15 @@ export default function Arduino({ fullname }) {
                         "&:not(:last-of-type)": {
                           borderRight: "none"
                         },
-                        backgroundColor:
-                          showSlider[pin.index] && mode === 3
-                            ? "rgba(0, 0, 0, 0.08)"
-                            : showSwitch[pin.index] && mode === 1
-                              ? "rgba(0, 0, 0, 0.08)"
-                              : "inherit"
+                        backgroundColor: activeMode[pin.index] === mode ? "rgba(0, 0, 0, 0.08)" : "inherit"
                       }}
-                      onClick={() => {
-                        if (mode === 3) toggleSlider(pin.index)
-                        if (mode === 1) toggleSwitch(pin.index)
-                      }}
+                      onClick={() => handleModeSelect(pin.index, mode)}
                     >
                       {modeNames[mode]}
                     </Button>
                   ))}
                 </Box>
-                {showSlider[pin.index] && (
+                {activeMode[pin.index] === 3 && (
                   <Box sx={{ mt: 2 }}>
                     <Slider
                       value={pwmValue[pin.index] ?? 0}
@@ -174,9 +171,21 @@ export default function Arduino({ fullname }) {
                     />
                   </Box>
                 )}
-                {showSwitch[pin.index] && (
+                {activeMode[pin.index] === 4 && (
                   <Box sx={{ mt: 2 }}>
-                    0 &nbsp;&nbsp;&nbsp;&nbsp;
+                    <Slider
+                      value={servoValue[pin.index] ?? 0}
+                      min={0}
+                      max={180}
+                      onChange={(event, newValue) => handleServoChange(event, newValue, pin.index)}
+                      valueLabelDisplay="auto"
+                      sx={{ color: "orange" }}
+                    />
+                  </Box>
+                )}
+                {activeMode[pin.index] === 1 && (
+                  <Box sx={{ mt: 2 }}>
+                    0 &nbsp;&nbsp;&nbsp;
                     <FormControlLabel
                       control={
                         <Switch
@@ -184,8 +193,18 @@ export default function Arduino({ fullname }) {
                           onChange={(event) => handleDigitalChange(event, pin.index)}
                         />
                       }
-                    />
+                    />{" "}
                     1
+                  </Box>
+                )}
+                {activeMode[pin.index] === 11 && (
+                  <Box sx={{ mt: 2 }}>
+                    <Button variant="contained" color="primary" onClick={() => handlePulseButton(pin.index)}>
+                      Pulse
+                    </Button>
+                    <Typography variant="body2" sx={{ mt: 1 }}>
+                      Time: {pulseTime[pin.index] ?? "N/A"} µs
+                    </Typography>
                   </Box>
                 )}
               </Box>
