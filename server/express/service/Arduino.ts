@@ -1,4 +1,4 @@
-import { Board, Servo } from "johnny-five"
+import { Board, Pin, Servo } from "johnny-five"
 import { SerialPort } from "serialport"
 import { getLogger } from "../framework/Log"
 import Service from "../framework/Service"
@@ -15,7 +15,9 @@ export default class Arduino extends Service {
   protected boardInfo: any = null
   protected servo: Servo = null
   protected ports: string[] = []
-  protected pins: string[] = []
+  protected pins: any[] = []
+  protected pinsImpl: Pin[] = []
+  protected boardType: string = ""
 
   constructor(
     public id: string,
@@ -33,8 +35,6 @@ export default class Arduino extends Service {
     this.getPorts()
   }
 
-  // TODO attach("servo", Servo, { pin: 10 })
-
   connect(port: string): void {
     log.info(`Connecting to port: ${port}`)
     this.config.port = port
@@ -47,7 +47,6 @@ export default class Arduino extends Service {
 
     if (!this.board) {
       this.board = new Board({
-        //         port: this.config.port,
         port: serialport,
         repl: false
       })
@@ -76,7 +75,7 @@ export default class Arduino extends Service {
   public async getPorts(): Promise<string[]> {
     try {
       const portList = await SerialPort.list()
-      this.ports = portList.map((port) => port.path)
+      this.ports = portList.map((port) => port.path).filter((path) => !path.startsWith("/dev/ttyS"))
       return this.ports
     } catch (error) {
       console.error("Error listing serial ports:", error)
@@ -88,9 +87,6 @@ export default class Arduino extends Service {
     log.info("Getting board info")
 
     if (this.board && this.board.isReady) {
-      // const board = new Board({ port, repl: false });
-
-      // get board info
       this.boardInfo = {
         id: this.board.id,
         port: this.board.port,
@@ -103,7 +99,18 @@ export default class Arduino extends Service {
         serialNumber: this.board.io.serialNumber
       }
 
-      // get pin info
+      const pinCount = this.board.io.pins.length
+
+      if (pinCount === 20) {
+        this.boardType = "Uno"
+      } else if (pinCount === 54) {
+        this.boardType = "Mega"
+      } else if (this.board.io.name.includes("Arduino") && pinCount === 14) {
+        this.boardType = "Nano" // or Micro
+      } else {
+        this.boardType = "Unknown"
+      }
+
       this.getPinInfo()
 
       log.info(`Board info: ${JSON.stringify(this.boardInfo)}`)
@@ -129,18 +136,9 @@ export default class Arduino extends Service {
       }
     })
 
-    // If your board has string identifiers for pins, create a dictionary
-    // const pinDictionary = {};
-    // for (const pin of pinInfo) {
-    //   pinDictionary[`pin${pin.index}`] = pin;
-    // }
-
-    // If the board has numeric pin identifiers, return an array
-    // return Array.isArray(this.board.io.pins) ? pinInfo : pinDictionary;
     return this.pins
   }
 
-  // Not sure if this is the best way to exclude members from serialization
   toJSON() {
     return {
       id: this.id,
@@ -153,7 +151,8 @@ export default class Arduino extends Service {
       ports: this.ports,
       boardInfo: this.boardInfo,
       ready: this.ready,
-      pins: this.pins
+      pins: this.pins,
+      boardType: this.boardType
     }
   }
 }

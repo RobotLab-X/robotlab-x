@@ -21,6 +21,8 @@ export default function Arduino({ fullname }) {
   const service = useProcessedMessage(serviceMsg)
   const digitalRead = useProcessedMessage(digitalReadMsg)
 
+  const getRepoUrl = useStore((state) => state.getRepoUrl)
+
   const toggleEditMode = () => {
     setEditMode(!editMode)
   }
@@ -91,7 +93,15 @@ export default function Arduino({ fullname }) {
       <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "80%" } }}>
         <Paper elevation={3} sx={{ p: 2, m: 2 }}>
           <SerialPortSelector fullname={fullname} ports={service?.ports ?? []} ready={service?.ready ?? false} />
-          <Box sx={{ m: 2 }}></Box>
+          <Box sx={{ m: 2 }}>
+            {service && service?.boardType && (
+              <img
+                src={`${getRepoUrl()}/Arduino/${service?.boardType}.png`}
+                alt={service.name}
+                style={{ verticalAlign: "middle" }}
+              />
+            )}
+          </Box>
 
           {service?.pins?.map((pin) => (
             <Box key={pin.index} sx={{ mb: 2 }}>
