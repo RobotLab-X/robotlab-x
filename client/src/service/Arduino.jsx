@@ -48,8 +48,8 @@ export default function Arduino({ fullname }) {
 
   // Map of mode values to their corresponding names in Johnny-Five
   const modeNames = {
-    0: "INPUT",
-    1: "OUTPUT",
+    0: "R", // INPUT -> R
+    1: "W", // OUTPUT -> W
     2: "ANALOG",
     3: "PWM",
     4: "SERVO",
@@ -102,9 +102,23 @@ export default function Arduino({ fullname }) {
           {service?.pins?.map((pin) => (
             <Box key={pin.index} sx={{ mb: 2 }}>
               <Typography variant="h6">Pin {pin.index}</Typography>
-              <Box sx={{ display: "flex", gap: 1 }}>
-                {pin.supportedModes.map((mode) => (
-                  <Button key={mode} variant="outlined">
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0, m: 0 }}>
+                {pin.supportedModes.map((mode, index) => (
+                  <Button
+                    key={mode}
+                    variant="outlined"
+                    size="small"
+                    sx={{
+                      m: 0,
+                      p: "4px 8px", // Add some padding inside the buttons
+                      minWidth: "30px",
+                      borderRadius: 0, // Square corners
+                      borderLeft: index === 0 ? "1px solid rgba(0, 0, 0, 0.23)" : "none", // Add left border only to the first button
+                      "&:not(:last-of-type)": {
+                        borderRight: "none" // Remove right border for all but the last button
+                      }
+                    }}
+                  >
                     {modeNames[mode]}
                   </Button>
                 ))}
