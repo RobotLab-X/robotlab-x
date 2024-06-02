@@ -92,7 +92,12 @@ export default function Arduino({ fullname }) {
 
       <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "80%" } }}>
         <Paper elevation={3} sx={{ p: 2, m: 2 }}>
-          <SerialPortSelector fullname={fullname} ports={service?.ports ?? []} ready={service?.ready ?? false} />
+          <SerialPortSelector
+            fullname={fullname}
+            value={service?.config?.port}
+            ports={service?.ports ?? []}
+            ready={service?.ready ?? false}
+          />
           <Box sx={{ m: 2 }}>
             {service && service?.boardType && (
               <img
@@ -103,49 +108,52 @@ export default function Arduino({ fullname }) {
             )}
           </Box>
 
-          {service?.pins?.map((pin) => (
-            <Box key={pin.index} sx={{ mb: 2 }}>
-              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <Typography variant="h6">
-                  Pin {pin.index} &nbsp;&nbsp; Value: {pin.value}
-                </Typography>
-              </Box>
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0, m: 0 }}>
-                {pin.supportedModes.map((mode, index) => (
-                  <Button
-                    key={mode}
-                    variant="outlined"
-                    size="small"
-                    sx={{
-                      m: 0,
-                      p: "4px 8px",
-                      minWidth: "30px",
-                      borderRadius: 0,
-                      borderLeft: index === 0 ? "1px solid rgba(0, 0, 0, 0.23)" : "none",
-                      "&:not(:last-of-type)": {
-                        borderRight: "none"
-                      },
-                      backgroundColor: showSlider[pin.index] && mode === 3 ? "rgba(0, 0, 0, 0.08)" : "inherit"
-                    }}
-                    onClick={() => mode === 3 && toggleSlider(pin.index)}
-                  >
-                    {modeNames[mode]}
-                  </Button>
-                ))}
-              </Box>
-              {showSlider[pin.index] && (
-                <Box sx={{ mt: 2 }}>
-                  <Slider
-                    value={pwmValue[pin.index] ?? 0}
-                    min={0}
-                    max={254}
-                    onChange={(event, newValue) => handlePwmChange(event, newValue, pin.index)}
-                    valueLabelDisplay="auto"
-                  />
+          {service?.pins?.map((pin) => {
+            if (pin.index === 0 || pin.index === 1) return null
+            return (
+              <Box key={pin.index} sx={{ mb: 2 }}>
+                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <Typography variant="h6">
+                    Pin {pin.index} &nbsp;&nbsp; Value: {pin.value}
+                  </Typography>
                 </Box>
-              )}
-            </Box>
-          ))}
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0, m: 0 }}>
+                  {pin.supportedModes.map((mode, index) => (
+                    <Button
+                      key={mode}
+                      variant="outlined"
+                      size="small"
+                      sx={{
+                        m: 0,
+                        p: "4px 8px",
+                        minWidth: "30px",
+                        borderRadius: 0,
+                        borderLeft: index === 0 ? "1px solid rgba(0, 0, 0, 0.23)" : "none",
+                        "&:not(:last-of-type)": {
+                          borderRight: "none"
+                        },
+                        backgroundColor: showSlider[pin.index] && mode === 3 ? "rgba(0, 0, 0, 0.08)" : "inherit"
+                      }}
+                      onClick={() => mode === 3 && toggleSlider(pin.index)}
+                    >
+                      {modeNames[mode]}
+                    </Button>
+                  ))}
+                </Box>
+                {showSlider[pin.index] && (
+                  <Box sx={{ mt: 2 }}>
+                    <Slider
+                      value={pwmValue[pin.index] ?? 0}
+                      min={0}
+                      max={254}
+                      onChange={(event, newValue) => handlePwmChange(event, newValue, pin.index)}
+                      valueLabelDisplay="auto"
+                    />
+                  </Box>
+                )}
+              </Box>
+            )
+          })}
         </Paper>
       </Box>
     </>

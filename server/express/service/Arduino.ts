@@ -103,7 +103,7 @@ export default class Arduino extends Service {
 
       if (pinCount === 20) {
         this.boardType = "Uno"
-      } else if (pinCount === 54) {
+      } else if (pinCount === 70) {
         this.boardType = "Mega"
       } else if (this.board.io.name.includes("Arduino") && pinCount === 14) {
         this.boardType = "Nano" // or Micro
