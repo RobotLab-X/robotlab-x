@@ -113,10 +113,12 @@ export default function Arduino({ fullname }) {
       <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "80%" } }}>
         <Paper elevation={3} sx={{ p: 2, m: 2 }}>
           <SerialPortSelector
-            fullname={fullname}
-            value={service?.config?.port}
-            ports={service?.ports ?? []}
-            ready={service?.ready ?? false}
+            portInfo={{
+              fullname: fullname,
+              port: service?.config?.port,
+              ports: service?.ports ?? [],
+              isConnected: service?.ready ?? false
+            }}
           />
           <Box sx={{ m: 2 }}>
             {service && service?.boardType && (

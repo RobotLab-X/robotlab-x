@@ -1,23 +1,37 @@
-import { Board, Pin, Servo } from "johnny-five"
+import { Board, Servo } from "johnny-five"
 import { SerialPort } from "serialport"
 import { getLogger } from "../framework/Log"
 import Service from "../framework/Service"
 
 const log = getLogger("Arduino")
-
+/**
+ * Arduino service class using the johnny-five library
+ * to communicate with an Arduino board
+ * https://johnny-five.io/api/servo/
+ */
 export default class Arduino extends Service {
   config = {
     intervalMs: 1000,
+    // port string
     port: ""
   }
 
   protected board: Board = null
   protected boardInfo: any = null
   protected servo: Servo = null
+  /**
+   * list of ports available on the host
+   */
   protected ports: string[] = []
+
   protected pins: any[] = []
-  protected pinsImpl: Pin[] = []
+
   protected boardType: string = ""
+
+  /**
+   * Serial port instance
+   */
+  protected serialPort: SerialPort = null
 
   constructor(
     public id: string,
@@ -36,27 +50,54 @@ export default class Arduino extends Service {
   }
 
   connect(port: string): void {
-    log.info(`Connecting to port: ${port}`)
-    this.config.port = port
+    try {
+      log.info(`Connecting to port: ${port}`)
 
-    const serialport = new SerialPort({
-      baudRate: 57600,
-      highWaterMark: 256,
-      path: port
-    })
+      if (this.serialPort) {
+        log.info("Already connected to a port. Disconnecting first.")
+        return
+      }
 
-    if (!this.board) {
-      this.board = new Board({
-        port: serialport,
-        repl: false
+      this.config.port = port
+
+      const serialport = new SerialPort({
+        baudRate: 57600,
+        // The size of the read and write buffers defaults to 64k.
+        highWaterMark: 256,
+        path: port
       })
-    }
 
-    this.board.on("ready", () => {
-      this.ready = true
-      this.getBoardInfo()
-      this.invoke("broadcastState")
-    })
+      this.serialPort = serialport
+
+      if (!this.board) {
+        this.board = new Board({
+          port: serialport,
+          repl: false
+        })
+      }
+
+      this.board.on("ready", () => {
+        this.ready = true
+        this.getBoardInfo()
+        this.invoke("broadcastState")
+      })
+
+      this.board.on("error", (err) => {
+        console.error("Board error:", err)
+        this.disconnect()
+      })
+
+      this.board.on("fail", (event) => {
+        console.error("Board fail:", event.message)
+        this.disconnect()
+      })
+
+      this.board.on("info", (event) => {
+        console.log("Board info:", event.message)
+      })
+    } catch (error) {
+      log.error(`Error connecting to board: ${error}`)
+    }
   }
 
   moveTo(degrees: number): void {
@@ -66,10 +107,17 @@ export default class Arduino extends Service {
   }
 
   disconnect(): void {
-    this.board?.io?.close()
-    this.ready = false
-    this.board = null
-    this.invoke("broadcastState")
+    try {
+      if (this.serialPort && this.serialPort.isOpen) {
+        this.serialPort.close()
+      }
+      this.ready = false
+      this.board = null
+      this.serialPort = null
+      this.invoke("broadcastState")
+    } catch (error) {
+      log.error(`Error disconnecting from board:${error}`)
+    }
   }
 
   public async getPorts(): Promise<string[]> {

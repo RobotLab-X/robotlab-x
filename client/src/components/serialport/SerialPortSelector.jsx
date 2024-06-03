@@ -2,14 +2,13 @@ import { Button, FormControl, InputLabel, MenuItem, Select } from "@mui/material
 import React, { useEffect, useState } from "react"
 import { useStore } from "../../store/store"
 
-const SerialPortSelector = ({ fullname, value, ports, ready }) => {
-  const [selectedPort, setSelectedPort] = useState(value || "")
-  const [isConnected, setIsConnected] = useState(false)
+const SerialPortSelector = ({ portInfo }) => {
+  const [selectedPort, setSelectedPort] = useState(portInfo.port || "")
   const { useMessage, sendTo } = useStore()
 
   useEffect(() => {
-    setSelectedPort(value)
-  }, [value])
+    setSelectedPort(portInfo.port)
+  }, [portInfo.port])
 
   const handlePortChange = (event) => {
     setSelectedPort(event.target.value)
@@ -17,22 +16,20 @@ const SerialPortSelector = ({ fullname, value, ports, ready }) => {
 
   const handleConnect = () => {
     console.log("Connecting to port:", selectedPort)
-    sendTo(fullname, "connect", selectedPort)
-    setIsConnected(true)
+    sendTo(portInfo.fullname, "connect", selectedPort)
   }
 
   const handleDisconnect = () => {
     console.log("Disconnecting from port:", selectedPort)
-    sendTo(fullname, "disconnect")
-    setIsConnected(false)
+    sendTo(portInfo.fullname, "disconnect")
   }
 
   return (
     <div>
-      <FormControl fullWidth disabled={ready}>
+      <FormControl fullWidth disabled={portInfo.isConnected}>
         <InputLabel id="port-select-label">Select Port</InputLabel>
         <Select labelId="port-select-label" value={selectedPort} onChange={handlePortChange} label="Select Port">
-          {ports.map((port) => (
+          {portInfo.ports.map((port) => (
             <MenuItem key={port} value={port}>
               {port}
             </MenuItem>
@@ -43,7 +40,7 @@ const SerialPortSelector = ({ fullname, value, ports, ready }) => {
         variant="contained"
         color="primary"
         onClick={handleConnect}
-        disabled={!selectedPort || isConnected || ready}
+        disabled={!selectedPort || portInfo.isConnected}
         style={{ marginTop: "16px" }}
       >
         Connect
@@ -52,7 +49,7 @@ const SerialPortSelector = ({ fullname, value, ports, ready }) => {
         variant="contained"
         color="secondary"
         onClick={handleDisconnect}
-        disabled={!ready}
+        disabled={!portInfo.isConnected}
         style={{ marginTop: "16px", marginLeft: "16px" }}
       >
         Disconnect
