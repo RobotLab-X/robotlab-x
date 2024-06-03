@@ -7,7 +7,7 @@ const swaggerJsdoc = require("swagger-jsdoc")
 // Load the JSON schemas
 const schemas = require("./schemas.json")
 
-// Function to parse TypeScript file and extract method names
+// Function to parse TypeScript file and extract method names and parameters
 function parseTypeScriptFile(filePath) {
   const program = ts.createProgram([filePath], {})
   const sourceFile = program.getSourceFile(filePath)
@@ -20,7 +20,15 @@ function parseTypeScriptFile(filePath) {
       const symbol = checker.getSymbolAtLocation(node.name)
       if (symbol) {
         const methodName = symbol.getName()
-        methods.push(methodName)
+        const parameters = node.parameters.map((param) => {
+          const paramSymbol = checker.getSymbolAtLocation(param.name)
+          const paramType = checker.getTypeAtLocation(param)
+          return {
+            name: paramSymbol.getName(),
+            type: checker.typeToString(paramType)
+          }
+        })
+        methods.push({ methodName, parameters })
       }
     }
     ts.forEachChild(node, visit)
@@ -34,12 +42,41 @@ function parseTypeScriptFile(filePath) {
 function generateSwaggerPaths(methods) {
   const paths = {}
   methods.forEach((method) => {
-    paths[`/clock/${method}`] = {
+    const parametersSchema = method.parameters.map((param, index) => ({
+      name: `param${index + 1}`,
+      in: "body",
+      schema: {
+        type: "object",
+        properties: {
+          [param.name]: { type: param.type }
+        },
+        required: [param.name]
+      }
+    }))
+
+    paths[`/clock/${method.methodName}`] = {
       put: {
-        summary: `Executes ${method} method`,
+        summary: `Executes ${method.methodName} method`,
+        requestBody: {
+          content: {
+            "application/json": {
+              schema: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: method.parameters.reduce((acc, param) => {
+                    acc[param.name] = { type: param.type }
+                    return acc
+                  }, {}),
+                  required: method.parameters.map((param) => param.name)
+                }
+              }
+            }
+          }
+        },
         responses: {
           200: {
-            description: `${method} method executed successfully`
+            description: `${method.methodName} method executed successfully`
           }
         }
       }
@@ -51,7 +88,7 @@ function generateSwaggerPaths(methods) {
 // Path to your TypeScript file
 const tsFilePath = path.resolve(__dirname, "./express/service/Clock.ts")
 
-// Parse the TypeScript file to extract method names
+// Parse the TypeScript file to extract method names and parameters
 const methods = parseTypeScriptFile(tsFilePath)
 
 // Generate Swagger paths

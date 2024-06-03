@@ -3,15 +3,34 @@ import Service from "../framework/Service"
 
 const log = getLogger("Clock")
 
+/**
+ * @class Clock
+ * @extends Service
+ * @description A service that provides clock functionality, periodically publishing the current epoch time.
+ */
 export default class Clock extends Service {
-  // Class properties
+  /**
+   * @property {NodeJS.Timeout | null} intervalId - The ID of the interval timer. This property is excluded from serialization.
+   * @private
+   */
   private intervalId: NodeJS.Timeout | null = null
-  // private intervalMs: number = 1000
+
+  /**
+   * @property {ClockConfig} config - The configuration for the clock service.
+   */
   config = {
     intervalMs: 1000,
     start: false
   }
 
+  /**
+   * Creates an instance of Clock.
+   * @param {string} id - The unique identifier for the service.
+   * @param {string} name - The name of the service.
+   * @param {string} typeKey - The type key of the service.
+   * @param {string} version - The version of the service.
+   * @param {string} hostname - The hostname of the service.
+   */
   constructor(
     public id: string,
     public name: string,
@@ -19,21 +38,30 @@ export default class Clock extends Service {
     public version: string,
     public hostname: string
   ) {
-    super(id, name, typeKey, version, hostname) // Call the base class constructor if needed
-    // this.config = { intervalMs: 1000 }
+    super(id, name, typeKey, version, hostname)
   }
 
+  /**
+   * Publishes the current epoch time.
+   * @returns {number} The current epoch time.
+   */
   publishEpoch(): number {
     const epoch = Date.now()
     log.info(`Clock.publishEpoch: ${epoch}`)
     return epoch
   }
 
+  /**
+   * Handles the tick event, invoking the publishEpoch method.
+   */
   onTick(): void {
     this.invoke("publishEpoch")
   }
 
-  // Method to start the clock timer
+  /**
+   * Starts the clock timer.
+   * @param {number} [intervalMs] - The interval in milliseconds. If not provided, the existing intervalMs from the config is used.
+   */
   public startClock(intervalMs?: number): void {
     this.config.start = true
 
@@ -50,7 +78,9 @@ export default class Clock extends Service {
     }
   }
 
-  // Method to stop the clock timer
+  /**
+   * Stops the clock timer.
+   */
   public stopClock(): void {
     this.config.start = false
     if (this.intervalId !== null) {
@@ -62,7 +92,11 @@ export default class Clock extends Service {
     }
   }
 
-  // Not sure if this is the best way to exclude members from serialization
+  /**
+   * Serializes the Clock instance to JSON.
+   * Excludes intervalId from serialization.
+   * @returns {object} The serialized Clock instance.
+   */
   toJSON() {
     return {
       id: this.id,

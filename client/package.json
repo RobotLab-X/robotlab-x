@@ -121,6 +121,7 @@
     "react-json-view": "^1.21.3",
     "react-step-wizard": "^5.3.11",
     "react-terminal-ui": "^1.2.0",
+    "swagger-ui-react": "^5.17.14",
     "ua-parser-js": "^1.0.37",
     "uuid": "^9.0.1",
     "xterm-for-react": "^1.0.4"
