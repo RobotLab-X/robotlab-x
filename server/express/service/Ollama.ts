@@ -12,6 +12,7 @@ const log = getLogger("Ollama")
 export default class Ollama extends Service {
   // Class properties
   private intervalId: NodeJS.Timeout | null = null
+
   config = {
     installed: false,
     url: "http://localhost:11434",
@@ -27,14 +28,30 @@ export default class Ollama extends Service {
 
   protected history: any[] = []
 
+  /**
+   * Initializes a new instance of the Ollama service.
+   * @param id - The service identifier.
+   * @param name - The name of the service.
+   * @param typeKey - The type key of the service.
+   * @param version - The version of the service.
+   * @param hostname - The hostname for the service.
+   */
   constructor(id: string, name: string, typeKey: string, version: string, hostname: string) {
     super(id, name, typeKey, version, hostname)
   }
 
+  /**
+   * Sets the model to be used by the Ollama service.
+   * @param model - The model name to set.
+   */
   setModel(model?: string): void {
     this.config.model = model
   }
 
+  /**
+   * Applies the provided configuration to the Ollama service.
+   * @param config - The configuration object to apply.
+   */
   applyConfig(config: any) {
     super.applyConfig(config)
     if (this.config.installed && !this.intervalId) {
@@ -42,10 +59,16 @@ export default class Ollama extends Service {
     }
   }
 
+  /**
+   * Starts a timer to periodically check the Ollama service status.
+   */
   private startCheckTimer(): void {
     this.intervalId = setInterval(() => this.check(), 5000)
   }
 
+  /**
+   * Checks the status of the Ollama service.
+   */
   private async check(): Promise<void> {
     try {
       const response = await axios.get(this.config.url)
@@ -58,7 +81,7 @@ export default class Ollama extends Service {
       log.debug(`Response from ${this.config.url}:${response.data}`)
     } catch (error) {
       if (this.ready === true) {
-        // state change to ready
+        // state change to not ready
         this.ready = false
         this.invoke("broadcastState")
         log.error("Ollama is not ready")
@@ -67,6 +90,9 @@ export default class Ollama extends Service {
     }
   }
 
+  /**
+   * Stops the timer that checks the Ollama service status.
+   */
   stopCheckTimer(): void {
     if (this.intervalId) {
       clearInterval(this.intervalId)
@@ -74,21 +100,42 @@ export default class Ollama extends Service {
     }
   }
 
+  /**
+   * Publishes the response from Ollama service.
+   * @param response - The response object to publish.
+   * @returns The response object.
+   */
   publishResponse(response: any): any {
     log.info(`publishResponse ${JSON.stringify(response)}`)
     return response
   }
 
+  /**
+   * Publishes the chat response from Ollama service.
+   * @param text - The chat response text.
+   * @returns The chat response text.
+   */
   publishChat(text: string): string {
-    log.info(`publishResponse ${text}`)
+    log.info(`publishChat ${text}`)
     return text
   }
 
+  /**
+   * Publishes the request sent to Ollama service.
+   * @param request - The request object to publish.
+   * @returns The request object.
+   */
   publishRequest(request: any): any {
     log.info(`publishRequest ${JSON.stringify(request)}`)
     return request
   }
 
+  /**
+   * Processes input values and replaces placeholders in the content string.
+   * @param inputs - The input values.
+   * @param content - The content string with placeholders.
+   * @returns The processed content string.
+   */
   processInputs(inputs: any, content: string): string {
     const now = new Date()
 
@@ -113,6 +160,10 @@ export default class Ollama extends Service {
     return ret
   }
 
+  /**
+   * Sends a chat message to the Ollama service and processes the response.
+   * @param text - The chat message text.
+   */
   async chat(text: string): Promise<void> {
     try {
       // create a chat client
@@ -122,12 +173,12 @@ export default class Ollama extends Service {
       let prompt = this.prompts[this.config.prompt]
 
       // consider calling in parallel, or different order
-      // currently we'll just serialally call the two chat completions
+      // currently we'll just serially call the two chat completions
       // if tools has data
       if (prompt?.messages?.tools) {
         log.info(`tools would do a tools request`)
         // let toolsPrompt = prompt.messages.tools?.content
-        //             { role: "system", content: toolsPrompt + " " + JSON.stringify(prompt.tools) },
+        // { role: "system", content: toolsPrompt + " " + JSON.stringify(prompt.tools) },
 
         let request: ChatRequest = {
           model: this.config.model,
@@ -144,7 +195,7 @@ export default class Ollama extends Service {
         // get tools system prompt
 
         this.invoke("publishRequest", request)
-        log.info(`tools chat requst ${JSON.stringify(request)}`)
+        log.info(`tools chat request ${JSON.stringify(request)}`)
 
         let response: ChatResponse = await oc.chat(request as ChatRequest & { stream: false; format: "json" })
 
@@ -188,6 +239,10 @@ export default class Ollama extends Service {
     }
   }
 
+  /**
+   * Retrieves the response from the Ollama service.
+   * @param request - The request object to send.
+   */
   async getResponse(request: any): Promise<void> {
     try {
       const response = await axios.get(`${this.config.url}/chat`)
@@ -197,26 +252,30 @@ export default class Ollama extends Service {
     }
   }
 
+  /**
+   * Sets a prompt for the Ollama service.
+   * @param name - The name of the prompt.
+   * @param prompt - The prompt object to set.
+   */
   setPrompt(name: string, prompt: any): void {
     this.prompts[name] = prompt
   }
 
   /**
-   * Python callback from llm response
-   * @param callback
+   * Publishes a callback from a Python response.
+   * @param callback - The callback to publish.
    */
   publishPythonCall(callback: any): void {
     log.info(`publishPythonCall ${callback}`)
   }
 
   /**
-   * Node callback from llm response
-   * @param callback
+   * Publishes a callback from a Node.js response.
+   * @param callback - The callback to publish.
    */
   publishNodeCall(callback: any): void {
     log.info(`publishNodeCall ${callback}`)
   }
-
   loadPrompts(): void {
     log.info("loadPrompts")
 

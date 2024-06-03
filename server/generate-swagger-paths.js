@@ -21,12 +21,8 @@ function parseTypeScriptFile(filePath) {
       if (symbol) {
         const methodName = symbol.getName()
         const parameters = node.parameters.map((param) => {
-          const paramSymbol = checker.getSymbolAtLocation(param.name)
           const paramType = checker.getTypeAtLocation(param)
-          return {
-            name: paramSymbol.getName(),
-            type: checker.typeToString(paramType)
-          }
+          return checker.typeToString(paramType)
         })
         methods.push({ methodName, parameters })
       }
@@ -42,35 +38,25 @@ function parseTypeScriptFile(filePath) {
 function generateSwaggerPaths(methods) {
   const paths = {}
   methods.forEach((method) => {
-    const parametersSchema = method.parameters.map((param, index) => ({
-      name: `param${index + 1}`,
-      in: "body",
-      schema: {
-        type: "object",
-        properties: {
-          [param.name]: { type: param.type }
-        },
-        required: [param.name]
-      }
-    }))
+    const parametersSchema = {
+      type: "array",
+      items: method.parameters.map((param) => ({
+        type: param === "number" ? "integer" : param
+      }))
+    }
 
-    paths[`/clock/${method.methodName}`] = {
+    paths[`/ollama/${method.methodName}`] = {
       put: {
         summary: `Executes ${method.methodName} method`,
         requestBody: {
           content: {
             "application/json": {
-              schema: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: method.parameters.reduce((acc, param) => {
-                    acc[param.name] = { type: param.type }
-                    return acc
-                  }, {}),
-                  required: method.parameters.map((param) => param.name)
-                }
-              }
+              schema: parametersSchema,
+              example: method.parameters.map((param, index) => {
+                if (param === "number") return index
+                if (param === "string") return `example${index}`
+                return null
+              })
             }
           }
         },
@@ -86,7 +72,7 @@ function generateSwaggerPaths(methods) {
 }
 
 // Path to your TypeScript file
-const tsFilePath = path.resolve(__dirname, "./express/service/Clock.ts")
+const tsFilePath = path.resolve(__dirname, "./express/service/Ollama.ts")
 
 // Parse the TypeScript file to extract method names and parameters
 const methods = parseTypeScriptFile(tsFilePath)
@@ -107,7 +93,7 @@ const options = {
     },
     paths: swaggerPaths
   },
-  apis: ["./src/Clock.ts"]
+  apis: ["./src/Ollama.ts"]
 }
 
 // Initialize swagger-jsdoc

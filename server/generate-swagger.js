@@ -17,7 +17,7 @@ const options = {
       schemas: schemas
     }
   },
-  apis: ["./express/service/Clock.ts"] // Path to the API docs
+  apis: ["./express/service/Ollama.ts"] // Path to the API docs
 }
 
 // Initialize swagger-jsdoc
