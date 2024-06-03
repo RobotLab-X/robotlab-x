@@ -7,7 +7,7 @@ const swaggerJsdoc = require("swagger-jsdoc")
 // Load the JSON schemas
 const schemas = require("./schemas.json")
 
-// Function to parse TypeScript file and extract method names and parameters
+// Function to parse TypeScript file and extract method names, parameters, and TSDoc comments
 function parseTypeScriptFile(filePath) {
   const program = ts.createProgram([filePath], {})
   const sourceFile = program.getSourceFile(filePath)
@@ -24,7 +24,16 @@ function parseTypeScriptFile(filePath) {
           const paramType = checker.getTypeAtLocation(param)
           return checker.typeToString(paramType)
         })
-        methods.push({ methodName, parameters })
+
+        let documentation = ts.displayPartsToString(symbol.getDocumentationComment(checker))
+
+        // Get tags from the jsdoc
+        const tags = symbol.getJsDocTags().map((tag) => ({
+          name: tag.name,
+          text: tag.text ? ts.displayPartsToString(tag.text) : undefined
+        }))
+
+        methods.push({ methodName, parameters, documentation, tags })
       }
     }
     ts.forEachChild(node, visit)
@@ -47,7 +56,8 @@ function generateSwaggerPaths(methods) {
 
     paths[`/ollama/${method.methodName}`] = {
       put: {
-        summary: `Executes ${method.methodName} method`,
+        summary: method.documentation || `Executes ${method.methodName} method`,
+        description: method.documentation,
         requestBody: {
           content: {
             "application/json": {
