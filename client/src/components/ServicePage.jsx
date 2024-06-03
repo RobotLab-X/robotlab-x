@@ -60,6 +60,7 @@ export default function ServicePage({ fullname, name, id }) {
     "Ollama",
     "RobotLabXRuntime",
     "Runtime",
+    "Servo",
     "TestNodeService",
     "TestPythonService",
     "WebXR"

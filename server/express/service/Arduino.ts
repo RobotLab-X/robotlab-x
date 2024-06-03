@@ -1,4 +1,4 @@
-import { Board, Servo } from "johnny-five"
+import { Board, Pin, Servo } from "johnny-five"
 import { SerialPort } from "serialport"
 import { getLogger } from "../framework/Log"
 import Service from "../framework/Service"
@@ -8,6 +8,7 @@ const log = getLogger("Arduino")
  * Arduino service class using the johnny-five library
  * to communicate with an Arduino board
  * https://johnny-five.io/api/servo/
+ * https://johnny-five.io/api/pin/
  */
 export default class Arduino extends Service {
   config = {
@@ -24,7 +25,15 @@ export default class Arduino extends Service {
    */
   protected ports: string[] = []
 
+  /**
+   * serializable list of pins on the board
+   */
   protected pins: any[] = []
+
+  /**
+   * non serializable list of pins on the board
+   */
+  protected pinsImpl: Pin[] = []
 
   protected boardType: string = ""
 
@@ -159,7 +168,7 @@ export default class Arduino extends Service {
         this.boardType = "Unknown"
       }
 
-      this.getPinInfo()
+      this.createPins()
 
       log.info(`Board info: ${JSON.stringify(this.boardInfo)}`)
       this.invoke("broadcastState")
@@ -169,7 +178,7 @@ export default class Arduino extends Service {
     return this.boardInfo
   }
 
-  public getPinInfo(): any {
+  private createPins(): any {
     if (!this.board || !this.board.isReady) {
       log.error("Board is not ready")
       return null
@@ -180,11 +189,30 @@ export default class Arduino extends Service {
         index,
         supportedModes: pin.supportedModes,
         mode: pin.mode,
-        value: pin.value
+        value: pin.value,
+        state: pin.state
       }
     })
 
+    this.pinsImpl = this.board.io.pins.map((pinDescription: any, index: number) => {
+      return new Pin(index)
+    })
+
     return this.pins
+  }
+
+  public getPins(): any {
+    return this.pins
+  }
+
+  public write(pin: number, value: number): void {
+    log.info(`Writing to pin ${pin} value: ${value}`)
+    if (this.ready) {
+      log.info(`${JSON.stringify(this.pins[pin])}`)
+      this.pinsImpl[pin].write(value)
+    } else {
+      log.error("Board is not ready")
+    }
   }
 
   toJSON() {

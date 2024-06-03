@@ -46,7 +46,7 @@ export default function Arduino({ fullname }) {
   const handleDigitalChange = (event, pinIndex) => {
     const newValue = event.target.checked ? 1 : 0
     setDigitalValue((prev) => ({ ...prev, [pinIndex]: newValue }))
-    sendTo(fullname, "digitalWrite", { pin: pinIndex, value: newValue })
+    sendTo(fullname, "write", pinIndex, newValue)
   }
 
   const handleServoChange = (event, newValue, pinIndex) => {
