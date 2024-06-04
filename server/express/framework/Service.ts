@@ -282,6 +282,7 @@ export default class Service implements Gateway {
   // vs release which only frees the service from memory
   releaseService() {
     log.info(`========= released service ${this.getName()} ===========`)
+    RobotLabXRuntime.getInstance().release(this.fullname)
   }
 
   removeListener(method: string, remoteName: string, remoteMethod: string) {

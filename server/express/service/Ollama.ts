@@ -164,8 +164,10 @@ export default class Ollama extends Service {
   }
 
   /**
+   * FIXME ! do not make the function async !!!!
    * Sends a chat message to the Ollama service and processes the response.
    * @param text - The chat message text.
+   * @example ["Hello there !  What can you do ?"]
    */
   async chat(text: string): Promise<void> {
     try {

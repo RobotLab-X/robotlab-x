@@ -57,7 +57,7 @@ export default function Servo({ name, fullname, id }) {
   }
 
   return (
-    <Box>
+    <Box sx={{ width: { xs: "100%", sm: "100%", md: "30%" } }}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
         <Typography variant="h2">{mainSliderValue}</Typography>
         <Box display="flex" alignItems="center">

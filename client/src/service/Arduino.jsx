@@ -51,7 +51,7 @@ export default function Arduino({ id, fullname, name }) {
 
   const handleServoChange = (event, newValue, pinIndex) => {
     setServoValue((prev) => ({ ...prev, [pinIndex]: newValue ?? 0 }))
-    sendTo(fullname, "servoWrite", { pin: pinIndex, value: newValue ?? 0 })
+    sendTo(fullname, "servoWrite", pinIndex, newValue ?? 0)
   }
 
   const handlePulseButton = (pinIndex) => {

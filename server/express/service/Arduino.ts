@@ -19,7 +19,7 @@ export default class Arduino extends Service {
 
   protected board: Board = null
   protected boardInfo: any = null
-  protected servo: Servo = null
+
   /**
    * list of ports available on the host
    */
@@ -34,6 +34,8 @@ export default class Arduino extends Service {
    * non serializable list of pins on the board
    */
   protected pinsImpl: Pin[] = []
+
+  protected servosImpl: Servo[] = []
 
   protected boardType: string = ""
 
@@ -56,6 +58,11 @@ export default class Arduino extends Service {
     super.startService()
     this.ready = false // not ready until board is connected
     this.getPorts()
+  }
+
+  stopService(): void {
+    this.disconnect()
+    super.stopService()
   }
 
   connect(port: string): void {
@@ -109,18 +116,14 @@ export default class Arduino extends Service {
     }
   }
 
-  moveTo(degrees: number): void {
-    if (this.servo) {
-      this.servo.to(degrees)
-    }
-  }
-
   disconnect(): void {
     try {
       if (this.serialPort && this.serialPort.isOpen) {
+        log.error("Closing serial port !!!!!!!!!!")
         this.serialPort.close()
       }
       this.ready = false
+      // delete this.board ... frustrating
       this.board = null
       this.serialPort = null
       this.invoke("broadcastState")
@@ -212,6 +215,23 @@ export default class Arduino extends Service {
       this.pinsImpl[pin].write(value)
     } else {
       log.error("Board is not ready")
+    }
+  }
+
+  servoWrite(pin: number, value: number): void {
+    log.info(`Servo writing to pin ${pin} value: ${value}`)
+
+    // create a servo if it doesn't already exist
+    if (this.ready && !this.servosImpl[pin]) {
+      const servo = new Servo({
+        pin,
+        board: this.board
+      })
+      this.servosImpl[pin] = servo
+    } else if (this.ready && this.servosImpl[pin]) {
+      this.servosImpl[pin].to(value)
+    } else {
+      log.error(`cannot write to servo ready: ${this.ready} servo: ${this.servosImpl[pin]}`)
     }
   }
 

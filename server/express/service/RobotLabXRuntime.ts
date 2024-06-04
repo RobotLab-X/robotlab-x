@@ -592,8 +592,41 @@ export default class RobotLabXRuntime extends Service {
     }
   }
 
+  /**
+   * Runtime releasing a service
+   * can only be a local service
+   * going through service life cycle
+   * stopService, release
+   * @param name
+   * @returns
+   */
   release(name: string): void {
+    log.info(`releasing service: ${name}`)
+    const service: Service = this.getService(name) // .releaseService()
+    if (!service) {
+      log.error(`service ${name} not found`)
+      return
+    }
+    if (service instanceof RobotLabXRuntime) {
+      log.error(`cannot release runtime`)
+      return
+    }
+    if (service?.id !== this.id) {
+      log.error(`will not release remote service: ${name}`)
+      return
+    }
+
+    log.info("stopping service")
+    service.stopService()
+    log.info("service stopped")
+    Store.getInstance().release(name)
     log.info(`Released service: ${name}`)
+    this.invoke("released", service.fullname)
+    this.invoke("getRegistry")
+  }
+
+  released(fullname: string): string {
+    return fullname
   }
 
   getUptime(): string {

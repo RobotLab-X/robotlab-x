@@ -114,6 +114,14 @@ export default class Store {
     this.registry[key] = value
   }
 
+  public release(key: string): void {
+    if (this.registry[key]) {
+      delete this.registry[key]
+    } else {
+      log.error(`release key ${key} not found`)
+    }
+  }
+
   // Method to get a value by key from the registry
   public getRegistry(): any {
     return this.registry

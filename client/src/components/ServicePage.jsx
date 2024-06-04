@@ -32,6 +32,7 @@ export default function ServicePage({ fullname, name, id }) {
   const [showJson, setShowJson] = useState(false)
   const [open, setOpen] = useState(false)
   const navigate = useNavigate()
+  const sendTo = useStore((state) => state.sendTo)
 
   const message = useStore((state) => state.useMessage(fullname, "broadcastState"))
 
@@ -90,6 +91,7 @@ export default function ServicePage({ fullname, name, id }) {
     // Perform delete action here
     console.log("Service deleted")
     setOpen(false)
+    sendTo(fullname, "releaseService")
   }
 
   const handleSettingsClick = () => {

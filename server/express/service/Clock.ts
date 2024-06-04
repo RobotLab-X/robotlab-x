@@ -58,6 +58,11 @@ export default class Clock extends Service {
     this.invoke("publishEpoch")
   }
 
+  stopService(): void {
+    this.stopClock()
+    super.stopService()
+  }
+
   /**
    * Starts the clock timer.
    * @param {number} [intervalMs] - The interval in milliseconds. If not provided, the existing intervalMs from the config is used.
