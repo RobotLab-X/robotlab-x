@@ -848,17 +848,17 @@ export default class RobotLabXRuntime extends Service {
     delete this.connections[`${gatewayId}`]
   }
 
-  public getGatewayConnection(gatewayId: string): WebSocket | undefined {
+  getGatewayConnection(gatewayId: string): WebSocket | undefined {
     return this.connectionImpl.get(gatewayId)
   }
 
-  public getClients(): Map<string, WebSocket> {
+  getClients(): Map<string, WebSocket> {
     return this.connectionImpl
   }
 
   // FIXME - there is probably no Use Case for this - remove
   // Deprecated if not used
-  public broadcastJsonMessage(message: string): void {
+  broadcastJsonMessage(message: string): void {
     // Iterate over the set of clients and send the message to each
     this.connectionImpl.forEach((client) => {
       if (client.readyState === WebSocket.OPEN) {
@@ -868,12 +868,12 @@ export default class RobotLabXRuntime extends Service {
   }
 
   // Deprecated if not used
-  public broadcast(message: Message): void {
+  broadcast(message: Message): void {
     let json = JSON.stringify(message)
     this.broadcastJsonMessage(json)
   }
 
-  public getGateway(remoteId: string): Gateway {
+  getGateway(remoteId: string): Gateway {
     // log.error(`getGateway remoteId:${remoteId}`)
     let entry: RouteEntry = this.routeTable[remoteId]
 
@@ -885,7 +885,7 @@ export default class RobotLabXRuntime extends Service {
     return this.getService(entry.gateway)
   }
 
-  public getRouteId(remoteId: string): string {
+  getRouteId(remoteId: string): string {
     // this is a local gateway id
     // this is the id of the gateway that will route to the remoteId
     let entry: RouteEntry = this.routeTable[remoteId]
@@ -899,7 +899,7 @@ export default class RobotLabXRuntime extends Service {
    * Requesting to send a message to a remote process
    * @param msg
    */
-  public sendRemote(msg: Message): any {
+  sendRemote(msg: Message): any {
     const msgId = CodecUtil.getId(msg.name)
     const gatewayRouteId = this.getRouteId(msgId)
 
@@ -914,7 +914,31 @@ export default class RobotLabXRuntime extends Service {
     return null
   }
 
-  public getConfigName(): string {
+  getConfigName(): string {
     return this.configName
+  }
+
+  /**
+   * Get list of interfaces from method name
+   * FIXME - need to change from single method name to name of real interface
+   * Match all services with the same interface
+   *
+   * @param methodName
+   * @returns
+   *
+   **/
+  getServicesFromInterface(methodName: string): string[] {
+    const registry = Store.getInstance().getRegistry()
+    let services: string[] = []
+
+    for (const [key, service] of Object.entries(registry)) {
+      let s: any = service
+      log.info(`getServicesFromInterface ${key} ${Object.getOwnPropertyNames(s.__proto__)}`)
+      if (Object.getOwnPropertyNames(s.__proto__).includes(methodName)) {
+        services.push(key)
+      }
+    }
+    log.info(`getServicesFromInterface ${methodName} ${services}`)
+    return services
   }
 }

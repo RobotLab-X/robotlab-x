@@ -51,6 +51,18 @@ export default class Service implements Gateway {
     this.dataPath = path.join(Main.expressRoot, `service/${this.name}`)
   }
 
+  getSubscribersForMethod(method: string): SubscriptionListener[] {
+    let ret: string[] = []
+    const listeners: SubscriptionListener[] = this.notifyList[method]
+    if (listeners) {
+      listeners.forEach((listener: SubscriptionListener) => {
+        ret.push(listener.callbackName)
+      })
+    }
+    log.error(`getSubscribersForMethod ${method} ${ret}`)
+    return []
+  }
+
   addListener(method: string, remoteName: string, remoteMethod: string) {
     if (remoteMethod === null || remoteMethod === "" || remoteMethod === undefined) {
       remoteMethod = CodecUtil.getCallbackTopicName(method)

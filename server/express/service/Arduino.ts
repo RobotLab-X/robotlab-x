@@ -1,3 +1,4 @@
+import ServoMove from "express/models/ServoMove"
 import { Board, Pin, Servo } from "johnny-five"
 import { SerialPort } from "serialport"
 import { getLogger } from "../framework/Log"
@@ -35,7 +36,7 @@ export default class Arduino extends Service {
    */
   protected pinsImpl: Pin[] = []
 
-  protected servosImpl: Servo[] = []
+  protected servosImpl: { [id: string]: Servo } = {}
 
   protected boardType: string = ""
 
@@ -218,7 +219,7 @@ export default class Arduino extends Service {
     }
   }
 
-  servoWrite(pin: number, value: number): void {
+  servoWrite(pin: string, value: number): void {
     log.info(`Servo writing to pin ${pin} value: ${value}`)
 
     // create a servo if it doesn't already exist
@@ -229,10 +230,15 @@ export default class Arduino extends Service {
       })
       this.servosImpl[pin] = servo
     } else if (this.ready && this.servosImpl[pin]) {
+      // this.servosImpl[pin].to(value, 3000)  pos, [ms], [rate]
       this.servosImpl[pin].to(value)
     } else {
       log.error(`cannot write to servo ready: ${this.ready} servo: ${this.servosImpl[pin]}`)
     }
+  }
+
+  onServoMoveTo(servoMove: ServoMove): void {
+    this.servoWrite(servoMove.pin, servoMove.degrees)
   }
 
   toJSON() {

@@ -1,6 +1,7 @@
 import { getLogger } from "../framework/Log"
 import Service from "../framework/Service"
 import ServoMove from "../models/ServoMove"
+import RobotLabXRuntime from "./RobotLabXRuntime"
 
 const log = getLogger("Servo")
 
@@ -24,15 +25,38 @@ export default class Servo extends Service {
     super(id, name, typeKey, version, hostname)
   }
 
-  public moveTo(degrees: number, speed?: number): void {
+  /**
+   *  Move the servo to a specific position at a specific speed
+   * @param degrees - required position to move to
+   * @param speed - optional if not supplied config.speed is used
+   */
+  moveTo(degrees: number, speed?: number): void {
     if (speed) {
       this.config.speed = speed
     }
     log.info(`Servo.moveTo: Moving to ${degrees} degrees at speed ${this.config.speed}`)
-    this.invoke("moveTo", degrees, this.config.speed)
+    this.invoke("publishServoMoveTo", degrees, this.config.speed)
   }
 
-  public publishServoMoveTo(degrees: number, speed?: number): ServoMove {
+  attach(controller: string): void {
+    log.info(`Servo.attach: Attaching to controller ${controller}`)
+    // FIXME !!! - not a "single" controller - publish like all other services !!!!
+    this.config.controller = controller
+    this.addListener("publishServoMoveTo", controller, "onServoMoveTo")
+  }
+
+  /**
+   * Publishing point for a Servo move - invoked internally
+   * @param degrees
+   * @param speed
+   * @returns
+   */
+  publishServoMoveTo(degrees: number, speed?: number): ServoMove {
+    log.info(`Servo.publishServoMoveTo: Moving to ${degrees} degrees at speed ${speed}`)
     return new ServoMove(this.id, this.name, degrees, speed, null)
+  }
+
+  getServoControllers(): string[] {
+    return RobotLabXRuntime.getInstance().getServicesFromInterface("onServoMoveTo")
   }
 }

@@ -29,8 +29,10 @@ export default class Docker extends Service {
     public hostname: string
   ) {
     super(id, name, typeKey, version, hostname) // Call the base class constructor if needed
-    // this.config = { intervalMs: 1000 }
+  }
 
+  startService(): void {
+    super.startService()
     if (os.platform() === "win32") {
       this.docker = new DockerOde({ socketPath: "//./pipe/docker_engine" })
     } else {
@@ -38,6 +40,11 @@ export default class Docker extends Service {
     }
 
     this.startPs()
+  }
+
+  stopService(): void {
+    super.stopService()
+    this.stopPs()
   }
 
   showAll(all: boolean) {

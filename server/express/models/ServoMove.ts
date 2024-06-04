@@ -4,6 +4,9 @@ export default class ServoMove {
   // name of the servo
   public name: string | null = null
 
+  // Johnny-Five has string or number ... should just be string
+  public pin: string | null = null
+
   public degrees: number | null = null
   public speed: number | null = null
   public steps: number | null = null

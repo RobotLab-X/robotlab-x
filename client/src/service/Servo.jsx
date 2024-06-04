@@ -1,4 +1,5 @@
-import { Box, Slider, Typography } from "@mui/material"
+import { Box, FormControl, InputLabel, MenuItem, Select, Slider, Typography } from "@mui/material"
+import CodecUtil from "framework/CodecUtil"
 import React, { useState } from "react"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
 import { useStore } from "../store/store"
@@ -8,32 +9,41 @@ export default function Servo({ name, fullname, id }) {
   const [value, setValue] = React.useState([20, 80])
   const [mainSliderValue, setMainSliderValue] = React.useState(70)
   const [speedValue, setSpeedValue] = React.useState(50)
+  const [selectedController, setSelectedController] = React.useState("")
 
   const [editMode, setEditMode] = useState(false)
 
   const { useMessage, sendTo } = useStore()
 
   // makes reference to the message object in store
-  const epochMsg = useMessage(fullname, "publishServoMoveTo")
+  const publishServoMoveToMsg = useMessage(fullname, "publishServoMoveTo")
+  const getServoControllersMsg = useMessage(fullname, "getServoControllers")
 
   // creates subscriptions to topics and returns the broadcastState message reference
-  const serviceMsg = useServiceSubscription(fullname, ["publishServoMoveTo"])
+  const serviceMsg = useServiceSubscription(fullname, ["publishServoMoveTo", "getServoControllers"])
 
   // processes the msg.data[0] and returns the data
   const service = useProcessedMessage(serviceMsg)
-  const timestamp = useProcessedMessage(epochMsg)
+  const publishServoMoveTo = useProcessedMessage(publishServoMoveToMsg)
+  const getServoControllers = useProcessedMessage(getServoControllersMsg)
 
   const toggleEditMode = () => {
     setEditMode(!editMode)
   }
 
-  const handleChange = (event, newValue) => {
+  const handleControllerOpen = () => {
+    // Fetch the currently available controllers
+    sendTo(fullname, "getServoControllers")
+  }
+
+  const handleMoveTo = (event, newValue) => {
     // Ensure the upper slider handle does not move between the min/max positions of the lower slider
     if (newValue < value[0]) {
       newValue = value[0]
     } else if (newValue > value[1]) {
       newValue = value[1]
     }
+    sendTo(fullname, "moveTo", newValue)
     setMainSliderValue(newValue)
   }
 
@@ -43,6 +53,10 @@ export default function Servo({ name, fullname, id }) {
 
   const handleSpeedChange = (event, newValue) => {
     setSpeedValue(newValue)
+  }
+
+  const handleControllerChange = (event) => {
+    setSelectedController(event.target.value)
   }
 
   const sliderStyles = {
@@ -58,6 +72,26 @@ export default function Servo({ name, fullname, id }) {
 
   return (
     <Box sx={{ width: { xs: "100%", sm: "100%", md: "30%" } }}>
+      <FormControl fullWidth sx={{ mt: 2 }}>
+        <InputLabel id="controller-select-label">Controllers</InputLabel>
+        <Select
+          labelId="controller-select-label"
+          id="controller-select"
+          value={selectedController}
+          label="Controllers"
+          onChange={handleControllerChange}
+          onOpen={handleControllerOpen}
+        >
+          <MenuItem value="">
+            <em>None</em>
+          </MenuItem>
+          {getServoControllers?.map((controller, index) => (
+            <MenuItem key={index} value={CodecUtil.getShortName(controller)}>
+              {controller}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
         <Typography variant="h2">{mainSliderValue}</Typography>
         <Box display="flex" alignItems="center">
@@ -80,7 +114,7 @@ export default function Servo({ name, fullname, id }) {
       </Box>
       <Slider
         value={mainSliderValue}
-        onChange={(event, newValue) => handleChange(event, newValue)}
+        onChange={(event, newValue) => handleMoveTo(event, newValue)}
         aria-label="Small"
         valueLabelDisplay="auto"
         track={false}

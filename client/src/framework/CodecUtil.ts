@@ -55,4 +55,8 @@ export default class CodecUtil {
   static capitalize(str: string): string {
     return str.charAt(0).toUpperCase() + str.slice(1)
   }
+
+  static getShortName(name: string): string {
+    return name.split("@")[0]
+  }
 }
