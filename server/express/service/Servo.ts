@@ -38,6 +38,11 @@ export default class Servo extends Service {
     this.invoke("publishServoMoveTo", degrees, this.config.speed)
   }
 
+  /**
+   * Attach the servo to a specific controller
+   * @param controller - controller to attach to
+   * @example ["uno"]
+   */
   attach(controller: string): void {
     log.info(`Servo.attach: Attaching to controller ${controller}`)
     // FIXME !!! - not a "single" controller - publish like all other services !!!!
@@ -56,6 +61,10 @@ export default class Servo extends Service {
     return new ServoMove(this.id, this.name, degrees, speed, null)
   }
 
+  /**
+   * Get the current set of possible controllers
+   * @returns names of the controllers
+   */
   getServoControllers(): string[] {
     return RobotLabXRuntime.getInstance().getServicesFromInterface("onServoMoveTo")
   }
