@@ -33,7 +33,10 @@ function parseTypeScriptFile(filePath) {
           text: tag.text ? ts.displayPartsToString(tag.text) : undefined
         }))
 
-        methods.push({ methodName, parameters, documentation, tags })
+        const exampleTag = tags.find((tag) => tag.name === "example")
+        const example = exampleTag ? JSON.parse(exampleTag.text) : null
+
+        methods.push({ methodName, parameters, documentation, example })
       }
     }
     ts.forEachChild(node, visit)
@@ -62,11 +65,7 @@ function generateSwaggerPaths(methods) {
           content: {
             "application/json": {
               schema: parametersSchema,
-              example: method.parameters.map((param, index) => {
-                if (param === "number") return index
-                if (param === "string") return `example${index}`
-                return null
-              })
+              example: method.example
             }
           }
         },

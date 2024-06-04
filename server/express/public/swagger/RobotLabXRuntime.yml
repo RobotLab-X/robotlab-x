@@ -1,0 +1,788 @@
+openapi: 3.0.3
+info:
+  title: API Documentation
+  version: 1.0.0
+servers:
+  - url: http://localhost:3001/v1
+    description: Local development server
+components:
+  schemas:
+    $schema: http://json-schema.org/draft-07/schema#
+    definitions:
+      Config:
+        properties:
+          fetch:
+            type: object
+          host:
+            type: string
+          proxy:
+            type: boolean
+        type: object
+    properties:
+      abortController: {}
+      config:
+        $ref: '#/definitions/Config'
+      fetch:
+        type: object
+    type: object
+paths:
+  /save:
+    put:
+      summary: Executes save method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: null
+      responses:
+        '200':
+          description: save method executed successfully
+  /addRoute:
+    put:
+      summary: Executes addRoute method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+                - type: string
+                - type: string
+            example: null
+      responses:
+        '200':
+          description: addRoute method executed successfully
+  /apply:
+    put:
+      summary: Executes apply method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: any
+            example: null
+      responses:
+        '200':
+          description: apply method executed successfully
+  /createMessage:
+    put:
+      summary: Executes createMessage method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+                - type: string
+                - type: any[]
+            example: null
+      responses:
+        '200':
+          description: createMessage method executed successfully
+  /connect:
+    put:
+      summary: >-
+        Connects this process to a remote process.
+
+        With HATEOS, it begins with a http request to get the remote id
+
+        then a websocket connection is established.
+
+        Next a series of messages are sent to the remote process for
+        registration of
+
+        this service, process and host.
+      description: >-
+        Connects this process to a remote process.
+
+        With HATEOS, it begins with a http request to get the remote id
+
+        then a websocket connection is established.
+
+        Next a series of messages are sent to the remote process for
+        registration of
+
+        this service, process and host.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example: null
+      responses:
+        '200':
+          description: connect method executed successfully
+  /readConfig:
+    put:
+      summary: Executes readConfig method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+                - type: any
+            example: null
+      responses:
+        '200':
+          description: readConfig method executed successfully
+  /saveServiceConfig:
+    put:
+      summary: Executes saveServiceConfig method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+                - type: any
+            example: null
+      responses:
+        '200':
+          description: saveServiceConfig method executed successfully
+  /createInstance:
+    put:
+      summary: Executes createInstance method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+                - type: string
+            example: null
+      responses:
+        '200':
+          description: createInstance method executed successfully
+  /getClientKeys:
+    put:
+      summary: Executes getClientKeys method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: null
+      responses:
+        '200':
+          description: getClientKeys method executed successfully
+  /getInstance:
+    put:
+      summary: Executes getInstance method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: null
+      responses:
+        '200':
+          description: getInstance method executed successfully
+  /getLocalProcessData:
+    put:
+      summary: Executes getLocalProcessData method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: null
+      responses:
+        '200':
+          description: getLocalProcessData method executed successfully
+  /releaseService:
+    put:
+      summary: Executes releaseService method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: null
+      responses:
+        '200':
+          description: releaseService method executed successfully
+  /startService:
+    put:
+      summary: Executes startService method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: null
+      responses:
+        '200':
+          description: startService method executed successfully
+  /installInfo:
+    put:
+      summary: Executes installInfo method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example: null
+      responses:
+        '200':
+          description: installInfo method executed successfully
+  /start:
+    put:
+      summary: Executes start method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example: null
+      responses:
+        '200':
+          description: start method executed successfully
+  /startServiceType:
+    put:
+      summary: Executes startServiceType method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+                - type: string
+            example: null
+      responses:
+        '200':
+          description: startServiceType method executed successfully
+  /release:
+    put:
+      summary: Executes release method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example: null
+      responses:
+        '200':
+          description: release method executed successfully
+  /getUptime:
+    put:
+      summary: Executes getUptime method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: null
+      responses:
+        '200':
+          description: getUptime method executed successfully
+  /getService:
+    put:
+      summary: Executes getService method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example: null
+      responses:
+        '200':
+          description: getService method executed successfully
+  /registerHost:
+    put:
+      summary: Executes registerHost method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: HostData
+            example: null
+      responses:
+        '200':
+          description: registerHost method executed successfully
+  /registerProcess:
+    put:
+      summary: Executes registerProcess method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: ProcessData
+            example: null
+      responses:
+        '200':
+          description: registerProcess method executed successfully
+  /registerType:
+    put:
+      summary: Executes registerType method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: ServiceTypeData
+            example: null
+      responses:
+        '200':
+          description: registerType method executed successfully
+  /onRegistry:
+    put:
+      summary: |-
+        Initial callback for a new process to register itself
+        after an addListener message is sent to the remote process
+        then a getRegistry message is sent to the remote process
+      description: |-
+        Initial callback for a new process to register itself
+        after an addListener message is sent to the remote process
+        then a getRegistry message is sent to the remote process
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: Registry
+            example: null
+      responses:
+        '200':
+          description: onRegistry method executed successfully
+  /register:
+    put:
+      summary: >-
+        Registering a service.  If its local to this process, most likely
+
+        it will be a service derived from Service.ts.  If its a remote service
+
+        it will be a proxy.  Which is defined by Service.ts
+
+
+        All external processes must register. The "runtime" is equivalent to a
+
+        process.  If an external process does not register, a generated
+        "runtime"/process
+
+        description will be created
+      description: >-
+        Registering a service.  If its local to this process, most likely
+
+        it will be a service derived from Service.ts.  If its a remote service
+
+        it will be a proxy.  Which is defined by Service.ts
+
+
+        All external processes must register. The "runtime" is equivalent to a
+
+        process.  If an external process does not register, a generated
+        "runtime"/process
+
+        description will be created
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: Service
+            example: null
+      responses:
+        '200':
+          description: register method executed successfully
+  /registered:
+    put:
+      summary: Executes registered method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: Service
+            example: null
+      responses:
+        '200':
+          description: registered method executed successfully
+  /setConfigName:
+    put:
+      summary: Executes setConfigName method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example: null
+      responses:
+        '200':
+          description: setConfigName method executed successfully
+  /getRepo:
+    put:
+      summary: Executes getRepo method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: null
+      responses:
+        '200':
+          description: getRepo method executed successfully
+  /getConfigList:
+    put:
+      summary: Executes getConfigList method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: null
+      responses:
+        '200':
+          description: getConfigList method executed successfully
+  /getHosts:
+    put:
+      summary: Executes getHosts method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: null
+      responses:
+        '200':
+          description: getHosts method executed successfully
+  /getHost:
+    put:
+      summary: Executes getHost method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: null
+      responses:
+        '200':
+          description: getHost method executed successfully
+  /getProcesses:
+    put:
+      summary: Executes getProcesses method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: null
+      responses:
+        '200':
+          description: getProcesses method executed successfully
+  /getConnections:
+    put:
+      summary: Executes getConnections method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: null
+      responses:
+        '200':
+          description: getConnections method executed successfully
+  /getRegistry:
+    put:
+      summary: Executes getRegistry method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: null
+      responses:
+        '200':
+          description: getRegistry method executed successfully
+  /getServiceNames:
+    put:
+      summary: Returns full name of all services
+      description: Returns full name of all services
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: null
+      responses:
+        '200':
+          description: getServiceNames method executed successfully
+  /getLocalServiceNames:
+    put:
+      summary: Returns only local services and short names
+      description: Returns only local services and short names
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: null
+      responses:
+        '200':
+          description: getLocalServiceNames method executed successfully
+  /getRouteClient:
+    put:
+      summary: |-
+        Get the immediate connection that the
+        destination id can be routed to
+      description: |-
+        Get the immediate connection that the
+        destination id can be routed to
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example: null
+      responses:
+        '200':
+          description: getRouteClient method executed successfully
+  /setDebug:
+    put:
+      summary: Executes setDebug method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: boolean
+            example: null
+      responses:
+        '200':
+          description: setDebug method executed successfully
+  /registerConnection:
+    put:
+      summary: |-
+        For outbound client connections
+        <--- I am connecting to someone (outbound connection)
+      description: |-
+        For outbound client connections
+        <--- I am connecting to someone (outbound connection)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+                - type: string
+                - type: string
+                - type: string
+                - type: WebSocket
+            example: null
+      responses:
+        '200':
+          description: registerConnection method executed successfully
+  /removeConnection:
+    put:
+      summary: Executes removeConnection method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example: null
+      responses:
+        '200':
+          description: removeConnection method executed successfully
+  /getGatewayConnection:
+    put:
+      summary: Executes getGatewayConnection method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example: null
+      responses:
+        '200':
+          description: getGatewayConnection method executed successfully
+  /getClients:
+    put:
+      summary: Executes getClients method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: null
+      responses:
+        '200':
+          description: getClients method executed successfully
+  /broadcastJsonMessage:
+    put:
+      summary: Executes broadcastJsonMessage method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example: null
+      responses:
+        '200':
+          description: broadcastJsonMessage method executed successfully
+  /broadcast:
+    put:
+      summary: Executes broadcast method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: Message
+            example: null
+      responses:
+        '200':
+          description: broadcast method executed successfully
+  /getGateway:
+    put:
+      summary: Executes getGateway method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example: null
+      responses:
+        '200':
+          description: getGateway method executed successfully
+  /getRouteId:
+    put:
+      summary: Executes getRouteId method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example: null
+      responses:
+        '200':
+          description: getRouteId method executed successfully
+  /sendRemote:
+    put:
+      summary: Requesting to send a message to a remote process
+      description: Requesting to send a message to a remote process
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: Message
+            example: null
+      responses:
+        '200':
+          description: sendRemote method executed successfully
+  /getConfigName:
+    put:
+      summary: Executes getConfigName method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: null
+      responses:
+        '200':
+          description: getConfigName method executed successfully
+tags: []

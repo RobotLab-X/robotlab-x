@@ -43,6 +43,7 @@ export default class Ollama extends Service {
   /**
    * Sets the model to be used by the Ollama service.
    * @param model - The model name to set.
+   * @example ["llama2"]
    */
   setModel(model?: string): void {
     this.config.model = model
@@ -51,6 +52,7 @@ export default class Ollama extends Service {
   /**
    * Applies the provided configuration to the Ollama service.
    * @param config - The configuration object to apply.
+   * @example [{ "installed": false, "url": "http://localhost:11434", "model": "llama3", "maxHistory": 10, "wakeWord": "wake", "sleepWord": "sleep", "prompt": "PirateBot"}]
    */
   applyConfig(config: any) {
     super.applyConfig(config)
@@ -61,6 +63,7 @@ export default class Ollama extends Service {
 
   /**
    * Starts a timer to periodically check the Ollama service status.
+   * FIXME - get version
    */
   private startCheckTimer(): void {
     this.intervalId = setInterval(() => this.check(), 5000)

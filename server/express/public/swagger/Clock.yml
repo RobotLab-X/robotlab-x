@@ -1,0 +1,105 @@
+openapi: 3.0.3
+info:
+  title: API Documentation
+  version: 1.0.0
+servers:
+  - url: http://localhost:3001/v1
+    description: Local development server
+components:
+  schemas:
+    $schema: http://json-schema.org/draft-07/schema#
+    definitions:
+      Config:
+        properties:
+          fetch:
+            type: object
+          host:
+            type: string
+          proxy:
+            type: boolean
+        type: object
+    properties:
+      abortController: {}
+      config:
+        $ref: '#/definitions/Config'
+      fetch:
+        type: object
+    type: object
+paths:
+  /publishEpoch:
+    put:
+      summary: Publishes the current epoch time.
+      description: Publishes the current epoch time.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: null
+      responses:
+        '200':
+          description: publishEpoch method executed successfully
+  /onTick:
+    put:
+      summary: Handles the tick event, invoking the publishEpoch method.
+      description: Handles the tick event, invoking the publishEpoch method.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: null
+      responses:
+        '200':
+          description: onTick method executed successfully
+  /startClock:
+    put:
+      summary: Starts the clock timer.
+      description: Starts the clock timer.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: integer
+            example:
+              - 1000
+      responses:
+        '200':
+          description: startClock method executed successfully
+  /stopClock:
+    put:
+      summary: Stops the clock timer.
+      description: Stops the clock timer.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: null
+      responses:
+        '200':
+          description: stopClock method executed successfully
+  /toJSON:
+    put:
+      summary: |-
+        Serializes the Clock instance to JSON.
+        Excludes intervalId from serialization.
+      description: |-
+        Serializes the Clock instance to JSON.
+        Excludes intervalId from serialization.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: null
+      responses:
+        '200':
+          description: toJSON method executed successfully
+tags: []

@@ -1,0 +1,323 @@
+openapi: 3.0.3
+info:
+  title: API Documentation
+  version: 1.0.0
+servers:
+  - url: http://localhost:3001/v1
+    description: Local development server
+components:
+  schemas:
+    $schema: http://json-schema.org/draft-07/schema#
+    definitions:
+      Config:
+        properties:
+          fetch:
+            type: object
+          host:
+            type: string
+          proxy:
+            type: boolean
+        type: object
+    properties:
+      abortController: {}
+      config:
+        $ref: '#/definitions/Config'
+      fetch:
+        type: object
+    type: object
+paths:
+  /setModel:
+    put:
+      summary: Sets the model to be used by the Ollama service.
+      description: Sets the model to be used by the Ollama service.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - llama2
+      responses:
+        '200':
+          description: setModel method executed successfully
+  /applyConfig:
+    put:
+      summary: Applies the provided configuration to the Ollama service.
+      description: Applies the provided configuration to the Ollama service.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: any
+            example:
+              - installed: false
+                url: http://localhost:11434
+                model: llama3
+                maxHistory: 10
+                wakeWord: wake
+                sleepWord: sleep
+                prompt: PirateBot
+      responses:
+        '200':
+          description: applyConfig method executed successfully
+  /startCheckTimer:
+    put:
+      summary: |-
+        Starts a timer to periodically check the Ollama service status.
+        FIXME - get version
+      description: |-
+        Starts a timer to periodically check the Ollama service status.
+        FIXME - get version
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: null
+      responses:
+        '200':
+          description: startCheckTimer method executed successfully
+  /check:
+    put:
+      summary: Checks the status of the Ollama service.
+      description: Checks the status of the Ollama service.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: null
+      responses:
+        '200':
+          description: check method executed successfully
+  /stopCheckTimer:
+    put:
+      summary: Stops the timer that checks the Ollama service status.
+      description: Stops the timer that checks the Ollama service status.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: null
+      responses:
+        '200':
+          description: stopCheckTimer method executed successfully
+  /publishResponse:
+    put:
+      summary: Publishes the response from Ollama service.
+      description: Publishes the response from Ollama service.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: any
+            example: null
+      responses:
+        '200':
+          description: publishResponse method executed successfully
+  /publishChat:
+    put:
+      summary: Publishes the chat response from Ollama service.
+      description: Publishes the chat response from Ollama service.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example: null
+      responses:
+        '200':
+          description: publishChat method executed successfully
+  /publishRequest:
+    put:
+      summary: Publishes the request sent to Ollama service.
+      description: Publishes the request sent to Ollama service.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: any
+            example: null
+      responses:
+        '200':
+          description: publishRequest method executed successfully
+  /processInputs:
+    put:
+      summary: Processes input values and replaces placeholders in the content string.
+      description: Processes input values and replaces placeholders in the content string.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: any
+                - type: string
+            example: null
+      responses:
+        '200':
+          description: processInputs method executed successfully
+  /chat:
+    put:
+      summary: Sends a chat message to the Ollama service and processes the response.
+      description: Sends a chat message to the Ollama service and processes the response.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example: null
+      responses:
+        '200':
+          description: chat method executed successfully
+  /getResponse:
+    put:
+      summary: Retrieves the response from the Ollama service.
+      description: Retrieves the response from the Ollama service.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: any
+            example: null
+      responses:
+        '200':
+          description: getResponse method executed successfully
+  /setPrompt:
+    put:
+      summary: Sets a prompt for the Ollama service.
+      description: Sets a prompt for the Ollama service.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+                - type: any
+            example: null
+      responses:
+        '200':
+          description: setPrompt method executed successfully
+  /publishPythonCall:
+    put:
+      summary: Publishes a callback from a Python response.
+      description: Publishes a callback from a Python response.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: any
+            example: null
+      responses:
+        '200':
+          description: publishPythonCall method executed successfully
+  /publishNodeCall:
+    put:
+      summary: Publishes a callback from a Node.js response.
+      description: Publishes a callback from a Node.js response.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: any
+            example: null
+      responses:
+        '200':
+          description: publishNodeCall method executed successfully
+  /loadPrompts:
+    put:
+      summary: Executes loadPrompts method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: null
+      responses:
+        '200':
+          description: loadPrompts method executed successfully
+  /startService:
+    put:
+      summary: Executes startService method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: null
+      responses:
+        '200':
+          description: startService method executed successfully
+  /stopService:
+    put:
+      summary: Executes stopService method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: null
+      responses:
+        '200':
+          description: stopService method executed successfully
+  /addInput:
+    put:
+      summary: Executes addInput method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+                - type: string
+                - type: any
+            example: null
+      responses:
+        '200':
+          description: addInput method executed successfully
+  /toJSON:
+    put:
+      summary: Executes toJSON method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: null
+      responses:
+        '200':
+          description: toJSON method executed successfully
+tags: []

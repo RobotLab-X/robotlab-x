@@ -61,6 +61,7 @@ export default class Clock extends Service {
   /**
    * Starts the clock timer.
    * @param {number} [intervalMs] - The interval in milliseconds. If not provided, the existing intervalMs from the config is used.
+   * @example [ 1000 ]
    */
   public startClock(intervalMs?: number): void {
     this.config.start = true

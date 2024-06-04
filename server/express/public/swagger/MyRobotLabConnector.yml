@@ -1,0 +1,201 @@
+openapi: 3.0.3
+info:
+  title: API Documentation
+  version: 1.0.0
+servers:
+  - url: http://localhost:3001/v1
+    description: Local development server
+components:
+  schemas:
+    $schema: http://json-schema.org/draft-07/schema#
+    definitions:
+      Config:
+        properties:
+          fetch:
+            type: object
+          host:
+            type: string
+          proxy:
+            type: boolean
+        type: object
+    properties:
+      abortController: {}
+      config:
+        $ref: '#/definitions/Config'
+      fetch:
+        type: object
+    type: object
+paths:
+  /disconnect:
+    put:
+      summary: Executes disconnect method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: null
+      responses:
+        '200':
+          description: disconnect method executed successfully
+  /connect:
+    put:
+      summary: Executes connect method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example: null
+      responses:
+        '200':
+          description: connect method executed successfully
+  /onMessageReceived:
+    put:
+      summary: >-
+        me <--- mrl method to handle received messages from mrl instance
+
+        Decode the message (twice) and address and route it to the correct
+        service
+      description: >-
+        me <--- mrl method to handle received messages from mrl instance
+
+        Decode the message (twice) and address and route it to the correct
+        service
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example: null
+      responses:
+        '200':
+          description: onMessageReceived method executed successfully
+  /onServiceNames:
+    put:
+      summary: Executes onServiceNames method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: Message
+            example: null
+      responses:
+        '200':
+          description: onServiceNames method executed successfully
+  /sendMessage:
+    put:
+      summary: Executes sendMessage method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: object
+            example: null
+      responses:
+        '200':
+          description: sendMessage method executed successfully
+  /getRepo:
+    put:
+      summary: Executes getRepo method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: null
+      responses:
+        '200':
+          description: getRepo method executed successfully
+  /getConfigName:
+    put:
+      summary: Executes getConfigName method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: null
+      responses:
+        '200':
+          description: getConfigName method executed successfully
+  /getConfigList:
+    put:
+      summary: Executes getConfigList method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: null
+      responses:
+        '200':
+          description: getConfigList method executed successfully
+  /toJSON:
+    put:
+      summary: Executes toJSON method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: null
+      responses:
+        '200':
+          description: toJSON method executed successfully
+  /sendRemote:
+    put:
+      summary: |-
+        rlx ---> mrl
+        Encode the message and send it to the mrl remote process
+      description: |-
+        rlx ---> mrl
+        Encode the message and send it to the mrl remote process
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: Message
+            example: null
+      responses:
+        '200':
+          description: sendRemote method executed successfully
+  /publishMessage:
+    put:
+      summary: Executes publishMessage method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: any
+            example: null
+      responses:
+        '200':
+          description: publishMessage method executed successfully
+tags: []
