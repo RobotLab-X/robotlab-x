@@ -7,7 +7,7 @@ import { useProcessedMessage } from "../hooks/useProcessedMessage"
 import { useStore } from "../store/store"
 import useServiceSubscription from "../store/useServiceSubscription"
 
-export default function Arduino({ fullname }) {
+export default function Arduino({ id, fullname, name }) {
   const [editMode, setEditMode] = useState(false)
   const [pwmValue, setPwmValue] = useState({})
   const [digitalValue, setDigitalValue] = useState({})
@@ -40,7 +40,7 @@ export default function Arduino({ fullname }) {
   }
 
   const handlePwmChange = (event, newValue, pinIndex) => {
-    setPwmValue((prev) => ({ ...prev, [pinIndex]: newValue }))
+    setPwmValue((prev) => ({ ...prev, [pinIndex]: newValue ?? 0 }))
   }
 
   const handleDigitalChange = (event, pinIndex) => {
@@ -50,8 +50,8 @@ export default function Arduino({ fullname }) {
   }
 
   const handleServoChange = (event, newValue, pinIndex) => {
-    setServoValue((prev) => ({ ...prev, [pinIndex]: newValue }))
-    sendTo(fullname, "servoWrite", { pin: pinIndex, value: newValue })
+    setServoValue((prev) => ({ ...prev, [pinIndex]: newValue ?? 0 }))
+    sendTo(fullname, "servoWrite", { pin: pinIndex, value: newValue ?? 0 })
   }
 
   const handlePulseButton = (pinIndex) => {
@@ -96,7 +96,7 @@ export default function Arduino({ fullname }) {
               variant="outlined"
               fullWidth
               margin="normal"
-              value={service?.config?.intervalMs}
+              value={service?.config?.intervalMs ?? ""}
               onChange={handleConfigChange}
               sx={{ flex: 1 }}
             />
@@ -115,7 +115,7 @@ export default function Arduino({ fullname }) {
           <SerialPortSelector
             portInfo={{
               fullname: fullname,
-              port: service?.config?.port,
+              port: service?.config?.port ?? "",
               ports: service?.ports ?? [],
               isConnected: service?.ready ?? false
             }}
