@@ -290,8 +290,16 @@ paths:
           description: startServiceType method executed successfully
   /release:
     put:
-      summary: Executes release method
-      description: ''
+      summary: |-
+        Runtime releasing a service
+        can only be a local service
+        going through service life cycle
+        stopService, release
+      description: |-
+        Runtime releasing a service
+        can only be a local service
+        going through service life cycle
+        stopService, release
       requestBody:
         content:
           application/json:
@@ -303,6 +311,21 @@ paths:
       responses:
         '200':
           description: release method executed successfully
+  /released:
+    put:
+      summary: Executes released method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example: null
+      responses:
+        '200':
+          description: released method executed successfully
   /getUptime:
     put:
       summary: Executes getUptime method
@@ -785,4 +808,25 @@ paths:
       responses:
         '200':
           description: getConfigName method executed successfully
+  /getServicesFromInterface:
+    put:
+      summary: |-
+        Get list of interfaces from method name
+        FIXME - need to change from single method name to name of real interface
+        Match all services with the same interface
+      description: |-
+        Get list of interfaces from method name
+        FIXME - need to change from single method name to name of real interface
+        Match all services with the same interface
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example: null
+      responses:
+        '200':
+          description: getServicesFromInterface method executed successfully
 tags: []

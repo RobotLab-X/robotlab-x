@@ -26,6 +26,34 @@ components:
         type: object
     type: object
 paths:
+  /startService:
+    put:
+      summary: Executes startService method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: null
+      responses:
+        '200':
+          description: startService method executed successfully
+  /stopService:
+    put:
+      summary: Executes stopService method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: null
+      responses:
+        '200':
+          description: stopService method executed successfully
   /showAll:
     put:
       summary: Executes showAll method

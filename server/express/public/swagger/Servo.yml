@@ -28,8 +28,8 @@ components:
 paths:
   /moveTo:
     put:
-      summary: Executes moveTo method
-      description: ''
+      summary: Move the servo to a specific position at a specific speed
+      description: Move the servo to a specific position at a specific speed
       requestBody:
         content:
           application/json:
@@ -42,10 +42,25 @@ paths:
       responses:
         '200':
           description: moveTo method executed successfully
+  /attach:
+    put:
+      summary: Executes attach method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example: null
+      responses:
+        '200':
+          description: attach method executed successfully
   /publishServoMoveTo:
     put:
-      summary: Executes publishServoMoveTo method
-      description: ''
+      summary: Publishing point for a Servo move - invoked internally
+      description: Publishing point for a Servo move - invoked internally
       requestBody:
         content:
           application/json:
@@ -58,4 +73,18 @@ paths:
       responses:
         '200':
           description: publishServoMoveTo method executed successfully
+  /getServoControllers:
+    put:
+      summary: Executes getServoControllers method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: null
+      responses:
+        '200':
+          description: getServoControllers method executed successfully
 tags: []

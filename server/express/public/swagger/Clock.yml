@@ -54,6 +54,20 @@ paths:
       responses:
         '200':
           description: onTick method executed successfully
+  /stopService:
+    put:
+      summary: Executes stopService method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: null
+      responses:
+        '200':
+          description: stopService method executed successfully
   /startClock:
     put:
       summary: Starts the clock timer.

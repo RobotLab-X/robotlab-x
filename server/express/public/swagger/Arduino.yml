@@ -40,6 +40,20 @@ paths:
       responses:
         '200':
           description: startService method executed successfully
+  /stopService:
+    put:
+      summary: Executes stopService method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: null
+      responses:
+        '200':
+          description: stopService method executed successfully
   /connect:
     put:
       summary: Executes connect method
@@ -55,21 +69,6 @@ paths:
       responses:
         '200':
           description: connect method executed successfully
-  /moveTo:
-    put:
-      summary: Executes moveTo method
-      description: ''
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                - type: integer
-            example: null
-      responses:
-        '200':
-          description: moveTo method executed successfully
   /disconnect:
     put:
       summary: Executes disconnect method
@@ -156,6 +155,37 @@ paths:
       responses:
         '200':
           description: write method executed successfully
+  /servoWrite:
+    put:
+      summary: Executes servoWrite method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+                - type: integer
+            example: null
+      responses:
+        '200':
+          description: servoWrite method executed successfully
+  /onServoMoveTo:
+    put:
+      summary: Executes onServoMoveTo method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: ServoMove
+            example: null
+      responses:
+        '200':
+          description: onServoMoveTo method executed successfully
   /toJSON:
     put:
       summary: Executes toJSON method

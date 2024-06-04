@@ -173,8 +173,12 @@ paths:
           description: processInputs method executed successfully
   /chat:
     put:
-      summary: Sends a chat message to the Ollama service and processes the response.
-      description: Sends a chat message to the Ollama service and processes the response.
+      summary: |-
+        FIXME ! do not make the function async !!!!
+        Sends a chat message to the Ollama service and processes the response.
+      description: |-
+        FIXME ! do not make the function async !!!!
+        Sends a chat message to the Ollama service and processes the response.
       requestBody:
         content:
           application/json:
@@ -182,7 +186,8 @@ paths:
               type: array
               items:
                 - type: string
-            example: null
+            example:
+              - Hello there !  What can you do ?
       responses:
         '200':
           description: chat method executed successfully
