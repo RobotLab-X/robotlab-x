@@ -123,7 +123,7 @@ function App() {
               <Route path="/tabs/:tabName" element={<TabLayout />} />
               <Route path="/nodes" element={<Nodes nodeName="" />} />
               <Route path="/nodes/:nodeId" element={<Nodes />} />
-              <Route path="/swagger" element={<SwaggerUIComponent />} />
+              <Route path="/swagger/:fullname" element={<SwaggerUIComponent fullname="" />} />
               <Route path="/network" element={<Network />} />
               <Route path="/webxr/:tabName" element={<WebXR />} />
             </Routes>

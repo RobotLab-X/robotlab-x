@@ -54,7 +54,7 @@ function generateSwaggerPaths(methods) {
       }))
     }
 
-    paths[`/ollama/${method.methodName}`] = {
+    paths[`/${method.methodName}`] = {
       put: {
         summary: method.documentation || `Executes ${method.methodName} method`,
         description: method.documentation,
@@ -81,35 +81,48 @@ function generateSwaggerPaths(methods) {
   return paths
 }
 
-// Path to your TypeScript file
-const tsFilePath = path.resolve(__dirname, "./express/service/Ollama.ts")
+// Process all .ts files in a directory and generate Swagger documentation
+function processDirectory(directoryPath) {
+  const files = fs.readdirSync(directoryPath)
+  files.forEach((file) => {
+    if (path.extname(file) === ".ts") {
+      const filePath = path.join(directoryPath, file)
+      const methods = parseTypeScriptFile(filePath)
+      const swaggerPaths = generateSwaggerPaths(methods)
 
-// Parse the TypeScript file to extract method names and parameters
-const methods = parseTypeScriptFile(tsFilePath)
+      const options = {
+        definition: {
+          openapi: "3.0.3",
+          info: {
+            title: "API Documentation",
+            version: "1.0.0"
+          },
+          servers: [
+            {
+              url: "http://localhost:3001/v1",
+              description: "Local development server"
+            }
+          ],
+          components: {
+            schemas: schemas
+          },
+          paths: swaggerPaths
+        },
+        apis: [filePath]
+      }
 
-// Generate Swagger paths
-const swaggerPaths = generateSwaggerPaths(methods)
+      const swaggerSpec = swaggerJsdoc(options)
+      const outputFileName = path.basename(file, ".ts") + ".yml"
+      const outputPath = path.join("./express/public/swagger", outputFileName)
+      fs.writeFileSync(outputPath, yaml.dump(swaggerSpec))
 
-// Define the Swagger options
-const options = {
-  definition: {
-    openapi: "3.0.0",
-    info: {
-      title: "API Documentation",
-      version: "1.0.0"
-    },
-    components: {
-      schemas: schemas
-    },
-    paths: swaggerPaths
-  },
-  apis: ["./src/Ollama.ts"]
+      console.log(`Swagger documentation generated for ${file} and saved to ${outputFileName}`)
+    }
+  })
 }
 
-// Initialize swagger-jsdoc
-const swaggerSpec = swaggerJsdoc(options)
+// Directory containing .ts files
+const directoryPath = path.resolve(__dirname, "./express/service")
 
-// Write the Swagger spec to a file
-fs.writeFileSync("./swagger.yml", yaml.dump(swaggerSpec))
-
-console.log("Swagger documentation generated successfully!")
+// Process the directory
+processDirectory(directoryPath)

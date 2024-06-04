@@ -1,5 +1,6 @@
 import loadable from "@loadable/component"
 import DeleteIcon from "@mui/icons-material/Delete"
+import DescriptionIcon from "@mui/icons-material/Description"
 import SettingsIcon from "@mui/icons-material/Settings"
 import {
   Box,
@@ -15,6 +16,7 @@ import {
 } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import ReactJson from "react-json-view"
+import { useNavigate } from "react-router-dom"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
 import { useStore } from "../store/store"
 import useServiceSubscription from "../store/useServiceSubscription"
@@ -22,13 +24,14 @@ import useServiceSubscription from "../store/useServiceSubscription"
 // TODO - React.lazy vs react-loadable
 export default function ServicePage({ fullname, name, id }) {
   // const registry = useStore((state) => state.registry)
-  const serviceMsg = useServiceSubscription(fullname, ["publishEpoch"])
+  const serviceMsg = useServiceSubscription(fullname, [])
   const service = useProcessedMessage(serviceMsg)
 
   let type = service ? service?.typeKey : "Unknown"
   const getRepoUrl = useStore((state) => state.getRepoUrl)
   const [showJson, setShowJson] = useState(false)
   const [open, setOpen] = useState(false)
+  const navigate = useNavigate()
 
   const message = useStore((state) => state.useMessage(fullname, "broadcastState"))
 
@@ -93,6 +96,11 @@ export default function ServicePage({ fullname, name, id }) {
     setShowJson(!showJson)
   }
 
+  const handleSwaggerClick = () => {
+    console.error(`Navigating to /swagger/${fullname}`)
+    navigate(`/swagger/${fullname}`)
+  }
+
   return (
     <div className="service-content-div">
       <Typography variant="h4" component="div" sx={{ display: "flex", alignItems: "center" }}>
@@ -108,6 +116,9 @@ export default function ServicePage({ fullname, name, id }) {
         {service?.name}
         <IconButton onClick={handleSettingsClick} aria-label="settings">
           <SettingsIcon />
+        </IconButton>
+        <IconButton onClick={handleSwaggerClick} aria-label="settings">
+          <DescriptionIcon />
         </IconButton>
         <Tooltip title={service?.ready ? "Ready" : "Not Ready"}>
           <Box width={10} height={10} borderRadius="50%" bgcolor={service?.ready ? "green" : "red"} mr={1} />

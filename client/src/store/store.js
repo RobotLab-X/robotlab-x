@@ -170,7 +170,8 @@ const store = (set, get) => ({
 
       let msg = JSON.parse(event.data)
 
-      console.info(`---> ${msg.name}.${msg.method} ${JSON.stringify(msg.data)}`)
+      // console.info(`---> ${msg.name}.${msg.method} ${JSON.stringify(msg.data)}`)
+      console.info(`---> ${msg.name}.${msg.method} `)
 
       try {
         let key = msg.name + "." + msg.method

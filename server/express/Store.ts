@@ -271,6 +271,7 @@ export default class Store {
     this.express.use("/images", express.static(path.join(Main.expressRoot, "images")))
     this.express.use("/repo", express.static(path.join(Main.expressRoot, "repo")))
     this.express.use("/service", express.static(path.join(Main.expressRoot, "service")))
+    this.express.use("/swagger", express.static(path.join(Main.expressRoot, "swagger")))
     this.express.use(bodyParser.json())
     this.express.use(bodyParser.urlencoded({ extended: false }))
   }

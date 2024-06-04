@@ -122,10 +122,6 @@ const AppSidebar = () => {
             Nodes
           </MenuItem>
 
-          <MenuItem component={<Link to="/swagger" />} icon={<HubOutlinedIcon />}>
-            Nodes
-          </MenuItem>
-
           <MenuItem component={<Link to="/network" />} icon={<TroubleshootOutlinedIcon />}>
             Network and Diagnostics
           </MenuItem>
