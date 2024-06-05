@@ -10,7 +10,7 @@ class State(Enum):
     READY = auto()
     SHUTDOWN = auto()
 
-class WebSocketClient:
+class RobotLabXClient:
     """WebSocket client that connects to a WebSocket server and sends/receives messages.
 
     Args:
@@ -39,12 +39,15 @@ class WebSocketClient:
             print(f"Failed to get remote ID: {e}")
 
     def connect(self, url):
-        self.url = url
-        # Try to get remote ID before connecting
-        self.get_remote_id(self.url)
-        websocket_url = f"ws://{self.url.split('//')[1]}/api/messages?id={self.client_id}"
-        print(f"Connecting to WebSocket server at: {websocket_url}")
-        self.loop.run_until_complete(self._connect(websocket_url))
+        try:
+          self.url = url
+          # Try to get remote ID before connecting
+          self.get_remote_id(self.url)
+          websocket_url = f"ws://{self.url.split('//')[1]}/api/messages?id={self.client_id}"
+          print(f"Connecting to WebSocket server at: {websocket_url}")
+          self.loop.run_until_complete(self._connect(websocket_url))
+        except Exception as e:
+            print(f"Could not connect: {e}")
 
     async def _connect(self, websocket_url):
         self.websocket = await websockets.connect(websocket_url)
@@ -128,9 +131,10 @@ def main():
 
     args = parser.parse_args()
 
-    client = WebSocketClient(args.id)
+    client = RobotLabXClient(args.id)
     client.connect(args.connect)
     # client is now connected, client can send messages and make subscriptions
+    # FIXME - will need to work on blocking service requests at some point
     client.send_message({"runtime": "getRegistry"})
     client.subscribe("runtime", "getUptime")
     client.subscribe("runtime", "getVersion")

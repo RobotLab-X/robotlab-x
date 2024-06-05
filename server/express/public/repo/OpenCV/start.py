@@ -1,4 +1,5 @@
 import cv2
+import time
 import asyncio
 from time import sleep
 from concurrent.futures import ThreadPoolExecutor
@@ -26,6 +27,8 @@ class OpenCV:
             print("Starting webcam capture...")
             self.cap = cv2.VideoCapture(0)
             while self.capturing:
+                start_time = time.perf_counter()
+
                 ret, frame = self.cap.read()
 
                 if not ret:
@@ -38,10 +41,17 @@ class OpenCV:
                     self.stop_capture()
                     break
 
-                sleep(0.01)  # Use time.sleep instead of asyncio.sleep
+                # Calculate frame processing time
+                frame_time = time.perf_counter() - start_time
+                sleep_time = max(0.01 - frame_time, 0)  # Ensure non-negative sleep time
+                sleep(sleep_time)  # Use time.sleep instead of asyncio.sleep
+
+                # Optional: Print the actual FPS
+                actual_fps = 1.0 / (frame_time + sleep_time)
+                print(f"Actual FPS: {actual_fps:.2f}")
+
         except Exception as e:
             print(f"Error: {e}")
-            self.stop_capture()
         finally:
             self.stop_capture()
 
@@ -57,7 +67,6 @@ class OpenCV:
         print(f"Adding filter: {name_of_filter} of type: {type_of_filter}")
         pass
 
-
 def main():
     webcam_capture = OpenCV()
     webcam_capture.capture()
@@ -65,9 +74,9 @@ def main():
     sleep(5)  # Sleep for 5 seconds using regular sleep
     webcam_capture.stop_capture()
 
-    # client = RobotLabXClient('client1')
-    # client.connect('http://localhost:3001')
-    # client.start_service()
+    client = RobotLabXClient('client1')
+    client.connect('http://localhost:3001')
+    client.start_service()
 
 if __name__ == "__main__":
     main()
