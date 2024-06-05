@@ -36,7 +36,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: startService method executed successfully
@@ -50,7 +50,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: checkPythonVersion method executed successfully
@@ -64,7 +64,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: checkPipVersion method executed successfully

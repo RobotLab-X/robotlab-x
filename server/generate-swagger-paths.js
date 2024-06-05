@@ -65,7 +65,7 @@ function generateSwaggerPaths(methods) {
           content: {
             "application/json": {
               schema: parametersSchema,
-              example: method.example
+              example: method.example ?? []
             }
           }
         },

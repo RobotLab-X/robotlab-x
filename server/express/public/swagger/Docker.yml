@@ -36,7 +36,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: startService method executed successfully
@@ -50,7 +50,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: stopService method executed successfully
@@ -65,7 +65,7 @@ paths:
               type: array
               items:
                 - type: boolean
-            example: null
+            example: []
       responses:
         '200':
           description: showAll method executed successfully
@@ -79,7 +79,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: ps method executed successfully
@@ -93,7 +93,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: publishPs method executed successfully
@@ -109,7 +109,7 @@ paths:
               items:
                 - type: string
                 - type: string
-            example: null
+            example: []
       responses:
         '200':
           description: createAndStartContainer method executed successfully
@@ -124,7 +124,7 @@ paths:
               type: array
               items:
                 - type: string
-            example: null
+            example: []
       responses:
         '200':
           description: deleteContainer method executed successfully
@@ -139,7 +139,7 @@ paths:
               type: array
               items:
                 - type: string
-            example: null
+            example: []
       responses:
         '200':
           description: deleteImage method executed successfully
@@ -154,7 +154,7 @@ paths:
               type: array
               items:
                 - type: string
-            example: null
+            example: []
       responses:
         '200':
           description: pullImage method executed successfully
@@ -168,7 +168,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: getImages method executed successfully
@@ -183,7 +183,7 @@ paths:
               type: array
               items:
                 - type: any
-            example: null
+            example: []
       responses:
         '200':
           description: publishImages method executed successfully
@@ -197,7 +197,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: startPs method executed successfully
@@ -211,7 +211,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: stopPs method executed successfully
@@ -225,7 +225,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: toJSON method executed successfully

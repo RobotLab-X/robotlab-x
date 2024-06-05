@@ -166,12 +166,13 @@ export default class Store {
       // FIXME - MAKE CONNECTION CLASS
       // ---> someone has connected to me (inbound connection)
       this.runtime.registerConnection(`runtime@${this.runtime.getId()}`, gatewayId, url, "inbound", ws)
-
+      RobotLabXRuntime.getInstance().invoke("broadcastState")
       // onmessage - server
       ws.on("message", this.handleWsMessage(ws, gatewayId))
 
       ws.on("close", () => {
         this.runtime.removeConnection(gatewayId)
+        RobotLabXRuntime.getInstance().invoke("broadcastState")
       })
 
       ws.on("error", (error) => {

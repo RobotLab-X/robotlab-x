@@ -36,7 +36,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: publishEpoch method executed successfully
@@ -50,7 +50,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: onTick method executed successfully
@@ -64,7 +64,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: stopService method executed successfully
@@ -94,7 +94,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: stopClock method executed successfully
@@ -112,7 +112,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: toJSON method executed successfully

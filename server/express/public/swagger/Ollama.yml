@@ -78,7 +78,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: startCheckTimer method executed successfully
@@ -92,7 +92,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: check method executed successfully
@@ -106,7 +106,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: stopCheckTimer method executed successfully
@@ -121,7 +121,7 @@ paths:
               type: array
               items:
                 - type: any
-            example: null
+            example: []
       responses:
         '200':
           description: publishResponse method executed successfully
@@ -136,7 +136,7 @@ paths:
               type: array
               items:
                 - type: string
-            example: null
+            example: []
       responses:
         '200':
           description: publishChat method executed successfully
@@ -151,7 +151,7 @@ paths:
               type: array
               items:
                 - type: any
-            example: null
+            example: []
       responses:
         '200':
           description: publishRequest method executed successfully
@@ -167,7 +167,7 @@ paths:
               items:
                 - type: any
                 - type: string
-            example: null
+            example: []
       responses:
         '200':
           description: processInputs method executed successfully
@@ -202,7 +202,7 @@ paths:
               type: array
               items:
                 - type: any
-            example: null
+            example: []
       responses:
         '200':
           description: getResponse method executed successfully
@@ -218,7 +218,7 @@ paths:
               items:
                 - type: string
                 - type: any
-            example: null
+            example: []
       responses:
         '200':
           description: setPrompt method executed successfully
@@ -233,7 +233,7 @@ paths:
               type: array
               items:
                 - type: any
-            example: null
+            example: []
       responses:
         '200':
           description: publishPythonCall method executed successfully
@@ -248,7 +248,7 @@ paths:
               type: array
               items:
                 - type: any
-            example: null
+            example: []
       responses:
         '200':
           description: publishNodeCall method executed successfully
@@ -262,7 +262,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: loadPrompts method executed successfully
@@ -276,7 +276,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: startService method executed successfully
@@ -290,7 +290,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: stopService method executed successfully
@@ -307,7 +307,7 @@ paths:
                 - type: string
                 - type: string
                 - type: any
-            example: null
+            example: []
       responses:
         '200':
           description: addInput method executed successfully
@@ -321,7 +321,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: toJSON method executed successfully

@@ -37,7 +37,7 @@ paths:
               type: array
               items:
                 - type: string
-            example: null
+            example: []
       responses:
         '200':
           description: onUptime method executed successfully

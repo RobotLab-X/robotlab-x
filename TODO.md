@@ -1,4 +1,5 @@
 ## TODO
+* user info warn error "Status" "high priority streams" which do not dismount/unsubscribe
 * npm install googleapis - "is there an http api i can query to get my unread gmail ?"
 * Xstate - npm - state machine and display !
 * Repo copy into /service dataPath Overwrites !  .. convienent for now - can't be done to users
@@ -91,3 +92,15 @@ Unity
 
 
 docker run -d --network=host -v open-webui:/app/backend/data -e OLLAMA_BASE_URL=http://fast:11434 --name open-webui --restart always ghcr.io/open-webui/open-webui:main
+
+serial rebuild
+```
+~/mrl/robotlab-x/server$ npx electron-rebuild
+```
+
+
+{
+  "name": "runtime",
+  "method": "getServicesFromInterface",
+"data":["startClock"]
+}

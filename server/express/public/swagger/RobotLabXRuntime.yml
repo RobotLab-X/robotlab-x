@@ -36,7 +36,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: save method executed successfully
@@ -53,7 +53,7 @@ paths:
                 - type: string
                 - type: string
                 - type: string
-            example: null
+            example: []
       responses:
         '200':
           description: addRoute method executed successfully
@@ -68,7 +68,7 @@ paths:
               type: array
               items:
                 - type: any
-            example: null
+            example: []
       responses:
         '200':
           description: apply method executed successfully
@@ -85,7 +85,7 @@ paths:
                 - type: string
                 - type: string
                 - type: any[]
-            example: null
+            example: []
       responses:
         '200':
           description: createMessage method executed successfully
@@ -120,7 +120,7 @@ paths:
               type: array
               items:
                 - type: string
-            example: null
+            example: []
       responses:
         '200':
           description: connect method executed successfully
@@ -136,7 +136,7 @@ paths:
               items:
                 - type: string
                 - type: any
-            example: null
+            example: []
       responses:
         '200':
           description: readConfig method executed successfully
@@ -152,7 +152,7 @@ paths:
               items:
                 - type: string
                 - type: any
-            example: null
+            example: []
       responses:
         '200':
           description: saveServiceConfig method executed successfully
@@ -168,7 +168,7 @@ paths:
               items:
                 - type: string
                 - type: string
-            example: null
+            example: []
       responses:
         '200':
           description: createInstance method executed successfully
@@ -182,7 +182,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: getClientKeys method executed successfully
@@ -196,7 +196,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: getInstance method executed successfully
@@ -210,7 +210,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: getLocalProcessData method executed successfully
@@ -224,7 +224,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: releaseService method executed successfully
@@ -238,7 +238,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: startService method executed successfully
@@ -253,7 +253,7 @@ paths:
               type: array
               items:
                 - type: string
-            example: null
+            example: []
       responses:
         '200':
           description: installInfo method executed successfully
@@ -268,7 +268,7 @@ paths:
               type: array
               items:
                 - type: string
-            example: null
+            example: []
       responses:
         '200':
           description: start method executed successfully
@@ -284,7 +284,7 @@ paths:
               items:
                 - type: string
                 - type: string
-            example: null
+            example: []
       responses:
         '200':
           description: startServiceType method executed successfully
@@ -307,7 +307,7 @@ paths:
               type: array
               items:
                 - type: string
-            example: null
+            example: []
       responses:
         '200':
           description: release method executed successfully
@@ -322,7 +322,7 @@ paths:
               type: array
               items:
                 - type: string
-            example: null
+            example: []
       responses:
         '200':
           description: released method executed successfully
@@ -336,7 +336,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: getUptime method executed successfully
@@ -351,7 +351,7 @@ paths:
               type: array
               items:
                 - type: string
-            example: null
+            example: []
       responses:
         '200':
           description: getService method executed successfully
@@ -366,7 +366,7 @@ paths:
               type: array
               items:
                 - type: HostData
-            example: null
+            example: []
       responses:
         '200':
           description: registerHost method executed successfully
@@ -381,7 +381,7 @@ paths:
               type: array
               items:
                 - type: ProcessData
-            example: null
+            example: []
       responses:
         '200':
           description: registerProcess method executed successfully
@@ -396,7 +396,7 @@ paths:
               type: array
               items:
                 - type: ServiceTypeData
-            example: null
+            example: []
       responses:
         '200':
           description: registerType method executed successfully
@@ -417,7 +417,7 @@ paths:
               type: array
               items:
                 - type: Registry
-            example: null
+            example: []
       responses:
         '200':
           description: onRegistry method executed successfully
@@ -458,7 +458,7 @@ paths:
               type: array
               items:
                 - type: Service
-            example: null
+            example: []
       responses:
         '200':
           description: register method executed successfully
@@ -473,7 +473,7 @@ paths:
               type: array
               items:
                 - type: Service
-            example: null
+            example: []
       responses:
         '200':
           description: registered method executed successfully
@@ -488,7 +488,7 @@ paths:
               type: array
               items:
                 - type: string
-            example: null
+            example: []
       responses:
         '200':
           description: setConfigName method executed successfully
@@ -502,7 +502,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: getRepo method executed successfully
@@ -516,7 +516,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: getConfigList method executed successfully
@@ -530,7 +530,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: getHosts method executed successfully
@@ -544,7 +544,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: getHost method executed successfully
@@ -558,7 +558,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: getProcesses method executed successfully
@@ -572,7 +572,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: getConnections method executed successfully
@@ -586,7 +586,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: getRegistry method executed successfully
@@ -600,7 +600,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: getServiceNames method executed successfully
@@ -614,7 +614,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: getLocalServiceNames method executed successfully
@@ -633,7 +633,7 @@ paths:
               type: array
               items:
                 - type: string
-            example: null
+            example: []
       responses:
         '200':
           description: getRouteClient method executed successfully
@@ -648,7 +648,7 @@ paths:
               type: array
               items:
                 - type: boolean
-            example: null
+            example: []
       responses:
         '200':
           description: setDebug method executed successfully
@@ -671,7 +671,7 @@ paths:
                 - type: string
                 - type: string
                 - type: WebSocket
-            example: null
+            example: []
       responses:
         '200':
           description: registerConnection method executed successfully
@@ -686,7 +686,7 @@ paths:
               type: array
               items:
                 - type: string
-            example: null
+            example: []
       responses:
         '200':
           description: removeConnection method executed successfully
@@ -701,7 +701,7 @@ paths:
               type: array
               items:
                 - type: string
-            example: null
+            example: []
       responses:
         '200':
           description: getGatewayConnection method executed successfully
@@ -715,7 +715,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: getClients method executed successfully
@@ -730,7 +730,7 @@ paths:
               type: array
               items:
                 - type: string
-            example: null
+            example: []
       responses:
         '200':
           description: broadcastJsonMessage method executed successfully
@@ -745,7 +745,7 @@ paths:
               type: array
               items:
                 - type: Message
-            example: null
+            example: []
       responses:
         '200':
           description: broadcast method executed successfully
@@ -760,7 +760,7 @@ paths:
               type: array
               items:
                 - type: string
-            example: null
+            example: []
       responses:
         '200':
           description: getGateway method executed successfully
@@ -775,7 +775,7 @@ paths:
               type: array
               items:
                 - type: string
-            example: null
+            example: []
       responses:
         '200':
           description: getRouteId method executed successfully
@@ -790,7 +790,7 @@ paths:
               type: array
               items:
                 - type: Message
-            example: null
+            example: []
       responses:
         '200':
           description: sendRemote method executed successfully
@@ -804,7 +804,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: getConfigName method executed successfully
@@ -825,7 +825,7 @@ paths:
               type: array
               items:
                 - type: string
-            example: null
+            example: []
       responses:
         '200':
           description: getServicesFromInterface method executed successfully

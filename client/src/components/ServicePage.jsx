@@ -62,6 +62,7 @@ export default function ServicePage({ fullname, name, id }) {
     "Arduino",
     "OakD",
     "Ollama",
+    "OpenCV",
     "RobotLabXRuntime",
     "Runtime",
     "Servo",

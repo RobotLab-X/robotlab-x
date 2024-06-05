@@ -1,0 +1,21 @@
+typeKey: "OpenCV"
+title: "OpenCV Service"
+platform: "python"
+platformVersion: null
+description: "OpenCV pipeline"
+version: "0.0.1"
+cmd: "python"
+args: ["-u","start.py"] # -u unbuffered output
+cwd: null
+interfaces:
+  restAPI:
+    - endpoint: "/api/v1/resource"
+      method: "GET"
+      description: "Retrieves list of resources."
+author: "GroG"
+license: "MIT"
+categories:
+- "web"
+- "testing"
+- "ui"
+dependencies: null

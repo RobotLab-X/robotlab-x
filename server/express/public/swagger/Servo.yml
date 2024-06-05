@@ -38,14 +38,14 @@ paths:
               items:
                 - type: integer
                 - type: integer
-            example: null
+            example: []
       responses:
         '200':
           description: moveTo method executed successfully
   /attach:
     put:
-      summary: Executes attach method
-      description: ''
+      summary: Attach the servo to a specific controller
+      description: Attach the servo to a specific controller
       requestBody:
         content:
           application/json:
@@ -53,7 +53,7 @@ paths:
               type: array
               items:
                 - type: string
-            example: null
+            example: []
       responses:
         '200':
           description: attach method executed successfully
@@ -69,21 +69,21 @@ paths:
               items:
                 - type: integer
                 - type: integer
-            example: null
+            example: []
       responses:
         '200':
           description: publishServoMoveTo method executed successfully
   /getServoControllers:
     put:
-      summary: Executes getServoControllers method
-      description: ''
+      summary: Get the current set of possible controllers
+      description: Get the current set of possible controllers
       requestBody:
         content:
           application/json:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: getServoControllers method executed successfully

@@ -36,7 +36,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: startService method executed successfully
@@ -50,7 +50,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: stopService method executed successfully
@@ -65,7 +65,7 @@ paths:
               type: array
               items:
                 - type: string
-            example: null
+            example: []
       responses:
         '200':
           description: connect method executed successfully
@@ -79,7 +79,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: disconnect method executed successfully
@@ -93,7 +93,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: getPorts method executed successfully
@@ -107,7 +107,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: getBoardInfo method executed successfully
@@ -121,7 +121,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: createPins method executed successfully
@@ -135,7 +135,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: getPins method executed successfully
@@ -151,7 +151,7 @@ paths:
               items:
                 - type: integer
                 - type: integer
-            example: null
+            example: []
       responses:
         '200':
           description: write method executed successfully
@@ -167,7 +167,7 @@ paths:
               items:
                 - type: string
                 - type: integer
-            example: null
+            example: []
       responses:
         '200':
           description: servoWrite method executed successfully
@@ -182,7 +182,7 @@ paths:
               type: array
               items:
                 - type: ServoMove
-            example: null
+            example: []
       responses:
         '200':
           description: onServoMoveTo method executed successfully
@@ -196,7 +196,7 @@ paths:
             schema:
               type: array
               items: []
-            example: null
+            example: []
       responses:
         '200':
           description: toJSON method executed successfully

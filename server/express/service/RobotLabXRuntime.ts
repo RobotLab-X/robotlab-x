@@ -846,6 +846,12 @@ export default class RobotLabXRuntime extends Service {
 
     this.connectionImpl.delete(gatewayId)
     delete this.connections[`${gatewayId}`]
+    this.removeRoute(gatewayId)
+  }
+
+  removeRoute(remoteId: string) {
+    log.info(`removeRoute ${remoteId}`)
+    delete this.routeTable[remoteId]
   }
 
   getGatewayConnection(gatewayId: string): WebSocket | undefined {
