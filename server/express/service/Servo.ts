@@ -12,7 +12,7 @@ export default class Servo extends Service {
     center: 90,
     idleTimeout: 3000,
     speed: 50.0,
-    pin: 9
+    pin: "9"
   }
 
   constructor(
@@ -58,7 +58,7 @@ export default class Servo extends Service {
    */
   publishServoMoveTo(degrees: number, speed?: number): ServoMove {
     log.info(`Servo.publishServoMoveTo: Moving to ${degrees} degrees at speed ${speed}`)
-    return new ServoMove(this.id, this.name, degrees, speed, null)
+    return new ServoMove(this.id, this.name, this.config.pin, degrees, speed, null)
   }
 
   /**
@@ -67,5 +67,31 @@ export default class Servo extends Service {
    */
   getServoControllers(): string[] {
     return RobotLabXRuntime.getInstance().getServicesFromInterface("onServoMoveTo")
+  }
+
+  /**
+   *  Remove the servo from a specific controller
+   * @param controller
+   * @example ["uno"]
+   */
+  removeController(controller: string): void {
+    this.removeListener("publishServoMoveTo", controller, "onServoMoveTo")
+  }
+
+  /**
+   *  Set the controller for the servo
+   * @param controller
+   * @example ["uno"]
+   */
+  setController(controller: string): void {
+    this.addListener("publishServoMoveTo", controller, "onServoMoveTo")
+  }
+
+  /**
+   *  Set the current pin for the servo
+   * @returns pin
+   */
+  setPin(pin: string): void {
+    this.config.pin = pin
   }
 }

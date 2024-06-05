@@ -10,6 +10,7 @@ export default function Servo({ name, fullname, id }) {
   const [mainSliderValue, setMainSliderValue] = React.useState(70)
   const [speedValue, setSpeedValue] = React.useState(50)
   const [selectedController, setSelectedController] = React.useState("")
+  const [selectedPin, setSelectedPin] = React.useState("")
 
   const [editMode, setEditMode] = useState(false)
 
@@ -57,6 +58,14 @@ export default function Servo({ name, fullname, id }) {
 
   const handleControllerChange = (event) => {
     setSelectedController(event.target.value)
+    // This must simply addListener of the appropraite name etc
+    sendTo(fullname, "setController", event.target.value)
+  }
+
+  const handlePinChange = (event) => {
+    setSelectedPin(event.target.value)
+    // This must simply removeListener of the appropraite name etc
+    sendTo(fullname, "setPin", event.target.value)
   }
 
   const sliderStyles = {
@@ -72,26 +81,38 @@ export default function Servo({ name, fullname, id }) {
 
   return (
     <Box sx={{ width: { xs: "100%", sm: "100%", md: "30%" } }}>
-      <FormControl fullWidth sx={{ mt: 2 }}>
-        <InputLabel id="controller-select-label">Controllers</InputLabel>
-        <Select
-          labelId="controller-select-label"
-          id="controller-select"
-          value={selectedController}
-          label="Controllers"
-          onChange={handleControllerChange}
-          onOpen={handleControllerOpen}
-        >
-          <MenuItem value="">
-            <em>None</em>
-          </MenuItem>
-          {getServoControllers?.map((controller, index) => (
-            <MenuItem key={index} value={CodecUtil.getShortName(controller)}>
-              {controller}
+      <Box display="flex" justifyContent="space-between" alignItems="center">
+        <FormControl fullWidth sx={{ mt: 2, mr: 1 }}>
+          <InputLabel id="controller-select-label">Controller</InputLabel>
+          <Select
+            labelId="controller-select-label"
+            id="controller-select"
+            value={selectedController}
+            label="Controller"
+            onChange={handleControllerChange}
+            onOpen={handleControllerOpen}
+          >
+            <MenuItem value="">
+              <em>None</em>
             </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+            {getServoControllers?.map((controller, index) => (
+              <MenuItem key={index} value={CodecUtil.getShortName(controller)}>
+                {CodecUtil.getShortName(controller)}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <FormControl fullWidth sx={{ mt: 2, ml: 1 }}>
+          <InputLabel id="pin-select-label">Pin</InputLabel>
+          <Select labelId="pin-select-label" id="pin-select" value={selectedPin} label="Pin" onChange={handlePinChange}>
+            {Array.from({ length: 58 }, (_, i) => (
+              <MenuItem key={i} value={i}>
+                {i}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
         <Typography variant="h2">{mainSliderValue}</Typography>
         <Box display="flex" alignItems="center">
@@ -111,6 +132,11 @@ export default function Servo({ name, fullname, id }) {
             {speedValue}
           </Typography>
         </Box>
+        {/*}
+        <Button variant="contained" color="primary">
+          Attach
+        </Button>
+        */}
       </Box>
       <Slider
         value={mainSliderValue}

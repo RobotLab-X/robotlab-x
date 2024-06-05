@@ -11,9 +11,10 @@ export default class ServoMove {
   public speed: number | null = null
   public steps: number | null = null
 
-  constructor(id: string, name: string, degrees: number, speed: number, steps: number) {
+  constructor(id: string, name: string, pin: string, degrees: number, speed: number, steps: number) {
     this.id = id
     this.name = name
+    this.pin = pin
     this.degrees = degrees
     this.speed = speed
     this.steps = steps
