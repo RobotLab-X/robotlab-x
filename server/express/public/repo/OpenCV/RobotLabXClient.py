@@ -2,25 +2,51 @@ import argparse
 import asyncio
 import websockets
 import json
-import signal
 import sys
+import requests
+from enum import Enum, auto
+
+class State(Enum):
+    READY = auto()
+    SHUTDOWN = auto()
 
 class WebSocketClient:
     """WebSocket client that connects to a WebSocket server and sends/receives messages.
 
     Args:
-        endpoint (str): The WebSocket endpoint to connect to.
+        url (str): The WebSocket url to connect to.
         client_id (str): The client ID to use when connecting to the WebSocket server.
         """
 
-    def __init__(self, endpoint, client_id):
-        self.endpoint = endpoint
+    def __init__(self, url, client_id):
+        print(f"WebSocket client ID: {client_id}")
+        self.url = url
         self.client_id = client_id
         self.websocket = None
         self.stop_event = asyncio.Event()
+        self.state = State.READY
+        self.remote_id = None
+
+    def get_remote_id(self, base_url):
+        try:
+            url = f"{base_url}/api/v1/services/runtime/getId"
+            response = requests.get(url)
+            if response.status_code == 200:
+                self.remote_id = json.loads(response.text.strip())
+                print(f"Remote ID: {self.remote_id}")
+            else:
+                print(f"Failed to get remote ID, status code: {response.status_code}")
+                self.remote_id = 'rlx1'
+        except requests.RequestException as e:
+            print(f"Failed to get remote ID: {e}")
+            self.remote_id = 'rlx1'
 
     async def connect(self):
-        self.websocket = await websockets.connect(self.endpoint)
+        # Get remote ID before connecting
+        self.get_remote_id(self.url)
+        websocket_url = f"ws://{self.url.split('//')[1]}/api/messages?id={self.client_id}"
+        print(f"Connecting to WebSocket server at: {websocket_url}")
+        self.websocket = await websockets.connect(websocket_url)
         try:
             await asyncio.gather(
                 self.start_heartbeat(),
@@ -34,7 +60,7 @@ class WebSocketClient:
     async def send_message(self):
         try:
             message = {
-                "id": "rlx1",
+                "id": self.remote_id,
                 "name": "runtime",
                 "method": "getUptime"
             }
@@ -42,25 +68,25 @@ class WebSocketClient:
         except websockets.exceptions.ConnectionClosedError as e:
             print(f"Connection closed: {e}")
 
-    async def subscribe(self, fullname, methodName, callback):
+    async def subscribe(self, fullname, method_name, callback):
         try:
             message = {
-                "id": "rlx1",
+                "id": self.remote_id,
                 "name": fullname,
-                "method": methodName
+                "method": method_name
             }
             await self.websocket.send(json.dumps(message))
         except websockets.exceptions.ConnectionClosedError as e:
             print(f"Connection closed: {e}")
 
     async def start_heartbeat(self):
-        while not self.stop_event.is_set():
+        while self.state != State.SHUTDOWN:
             await self.send_message()
             await asyncio.sleep(1)  # Send message every second
 
     async def receive_messages(self):
         async for message in self.websocket:
-            if self.stop_event.is_set():
+            if self.state == State.SHUTDOWN:
                 break
             self.handle_message(message)
 
@@ -82,6 +108,7 @@ class WebSocketClient:
 
     def stop_service(self):
         print("Stopping service...")
+        self.state = State.SHUTDOWN
         self.stop_event.set()
 
     def shutdown(self):
@@ -95,18 +122,13 @@ class WebSocketClient:
 
 def main():
     parser = argparse.ArgumentParser(description='WebSocket Client')
-    parser.add_argument('-c', '--connect', required=False, help='WebSocket endpoint to connect to', default='ws://localhost:3001/api/messages?id=1')
-    parser.add_argument('-i', '--id', required=False, help='Client ID', default='1')
+    parser.add_argument('-c', '--connect', required=False, help='WebSocket url to connect to', default='http://localhost:3001')
+    # make a NameGenerator for random client id
+    parser.add_argument('-i', '--id', required=False, help='Client ID', default='python-client-1')
 
     args = parser.parse_args()
 
     client = WebSocketClient(args.connect, args.id)
-
-    def handle_signal(signal, frame):
-        client.shutdown()
-
-    signal.signal(signal.SIGINT, handle_signal)
-    signal.signal(signal.SIGTERM, handle_signal)
 
     client.start_service()
 
