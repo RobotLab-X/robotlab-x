@@ -9,7 +9,7 @@ export default class Servo extends Service {
   config = {
     autoDisable: true,
     controller: "",
-    center: 90,
+    rest: 90,
     idleTimeout: 3000,
     speed: 50.0,
     pin: "9"
@@ -93,5 +93,20 @@ export default class Servo extends Service {
    */
   setPin(pin: string): void {
     this.config.pin = pin
+  }
+
+  /**
+   * Set the current rest position for the servo
+   * @param rest - position to set the rest to
+   */
+  setRest(rest: number): void {
+    this.config.rest = rest
+  }
+
+  /**
+   * A position set by the user to be the rest position of the servo
+   */
+  rest(): void {
+    this.moveTo(this.config.rest)
   }
 }

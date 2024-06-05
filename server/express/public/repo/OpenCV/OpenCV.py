@@ -76,6 +76,7 @@ def main():
 
     client = RobotLabXClient('client1')
     client.connect('http://localhost:3001')
+    client.set_service(webcam_capture)
     client.start_service()
 
 if __name__ == "__main__":

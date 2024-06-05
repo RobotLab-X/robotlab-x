@@ -25,6 +25,8 @@ class RobotLabXClient:
         self.state = State.READY
         self.remote_id = None
         self.loop = asyncio.get_event_loop()
+        # integration point for service
+        self.service = None
 
     def get_remote_id(self, base_url):
         try:
@@ -100,6 +102,19 @@ class RobotLabXClient:
         try:
             data = json.loads(message)
             print(f"Received message: {data}")
+            params = data.get('data')
+            method = getattr(self.service, data.get('method'))
+
+            if not method:
+                print(f"Method {data.get('method')} not found.")
+                return
+
+            if self.service and params:
+                # self.loop.create_task(self.service.handle_message(data))
+                method(*params)
+            else:
+                method()
+
         except json.JSONDecodeError as e:
             print(f"Failed to decode JSON message: {e}")
 
@@ -123,6 +138,9 @@ class RobotLabXClient:
         self.loop.create_task(self.check_for_input())
         self.loop.create_task(self.wait_for_stop())
         self.loop.run_forever()
+
+    def set_service(self, service):
+        self.service = service
 
 def main():
     parser = argparse.ArgumentParser(description='WebSocket Client')
