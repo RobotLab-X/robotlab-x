@@ -35,16 +35,14 @@ class WebSocketClient:
                 print(f"Remote ID: {self.remote_id}")
             else:
                 print(f"Failed to get remote ID, status code: {response.status_code}")
-                self.remote_id = 'rlx1'
         except requests.RequestException as e:
             print(f"Failed to get remote ID: {e}")
-            self.remote_id = 'rlx1'
 
     def connect(self, url):
         self.url = url
         # Try to get remote ID before connecting
         self.get_remote_id(self.url)
-        websocket_url = f"ws://{self.url.split('//')[1]}/api/messages?id={self.remote_id}"
+        websocket_url = f"ws://{self.url.split('//')[1]}/api/messages?id={self.client_id}"
         print(f"Connecting to WebSocket server at: {websocket_url}")
         self.loop.run_until_complete(self._connect(websocket_url))
 
@@ -68,7 +66,7 @@ class WebSocketClient:
             message = {
                 "name": fullname,
                 "method": "addListener",
-                "data": [method_name, fullname]
+                "data": [method_name, "runtime@" + self.client_id]
             }
             await self.websocket.send(json.dumps(message))
         except websockets.exceptions.ConnectionClosedError as e:
@@ -133,7 +131,7 @@ def main():
     client = WebSocketClient(args.id)
     client.connect(args.connect)
     # client is now connected, client can send messages and make subscriptions
-    client.send_message({"name": "test", "method": "someMethod"})
+    client.send_message({"runtime": "getRegistry"})
     client.subscribe("runtime", "getUptime")
     client.subscribe("runtime", "getVersion")
 
