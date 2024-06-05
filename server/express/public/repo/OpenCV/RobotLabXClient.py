@@ -2,32 +2,66 @@ import argparse
 import asyncio
 import websockets
 import json
-import time
+import signal
+import sys
 
 class WebSocketClient:
     def __init__(self, endpoint, client_id):
         self.endpoint = endpoint
         self.client_id = client_id
+        self.websocket = None
+        self.stop_event = asyncio.Event()
 
     async def connect(self):
-        async with websockets.connect(self.endpoint) as websocket:
-            send_task = asyncio.create_task(self.send_messages(websocket))
-            receive_task = asyncio.create_task(self.receive_messages(websocket))
-            await asyncio.gather(send_task, receive_task)
+        self.websocket = await websockets.connect(self.endpoint)
+        try:
+            await asyncio.gather(
+                self.start_heartbeat(),
+                self.receive_messages(),
+                self.check_for_input(),
+                self.wait_for_stop()
+            )
+        finally:
+            await self.websocket.close()
 
-    async def send_messages(self, websocket):
-        while True:
+    async def send_message(self):
+        try:
             message = {
                 "id": "rlx1",
                 "name": "runtime",
                 "method": "getUptime"
             }
-            await websocket.send(json.dumps(message))
+            await self.websocket.send(json.dumps(message))
+        except websockets.exceptions.ConnectionClosedError as e:
+            print(f"Connection closed: {e}")
+
+    async def subscribe(self, fullname, methodName, callback):
+        try:
+            message = {
+                "id": "rlx1",
+                "name": fullname,
+                "method": methodName
+            }
+            await self.websocket.send(json.dumps(message))
+        except websockets.exceptions.ConnectionClosedError as e:
+            print(f"Connection closed: {e}")
+
+    async def start_heartbeat(self):
+        while not self.stop_event.is_set():
+            await self.send_message()
             await asyncio.sleep(1)  # Send message every second
 
-    async def receive_messages(self, websocket):
-        async for message in websocket:
+    async def receive_messages(self):
+        async for message in self.websocket:
+            if self.stop_event.is_set():
+                break
             self.handle_message(message)
+
+    async def check_for_input(self):
+        loop = asyncio.get_running_loop()
+        user_input = await loop.run_in_executor(None, sys.stdin.readline)
+        if user_input.strip().lower() == 'q':
+            self.shutdown()
 
     def handle_message(self, message):
         try:
@@ -35,6 +69,22 @@ class WebSocketClient:
             print(f"Received message: {data}")
         except json.JSONDecodeError as e:
             print(f"Failed to decode JSON message: {e}")
+
+    async def wait_for_stop(self):
+        await self.stop_event.wait()
+
+    def stop_service(self):
+        print("Stopping service...")
+        self.stop_event.set()
+
+    def shutdown(self):
+        self.stop_service()
+        print("Shutting down...")
+        sys.exit(0)
+
+    def start_service(self):
+        print("Starting service...")
+        asyncio.run(self.connect())
 
 def main():
     parser = argparse.ArgumentParser(description='WebSocket Client')
@@ -44,7 +94,14 @@ def main():
     args = parser.parse_args()
 
     client = WebSocketClient(args.connect, args.id)
-    asyncio.run(client.connect())
+
+    def handle_signal(signal, frame):
+        client.shutdown()
+
+    signal.signal(signal.SIGINT, handle_signal)
+    signal.signal(signal.SIGTERM, handle_signal)
+
+    client.start_service()
 
 if __name__ == '__main__':
     main()
