@@ -9,15 +9,13 @@ from enum import Enum, auto
 class State(Enum):
     READY = auto()
     SHUTDOWN = auto()
-    # Listening ?
 
 class WebSocketClient:
     """WebSocket client that connects to a WebSocket server and sends/receives messages.
 
     Args:
-        url (str): The WebSocket url to connect to.
         client_id (str): The client ID to use when connecting to the WebSocket server.
-        """
+    """
 
     def __init__(self, client_id):
         print(f"WebSocket client ID: {client_id}")
@@ -26,13 +24,14 @@ class WebSocketClient:
         self.stop_event = asyncio.Event()
         self.state = State.READY
         self.remote_id = None
+        self.loop = asyncio.get_event_loop()
 
     def get_remote_id(self, base_url):
         try:
             url = f"{base_url}/api/v1/services/runtime/getId"
             response = requests.get(url)
             if response.status_code == 200:
-                self.remote_id = json.loads(response.text.strip())
+                self.remote_id = response.text.strip()
                 print(f"Remote ID: {self.remote_id}")
             else:
                 print(f"Failed to get remote ID, status code: {response.status_code}")
@@ -41,40 +40,35 @@ class WebSocketClient:
             print(f"Failed to get remote ID: {e}")
             self.remote_id = 'rlx1'
 
-    async def connect(self, url):
+    def connect(self, url):
         self.url = url
         # Try to get remote ID before connecting
         self.get_remote_id(self.url)
         websocket_url = f"ws://{self.url.split('//')[1]}/api/messages?id={self.remote_id}"
         print(f"Connecting to WebSocket server at: {websocket_url}")
-        self.websocket = await websockets.connect(websocket_url)
-        try:
-            await asyncio.gather(
-                self.start_heartbeat(),
-                self.receive_messages(),
-                self.check_for_input(),
-                self.wait_for_stop()
-            )
-        finally:
-            await self.websocket.close()
+        self.loop.run_until_complete(self._connect(websocket_url))
 
-    async def send_message(self):
+    async def _connect(self, websocket_url):
+        self.websocket = await websockets.connect(websocket_url)
+
+    def send_message(self, message):
+        asyncio.run_coroutine_threadsafe(self._send_message(message), self.loop)
+
+    async def _send_message(self, message):
         try:
-            message = {
-                "id": self.remote_id,
-                "name": "runtime",
-                "method": "getUptime"
-            }
             await self.websocket.send(json.dumps(message))
         except websockets.exceptions.ConnectionClosedError as e:
             print(f"Connection closed: {e}")
 
-    async def subscribe(self, fullname, method_name, callback):
+    def subscribe(self, fullname, method_name):
+        asyncio.run_coroutine_threadsafe(self._subscribe(fullname, method_name), self.loop)
+
+    async def _subscribe(self, fullname, method_name):
         try:
             message = {
                 "name": fullname,
                 "method": "addListener",
-                "data":[method_name, fullname]
+                "data": [method_name, fullname]
             }
             await self.websocket.send(json.dumps(message))
         except websockets.exceptions.ConnectionClosedError as e:
@@ -82,7 +76,11 @@ class WebSocketClient:
 
     async def start_heartbeat(self):
         while self.state != State.SHUTDOWN:
-            await self.send_message()
+            await self._send_message({
+                "id": self.remote_id,
+                "name": "runtime",
+                "method": "getUptime"
+            })
             await asyncio.sleep(1)  # Send message every second
 
     async def receive_messages(self):
@@ -117,9 +115,13 @@ class WebSocketClient:
         print("Shutting down...")
         sys.exit(0)
 
-    async def start_service(self, url):
+    def start_service(self):
         print("Starting service...")
-        await self.connect(url)
+        self.loop.create_task(self.start_heartbeat())
+        self.loop.create_task(self.receive_messages())
+        self.loop.create_task(self.check_for_input())
+        self.loop.create_task(self.wait_for_stop())
+        self.loop.run_forever()
 
 def main():
     parser = argparse.ArgumentParser(description='WebSocket Client')
@@ -129,7 +131,16 @@ def main():
     args = parser.parse_args()
 
     client = WebSocketClient(args.id)
-    asyncio.run(client.start_service(args.connect))
+    client.connect(args.connect)
+    # client is now connected, client can send messages and make subscriptions
+    client.send_message({"name": "test", "method": "someMethod"})
+    client.subscribe("runtime", "getUptime")
+    client.subscribe("runtime", "getVersion")
+
+    try:
+        client.start_service()
+    except KeyboardInterrupt:
+        client.shutdown()
 
 if __name__ == '__main__':
     main()
