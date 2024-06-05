@@ -5,6 +5,26 @@ from time import sleep
 from concurrent.futures import ThreadPoolExecutor
 from robotlabx.robotlabxclient import RobotLabXClient
 
+class OpenCVFilter:
+    def __init__(self, name):
+        self.name = name
+
+    def apply(self, frame):
+        print(f"Applying filter: {self.name}")
+        return frame
+
+class OpenCVFilterCanny(OpenCVFilter):
+    def __init__(self, name, threshold1=50, threshold2=150):
+        super().__init__(name)
+        self.threshold1 = threshold1
+        self.threshold2 = threshold2
+
+    def apply(self, frame):
+        print(f"Applying Canny filter: {self.name}")
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        edges = cv2.Canny(gray, self.threshold1, self.threshold2)
+        return edges
+
 class OpenCV:
     def __init__(self):
         self.version = cv2.__version__
@@ -12,6 +32,7 @@ class OpenCV:
         self.capturing = False
         self.loop = asyncio.get_event_loop()
         self.executor = ThreadPoolExecutor()
+        self.filters = []
         print(f"OpenCV version: {self.version}")
 
     def capture(self):
@@ -34,6 +55,10 @@ class OpenCV:
                 if not ret:
                     print("Error: Failed to capture image.")
                     break
+
+                # Apply filters
+                for filter in self.filters:
+                    frame = filter.apply(frame)
 
                 cv2.imshow('Webcam Stream', frame)
 
@@ -64,11 +89,18 @@ class OpenCV:
         print("Webcam capture stopped.")
 
     def add_filter(self, name_of_filter, type_of_filter):
-        print(f"Adding filter: {name_of_filter} of type: {type_of_filter}")
-        pass
+        filter_class_name = f"OpenCVFilter{type_of_filter}"
+        filter_class = globals().get(filter_class_name)
+        if filter_class:
+            filter_instance = filter_class(name_of_filter)
+            self.filters.append(filter_instance)
+            print(f"Added filter: {name_of_filter} of type: {type_of_filter}")
+        else:
+            print(f"Filter class {filter_class_name} not found.")
 
 def main():
     webcam_capture = OpenCV()
+    webcam_capture.add_filter("canny", "Canny")
     webcam_capture.capture()
 
     sleep(5)  # Sleep for 5 seconds using regular sleep
