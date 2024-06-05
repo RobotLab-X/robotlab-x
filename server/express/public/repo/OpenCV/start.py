@@ -1,6 +1,7 @@
 import cv2
 import asyncio
 from time import sleep
+from concurrent.futures import ThreadPoolExecutor
 from robotlabx.robotlabxclient import RobotLabXClient
 
 class OpenCV:
@@ -9,7 +10,7 @@ class OpenCV:
         self.cap = None
         self.capturing = False
         self.loop = asyncio.get_event_loop()
-        self.capture_task = None
+        self.executor = ThreadPoolExecutor()
         print(f"OpenCV version: {self.version}")
 
     def capture(self):
@@ -18,9 +19,9 @@ class OpenCV:
             return
 
         self.capturing = True
-        self.capture_task = self.loop.create_task(self._capture())
+        self.loop.run_in_executor(self.executor, self._capture)
 
-    async def _capture(self):
+    def _capture(self):
         try:
             print("Starting webcam capture...")
             self.cap = cv2.VideoCapture(0)
@@ -37,7 +38,7 @@ class OpenCV:
                     self.stop_capture()
                     break
 
-                await asyncio.sleep(0.01)
+                sleep(0.01)  # Use time.sleep instead of asyncio.sleep
         except Exception as e:
             print(f"Error: {e}")
             self.stop_capture()
@@ -45,14 +46,11 @@ class OpenCV:
             self.stop_capture()
 
     def stop_capture(self):
+        self.capturing = False
         if self.cap:
             self.cap.release()
             cv2.destroyAllWindows()
             self.cap = None
-        self.capturing = False
-        if self.capture_task:
-            self.capture_task.cancel()
-            self.capture_task = None
         print("Webcam capture stopped.")
 
     def add_filter(self, name_of_filter, type_of_filter):
@@ -60,11 +58,11 @@ class OpenCV:
         pass
 
 
-async def main():
+def main():
     webcam_capture = OpenCV()
     webcam_capture.capture()
 
-    await asyncio.sleep(5)
+    sleep(5)  # Sleep for 5 seconds using regular sleep
     webcam_capture.stop_capture()
 
     # client = RobotLabXClient('client1')
@@ -72,4 +70,4 @@ async def main():
     # client.start_service()
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
