@@ -32,7 +32,7 @@ class WebSocketClient:
             url = f"{base_url}/api/v1/services/runtime/getId"
             response = requests.get(url)
             if response.status_code == 200:
-                self.remote_id = response.text.strip()
+                self.remote_id = json.loads(response.text.strip())
                 print(f"Remote ID: {self.remote_id}")
             else:
                 print(f"Failed to get remote ID, status code: {response.status_code}")
