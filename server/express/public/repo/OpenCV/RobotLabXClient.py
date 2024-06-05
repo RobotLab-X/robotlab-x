@@ -6,6 +6,13 @@ import signal
 import sys
 
 class WebSocketClient:
+    """WebSocket client that connects to a WebSocket server and sends/receives messages.
+
+    Args:
+        endpoint (str): The WebSocket endpoint to connect to.
+        client_id (str): The client ID to use when connecting to the WebSocket server.
+        """
+
     def __init__(self, endpoint, client_id):
         self.endpoint = endpoint
         self.client_id = client_id
