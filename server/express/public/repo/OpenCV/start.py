@@ -64,7 +64,7 @@ async def main():
     webcam_capture = OpenCV()
     webcam_capture.capture()
 
-    sleep(5)
+    await asyncio.sleep(5)
     webcam_capture.stop_capture()
 
     # client = RobotLabXClient('client1')
