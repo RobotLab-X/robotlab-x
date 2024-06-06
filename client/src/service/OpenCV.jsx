@@ -36,8 +36,8 @@ export default function OpenCV({ fullname }) {
   const service = useProcessedMessage(serviceMsg)
   const timestamp = useProcessedMessage(epochMsg)
 
-  const [filters, setFilters] = useState([])
-  const [possibleFilters] = useState(["Canny", "Yolo", "FaceDetect", "FaceRecognition"])
+  // const [filters, setFilters] = useState([])
+  const [possibleFilters] = useState(["Canny", "Yolo3", "FaceDetect", "FaceRecognition"])
   const [selectedFilterType, setSelectedFilterType] = useState(null)
   const [selectedFilter, setSelectedFilter] = useState(null)
   const [filterName, setFilterName] = useState("")
@@ -50,10 +50,15 @@ export default function OpenCV({ fullname }) {
 
   const handleCapture = () => {
     sendTo(fullname, "capture")
+    // FIXME - OpenCV.py should separate the command from status
+    // and have both a capture (command) and capturing (status)
+    sendTo(fullname, "broadcastState")
   }
 
   const handleStopCapture = () => {
-    sendTo(fullname, "stopCapture")
+    // if its a python service be true to Pep8 python method names
+    sendTo(fullname, "stop_capture")
+    sendTo(fullname, "broadcastState")
   }
 
   // FIXME put all Configuration in a Component
@@ -73,6 +78,8 @@ export default function OpenCV({ fullname }) {
   const handleOpenDialog = () => {
     if (selectedFilterType) {
       setDialogOpen(true)
+    } else {
+      console.error("No filter type selected")
     }
   }
 
@@ -83,7 +90,12 @@ export default function OpenCV({ fullname }) {
 
   const handleAddFilter = () => {
     if (filterName.trim() !== "") {
-      setFilters([...filters, { type: selectedFilterType, name: filterName }])
+      // setFilters([...filters, { type: selectedFilterType, name: filterName }])\
+      // So copilot always wants it to be kwargs and not positional arguments
+      // maybe we should comply sometime ?
+      // sendTo(fullname, "add_filter", { type: selectedFilterType, name: filterName })
+      sendTo(fullname, "add_filter", filterName, selectedFilterType)
+      sendTo(fullname, "broadcastState")
       handleCloseDialog()
     }
   }
@@ -93,13 +105,17 @@ export default function OpenCV({ fullname }) {
   }
 
   const handleRemoveFilter = (index) => {
-    setFilters(filters.filter((_, i) => i !== index))
+    // setFilters(filters.filter((_, i) => i !== index))
+    sendTo(fullname, "remove_filter", service?.filters[index].name)
+    sendTo(fullname, "broadcastState")
     setSelectedFilter(null)
   }
 
   const handleDialogKeyDown = (event) => {
+    console.log(event.key)
     if (event.key === "Enter") {
       handleAddFilter()
+      handleCloseDialog()
     }
   }
 
@@ -116,7 +132,7 @@ export default function OpenCV({ fullname }) {
         {editMode ? <ExpandLessIcon /> : <ExpandMoreIcon />}
       </h3>
       {editMode ? (
-        <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "80%" } }}>
+        <Box sx={{ maxWidth: { sm: "100%", md: "80%" } }}>
           <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
             <TextField
               label="Interval (ms)"
@@ -143,14 +159,14 @@ export default function OpenCV({ fullname }) {
           <Paper elevation={3} sx={{ p: 2, m: 2 }}>
             <h4>Filters</h4>
             <List>
-              {filters.map((filter, index) => (
+              {service?.filters.map((filter, index) => (
                 <ListItem
                   key={index}
                   button
                   selected={index === selectedFilter}
                   onClick={() => handleSelectFilter(index)}
                 >
-                  <ListItemText primary={`${filter.name} (${filter.type})`} />
+                  <ListItemText primary={`${filter.name} (${filter.typeKey})`} />
                   {index === selectedFilter && (
                     <IconButton edge="end" onClick={() => handleRemoveFilter(index)}>
                       <CloseIcon />
@@ -215,12 +231,15 @@ export default function OpenCV({ fullname }) {
         <Paper elevation={3} sx={{ p: 2, m: 2 }}>
           <Box sx={{ m: 2 }}>
             <Box>
-              <Button variant="contained" color="primary" onClick={handleCapture}>
-                Capture
-              </Button>
-              <Button variant="contained" color="secondary" onClick={handleStopCapture} sx={{ ml: 2 }}>
-                Stop Capture
-              </Button>
+              {service?.capturing ? (
+                <Button variant="contained" color="secondary" onClick={handleStopCapture} sx={{ ml: 2 }}>
+                  Stop Capture
+                </Button>
+              ) : (
+                <Button variant="contained" color="primary" onClick={handleCapture}>
+                  Capture
+                </Button>
+              )}
             </Box>
           </Box>
         </Paper>

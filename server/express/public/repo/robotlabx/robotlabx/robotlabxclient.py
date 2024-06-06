@@ -1,4 +1,5 @@
 import argparse
+import traceback
 import asyncio
 from typing import List
 import websockets
@@ -80,6 +81,8 @@ class RobotLabXClient:
 
     async def _send_message(self, message):
         try:
+            # FOR WORKY-NESS required to add sender info
+            message['sender'] = f"{self.client_id}@{self.client_id}"
             log.info(f"<-- {message.get('name')} {message.get('method')} <-- @{self.client_id}{message.get('data')}")
             json_data = json.dumps(message)
             await self.websocket.send(json_data)
@@ -140,6 +143,7 @@ class RobotLabXClient:
         self.notifyList[method].append(listener)
         return listener
 
+    # FIXME - implementation not finished !!!
     def removeListener(self, method: str, remote_name: str, remote_method: str = None):
         # log.info(f"remove_listener {method} {remote_name} {remote_method}")
 
@@ -154,11 +158,15 @@ class RobotLabXClient:
             return
 
         for index, listener in enumerate(self.notifyList[method]):
+            log.info(f"checking listener {listener}")
+            pass
+            # FIXME
             # log.info(f"checking listener {listener['callback_name']}.{listener['callback_method']} for {remote_name}.{remote_method}")
-            if listener['callback_name'] == remote_name and listener['callback_method'] == remote_method:
-                del self.notifyList[method][index]
-                # log.info(f"removed listener on {method} for -> {remote_name}.{remote_method}")
-                return
+            # if listener['callback_name'] == remote_name and listener['callback_method'] == remote_method:
+            # if listener.callbackName == remote_name and listener['callback_method'] == remote_method:
+            #     del self.notifyList[method][index]
+            #     # log.info(f"removed listener on {method} for -> {remote_name}.{remote_method}")
+            #     return
 
 
     def broadcastState(self):
@@ -177,8 +185,6 @@ class RobotLabXClient:
     def onBroadcastState(self, data:List[any]):
         log.info(f"--> onBroadcastState {data}")
 
-
-
     def handle_message(self, message):
         msg = None
         params = None
@@ -188,7 +194,7 @@ class RobotLabXClient:
             params = msg.get('data')
             methodName:str = msg.get('method')
 
-            log.info(f"{msg.get('sender')} --> {msg.get('name')}.{methodName}")
+            log.info(f"{msg.get('sender')} --> {msg.get('name')}.{methodName}(data={params})")
 
             # ROUTE CORE REQUIRED MESSAGING HERE
             # addListener broadcastState ...
@@ -220,8 +226,9 @@ class RobotLabXClient:
             else:
                 method()
 
-        except json.JSONDecodeError as e:
+        except Exception as e:
             log.info(f"could not execute message: {methodName}")
+            traceback.print_exc()
             log.info(f"Failed to decode JSON message: {e}")
 
     async def wait_for_stop(self):

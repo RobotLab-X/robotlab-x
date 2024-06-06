@@ -1,4 +1,7 @@
 import cv2
+import os
+import numpy as np
+import urllib.request
 import time
 import asyncio
 from time import sleep
@@ -13,6 +16,12 @@ class OpenCVFilter:
         print(f"Applying filter: {self.name}")
         return frame
 
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "typeKey": "Filter"
+        }
+
 class OpenCVFilterCanny(OpenCVFilter):
     def __init__(self, name, threshold1=50, threshold2=150):
         super().__init__(name)
@@ -20,16 +29,153 @@ class OpenCVFilterCanny(OpenCVFilter):
         self.threshold2 = threshold2
 
     def apply(self, frame):
-        print(f"Applying Canny filter: {self.name}")
+        # print(f"Applying Canny filter: {self.name}")
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         edges = cv2.Canny(gray, self.threshold1, self.threshold2)
         return edges
+
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "typeKey": "Canny",
+            "threshold1": self.threshold1,
+            "threshold2": self.threshold2
+        }
+
+
+class OpenCVFilterYolo3(OpenCVFilter):
+    def __init__(self, name, conf_threshold=0.5, nms_threshold=0.4):
+        super().__init__(name)
+        print("OpenCVFilterYolo3")
+        # cfg_path, weights_path, names_path,
+        self.conf_threshold = conf_threshold
+        self.nms_threshold = nms_threshold
+        paths = self.download_yolo_files('yolo')
+        self.net = cv2.dnn.readNetFromDarknet(paths.get("cfg_path"), paths.get("weights_path"))
+        self.layer_names = self.net.getLayerNames()
+        self.output_layers = [self.layer_names[i - 1] for i in self.net.getUnconnectedOutLayers()]
+        with open(paths.get("names_path"), 'r') as f:
+            self.classes = [line.strip() for line in f.readlines()]
+
+    def download_yolo_files(self, destination_dir):
+        """
+        Download YOLO files if they do not exist in the destination directory.
+        :param destination_dir: Destination directory to save the files.
+        :return: Dictionary containing the paths of the downloaded files.
+
+        e.g. {'cfg_path': 'yolo/yolov3.cfg', 'weights_path': 'yolo/yolov3.weights', 'names_path': 'yolo/yolov3.names'}
+
+        """
+        print("download_yolo_files")
+
+        os.makedirs(destination_dir, exist_ok=True)
+
+        files = {
+            'cfg': 'yolov3.cfg',
+            'weights': 'yolov3.weights',
+            'names': 'yolov3.names'
+        }
+
+        urls = {
+            'cfg': 'https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3.cfg',
+            'weights': 'https://pjreddie.com/media/files/yolov3.weights',
+            'names': 'https://raw.githubusercontent.com/pjreddie/darknet/master/data/coco.names'
+        }
+
+        paths = {}
+        for file_type, file_name in files.items():
+            print("download_yolo_files", file_type, file_name)
+            file_path = os.path.join(destination_dir, file_name)
+            if not os.path.exists(file_path):
+                print(f'Downloading {file_type} from {urls[file_type]}...')
+                urllib.request.urlretrieve(urls[file_type], file_path)
+                print(f'Saved {file_type} to {file_path}')
+            else:
+                print(f'{file_type} already exists at {file_path}, skipping download.')
+            paths[f'{file_type}_path'] = file_path
+
+        print("downloaded paths: ", paths)
+        return paths
+
+
+    def apply(self, frame):
+        if not self.net:
+            print("Error: YOLO model not loaded.")
+            return frame
+        print(f"Applying Yolo3 filter: {self.name}")
+
+        blob = cv2.dnn.blobFromImage(frame, 0.00392, (416, 416), (0, 0, 0), True, crop=False)
+        self.net.setInput(blob)
+        outs = self.net.forward(self.output_layers)
+
+        class_ids = []
+        confidences = []
+        boxes = []
+
+        height, width = frame.shape[:2]
+        for out in outs:
+            for detection in out:
+                scores = detection[5:]
+                class_id = np.argmax(scores)
+                confidence = scores[class_id]
+                if confidence > self.conf_threshold:
+                    center_x = int(detection[0] * width)
+                    center_y = int(detection[1] * height)
+                    w = int(detection[2] * width)
+                    h = int(detection[3] * height)
+                    x = int(center_x - w / 2)
+                    y = int(center_y - h / 2)
+                    boxes.append([x, y, w, h])
+                    confidences.append(float(confidence))
+                    class_ids.append(class_id)
+
+        indices = cv2.dnn.NMSBoxes(boxes, confidences, self.conf_threshold, self.nms_threshold)
+        for i in indices:
+            i = i[0]
+            box = boxes[i]
+            x, y, w, h = box[0], box[1], box[2], box[3]
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            label = str(self.classes[class_ids[i]])
+            confidence = confidences[i]
+            cv2.putText(frame, f"{label} {confidence:.2f}", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+
+        return frame
+
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "typeKey": "Yolo3",
+            "conf_threshold": self.conf_threshold,
+            "nms_threshold": self.nms_threshold
+        }
+
+
+class OpenCVFilterFaceDetect(OpenCVFilter):
+    def __init__(self, name, cascade_path='haarcascade_frontalface_default.xml'):
+        super().__init__(name)
+        self.face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + cascade_path)
+
+    def apply(self, frame):
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        faces = self.face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+        for (x, y, w, h) in faces:
+            cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
+        return frame
+
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "typeKey": "FaceDetect"
+        }
+
 
 class OpenCV:
     def __init__(self, id):
         self.id = id
         self.version = cv2.__version__
         self.cap = None
+        # FIXME - this is serving dual purpose, both write and read
+        # the command to start capturing and the status of capturing
         self.capturing = False
         self.loop = asyncio.get_event_loop()
         self.executor = ThreadPoolExecutor()
@@ -74,7 +220,7 @@ class OpenCV:
 
                 # Optional: Print the actual FPS
                 actual_fps = 1.0 / (frame_time + sleep_time)
-                print(f"Actual FPS: {actual_fps:.2f}")
+                # print(f"Actual FPS: {actual_fps:.2f}")
 
         except Exception as e:
             print(f"Error: {e}")
@@ -99,6 +245,10 @@ class OpenCV:
         else:
             print(f"Filter class {filter_class_name} not found.")
 
+    def remove_filter(self, name_of_filter):
+        self.filters = [filter for filter in self.filters if filter.name != name_of_filter]
+        print(f"Removed filter: {name_of_filter}")
+
 
     def to_dict(self):
         # Custom logic to handle serialization
@@ -109,21 +259,23 @@ class OpenCV:
             "typeKey": "OpenCV",
             "version": self.version,
             "capturing": self.capturing,
-            "filters": [filter.name for filter in self.filters]
+            "filters": [filter.to_dict() for filter in self.filters]
         }
 
 def main():
     cv = OpenCV("cv1")
-    cv.add_filter("canny", "Canny")
-    # cv.capture()
+    # cv.add_filter("canny", "Canny")
+    cv.add_filter("yolo", "Yolo3")
+    cv.capture()
 
-    # sleep(5)  # Sleep for 5 seconds using regular sleep
-    # cv.stop_capture()
+    sleep(100)
+    cv.stop_capture()
 
-    client = RobotLabXClient("cv1")
-    client.connect("http://localhost:3001")
-    client.set_service(cv)
-    client.start_service()
+    # attach to rlx
+    # client = RobotLabXClient("cv1")
+    # client.connect("http://localhost:3001")
+    # client.set_service(cv)
+    # client.start_service()
 
 if __name__ == "__main__":
     main()
