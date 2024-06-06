@@ -427,7 +427,7 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
       </TabPanel>
       <ConnectDialog
         id={id}
-        loopbackPort={service?.config.port}
+        loopbackPort={service?.config?.port}
         open={connectDialogOpen}
         onClose={() => setConnectDialogOpen(false)}
       />
