@@ -1,4 +1,6 @@
 ## TODO
+* npm neopixel
+* Bottango integration
 * user info warn error "Status" "high priority streams" which do not dismount/unsubscribe
 * npm install googleapis - "is there an http api i can query to get my unread gmail ?"
 * Xstate - npm - state machine and display !
@@ -104,3 +106,8 @@ serial rebuild
   "method": "getServicesFromInterface",
 "data":["startClock"]
 }
+
+
+export PYTHONPATH=/home/gperry/mrl/robotlab-x/server/express/public/repo/robotlabx:$PYTHONPATH
+
+export PYTHONPATH=../robotlabx:$PYTHONPATH

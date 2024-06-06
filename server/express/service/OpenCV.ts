@@ -14,7 +14,8 @@ export default class OpenCV extends Service {
    * @property {OpenCVConfig} config - The configuration for the python service.
    */
   config = {
-    installed: false
+    installed: false,
+    capture: false
   }
 
   private shell: PythonShell = null
@@ -47,6 +48,8 @@ export default class OpenCV extends Service {
       this.install()
     }
   }
+
+  addFilter(name: string, type: string): void {}
 
   // TODO handle messages to user
   async capture(): Promise<void> {
@@ -101,15 +104,16 @@ export default class OpenCV extends Service {
    * FIXME - add ...this.super.toJSON()
    * @returns {object} The serialized OpenCV instance.
    */
-  toJSON() {
-    return {
-      id: this.id,
-      name: this.name,
-      typeKey: this.typeKey,
-      version: this.version,
-      hostname: this.hostname,
-      config: this.config,
-      notifyList: this.notifyList
-    }
-  }
+  // toJSON() {
+  //   return {
+  //     id: this.id,
+  //     name: this.name,
+  //     fullname: this.fullname,
+  //     typeKey: this.typeKey,
+  //     version: this.version,
+  //     hostname: this.hostname,
+  //     config: this.config,
+  //     notifyList: this.notifyList
+  //   }
+  // }
 }

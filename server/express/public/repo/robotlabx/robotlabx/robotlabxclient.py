@@ -1,10 +1,28 @@
 import argparse
 import asyncio
+from typing import List
 import websockets
 import json
 import sys
 import requests
+import logging
 from enum import Enum, auto
+from robotlabx.codecutil import CodecUtil
+from robotlabx.message import Message
+
+logging.basicConfig(level=logging.INFO)
+log = logging.getLogger('RobotLabXClient')
+
+class SubscriptionListener:
+  topicMethod: str = None
+  callbackName: str = None
+  callbackMethod: str = None
+
+  def __init__(self, topicMethod: str = None, callbackName: str = None, callbackMethod: str = None):
+    self.topicMethod = topicMethod
+    self.callbackName = callbackName
+    self.callbackMethod = callbackMethod
+
 
 class State(Enum):
     READY = auto()
@@ -18,7 +36,7 @@ class RobotLabXClient:
     """
 
     def __init__(self, client_id):
-        print(f"WebSocket client ID: {client_id}")
+        log.info(f"WebSocket client ID: {client_id}")
         self.client_id = client_id
         self.websocket = None
         self.stop_event = asyncio.Event()
@@ -27,18 +45,21 @@ class RobotLabXClient:
         self.loop = asyncio.get_event_loop()
         # integration point for service
         self.service = None
+        self.notifyList = {}
+
+        CodecUtil.id = self.client_id
 
     def get_remote_id(self, base_url):
         try:
             url = f"{base_url}/api/v1/services/runtime/getId"
             response = requests.get(url)
             if response.status_code == 200:
-                self.remote_id = response.text.strip()
-                print(f"Remote ID: {self.remote_id}")
+                self.remote_id = json.loads(response.text.strip())
+                log.info(f"Remote ID: {self.remote_id}")
             else:
-                print(f"Failed to get remote ID, status code: {response.status_code}")
+                log.info(f"Failed to get remote ID, status code: {response.status_code}")
         except requests.RequestException as e:
-            print(f"Failed to get remote ID: {e}")
+            log.info(f"Failed to get remote ID: {e}")
 
     def connect(self, url):
         try:
@@ -46,10 +67,10 @@ class RobotLabXClient:
           # Try to get remote ID before connecting
           self.get_remote_id(self.url)
           websocket_url = f"ws://{self.url.split('//')[1]}/api/messages?id={self.client_id}"
-          print(f"Connecting to WebSocket server at: {websocket_url}")
+          log.info(f"Connecting to WebSocket server at: {websocket_url}")
           self.loop.run_until_complete(self._connect(websocket_url))
         except Exception as e:
-            print(f"Could not connect: {e}")
+            log.info(f"Could not connect: {e}")
 
     async def _connect(self, websocket_url):
         self.websocket = await websockets.connect(websocket_url)
@@ -59,9 +80,11 @@ class RobotLabXClient:
 
     async def _send_message(self, message):
         try:
-            await self.websocket.send(json.dumps(message))
+            log.info(f"<-- {message.get('name')} {message.get('method')} <-- @{self.client_id}{message.get('data')}")
+            json_data = json.dumps(message)
+            await self.websocket.send(json_data)
         except websockets.exceptions.ConnectionClosedError as e:
-            print(f"Connection closed: {e}")
+            log.info(f"Connection closed: {e}")
 
     def subscribe(self, fullname, method_name):
         asyncio.run_coroutine_threadsafe(self._subscribe(fullname, method_name), self.loop)
@@ -75,7 +98,7 @@ class RobotLabXClient:
             }
             await self.websocket.send(json.dumps(message))
         except websockets.exceptions.ConnectionClosedError as e:
-            print(f"Connection closed: {e}")
+            log.info(f"Connection closed: {e}")
 
     async def start_heartbeat(self):
         while self.state != State.SHUTDOWN:
@@ -98,15 +121,97 @@ class RobotLabXClient:
         if user_input.strip().lower() == 'q':
             self.shutdown()
 
+    def addListener(self, method: str, remoteName: str, remoteMethod: str = None):
+        log.info(f"== addListener {self.client_id}.{method} --> {remoteName}.{remoteMethod}")
+
+        if not remoteMethod:
+          remoteMethod = CodecUtil.get_callback_topic_name(method)
+
+        if not method in self.notifyList:
+          self.notifyList[method] = []
+
+        listeners:List[SubscriptionListener] = self.notifyList[method]
+        for listener in listeners:
+          if listener.callbackName == remoteName and listener.callbackMethod == remoteMethod:
+            log.info(f"listener on {method} for -> {remoteName}.{remoteMethod} already exists")
+            return listener
+
+        listener = SubscriptionListener(method, remoteName, remoteMethod)
+        self.notifyList[method].append(listener)
+        return listener
+
+    def removeListener(self, method: str, remote_name: str, remote_method: str = None):
+        # log.info(f"remove_listener {method} {remote_name} {remote_method}")
+
+        if remote_method is None:
+            # log.info(f"remote_method is null, setting to {CodecUtil.get_callback_topic_name(method)}")
+            remote_method = CodecUtil.get_callback_topic_name(method)
+
+        # log.info(f"== remove_listener {self.name}.{method} --> {remote_name}.{remote_method}")
+
+        if not self.notifyList or method not in self.notifyList:
+            # log.info(f"no listeners for method {method}")
+            return
+
+        for index, listener in enumerate(self.notifyList[method]):
+            # log.info(f"checking listener {listener['callback_name']}.{listener['callback_method']} for {remote_name}.{remote_method}")
+            if listener['callback_name'] == remote_name and listener['callback_method'] == remote_method:
+                del self.notifyList[method][index]
+                # log.info(f"removed listener on {method} for -> {remote_name}.{remote_method}")
+                return
+
+
+    def broadcastState(self):
+        log.info(f"== broadcastState {self.client_id}")
+
+        # get the notify list and send msgs to all subscribers
+        subscribers:List[SubscriptionListener] = self.notifyList["broadcastState"]
+
+        for subscriber in subscribers:
+          msg:Message = Message(subscriber.callbackName, subscriber.callbackMethod)
+          log.info(f"<--------------------------broadcasting state to {subscriber.callbackName}.{subscriber.callbackMethod}")
+          msg.data = [self.service.to_dict()]
+          self.send_message(msg.__dict__)
+
+    # I get a broadcastState from the runtime I connected even though I didn't subscribe to it
+    def onBroadcastState(self, data:List[any]):
+        log.info(f"--> onBroadcastState {data}")
+
+
+
     def handle_message(self, message):
+        msg = None
+        params = None
+        methodName = None
         try:
-            data = json.loads(message)
-            print(f"Received message: {data}")
-            params = data.get('data')
-            method = getattr(self.service, data.get('method'))
+            msg = json.loads(message)
+            params = msg.get('data')
+            methodName:str = msg.get('method')
+
+            log.info(f"{msg.get('sender')} --> {msg.get('name')}.{methodName}")
+
+            # ROUTE CORE REQUIRED MESSAGING HERE
+            # addListener broadcastState ...
+            if methodName == "addListener":
+                self.addListener(*params)
+                return
+
+            if methodName == "removeListener":
+                self.removeListener(*params)
+                return
+
+            if methodName == "broadcastState":
+                self.broadcastState()
+                return
+
+            if methodName == "onBroadcastState":
+                self.onBroadcastState(params)
+                return
+
+            method = getattr(self.service, msg.get('method'))
 
             if not method:
-                print(f"Method {data.get('method')} not found.")
+                log.info(f"Method {msg.get('method')} not found.")
                 return
 
             if self.service and params:
@@ -116,24 +221,26 @@ class RobotLabXClient:
                 method()
 
         except json.JSONDecodeError as e:
-            print(f"Failed to decode JSON message: {e}")
+            log.info(f"could not execute message: {methodName}")
+            log.info(f"Failed to decode JSON message: {e}")
 
     async def wait_for_stop(self):
         await self.stop_event.wait()
 
     def stop_service(self):
-        print("Stopping service...")
+        log.info("Stopping service...")
         self.state = State.SHUTDOWN
         self.stop_event.set()
 
     def shutdown(self):
         self.stop_service()
-        print("Shutting down...")
+        log.info("Shutting down...")
         sys.exit(0)
 
     def start_service(self):
-        print("Starting service...")
-        self.loop.create_task(self.start_heartbeat())
+        log.info("Starting service...")
+        # TODO - future connectivity status check
+        # self.loop.create_task(self.start_heartbeat())
         self.loop.create_task(self.receive_messages())
         self.loop.create_task(self.check_for_input())
         self.loop.create_task(self.wait_for_stop())

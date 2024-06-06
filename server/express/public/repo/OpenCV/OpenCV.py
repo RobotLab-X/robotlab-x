@@ -26,7 +26,8 @@ class OpenCVFilterCanny(OpenCVFilter):
         return edges
 
 class OpenCV:
-    def __init__(self):
+    def __init__(self, id):
+        self.id = id
         self.version = cv2.__version__
         self.cap = None
         self.capturing = False
@@ -98,17 +99,30 @@ class OpenCV:
         else:
             print(f"Filter class {filter_class_name} not found.")
 
+
+    def to_dict(self):
+        # Custom logic to handle serialization
+        return {
+            "id": self.id,
+            "fullname": f"{self.id}@{self.id}",
+            "name":  self.id,
+            "typeKey": "OpenCV",
+            "version": self.version,
+            "capturing": self.capturing,
+            "filters": [filter.name for filter in self.filters]
+        }
+
 def main():
-    webcam_capture = OpenCV()
-    webcam_capture.add_filter("canny", "Canny")
-    webcam_capture.capture()
+    cv = OpenCV("cv1")
+    cv.add_filter("canny", "Canny")
+    # cv.capture()
 
-    sleep(5)  # Sleep for 5 seconds using regular sleep
-    webcam_capture.stop_capture()
+    # sleep(5)  # Sleep for 5 seconds using regular sleep
+    # cv.stop_capture()
 
-    client = RobotLabXClient('client1')
-    client.connect('http://localhost:3001')
-    client.set_service(webcam_capture)
+    client = RobotLabXClient("cv1")
+    client.connect("http://localhost:3001")
+    client.set_service(cv)
     client.start_service()
 
 if __name__ == "__main__":
