@@ -159,7 +159,7 @@ export default function OpenCV({ fullname }) {
           <Paper elevation={3} sx={{ p: 2, m: 2 }}>
             <h4>Filters</h4>
             <List>
-              {service?.filters.map((filter, index) => (
+              {(service?.filters ?? []).map((filter, index) => (
                 <ListItem
                   key={index}
                   button
