@@ -29,7 +29,6 @@ class OpenCVFilterCanny(OpenCVFilter):
         self.threshold2 = threshold2
 
     def apply(self, frame):
-        # print(f"Applying Canny filter: {self.name}")
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         edges = cv2.Canny(gray, self.threshold1, self.threshold2)
         return edges
@@ -42,12 +41,10 @@ class OpenCVFilterCanny(OpenCVFilter):
             "threshold2": self.threshold2
         }
 
-
 class OpenCVFilterYolo3(OpenCVFilter):
     def __init__(self, name, conf_threshold=0.5, nms_threshold=0.4):
         super().__init__(name)
         print("OpenCVFilterYolo3")
-        # cfg_path, weights_path, names_path,
         self.conf_threshold = conf_threshold
         self.nms_threshold = nms_threshold
         paths = self.download_yolo_files('yolo')
@@ -58,33 +55,37 @@ class OpenCVFilterYolo3(OpenCVFilter):
             self.classes = [line.strip() for line in f.readlines()]
 
     def download_yolo_files(self, destination_dir):
-        """
-        Download YOLO files if they do not exist in the destination directory.
-        :param destination_dir: Destination directory to save the files.
-        :return: Dictionary containing the paths of the downloaded files.
-
-        e.g. {'cfg_path': 'yolo/yolov3.cfg', 'weights_path': 'yolo/yolov3.weights', 'names_path': 'yolo/yolov3.names'}
-
-        """
-        print("download_yolo_files")
-
         os.makedirs(destination_dir, exist_ok=True)
 
+        # files = {
+        #     'cfg': 'yolov3.cfg',
+        #     'weights': 'yolov3.weights',
+        #     'names': 'coco.names'
+        # }
+
+        # urls = {
+        #     'cfg': 'https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3.cfg',
+        #     'weights': 'https://pjreddie.com/media/files/yolov3.weights',
+        #     'names': 'https://raw.githubusercontent.com/pjreddie/darknet/master/data/coco.names'
+        # }
+
+
         files = {
-            'cfg': 'yolov3.cfg',
-            'weights': 'yolov3.weights',
-            'names': 'yolov3.names'
+            'cfg': 'yolov3-tiny.cfg',
+            'weights': 'yolov3-tiny.weights',
+            'names': 'coco.names'
         }
 
         urls = {
-            'cfg': 'https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3.cfg',
-            'weights': 'https://pjreddie.com/media/files/yolov3.weights',
+            'cfg': 'https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3-tiny.cfg',
+            'weights': 'https://pjreddie.com/media/files/yolov3-tiny.weights',
             'names': 'https://raw.githubusercontent.com/pjreddie/darknet/master/data/coco.names'
         }
 
+
+
         paths = {}
         for file_type, file_name in files.items():
-            print("download_yolo_files", file_type, file_name)
             file_path = os.path.join(destination_dir, file_name)
             if not os.path.exists(file_path):
                 print(f'Downloading {file_type} from {urls[file_type]}...')
@@ -94,9 +95,7 @@ class OpenCVFilterYolo3(OpenCVFilter):
                 print(f'{file_type} already exists at {file_path}, skipping download.')
             paths[f'{file_type}_path'] = file_path
 
-        print("downloaded paths: ", paths)
         return paths
-
 
     def apply(self, frame):
         if not self.net:
@@ -130,14 +129,14 @@ class OpenCVFilterYolo3(OpenCVFilter):
                     class_ids.append(class_id)
 
         indices = cv2.dnn.NMSBoxes(boxes, confidences, self.conf_threshold, self.nms_threshold)
-        for i in indices:
-            i = i[0]
-            box = boxes[i]
-            x, y, w, h = box[0], box[1], box[2], box[3]
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-            label = str(self.classes[class_ids[i]])
-            confidence = confidences[i]
-            cv2.putText(frame, f"{label} {confidence:.2f}", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        if len(indices) > 0:
+            for i in indices.flatten():
+                box = boxes[i]
+                x, y, w, h = box[0], box[1], box[2], box[3]
+                cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                label = str(self.classes[class_ids[i]])
+                confidence = confidences[i]
+                cv2.putText(frame, f"{label} {confidence:.2f}", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
         return frame
 
@@ -148,7 +147,6 @@ class OpenCVFilterYolo3(OpenCVFilter):
             "conf_threshold": self.conf_threshold,
             "nms_threshold": self.nms_threshold
         }
-
 
 class OpenCVFilterFaceDetect(OpenCVFilter):
     def __init__(self, name, cascade_path='haarcascade_frontalface_default.xml'):
@@ -167,7 +165,6 @@ class OpenCVFilterFaceDetect(OpenCVFilter):
             "name": self.name,
             "typeKey": "FaceDetect"
         }
-
 
 class OpenCV:
     def __init__(self, id):
@@ -203,7 +200,6 @@ class OpenCV:
                     print("Error: Failed to capture image.")
                     break
 
-                # Apply filters
                 for filter in self.filters:
                     frame = filter.apply(frame)
 
@@ -213,14 +209,11 @@ class OpenCV:
                     self.stop_capture()
                     break
 
-                # Calculate frame processing time
                 frame_time = time.perf_counter() - start_time
-                sleep_time = max(0.01 - frame_time, 0)  # Ensure non-negative sleep time
-                sleep(sleep_time)  # Use time.sleep instead of asyncio.sleep
+                sleep_time = max(0.01 - frame_time, 0)
+                sleep(sleep_time)
 
-                # Optional: Print the actual FPS
                 actual_fps = 1.0 / (frame_time + sleep_time)
-                # print(f"Actual FPS: {actual_fps:.2f}")
 
         except Exception as e:
             print(f"Error: {e}")
@@ -249,13 +242,11 @@ class OpenCV:
         self.filters = [filter for filter in self.filters if filter.name != name_of_filter]
         print(f"Removed filter: {name_of_filter}")
 
-
     def to_dict(self):
-        # Custom logic to handle serialization
         return {
             "id": self.id,
             "fullname": f"{self.id}@{self.id}",
-            "name":  self.id,
+            "name": self.id,
             "typeKey": "OpenCV",
             "version": self.version,
             "capturing": self.capturing,
@@ -265,17 +256,16 @@ class OpenCV:
 def main():
     cv = OpenCV("cv1")
     # cv.add_filter("canny", "Canny")
-    cv.add_filter("yolo", "Yolo3")
-    cv.capture()
+    # cv.add_filter("yolo", "Yolo3")
+    # cv.capture()
 
-    sleep(100)
-    cv.stop_capture()
+    # sleep(100)
+    # cv.stop_capture()
 
-    # attach to rlx
-    # client = RobotLabXClient("cv1")
-    # client.connect("http://localhost:3001")
-    # client.set_service(cv)
-    # client.start_service()
+    client = RobotLabXClient("cv1")
+    client.connect("http://localhost:3001")
+    client.set_service(cv)
+    client.start_service()
 
 if __name__ == "__main__":
     main()
