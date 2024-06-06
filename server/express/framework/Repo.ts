@@ -95,12 +95,14 @@ export class Repo {
       }
     })
   }
-  getService(id: string, name: string, serviceType: string, version: string, hostname: string | null = null) {
+  getNewService(id: string, name: string, serviceType: string, version: string, hostname: string | null = null) {
     const ServiceClass = this.services[serviceType]
     if (!ServiceClass) {
       log.error(`No service found for type: ${serviceType} list of possible types: ${Object.keys(this.services)}`)
       throw new Error(`No service found for type: ${serviceType}`)
     }
+    // FIXME - pretty sure this makes zombie objects - but those zombies
+    // especially with different process ids are necessary for routing
     log.info(`constructing ${serviceType}`)
     return new ServiceClass(id, name, serviceType, version, hostname)
   }

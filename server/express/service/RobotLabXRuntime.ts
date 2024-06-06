@@ -128,6 +128,8 @@ export default class RobotLabXRuntime extends Service {
       this.routeTable[remoteId] = new RouteEntry(remoteId, gatewayId, gateway)
       // updating route entry to the "latest route"
       this.defaultRoute = this.routeTable[remoteId]
+
+      // DO WE ADD A PROXY STUB SERVICE HERE ?
     }
   }
 
@@ -489,7 +491,8 @@ export default class RobotLabXRuntime extends Service {
           log.info("system starting - local runtime already created")
           service = RobotLabXRuntime.instance
         } else {
-          service = this.repo.getService(this.getId(), serviceName, serviceType, version, this.getHostname())
+          // VERY BAD NAME - perhaps change to getNewService
+          service = this.repo.getNewService(this.getId(), serviceName, serviceType, version, this.getHostname())
         }
       } catch (e: unknown) {
         const error = e as Error
@@ -498,7 +501,7 @@ export default class RobotLabXRuntime extends Service {
         log.error(errStr)
         this.invoke("publishInstallLog", errStr)
         this.invoke("publishInstallLog", "warn: using default Unknown service type")
-        service = this.repo.getService(this.getId(), serviceName, "Unknown", version, this.getHostname())
+        service = this.repo.getNewService(this.getId(), serviceName, "Unknown", version, this.getHostname())
         if (service instanceof Unknown) {
           service.requestTypeKey = serviceType
         }
@@ -635,6 +638,11 @@ export default class RobotLabXRuntime extends Service {
     return uptime
   }
 
+  /**
+   * getService gets a service from the registry if it exists
+   * @param name - service name, if not a full name it will be promoted to one
+   * @returns - the service if exists
+   */
   getService(name: string): Service | null {
     const fullName = CodecUtil.getFullName(name)
     return Store.getInstance().getService(fullName)
