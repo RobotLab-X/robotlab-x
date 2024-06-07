@@ -101,7 +101,6 @@ class OpenCVFilterYolo3(OpenCVFilter):
         if not self.net:
             print("Error: YOLO model not loaded.")
             return frame
-        print(f"Applying Yolo3 filter: {self.name}")
 
         blob = cv2.dnn.blobFromImage(frame, 0.00392, (416, 416), (0, 0, 0), True, crop=False)
         self.net.setInput(blob)
@@ -138,6 +137,8 @@ class OpenCVFilterYolo3(OpenCVFilter):
                 confidence = confidences[i]
                 cv2.putText(frame, f"{label} {confidence:.2f}", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
+                # TODO publish_classified_objects(label, confidence, x, y, w, h)
+
         return frame
 
     def to_dict(self):
@@ -149,6 +150,42 @@ class OpenCVFilterYolo3(OpenCVFilter):
         }
 
 class OpenCVFilterFaceDetect(OpenCVFilter):
+    """Face detection filter using Haar cascades.
+
+      Face Detection:
+
+      haarcascade_frontalface_default.xml
+      haarcascade_frontalface_alt.xml
+      haarcascade_frontalface_alt2.xml
+      haarcascade_frontalface_alt_tree.xml
+      haarcascade_profileface.xml
+      Eye Detection:
+
+      haarcascade_eye.xml
+      haarcascade_eye_tree_eyeglasses.xml
+      Smile Detection:
+
+      haarcascade_smile.xml
+      Upper Body Detection:
+
+      haarcascade_upperbody.xml
+      Full Body Detection:
+
+      haarcascade_fullbody.xml
+      Lower Body Detection:
+
+      haarcascade_lowerbody.xml
+      License Plate Detection:
+
+      haarcascade_russian_plate_number.xml
+      Hand Detection:
+
+      haarcascade_hand.xml
+      LeNet (Handwritten Digit Recognition):
+
+      haarcascade_leye.xml
+
+    """
     def __init__(self, name, cascade_path='haarcascade_frontalface_default.xml'):
         super().__init__(name)
         self.face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + cascade_path)
@@ -158,6 +195,8 @@ class OpenCVFilterFaceDetect(OpenCVFilter):
         faces = self.face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
         for (x, y, w, h) in faces:
             cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
+
+        # TODO - publish_face_detections(faces)
         return frame
 
     def to_dict(self):
@@ -254,7 +293,7 @@ class OpenCV:
         }
 
 def main():
-    cv = OpenCV("cv1")
+    cv = OpenCV("cv2")
     # cv.add_filter("canny", "Canny")
     # cv.add_filter("yolo", "Yolo3")
     # cv.capture()
@@ -262,7 +301,7 @@ def main():
     # sleep(100)
     # cv.stop_capture()
 
-    client = RobotLabXClient("cv1")
+    client = RobotLabXClient("cv2")
     client.connect("http://localhost:3001")
     client.set_service(cv)
     client.start_service()
