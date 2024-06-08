@@ -9,6 +9,7 @@ export default class Service {
   version: string | null = null
   hostname: string | null = null
   fullname: string | null = null
+  config = {}
 
   public constructor(id: string, name: string, typeKey: string, version: string, hostname: string | null = null) {
     this.id = id

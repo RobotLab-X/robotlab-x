@@ -17,6 +17,7 @@ import {
   TextField
 } from "@mui/material"
 import React, { useEffect, useRef, useState } from "react"
+import OpenCVWizard from "wizards/OpenCVWizard"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
 import { useStore } from "../store/store"
 import useServiceSubscription from "../store/useServiceSubscription"
@@ -26,15 +27,11 @@ export default function OpenCV({ fullname }) {
   const [editMode, setEditMode] = useState(false)
   const { useMessage, sendTo } = useStore()
 
-  // makes reference to the message object in store
-  const epochMsg = useMessage(fullname, "publishEpoch")
-
   // creates subscriptions to topics and returns the broadcastState message reference
-  const serviceMsg = useServiceSubscription(fullname, ["publishEpoch"])
+  const serviceMsg = useServiceSubscription(fullname, [])
 
   // processes the msg.data[0] and returns the data
   const service = useProcessedMessage(serviceMsg)
-  const timestamp = useProcessedMessage(epochMsg)
 
   // const [filters, setFilters] = useState([])
   const [possibleFilters] = useState(["Canny", "Yolo3", "FaceDetect", "FaceRecognition"])
@@ -127,6 +124,8 @@ export default function OpenCV({ fullname }) {
 
   return (
     <>
+      <OpenCVWizard fullname={fullname} />
+
       <h3 style={{ display: "flex", alignItems: "center", cursor: "pointer" }} onClick={toggleEditMode}>
         Configuration
         {editMode ? <ExpandLessIcon /> : <ExpandMoreIcon />}

@@ -1,4 +1,5 @@
 ## TODO
+* convienence - noworky - http://localhost:3001/api/v1/services/cv8 "should" be promoted to working http://localhost:3001/api/v1/services/cv8@cv8 - shortname to fullname index - error on collisions
 * npm neopixel
 * Bottango integration
 * user info warn error "Status" "high priority streams" which do not dismount/unsubscribe

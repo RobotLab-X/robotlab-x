@@ -222,6 +222,7 @@ export default class Store {
    */
   public handleMessage(msg: Message) {
     try {
+      // log.info(`--> handleMessage ${msg.name}.${msg.method}`)
       // can you relay without having that service in this registry ... "yes"
       let fullName = CodecUtil.getFullName(msg.name)
       const msgId = CodecUtil.getId(fullName)

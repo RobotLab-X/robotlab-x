@@ -1,6 +1,5 @@
 import WebSocket from "ws" // Import WebSocket module
 import { getLogger } from "../framework/Log"
-import { Repo } from "../framework/Repo"
 import Service from "../framework/Service"
 import Message from "../models/Message"
 import MyRobotLabProxy from "../service/MyRobotLabProxy"
@@ -16,12 +15,6 @@ export default class MyRobotLabConnector extends Service {
 
   mrlId: string = null
 
-  // notifyList = new Map<string, SubscriptionListener[]>()
-  proxyNotifyList = {} as any
-
-  // FIXME - WRONG ! should all be handled through RobotLabXRuntime
-  repo = new Repo()
-
   // FIXME remove the /api/messages - should be internal use only
   config = {
     wsUrl: "ws://localhost:8888/api/messages"
@@ -35,7 +28,6 @@ export default class MyRobotLabConnector extends Service {
     public hostname: string
   ) {
     super(id, name, typeKey, version, hostname) // Call the base class constructor
-    this.repo.load()
   }
 
   disconnect() {
@@ -262,10 +254,6 @@ export default class MyRobotLabConnector extends Service {
     } else {
       console.error("WebSocket is not connected.")
     }
-  }
-
-  getRepo(): Repo {
-    return this.repo
   }
 
   getConfigName(): string {

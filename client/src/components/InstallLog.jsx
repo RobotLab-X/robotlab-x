@@ -3,9 +3,9 @@ import React from "react"
 
 const InstallLog = ({ messageLog }) => {
   return (
-    <Grid container spacing={2} alignItems="flex-start">
-      <Grid item xs={12} sm={12} md={8} lg={6}>
-        <div style={{ wordWrap: "break-word", whiteSpace: "pre-wrap" }}>
+    <Grid container spacing={1} alignItems="flex-start">
+      <Grid>
+        <div>
           {messageLog.map((msg, index) => {
             // Extract the prefix and the rest of the message
             const prefixPattern = /^(info:|warn:|error:)/

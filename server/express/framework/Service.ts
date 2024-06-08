@@ -153,6 +153,7 @@ export default class Service implements Gateway {
 
   invoke(methodName: string, ...args: any[]): any {
     let msg = new Message(this.name, methodName, args)
+    msg.sender = this.fullname
     return this.invokeMsg(msg)
   }
 
@@ -184,7 +185,7 @@ export default class Service implements Gateway {
       // FIXME - check if blocking or non-blocking
       // use gateway to send message to remote service
       if (msgId !== id) {
-        log.info(`remote message ${msgFullName}.${msg.method} from ${msg.sender}.${msg.method}`)
+        // log.info(`remote message ${msgFullName}.${msg.method} from ${msg.sender}.${msg.method}`)
         // dynamically add route to gateway
         if (msg.gateway) {
           runtime.addRoute(msgId, msg.gatewayId, msg.gateway)
@@ -234,7 +235,7 @@ export default class Service implements Gateway {
       // FIXME - check if blocking or non-blocking
       // is this the service to invoke the method on ?
       if (fullName === msgFullName) {
-        log.info(`local message ${msgFullName}.${msg.method} from ${msg.sender}.${msg.method}`)
+        log.info(`(invoke) ${msgFullName}.${msg.method} from ${msg.sender}.${msg.method}`)
         let obj: any = this // cast away typescript
 
         if (!msg.method) {
@@ -405,8 +406,10 @@ export default class Service implements Gateway {
       fullname: this.fullname,
       hostname: this.hostname,
       id: this.id,
+      installed: this.installed,
       name: this.name,
       notifyList: this.notifyList,
+      pkg: this.pkg,
       ready: this.ready,
       typeKey: this.typeKey,
       version: this.version

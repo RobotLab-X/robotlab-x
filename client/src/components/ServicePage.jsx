@@ -50,7 +50,7 @@ export default function ServicePage({ fullname, name, id }) {
     // Dynamically import the service page component
     const loadAsyncPage = async () => {
       try {
-        const LoadedPage = await loadable(() => import(`../service/${type}`))
+        const LoadedPage = await loadable(() => import(`../service/${imgType}`))
         setAsyncPage(() => LoadedPage)
       } catch (error) {
         setAsyncPage(() => () => <div>Service not found</div>)
@@ -140,7 +140,7 @@ export default function ServicePage({ fullname, name, id }) {
         </IconButton>
       </Typography>
 
-      {AsyncPage && <AsyncPage page={type} name={name} id={id} fullname={fullname} />}
+      {AsyncPage && <AsyncPage page={imgType} name={name} id={id} fullname={fullname} />}
       {showJson && (
         <>
           <ReactJson src={registered} name="registered" displayDataTypes={false} displayObjectSize={false} />

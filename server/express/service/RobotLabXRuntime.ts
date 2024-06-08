@@ -81,6 +81,21 @@ export default class RobotLabXRuntime extends Service {
    */
   protected routeTable: { [id: string]: RouteEntry } = {}
 
+  toJSON() {
+    return {
+      ...super.toJSON(),
+      configDir: this.configDir,
+      configName: this.configName,
+      dataDir: this.dataDir,
+      processes: this.processes,
+      hosts: this.hosts,
+      connections: this.connections,
+      defaultRoute: this.defaultRoute,
+      routeTable: this.routeTable,
+      types: this.types
+    }
+  }
+
   // OVERRIDES Service.ts
   config = {
     id: null as string,
@@ -933,6 +948,14 @@ export default class RobotLabXRuntime extends Service {
     // it "may" be the process (gatewayRouteId) were are connected directly to
     // or it gatewayRouteId may be a gateway to msg.id remote process
     let ws: any = this.connectionImpl.get(gatewayRouteId)
+
+    if (!ws) {
+      log.error(
+        `no websocket connection from runtime to remote, gateway should probably be handling this ${gatewayRouteId} for remoteId ${msgId}`
+      )
+      return null
+    }
+
     // we'll do the appropriate encoding based on the connection
     let json = JSON.stringify(msg)
     // and send it to the locally connected process for it to route
