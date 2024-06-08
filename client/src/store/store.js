@@ -5,6 +5,10 @@ import CodecUtil from "../framework/CodecUtil"
 // import NameGenerator from "../framework/NameGenerator"
 import Message from "../models/Message"
 
+const useRegisteredService = (fullname) => {
+  return useStore((state) => state.registry[fullname] || {})
+}
+
 const store = (set, get) => ({
   // id of this process
   // id: `ui-${get().defaultRemoteId}-${NameGenerator.getName()}`,
@@ -186,7 +190,7 @@ const store = (set, get) => ({
 
           // ask for each service
           for (const serviceName of msg.data[0]) {
-            console.info(serviceName)
+            // console.info(serviceName)
             // FIXME !! change to broadcastState()
             get().sendTo("runtime", "getService", serviceName)
           }
@@ -213,7 +217,8 @@ const store = (set, get) => ({
 
         // equivalent of MQTT RETAIN
         // store the message
-        console.info(`storing message ${remoteKey} ${JSON.stringify(msg)}`)
+        // console.info(`storing message ${remoteKey} ${JSON.stringify(msg)}`)
+        console.info(`storing message ${remoteKey}`)
 
         set((state) => ({
           messages: {
@@ -301,13 +306,6 @@ const store = (set, get) => ({
     // rather than an array with a single null element.
     const id = get().id
 
-    // var msg = {
-    //   msgId: new Date().getTime(),
-    //   name: get().getFullName(inName),
-    //   method: inMethod,
-    //   sender: "runtime@" + id,
-    //   sendingMethod: null
-    // }
     let msg = new Message()
 
     msg.name = get().getFullName(inName)
@@ -326,8 +324,25 @@ const store = (set, get) => ({
     if (socket) {
       socket.close()
     }
+  },
+
+  getTypeImage: (fullname) => {
+    const registered = get().registry[fullname]
+
+    let type = registered?.typeKey || "Unknown"
+    // if Proxy, then use the proxyTypeKey
+    const imgType = type === "Proxy" ? registered.proxyTypeKey : type
+
+    if (type === "MyRobotLabProxy") {
+      return `${get().getRepoUrl()}/MyRobotLabConnector/images/${registered.proxyTypeKey}.png`
+    } else {
+      return `${get().getRepoUrl()}/${imgType}/${imgType}.png`
+    }
   }
 })
 
-export const useStore = create(devtools(store))
-export const direct = useStore
+const useStore = create(devtools(store))
+
+export { useRegisteredService, useStore }
+
+export default useStore

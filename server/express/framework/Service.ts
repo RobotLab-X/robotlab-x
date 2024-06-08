@@ -38,6 +38,8 @@ export default class Service implements Gateway {
 
   ready: boolean = false
 
+  installed: boolean = false
+
   config: any = {}
 
   constructor(id: string, name: string, typeKey: string, version: string, hostname: string | null = null) {
@@ -395,5 +397,19 @@ export default class Service implements Gateway {
   public sendRemote(msg: Message): void {
     // default is runtime's sendRemote
     RobotLabXRuntime.getInstance().sendRemote(msg)
+  }
+
+  toJSON() {
+    return {
+      config: this.config,
+      fullname: this.fullname,
+      hostname: this.hostname,
+      id: this.id,
+      name: this.name,
+      notifyList: this.notifyList,
+      ready: this.ready,
+      typeKey: this.typeKey,
+      version: this.version
+    }
   }
 }

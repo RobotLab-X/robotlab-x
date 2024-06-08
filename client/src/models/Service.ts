@@ -1,4 +1,5 @@
 // Service.ts
+// FIXME  !!! - needs to be normalized with express Service.ts
 export default class Service {
   protected startTime: number | null = null
 
@@ -7,6 +8,7 @@ export default class Service {
   typeKey: string | null = null
   version: string | null = null
   hostname: string | null = null
+  fullname: string | null = null
 
   public constructor(id: string, name: string, typeKey: string, version: string, hostname: string | null = null) {
     this.id = id
@@ -14,6 +16,7 @@ export default class Service {
     this.typeKey = typeKey
     this.version = version
     this.hostname = hostname
+    this.fullname = `${this.name}@${this.id}`
   }
   // Example of a shared method
   startService() {

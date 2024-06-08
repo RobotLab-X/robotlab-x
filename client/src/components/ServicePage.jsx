@@ -18,24 +18,32 @@ import React, { useEffect, useState } from "react"
 import ReactJson from "react-json-view"
 import { useNavigate } from "react-router-dom"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
-import { useStore } from "../store/store"
+import { useRegisteredService, useStore } from "../store/store"
 import useServiceSubscription from "../store/useServiceSubscription"
 
 // TODO - React.lazy vs react-loadable
 export default function ServicePage({ fullname, name, id }) {
-  // const registry = useStore((state) => state.registry)
+  // registered information - initial "stale" info the service was registered with
+  // but "first" description, and given by the user
+  const registered = useRegisteredService(fullname)
   const serviceMsg = useServiceSubscription(fullname, [])
+
+  // latest representational state of service
+  // provided by addListener/broadcastState
+  // if the service does not respond, then ready will be false
   const service = useProcessedMessage(serviceMsg)
 
-  let type = service ? service?.typeKey : "Unknown"
+  // get registered type .. FIXME - this will become problematic for lazy registers
+  // or types that change when they become more "resolved"
+  let type = registered.typeKey || "Unknown"
+  // if Proxy, then use the proxyTypeKey
+  const imgType = type === "Proxy" ? registered.proxyTypeKey : type
+
   const getRepoUrl = useStore((state) => state.getRepoUrl)
   const [showJson, setShowJson] = useState(false)
-  const [open, setOpen] = useState(false)
+  const [openDelete, setOpenDelete] = useState(false)
   const navigate = useNavigate()
   const sendTo = useStore((state) => state.sendTo)
-
-  const message = useStore((state) => state.useMessage(fullname, "broadcastState"))
-
   const [AsyncPage, setAsyncPage] = useState(null)
 
   useEffect(() => {
@@ -63,6 +71,7 @@ export default function ServicePage({ fullname, name, id }) {
     "OakD",
     "Ollama",
     "OpenCV",
+    "Proxy",
     "RobotLabXRuntime",
     "Runtime",
     "Servo",
@@ -81,17 +90,17 @@ export default function ServicePage({ fullname, name, id }) {
   }
 
   const handleDeleteClick = () => {
-    setOpen(true)
+    setOpenDelete(true)
   }
 
   const handleClose = () => {
-    setOpen(false)
+    setOpenDelete(false)
   }
 
   const handleConfirmDelete = () => {
     // Perform delete action here
     console.log("Service deleted")
-    setOpen(false)
+    setOpenDelete(false)
     sendTo(fullname, "releaseService")
   }
 
@@ -109,14 +118,14 @@ export default function ServicePage({ fullname, name, id }) {
       <Typography variant="h4" component="div" sx={{ display: "flex", alignItems: "center" }}>
         {type && type !== "MyRobotLabProxy" && (
           <img
-            src={`${getRepoUrl()}/${service?.typeKey}/${service?.typeKey}.png`}
-            alt={service?.name}
+            src={`${getRepoUrl()}/${imgType}/${imgType}.png`}
+            alt={registered?.name}
             width="32"
             style={{ verticalAlign: "middle" }}
           />
         )}
-        <span style={{ color: "grey", margin: "0 8px" }}>{service?.id}</span>
-        {service?.name}
+        <span style={{ color: "grey", margin: "0 8px" }}>{registered?.id}</span>
+        {registered?.name}
         <IconButton onClick={handleSettingsClick} aria-label="settings">
           <SettingsIcon />
         </IconButton>
@@ -133,11 +142,14 @@ export default function ServicePage({ fullname, name, id }) {
 
       {AsyncPage && <AsyncPage page={type} name={name} id={id} fullname={fullname} />}
       {showJson && (
-        <ReactJson src={message?.data[0]} name="service" displayDataTypes={false} displayObjectSize={false} />
+        <>
+          <ReactJson src={registered} name="registered" displayDataTypes={false} displayObjectSize={false} />
+          <ReactJson src={service} name="service" displayDataTypes={false} displayObjectSize={false} />
+        </>
       )}
       {/* Confirmation Dialog */}
       <Dialog
-        open={open}
+        open={openDelete}
         onClose={handleClose}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"

@@ -330,16 +330,8 @@ export default class Ollama extends Service {
 
   toJSON() {
     return {
-      id: this.id,
-      name: this.name,
-      typeKey: this.typeKey,
-      version: this.version,
-      hostname: this.hostname,
-      config: this.config,
-      notifyList: this.notifyList,
-      dataPath: this.dataPath,
+      ...super.toJSON(),
       prompts: this.prompts,
-      ready: this.ready,
       history: this.history
     }
   }

@@ -12,6 +12,10 @@ const log = getLogger("Proxy")
  *
  */
 export default class Proxy extends Service {
+  public proxyTypeKey: string = null
+
+  config: any = {}
+
   constructor(
     public id: string,
     public name: string,
@@ -22,10 +26,10 @@ export default class Proxy extends Service {
     super(id, name, typeKey, version, hostname) // Call the base class constructor if needed
   }
 
-  // TODO - overload all service methods and use proxies
-
-  onUptime(str: string): string {
-    log.info(`WOOOHOOO !!! ${this.name}.onUptime called ${str}`)
-    return str
+  toJSON() {
+    return {
+      ...super.toJSON(),
+      proxyTypeKey: this.proxyTypeKey
+    }
   }
 }

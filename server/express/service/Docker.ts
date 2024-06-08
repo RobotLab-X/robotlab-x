@@ -313,12 +313,7 @@ export default class Docker extends Service {
   // Not sure if this is the best way to exclude members from serialization
   toJSON() {
     return {
-      id: this.id,
-      name: this.name,
-      typeKey: this.typeKey,
-      version: this.version,
-      hostname: this.hostname,
-      config: this.config
+      ...super.toJSON()
     }
   }
 }

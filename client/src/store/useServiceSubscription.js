@@ -15,6 +15,7 @@ const useServiceSubscription = (fullname, additionalSubscriptions = []) => {
 
     // Send the broadcastState request once on mount
     sendTo(fullname, "broadcastState")
+    // console.error(`useServiceSubscription: ${fullname}`)
 
     // Unsubscribe on component unmount
     return () => {

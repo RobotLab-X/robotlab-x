@@ -14,6 +14,8 @@ export default class MyRobotLabProxy extends Service {
 
   public connectorName: string = null
   public connectorId: string = null
+  // the mrl type of this proxy
+  public proxyTypeKey: string = null
 
   constructor(
     public id: string,
@@ -23,5 +25,14 @@ export default class MyRobotLabProxy extends Service {
     public hostname: string
   ) {
     super(id, name, typeKey, version, hostname)
+  }
+
+  toJSON() {
+    return {
+      ...super.toJSON(),
+      proxyTypeKey: this.proxyTypeKey,
+      connectorName: this.connectorName,
+      connectorId: this.connectorId
+    }
   }
 }

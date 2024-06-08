@@ -240,16 +240,9 @@ export default class Arduino extends Service {
   onServoMoveTo(servoMove: ServoMove): void {
     this.servoWrite(servoMove.pin, servoMove.degrees)
   }
-
   toJSON() {
     return {
-      id: this.id,
-      name: this.name,
-      typeKey: this.typeKey,
-      version: this.version,
-      hostname: this.hostname,
-      config: this.config,
-      notifyList: this.notifyList,
+      ...super.toJSON(),
       ports: this.ports,
       boardInfo: this.boardInfo,
       ready: this.ready,

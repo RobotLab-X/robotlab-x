@@ -97,23 +97,4 @@ export default class OpenCV extends Service {
   }
 
   install(): void {}
-
-  /**
-   * Serializes the OpenCV instance to JSON.
-   * Excludes non serializable properties.
-   * FIXME - add ...this.super.toJSON()
-   * @returns {object} The serialized OpenCV instance.
-   */
-  // toJSON() {
-  //   return {
-  //     id: this.id,
-  //     name: this.name,
-  //     fullname: this.fullname,
-  //     typeKey: this.typeKey,
-  //     version: this.version,
-  //     hostname: this.hostname,
-  //     config: this.config,
-  //     notifyList: this.notifyList
-  //   }
-  // }
 }

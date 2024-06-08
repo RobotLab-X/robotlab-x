@@ -105,13 +105,7 @@ export default class Clock extends Service {
    */
   toJSON() {
     return {
-      id: this.id,
-      name: this.name,
-      typeKey: this.typeKey,
-      version: this.version,
-      hostname: this.hostname,
-      config: this.config,
-      notifyList: this.notifyList
+      ...super.toJSON()
     }
   }
 }

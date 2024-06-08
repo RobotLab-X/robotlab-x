@@ -1,6 +1,6 @@
 import { Typography } from "@mui/material"
 import * as React from "react"
-import { useStore } from "../store/store"
+import { useRegisteredService, useStore } from "../store/store"
 
 // Props should put in "name"
 // and all service types defined here
@@ -12,14 +12,14 @@ export default function Unknown({ name, fullname, id }) {
 
   let registry = useStore((state) => state.registry)
   let service = registry[fullname]
+  const registered = useRegisteredService(fullname)
 
   return (
     <>
+      <br />
+      <br />
       <Typography variant="h3" component="div">
-        Node {service?.id} could not find requested service type {service?.requestTypeKey} in the local repository.
-      </Typography>
-      <Typography variant="h6" component="div">
-        A minimal service definition was created for this service and will provide routing and network services.
+        No UI currently defined for type {registered?.typeKey}.
       </Typography>
     </>
   )

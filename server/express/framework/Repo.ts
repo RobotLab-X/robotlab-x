@@ -2,14 +2,28 @@ import fs from "fs"
 import path from "path"
 import yaml from "yaml"
 import Main from "../../electron/ElectronStarter"
+import Service from "../framework/Service"
 import { getLogger } from "./Log"
 
 const log = getLogger("Repo")
 
+type ServiceConstructor = new (
+  id: string,
+  name: string,
+  serviceType: string,
+  version: string,
+  hostname: string | null
+) => Service
+
+interface ServicesDictionary {
+  [key: string]: ServiceConstructor
+}
+
 // FIXME - there should be no catches in this class only throws
 export class Repo {
   protected repoMap: any = {} // new Map<string, any>()
-  protected services: any = {} // Map<string, any> = new Map()
+  // protected services: any = {} // Map<string, any> = new Map()
+  protected services: ServicesDictionary = {}
 
   load() {
     log.info("loading repo")
@@ -95,7 +109,13 @@ export class Repo {
       }
     })
   }
-  getNewService(id: string, name: string, serviceType: string, version: string, hostname: string | null = null) {
+  getNewService(
+    id: string,
+    name: string,
+    serviceType: string,
+    version: string,
+    hostname: string | null = null
+  ): Service {
     const ServiceClass = this.services[serviceType]
     if (!ServiceClass) {
       log.error(`No service found for type: ${serviceType} list of possible types: ${Object.keys(this.services)}`)

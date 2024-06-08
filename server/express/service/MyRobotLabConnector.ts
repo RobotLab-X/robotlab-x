@@ -215,7 +215,8 @@ export default class MyRobotLabConnector extends Service {
         )
 
         this.mrlId = mrlService.id
-        service.service = mrlService
+        // service.service = mrlService
+        service.proxyTypeKey = mrlService?.serviceType?.simpleName ?? "Unknown"
         service.connectorName = this.name
         service.connectorId = this.id
         // TODO - add MrlType to the root of the MyRobotLabProxy
@@ -275,20 +276,6 @@ export default class MyRobotLabConnector extends Service {
     return ["default-test"]
   }
 
-  toJSON() {
-    return {
-      id: this.id,
-      name: this.name,
-      typeKey: this.typeKey,
-      version: this.version,
-      hostname: this.hostname,
-      config: this.config,
-      connected: this.connected,
-      connecting: this.connecting,
-      notifyList: this.notifyList
-    }
-  }
-
   /**
    * rlx ---> mrl
    * Encode the message and send it to the mrl remote process
@@ -313,5 +300,14 @@ export default class MyRobotLabConnector extends Service {
 
   publishMessage(mrlMessage: any) {
     return mrlMessage
+  }
+
+  toJSON() {
+    return {
+      ...super.toJSON(),
+      connected: this.connected,
+      connecting: this.connecting,
+      mrlId: this.mrlId
+    }
   }
 }

@@ -293,7 +293,7 @@ class OpenCV:
         }
 
 def main():
-    cv = OpenCV("cv2")
+    cv = OpenCV("cv8")
     # cv.add_filter("canny", "Canny")
     # cv.add_filter("yolo", "Yolo3")
     # cv.capture()
@@ -301,7 +301,7 @@ def main():
     # sleep(100)
     # cv.stop_capture()
 
-    client = RobotLabXClient("cv2")
+    client = RobotLabXClient("cv8")
     client.connect("http://localhost:3001")
     client.set_service(cv)
     client.start_service()

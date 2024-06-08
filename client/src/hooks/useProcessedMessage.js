@@ -14,7 +14,7 @@ export function useProcessedMessage(msg) {
 
   useEffect(() => {
     if (msg) {
-      console.info("New message received:", msg)
+      // console.info("New message received:", msg)
       setProcessedMessage(msg.data[0])
     }
   }, [msg])

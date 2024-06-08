@@ -37,16 +37,4 @@ export default class OakD extends Service {
   checkPipVersion(): any {
     this.installer.checkPipVersion("19.0")
   }
-
-  // Not sure if this is the best way to exclude members from serialization
-  // toJSON() {
-  //   return {
-  //     id: this.id,
-  //     name: this.name,
-  //     typeKey: this.typeKey,
-  //     version: this.version,
-  //     hostname: this.hostname,
-  //     config: this.config
-  //   }
-  // }
 }

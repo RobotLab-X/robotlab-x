@@ -9,11 +9,13 @@ function Home() {
   const [filter, setFilter] = useState("")
   const getRepoUrl = useStore((state) => state.getRepoUrl)
   const repo = useStore((state) => state.repo)
+  // registry is "initial" information about the service, not the current state
   const registry = useStore((state) => state.registry)
   const serviceArray = Object.values(registry)
   const filteredCards = serviceArray.filter((card) => card.name.toLowerCase().includes(filter.toLowerCase()))
   const remoteId = useStore((state) => state.defaultRemoteId)
   const debug = useStore((state) => state.debug)
+  const getTypeImage = useStore((state) => state.getTypeImage)
 
   const handleCardClick = (card) => {
     setSelectedCard(card)
@@ -47,11 +49,12 @@ function Home() {
                 <CardContent>
                   <Typography variant="h5">
                     <img
-                      src={`${getRepoUrl()}/${card.typeKey}/${card.typeKey}.png`}
+                      // src={`${getRepoUrl()}/${card.proxyTypeKey ? card.proxyTypeKey : card.typeKey}/${card.proxyTypeKey ? card.proxyTypeKey : card.typeKey}.png`}
+                      src={getTypeImage(card.fullname)}
                       alt={card.name}
                       width="32"
                       style={{ verticalAlign: "top" }}
-                    />{" "}
+                    />
                     {/*
                     <img
                       src={`${imagesUrl}/platform/${repo[card.typeKey]?.platform}.png`}

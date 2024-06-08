@@ -12,6 +12,7 @@ const Nodes = () => {
   const navigate = useNavigate()
   const { nodeId } = useParams()
   const getRepoUrl = useStore((state) => state.getRepoUrl)
+  const getTypeImage = useStore((state) => state.getTypeImage)
 
   const registry = useStore((state) => state.registry)
   const serviceArray = Object.values(registry)
@@ -25,9 +26,9 @@ const Nodes = () => {
 
   const initializeNodePositions = (nodes) => {
     const radius = 100
-    const angleIncrement = (2 * Math.PI) / nodes.length
+    const angleIncrement = (2 * Math.PI) / nodes?.length || 1
 
-    return nodes.map((node, index) => {
+    return nodes?.map((node, index) => {
       const angle = index * angleIncrement
       node.x = radius * Math.cos(angle)
       node.y = radius * Math.sin(angle)
@@ -44,8 +45,8 @@ const Nodes = () => {
         filteredNodes = serviceArray
       } else if (mode === "ids" && nodeId) {
         filteredNodes = serviceArray
-          .filter((service) => service.id === nodeId)
-          .map((service) => ({
+          ?.filter((service) => service.id === nodeId)
+          ?.map((service) => ({
             id: service.id,
             name: service.name,
             group: 1,
@@ -54,8 +55,8 @@ const Nodes = () => {
         //        filteredLinks = []
       } else if (mode === "hosts") {
         filteredNodes = serviceArray
-          .filter((service) => service.name === "runtime")
-          .map((service) => ({
+          ?.filter((service) => service.name === "runtime")
+          ?.map((service) => ({
             id: service.id,
             name: service.name,
             group: 1,
@@ -112,7 +113,7 @@ const Nodes = () => {
           Hosts
         </label>
       </div>
-      <div style={{ height: "400px" }}>
+      <div>
         <ForceGraph2D
           ref={fgRef}
           graphData={{ nodes, links }}
@@ -125,7 +126,7 @@ const Nodes = () => {
           }}
           nodeCanvasObject={(node, ctx, globalScale) => {
             const img = new Image()
-            img.src = `${getRepoUrl()}/${node.typeKey}/${node.typeKey}.png`
+            img.src = getTypeImage(node.fullname)
             const idLabel = node.id
             const nameLabel = node.name
             const fontSize = 12 / globalScale
@@ -141,8 +142,8 @@ const Nodes = () => {
               ctx.fillStyle = "black"
               ctx.textAlign = "center"
               ctx.textBaseline = "middle"
-              ctx.fillText(idLabel, node.x, node.y - 8)
-              ctx.fillText(nameLabel, node.x, node.y + 8)
+              // ctx.fillText(idLabel, node.x, node.y - 18)
+              ctx.fillText(nameLabel, node.x, node.y + 18)
             }
 
             if (img.complete) {
@@ -155,8 +156,8 @@ const Nodes = () => {
               ctx.fillStyle = "black"
               ctx.textAlign = "center"
               ctx.textBaseline = "middle"
-              ctx.fillText(idLabel, node.x, node.y - 8)
-              ctx.fillText(nameLabel, node.x, node.y + 8)
+              // ctx.fillText(idLabel, node.x, node.y - 18)
+              ctx.fillText(nameLabel, node.x, node.y + 18)
             }
           }}
         />
