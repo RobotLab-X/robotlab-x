@@ -1,4 +1,4 @@
-import { Button } from "@mui/material"
+import { Button, FormControl, FormControlLabel, Radio, RadioGroup } from "@mui/material"
 import InstallLog from "components/InstallLog"
 import React, { useEffect, useState } from "react"
 import StepWizard from "react-step-wizard"
@@ -22,6 +22,17 @@ export default function OpenCVWizard({ fullname }) {
   const [messageLog, setMessageLog] = useState([])
   const [error, setError] = useState(null)
 
+  const [selection, setSelection] = useState("")
+
+  const handleSelectionChange = (event) => {
+    setSelection(event.target.value)
+  }
+
+  const handleInstallVenv = () => {
+    // Handler logic for installing venv
+    console.log("Install venv button clicked")
+  }
+
   useEffect(() => {
     if (installLog) {
       // Add the new message to the log
@@ -33,7 +44,7 @@ export default function OpenCVWizard({ fullname }) {
   const Step1 = ({ nextStep, text = "Python >=3.6.0 required" }) => {
     return (
       <div>
-        <h2>Step 1</h2>
+        <h2>Step 1 Check for Python</h2>
         <p>{text}</p>
         {error && <p style={{ color: "red" }}>{error}</p>}
 
@@ -55,7 +66,7 @@ export default function OpenCVWizard({ fullname }) {
 
   const Step2 = ({ previousStep, nextStep, text = "Pip >= 19.0" }) => (
     <div>
-      <h2>Step 2</h2>
+      <h2>Step 2 Check for Pip</h2>
       <p>{text}</p>
 
       <InstallLog messageLog={messageLog} />
@@ -74,16 +85,29 @@ export default function OpenCVWizard({ fullname }) {
     </div>
   )
 
-  const Step3 = ({ previousStep, nextStep, text = "Would you like to use a Python virtual environment?" }) => (
+  const Step3 = ({ previousStep, nextStep, text = "" }) => (
     <div>
-      <h2>Step 3</h2>
+      <h2>Step 3 Virtual Environment</h2>
       <p>{text}</p>
+      <FormControl component="fieldset">
+        <RadioGroup aria-label="venv" name="venv" value={selection} onChange={handleSelectionChange}>
+          <FormControlLabel value="useVenv" control={<Radio />} label="Virtual env (recommended)" />
+          <FormControlLabel value="noVenv" control={<Radio />} label="Do not use venv" />
+        </RadioGroup>
+      </FormControl>
       <Button variant="contained" color="secondary" onClick={previousStep}>
         Previous
       </Button>
-      <Button variant="contained" color="primary" onClick={nextStep}>
-        Next
-      </Button>
+      {selection === "noVenv" && (
+        <Button variant="contained" color="primary" onClick={nextStep}>
+          Next
+        </Button>
+      )}
+      {selection === "useVenv" && (
+        <Button variant="contained" color="primary" onClick={handleInstallVenv}>
+          Install Virtual Env
+        </Button>
+      )}
     </div>
   )
 
