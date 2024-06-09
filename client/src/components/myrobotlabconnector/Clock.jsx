@@ -1,10 +1,14 @@
-// Clock.jsx
 import { Box, Button, Paper, Typography } from "@mui/material"
 import React from "react"
 
+/**
+ * Clock "component" for MyRobotLabProxy
+ * @param {*} param0
+ * @returns
+ */
 export default function Clock({ service, epoch, handleStart, handleStop }) {
   return (
-    <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "30%" } }}>
+    <Box sx={{ maxWidth: { sm: "100%", md: "80%" } }}>
       <Paper elevation={3} sx={{ p: 2, m: 2 }}>
         <Box sx={{ m: 2 }}>
           <Typography variant="h4" sx={{ mb: 2 }}>
@@ -12,9 +16,6 @@ export default function Clock({ service, epoch, handleStart, handleStop }) {
           </Typography>
           <Typography variant="h4" sx={{ mb: 2 }}>
             Timestamp (ms) <br /> {epoch}&nbsp;
-          </Typography>
-          <Typography variant="h4" sx={{ mb: 2 }}>
-            Formatted Date/Time <br /> {epoch}&nbsp;
           </Typography>
           <Box>
             <Button variant="contained" color="primary" onClick={handleStart}>

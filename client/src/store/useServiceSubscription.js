@@ -9,6 +9,7 @@ const useServiceSubscription = (fullname, additionalSubscriptions = []) => {
   useEffect(() => {
     // Subscribe to broadcastState and any additional topics
     subscribeTo(fullname, "broadcastState")
+    subscribeTo(fullname, "publishStatus")
     additionalSubscriptions.forEach((sub) => {
       subscribeTo(fullname, sub)
     })
@@ -18,6 +19,7 @@ const useServiceSubscription = (fullname, additionalSubscriptions = []) => {
     // console.error(`useServiceSubscription: ${fullname}`)
 
     // Unsubscribe on component unmount
+    // dont usubscribe from status until released ?
     return () => {
       unsubscribeFrom(fullname, "broadcastState")
       additionalSubscriptions.forEach((sub) => {

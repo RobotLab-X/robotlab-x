@@ -1,28 +1,19 @@
 import { Button, FormControl, FormControlLabel, Radio, RadioGroup } from "@mui/material"
-import InstallLog from "components/InstallLog"
 import StatusLog from "components/StatusLog"
-import React, { useEffect, useState } from "react"
+import React, { useState } from "react"
 import StepWizard from "react-step-wizard"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
 import { useStore } from "../store/store"
 import useServiceSubscription from "../store/useServiceSubscription"
 
 // FIXME remove fullname with context provider
-export default function OpenCVWizard({ fullname }) {
-  const { useMessage, sendTo } = useStore()
-
-  // makes reference to the message object in store
-  const installLogMsg = useMessage(fullname, "publishInstallLog")
+export default function OpenCVWizard({ fullname, statusLog }) {
+  const { sendTo } = useStore()
 
   // creates subscriptions to topics and returns the broadcastState message reference
-  const serviceMsg = useServiceSubscription(fullname, ["publishInstallLog"])
+  const serviceMsg = useServiceSubscription(fullname)
 
-  // processes the msg.data[0] and returns the data
   const service = useProcessedMessage(serviceMsg)
-  const installLog = useProcessedMessage(installLogMsg)
-  const [messageLog, setMessageLog] = useState([])
-  const [error, setError] = useState(null)
-
   const [selection, setSelection] = useState("")
 
   const handleSelectionChange = (event) => {
@@ -30,26 +21,23 @@ export default function OpenCVWizard({ fullname }) {
   }
 
   const handleInstallVenv = () => {
-    // Handler logic for installing venv
-    console.log("Install venv button clicked")
+    sendTo(fullname, "installVirtualEnv")
   }
 
-  useEffect(() => {
-    if (installLog) {
-      // Add the new message to the log
-      console.log("new install log msg:", installLog)
-      setMessageLog((log) => [...log, installLog])
-    }
-  }, [installLog])
+  const installOpenCV = () => {
+    sendTo(fullname, "installPipRequirements", service?.pkg?.requirements)
+  }
+
+  const handleFinished = () => {
+    sendTo(fullname, "setInstalled", true)
+    sendTo(fullname, "broadcastState")
+  }
 
   const Step1 = ({ nextStep }) => {
     return (
       <div>
         <h2>Step 1 Check for Python</h2>
-        <p>
-          <StatusLog fullname={fullname} />
-        </p>
-
+        <StatusLog statusLog={statusLog} />
         {!service?.pythonVersionOk && (
           <Button variant="contained" color="primary" onClick={checkPythonVersion}>
             Check
@@ -68,30 +56,24 @@ export default function OpenCVWizard({ fullname }) {
   const Step2 = ({ previousStep, nextStep }) => (
     <div>
       <h2>Step 2 Check for Pip</h2>
-      <p>
-        <StatusLog fullname={fullname} />
-      </p>
-
-      <InstallLog messageLog={messageLog} />
+      <StatusLog statusLog={statusLog} />
       {!service?.pipVersionOk && (
         <Button variant="contained" color="primary" onClick={checkPipVersion}>
           Check
         </Button>
       )}
-
-      <Button variant="contained" color="secondary" onClick={previousStep}>
-        Previous
-      </Button>
-      <Button variant="contained" color="primary" onClick={nextStep}>
-        Next
-      </Button>
+      {service?.pipVersionOk && (
+        <Button variant="contained" color="primary" onClick={nextStep}>
+          Next
+        </Button>
+      )}
     </div>
   )
 
-  const Step3 = ({ previousStep, nextStep, text = "" }) => (
+  const Step3 = ({ previousStep, nextStep }) => (
     <div>
       <h2>Step 3 Virtual Environment</h2>
-      <p>{text}</p>
+      <StatusLog statusLog={statusLog} />
       <FormControl component="fieldset">
         <RadioGroup aria-label="venv" name="venv" value={selection} onChange={handleSelectionChange}>
           <FormControlLabel value="useVenv" control={<Radio />} label="Virtual env (recommended)" />
@@ -99,15 +81,12 @@ export default function OpenCVWizard({ fullname }) {
         </RadioGroup>
       </FormControl>
       <div style={{ marginTop: "20px" }}>
-        <Button variant="contained" color="secondary" onClick={previousStep} style={{ marginRight: "10px" }}>
-          Previous
-        </Button>
-        {selection === "noVenv" && (
+        {(selection === "noVenv" || service?.venvOk) && (
           <Button variant="contained" color="primary" onClick={nextStep}>
             Next
           </Button>
         )}
-        {selection === "useVenv" && (
+        {selection === "useVenv" && !service?.venvOk && (
           <Button variant="contained" color="primary" onClick={handleInstallVenv}>
             Install Virtual Env
           </Button>
@@ -116,34 +95,39 @@ export default function OpenCVWizard({ fullname }) {
     </div>
   )
 
-  const Step4 = ({ previousStep, nextStep, text = "Git Clone the DepthAI SDK" }) => (
+  const Step4 = ({ previousStep, nextStep }) => (
     <div>
-      <h2>Step 4</h2>
-      <p>{text}</p>
-      <Button variant="contained" color="secondary" onClick={previousStep}>
-        Previous
-      </Button>
-      <Button variant="contained" color="primary" onClick={nextStep}>
-        Next
-      </Button>
+      <h2>Step 4 Install OpenCV</h2>
+      <StatusLog statusLog={statusLog} />
+      {service?.pythonVersionOk && service?.pipVersionOk && (
+        <Button variant="contained" color="primary" onClick={installOpenCV}>
+          Install
+        </Button>
+      )}
+      {service?.installed && (
+        <Button variant="contained" color="primary" onClick={nextStep}>
+          Next
+        </Button>
+      )}
     </div>
   )
 
-  const Step5 = ({ previousStep, text = "Success, you should be ready to start the camera" }) => (
+  const Step5 = ({ previousStep, nextStep, text = "Git Clone the DepthAI SDK" }) => (
     <div>
-      <h2>Step 5</h2>
-      <p>{text}</p>
+      <h2>Finished</h2>
+      <p>You should be able to use the OpenCV service now</p>
+      <Button variant="contained" color="primary" onClick={handleFinished}>
+        Finish
+      </Button>
     </div>
   )
 
   const checkPythonVersion = () => {
     sendTo(fullname, "checkPythonVersion")
-    sendTo(fullname, "broadcastState")
   }
 
   const checkPipVersion = () => {
     sendTo(fullname, "checkPipVersion")
-    sendTo(fullname, "broadcastState")
   }
 
   return (

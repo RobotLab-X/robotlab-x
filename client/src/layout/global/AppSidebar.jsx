@@ -99,9 +99,6 @@ const AppSidebar = () => {
                 <Typography variant="h2" color={colors.grey[100]} fontWeight="bold" sx={{ m: "10px 0 0 0" }}>
                   RobotLab-X
                 </Typography>
-                <Typography variant="h5" color={colors.greenAccent[500]}>
-                  GroG
-                </Typography>
               </Box>
             </Box>
           )}

@@ -26,18 +26,15 @@ export default function ServicePage({ fullname, name, id }) {
   // registered information - initial "stale" info the service was registered with
   // but "first" description, and given by the user
   const registered = useRegisteredService(fullname)
-  const serviceMsg = useServiceSubscription(fullname, [])
+  const serviceMsg = useServiceSubscription(fullname)
 
   // latest representational state of service
   // provided by addListener/broadcastState
   // if the service does not respond, then ready will be false
   const service = useProcessedMessage(serviceMsg)
 
-  // get registered type .. FIXME - this will become problematic for lazy registers
-  // or types that change when they become more "resolved"
-  let type = registered.typeKey || "Unknown"
-  // if Proxy, then use the proxyTypeKey
-  const imgType = type === "Proxy" ? registered.proxyTypeKey : type
+  let resolvedType = registered.typeKey === "Proxy" ? registered.proxyTypeKey : registered.typeKey
+  resolvedType = resolvedType.includes(".") ? "MyRobotLabProxy" : resolvedType
 
   const getRepoUrl = useStore((state) => state.getRepoUrl)
   const [showJson, setShowJson] = useState(false)
@@ -50,7 +47,7 @@ export default function ServicePage({ fullname, name, id }) {
     // Dynamically import the service page component
     const loadAsyncPage = async () => {
       try {
-        const LoadedPage = await loadable(() => import(`../service/${imgType}`))
+        const LoadedPage = await loadable(() => import(`../service/${resolvedType}`))
         setAsyncPage(() => LoadedPage)
       } catch (error) {
         setAsyncPage(() => () => <div>Service not found</div>)
@@ -58,36 +55,7 @@ export default function ServicePage({ fullname, name, id }) {
     }
 
     loadAsyncPage()
-  }, [type])
-
-  // FIXME - this is a pain, it should dynamically check if the service exists
-  // but no library or native lazy loader seems to support this
-  const types = [
-    "Clock",
-    "Docker",
-    "MyRobotLabConnector",
-    "MyRobotLabProxy",
-    "Arduino",
-    "OakD",
-    "Ollama",
-    "OpenCV",
-    "Proxy",
-    "RobotLabXRuntime",
-    "Runtime",
-    "Servo",
-    "TestNodeService",
-    "TestPythonService",
-    "WebXR"
-  ]
-
-  if (!types.includes(type)) {
-    console.error(`============================Service type not found: ${type} =============================`)
-    if (type.includes(".")) {
-      type = "MyRobotLabProxy"
-    } else {
-      type = "Unknown"
-    }
-  }
+  }, [resolvedType])
 
   const handleDeleteClick = () => {
     setOpenDelete(true)
@@ -116,9 +84,9 @@ export default function ServicePage({ fullname, name, id }) {
   return (
     <div className="service-content-div">
       <Typography variant="h4" component="div" sx={{ display: "flex", alignItems: "center" }}>
-        {type && type !== "MyRobotLabProxy" && (
+        {resolvedType && resolvedType !== "MyRobotLabProxy" && (
           <img
-            src={`${getRepoUrl()}/${imgType}/${imgType}.png`}
+            src={`${getRepoUrl()}/${resolvedType}/${resolvedType}.png`}
             alt={registered?.name}
             width="32"
             style={{ verticalAlign: "middle" }}
@@ -140,7 +108,7 @@ export default function ServicePage({ fullname, name, id }) {
         </IconButton>
       </Typography>
 
-      {AsyncPage && <AsyncPage page={imgType} name={name} id={id} fullname={fullname} />}
+      {AsyncPage && <AsyncPage page={resolvedType} name={name} id={id} fullname={fullname} />}
       {showJson && (
         <>
           <ReactJson src={registered} name="registered" displayDataTypes={false} displayObjectSize={false} />

@@ -19,7 +19,7 @@ const getApiBaseUrl = (fullname) => {
 
 const SwaggerUIComponent = () => {
   const { fullname } = useParams()
-  const serviceMsg = useServiceSubscription(fullname, [])
+  const serviceMsg = useServiceSubscription(fullname)
   const service = useProcessedMessage(serviceMsg)
   const [swaggerSpec, setSwaggerSpec] = useState(null)
 

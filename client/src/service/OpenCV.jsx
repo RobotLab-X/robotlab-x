@@ -30,7 +30,7 @@ export default function OpenCV({ fullname }) {
   const statusMsg = useMessage(fullname, "publishStatus")
 
   // creates subscriptions to topics and returns the broadcastState message reference
-  const serviceMsg = useServiceSubscription(fullname, ["publishStatus"])
+  const serviceMsg = useServiceSubscription(fullname)
 
   // processes the msg.data[0] and returns the data
   const service = useProcessedMessage(serviceMsg)
@@ -42,17 +42,14 @@ export default function OpenCV({ fullname }) {
   const [filterName, setFilterName] = useState("")
   const [dialogOpen, setDialogOpen] = useState(false)
   const filterNameRef = useRef(null)
-
   const [statusLog, setStatusLog] = useState([])
-  // const addStatus = useStore((state) => state.addStatus)
-  // const statusLog = useStore((state) => state.statusLog)
-
-  const status = useProcessedMessage(statusMsg)
 
   useEffect(() => {
+    // BUG - do not know why there is an occasional null statusMsg
     if (statusMsg) {
       console.log("new status msg:", statusMsg)
-      // addStatus(status)
+      // Huge bug, this dropped most messages if useProcessedMessage was used
+      // to fix it, we have to use the msg.data[0] directly
       setStatusLog((log) => [...log, statusMsg.data[0]])
     } else {
       console.error("no status message")

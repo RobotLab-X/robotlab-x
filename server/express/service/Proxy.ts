@@ -3,7 +3,6 @@ import path from "path"
 import { PythonShell } from "python-shell"
 import semver from "semver"
 import { CodecUtil } from "../framework/CodecUtil"
-import InstallerPython from "../framework/InstallerPython"
 import { getLogger } from "../framework/Log"
 import Service from "../framework/Service"
 import Message from "../models/Message"
@@ -27,9 +26,6 @@ export default class Proxy extends Service {
    *
    */
   public proxyTypeKey: string = null
-
-  // @deprecated - use PythonShell
-  installer: InstallerPython = null
 
   /**
    * Many "most?" proxies will be proxies for python services
@@ -62,7 +58,8 @@ export default class Proxy extends Service {
     checkPythonVersion: "invokeMsg",
     checkPipVersion: "invokeMsg",
     installVirtualEnv: "invokeMsg",
-    broadcastState: "invokeMsg"
+    broadcastState: "invokeMsg",
+    installPipRequirements: "invokeMsg"
   }
 
   constructor(
@@ -76,12 +73,7 @@ export default class Proxy extends Service {
   }
 
   startService(): void {
-    // log.info(`Starting OakD service`)
     super.startService()
-    // FIXME - make an interface for installers
-    // if pkg.platform === "python" then make a python installer
-    this.installer = new InstallerPython(this)
-    // platformInfo = installer.install(this.pkg)
     const runtime: RobotLabXRuntime = RobotLabXRuntime.getInstance()
 
     runtime.registerConnection(
@@ -224,8 +216,7 @@ export default class Proxy extends Service {
       pipVersionOk: this.pipVersionOk,
       pipVersion: this.pipVersion,
       venvOk: this.venvOk,
-      venvPath: this.venvPath,
-      installer: this.installer.toJSON()
+      venvPath: this.venvPath
     }
   }
 
@@ -360,29 +351,27 @@ print(result.stderr.decode(), file=sys.stderr)
     })
   }
 
-  installPipRequirements(envName = "venv", envPath = this.pkg.cwd, requirementsFile = "requirements.txt") {
+  installPipRequirements(packages = {}, envName = "venv", envPath = this.pkg.cwd) {
+    this.info(
+      `Installing pip requirements: ${JSON.stringify(packages)} in virtual environment '${envName}' at ${envPath}`
+    )
     return new Promise((resolve, reject) => {
       // Full path to the virtual environment
       const fullPath = path.join(envPath, envName)
-      // Path to the requirements file
-      const requirementsPath = path.join(envPath, requirementsFile)
 
-      // Validate that the requirements file exists
-      if (!fs.existsSync(requirementsPath)) {
-        this.error(`Requirements file '${requirementsFile}' not found at ${envPath}`)
-        this.invoke("broadcastState")
-        return reject(`Requirements file '${requirementsFile}' not found at ${envPath}`)
-      }
-
-      // Command to install pip requirements
+      // Construct the pip install command
+      const packageList = Object.entries(packages)
+        .map(([pkg, version]) => `${pkg}${version}`)
+        .join(" ")
       const pythonCommand = `
 import subprocess
 import sys
-result = subprocess.run([sys.executable, '-m', 'pip', 'install', '-r', '${requirementsPath}'], capture_output=True, text=True)
+result = subprocess.run([sys.executable, '-m', 'pip', 'install', '${packageList}'], capture_output=True, text=True)
 print(result.stdout)
 print(result.stderr, file=sys.stderr)
       `
 
+      this.info(`Python command: ${pythonCommand}`)
       // Run the Python command to install the requirements
       const options = { pythonPath: path.join(fullPath, process.platform === "win32" ? "Scripts" : "bin", "python") }
       PythonShell.runString(pythonCommand, options)

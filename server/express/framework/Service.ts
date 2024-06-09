@@ -407,6 +407,10 @@ export default class Service implements Gateway {
     RobotLabXRuntime.getInstance().sendRemote(msg)
   }
 
+  public setInstalled(installed: boolean) {
+    this.installed = installed
+  }
+
   toJSON() {
     return {
       config: this.config,

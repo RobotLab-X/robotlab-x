@@ -174,7 +174,7 @@ export default class MyRobotLabConnector extends Service {
         }
       }
 
-      log.error(`---> ${this.name} <--- mrl ${msg.name}.${msg.method} from ${msg.sender}`)
+      log.info(`---> ${this.name} <--- mrl ${msg.name}.${msg.method} from ${msg.sender}`)
 
       if (msg.method == "onServiceNames") {
         this.onServiceNames(msg)
