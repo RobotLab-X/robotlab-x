@@ -1,7 +1,9 @@
+import { spawn } from "child_process"
 import fs from "fs"
 import path from "path"
 import { PythonShell } from "python-shell"
 import semver from "semver"
+import Main from "../../electron/ElectronStarter"
 import { CodecUtil } from "../framework/CodecUtil"
 import { getLogger } from "../framework/Log"
 import Service from "../framework/Service"
@@ -47,6 +49,10 @@ export default class Proxy extends Service {
 
   public venvPath: string = null
 
+  public requirementsOk: boolean = false
+
+  public clientInstalledOk: boolean = false
+
   /**
    * Method intercepts are methods that are handled by the proxy
    * directly.  This is a way to handle UI or other data that
@@ -59,7 +65,9 @@ export default class Proxy extends Service {
     checkPipVersion: "invokeMsg",
     installVirtualEnv: "invokeMsg",
     broadcastState: "invokeMsg",
-    installPipRequirements: "invokeMsg"
+    installPipRequirements: "invokeMsg",
+    startClient: "invokeMsg",
+    installClient: "invokeMsg"
   }
 
   constructor(
@@ -216,7 +224,9 @@ export default class Proxy extends Service {
       pipVersionOk: this.pipVersionOk,
       pipVersion: this.pipVersion,
       venvOk: this.venvOk,
-      venvPath: this.venvPath
+      venvPath: this.venvPath,
+      requirementsOk: this.requirementsOk,
+      clientInstalledOk: this.clientInstalledOk
     }
   }
 
@@ -351,40 +361,122 @@ print(result.stderr.decode(), file=sys.stderr)
     })
   }
 
-  installPipRequirements(packages = {}, envName = "venv", envPath = this.pkg.cwd) {
-    this.info(
-      `Installing pip requirements: ${JSON.stringify(packages)} in virtual environment '${envName}' at ${envPath}`
-    )
+  installPipRequirements(packages = {}, envName = "venv", envPath = this.pkg.cwd): Promise<string> {
     return new Promise((resolve, reject) => {
-      // Full path to the virtual environment
+      const packageList = ["install"]
+      Object.entries(packages).map(([pkg, version]) => packageList.push(`${pkg}${version}`))
+
       const fullPath = path.join(envPath, envName)
+      const pipPath = path.join(fullPath, process.platform === "win32" ? "Scripts" : "bin", "pip")
 
-      // Construct the pip install command
-      const packageList = Object.entries(packages)
-        .map(([pkg, version]) => `${pkg}${version}`)
-        .join(" ")
-      const pythonCommand = `
-import subprocess
-import sys
-result = subprocess.run([sys.executable, '-m', 'pip', 'install', '${packageList}'], capture_output=True, text=True)
-print(result.stdout)
-print(result.stderr, file=sys.stderr)
-      `
+      const command = pipPath
+      const args = packageList
 
-      this.info(`Python command: ${pythonCommand}`)
-      // Run the Python command to install the requirements
-      const options = { pythonPath: path.join(fullPath, process.platform === "win32" ? "Scripts" : "bin", "python") }
-      PythonShell.runString(pythonCommand, options)
-        .then((results) => {
-          this.info(`Pip requirements installed successfully: ${results}`)
+      this.info(`${pipPath} ${args.join(" ")}`)
+      const pipProcess = spawn(command, args)
+
+      pipProcess.stdout.on("data", (data: Buffer) => {
+        this.info(`stdout: ${data.toString()}`)
+        if (data.toString().includes("Successfully installed")) {
+          this.requirementsOk = true
           this.invoke("broadcastState")
-          resolve(`Pip requirements installed successfully`)
-        })
-        .catch((err) => {
-          this.error(`Error installing pip requirements: ${err.message}`)
+        }
+      })
+
+      pipProcess.stderr.on("data", (data: Buffer) => {
+        this.error(`stderr: ${data.toString()}`)
+      })
+
+      pipProcess.on("close", (code: number) => {
+        if (code === 0) {
+          resolve(`Package ${args} installed successfully.`)
+        } else {
+          reject(`pip install process exited with code ${code}`)
+        }
+      })
+
+      pipProcess.on("error", (error: Error) => {
+        this.error(`Error: ${error.message}`)
+        reject(`Error: ${error.message}`)
+      })
+    })
+  }
+
+  installClient(envName = "venv", envPath = this.pkg.cwd): Promise<string> {
+    const fullPath = path.join(envPath, envName)
+    const clientPath = path.join(`${Main.expressRoot}`, "repo", "robotlabx")
+    this.info(`Installing client ${clientPath} to ${fullPath}`)
+    return new Promise((resolve, reject) => {
+      const args = ["install", "-e", clientPath]
+
+      // const fullPath = path.join(envPath, envName)
+      const pipPath = path.join(fullPath, process.platform === "win32" ? "Scripts" : "bin", "pip")
+      const command = pipPath
+
+      this.info(`${pipPath} ${args.join(" ")}`)
+      const pipProcess = spawn(command, args)
+
+      pipProcess.stdout.on("data", (data: Buffer) => {
+        this.info(`stdout: ${data.toString()}`)
+        if (data.toString().includes("Successfully installed")) {
+          this.clientInstalledOk = true
           this.invoke("broadcastState")
-          reject(`Error installing pip requirements: ${err.message}`)
-        })
+        }
+      })
+
+      pipProcess.stderr.on("data", (data: Buffer) => {
+        this.error(`stderr: ${data.toString()}`)
+      })
+
+      pipProcess.on("close", (code: number) => {
+        if (code === 0) {
+          resolve(`Package ${args} installed successfully.`)
+        } else {
+          reject(`pip install process exited with code ${code}`)
+        }
+      })
+
+      pipProcess.on("error", (error: Error) => {
+        this.error(`Error: ${error.message}`)
+        reject(`Error: ${error.message}`)
+      })
+    })
+  }
+
+  startClient(packages = {}, envName = "venv", envPath = this.pkg.cwd): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const args = ["-u", "OpenCV.py"]
+      const fullPath = path.join(envPath, envName)
+      const pipPath = path.join(fullPath, process.platform === "win32" ? "Scripts" : "bin", "python")
+      const command = pipPath
+
+      this.info(`${pipPath} ${args.join(" ")}`)
+      const pipProcess = spawn(command, args, { cwd: this.pkg.cwd })
+
+      pipProcess.stdout.on("data", (data: Buffer) => {
+        this.info(`stdout: ${data.toString()}`)
+        if (data.toString().includes("Successfully installed")) {
+          this.requirementsOk = true
+          this.invoke("broadcastState")
+        }
+      })
+
+      pipProcess.stderr.on("data", (data: Buffer) => {
+        this.error(`stderr: ${data.toString()}`)
+      })
+
+      pipProcess.on("close", (code: number) => {
+        if (code === 0) {
+          resolve(`Package ${args} installed successfully.`)
+        } else {
+          reject(`pip install process exited with code ${code}`)
+        }
+      })
+
+      pipProcess.on("error", (error: Error) => {
+        this.error(`Error: ${error.message}`)
+        reject(`Error: ${error.message}`)
+      })
     })
   }
 }

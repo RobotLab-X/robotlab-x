@@ -28,6 +28,14 @@ export default function OpenCVWizard({ fullname, statusLog }) {
     sendTo(fullname, "installPipRequirements", service?.pkg?.requirements)
   }
 
+  const startClient = () => {
+    sendTo(fullname, "startClient")
+  }
+
+  const installClient = () => {
+    sendTo(fullname, "installClient")
+  }
+
   const handleFinished = () => {
     sendTo(fullname, "setInstalled", true)
     sendTo(fullname, "broadcastState")
@@ -99,12 +107,12 @@ export default function OpenCVWizard({ fullname, statusLog }) {
     <div>
       <h2>Step 4 Install OpenCV</h2>
       <StatusLog statusLog={statusLog} />
-      {service?.pythonVersionOk && service?.pipVersionOk && (
+      {service?.pythonVersionOk && service?.pipVersionOk && !service?.requirementsOk && (
         <Button variant="contained" color="primary" onClick={installOpenCV}>
           Install
         </Button>
       )}
-      {service?.installed && (
+      {service?.requirementsOk && (
         <Button variant="contained" color="primary" onClick={nextStep}>
           Next
         </Button>
@@ -112,7 +120,41 @@ export default function OpenCVWizard({ fullname, statusLog }) {
     </div>
   )
 
-  const Step5 = ({ previousStep, nextStep, text = "Git Clone the DepthAI SDK" }) => (
+  const InstallClient = ({ previousStep, nextStep }) => (
+    <div>
+      <h2>Step 5 Install RobotLab-X Client</h2>
+      <StatusLog statusLog={statusLog} />
+      {
+        <Button variant="contained" color="primary" onClick={installClient}>
+          Install
+        </Button>
+      }
+      {service?.requirementsOk && (
+        <Button variant="contained" color="primary" onClick={nextStep}>
+          Next
+        </Button>
+      )}
+    </div>
+  )
+
+  const StartOpenCVClient = ({ previousStep, nextStep }) => (
+    <div>
+      <h2>Step 6 Start OpenCV Client</h2>
+      <StatusLog statusLog={statusLog} />
+      {service?.pythonVersionOk && service?.pipVersionOk && service?.requirementsOk && (
+        <Button variant="contained" color="primary" onClick={startClient}>
+          Start
+        </Button>
+      )}
+      {service?.clientConnected && (
+        <Button variant="contained" color="primary" onClick={nextStep}>
+          Next
+        </Button>
+      )}
+    </div>
+  )
+
+  const StepFinished = ({ previousStep, nextStep, text = "Git Clone the DepthAI SDK" }) => (
     <div>
       <h2>Finished</h2>
       <p>You should be able to use the OpenCV service now</p>
@@ -138,7 +180,9 @@ export default function OpenCVWizard({ fullname, statusLog }) {
         <Step2 />
         <Step3 />
         <Step4 />
-        <Step5 />
+        <InstallClient />
+        <StartOpenCVClient />
+        <StepFinished />
       </StepWizard>
     </>
   )
