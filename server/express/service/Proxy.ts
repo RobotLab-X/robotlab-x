@@ -1,3 +1,5 @@
+import { PythonShell } from "python-shell"
+import semver from "semver"
 import { CodecUtil } from "../framework/CodecUtil"
 import InstallerPython from "../framework/InstallerPython"
 import { getLogger } from "../framework/Log"
@@ -8,6 +10,8 @@ import RobotLabXRuntime from "./RobotLabXRuntime"
 const log = getLogger("Proxy")
 
 /**
+ * TODO - check out inprocess python calls - https://www.npmjs.com/package/node-calls-python
+ *
  * General Proxy Service - a service that proxies all calls to another process id.
  * By itself its not very useful, but it allows message routing
  * to and from the target service.
@@ -15,10 +19,38 @@ const log = getLogger("Proxy")
  * "Also" responsible for installing out of process - proxied services locally
  */
 export default class Proxy extends Service {
+  /**
+   * Very important sub type of a Proxy
+   * This is the type of the service that the proxy is proxying
+   *
+   */
   public proxyTypeKey: string = null
 
+  // @deprecated - use PythonShell
   installer: InstallerPython = null
 
+  /**
+   * Many "most?" proxies will be proxies for python services
+   * This is the version of python available on the host system
+   */
+  public pythonVersion: string = null
+
+  public pythonVersionOk: boolean = false
+
+  /**
+   * Many "most?" proxies will be proxies for python services
+   * This is the version of pip available on the host system
+   */
+  public pipVersion: string = null
+
+  public pipVersionOk: boolean = false
+
+  /**
+   * Method intercepts are methods that are handled by the proxy
+   * directly.  This is a way to handle UI or other data that
+   * is not available until "after" the proxied service is installed
+   * and  started and connected.
+   */
   methodIntercepts: any = {
     addListener: "invokeMsg",
     checkPythonVersion: "invokeMsg",
@@ -33,7 +65,7 @@ export default class Proxy extends Service {
     public version: string,
     public hostname: string
   ) {
-    super(id, name, typeKey, version, hostname) // Call the base class constructor if needed
+    super(id, name, typeKey, version, hostname)
   }
 
   startService(): void {
@@ -52,26 +84,6 @@ export default class Proxy extends Service {
       "inbound",
       null /* ws not ready yet - client not attached */
     )
-  }
-
-  // FIXME when you stop a proxy, do you unregister the connection? - ya probably
-
-  /**
-   * Check the python version - part of necessary preparations
-   * to install a python client
-   */
-  checkPythonVersion(): any {
-    log.info("Checking python version")
-    this.installer.checkPythonVersion("3.6")
-  }
-
-  /**
-   * Check the pip version - part of necessary preparations
-   * to install a python client
-   */
-  checkPipVersion(): any {
-    log.info("Checking python version")
-    this.installer.checkPipVersion("19.0")
   }
 
   /**
@@ -199,7 +211,92 @@ export default class Proxy extends Service {
   toJSON() {
     return {
       ...super.toJSON(),
-      proxyTypeKey: this.proxyTypeKey
+      proxyTypeKey: this.proxyTypeKey,
+      pythonVersion: this.pythonVersion,
+      pythonVersionOk: this.pythonVersionOk,
+      pipVersionOk: this.pipVersionOk,
+      pipVersion: this.pipVersion,
+      installer: this.installer.toJSON()
+    }
+  }
+
+  checkPythonVersion(requiredVersion: string = "3.6.0") {
+    try {
+      // Get the default Python version
+      const versionString = PythonShell.getVersionSync()
+      this.info(`Raw Python Version: ${versionString}`)
+
+      // Parse the version string to get the semantic version
+      const versionMatch = versionString.match(/Python (\d+\.\d+\.\d+)/)
+      if (!versionMatch) {
+        this.error("Unable to parse Python version")
+        return
+      }
+
+      const currentVersion = versionMatch[1]
+      this.info(`Parsed Python Version: ${currentVersion}`)
+
+      // Compare the current version with the required version
+      if (semver.gte(currentVersion, requiredVersion)) {
+        this.info(`Current Python version (${currentVersion}) is >= required version (${requiredVersion})`)
+        this.pythonVersion = currentVersion
+        this.pythonVersionOk = true
+        this.info(`Worky !`)
+      } else {
+        this.error(`Current Python version (${currentVersion}) is < required version (${requiredVersion})`)
+        this.pythonVersion = currentVersion
+        this.pythonVersionOk = false
+      }
+    } catch (err: any) {
+      console.error("Error:", err)
+      this.error(err.message)
+    }
+  }
+
+  normalizeVersion(version: string) {
+    const parts = version.split(".")
+    while (parts.length < 3) {
+      parts.push("0")
+    }
+    return parts.join(".")
+  }
+
+  /**
+   * Check the pip version - part of necessary preparations
+   * to install a python client
+   */
+  checkPipVersion(requiredVersion = "21.0.0") {
+    try {
+      // Python command to get the pip version
+      const pythonCommand = "import pip; print(pip.__version__)"
+
+      // Run the Python command to get pip version
+      PythonShell.runString(pythonCommand, null)
+        .then((results) => {
+          const versionString = results[0]
+          this.info(`Raw pip Version: ${versionString}`)
+
+          // Normalize the version string to get the semantic version
+          const currentVersion = this.normalizeVersion(versionString.trim())
+          this.info(`Normalized pip Version: ${currentVersion}`)
+
+          // Compare the current version with the required version
+          if (semver.gte(currentVersion, requiredVersion)) {
+            this.info(`Current pip version (${currentVersion}) is >= required version (${requiredVersion})`)
+            this.info(`Worky !`)
+            this.pipVersion = currentVersion
+            this.pipVersionOk = true
+          } else {
+            this.error(`Current pip version (${currentVersion}) is < required version (${requiredVersion})`)
+            this.pipVersion = currentVersion
+            this.pipVersionOk = false
+          }
+        })
+        .catch((err) => {
+          this.error(`Error: ${err.message}`)
+        })
+    } catch (err: any) {
+      this.error(`Error: ${err.message}`)
     }
   }
 }

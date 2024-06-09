@@ -1,5 +1,6 @@
 import { Button, FormControl, FormControlLabel, Radio, RadioGroup } from "@mui/material"
 import InstallLog from "components/InstallLog"
+import StatusLog from "components/StatusLog"
 import React, { useEffect, useState } from "react"
 import StepWizard from "react-step-wizard"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
@@ -41,21 +42,21 @@ export default function OpenCVWizard({ fullname }) {
     }
   }, [installLog])
 
-  const Step1 = ({ nextStep, text = "Python >=3.6.0 required" }) => {
+  const Step1 = ({ nextStep }) => {
     return (
       <div>
         <h2>Step 1 Check for Python</h2>
-        <p>{text}</p>
-        {error && <p style={{ color: "red" }}>{error}</p>}
+        <p>
+          <StatusLog fullname={fullname} />
+        </p>
 
-        <InstallLog messageLog={messageLog} />
-        {!service?.installer?.isPythonInstalled && (
+        {!service?.pythonVersionOk && (
           <Button variant="contained" color="primary" onClick={checkPythonVersion}>
             Check
           </Button>
         )}
 
-        {service?.installer?.isInstalledPythonVersionValid && (
+        {service?.pythonVersionOk && (
           <Button variant="contained" color="primary" onClick={nextStep}>
             Next
           </Button>
@@ -64,13 +65,15 @@ export default function OpenCVWizard({ fullname }) {
     )
   }
 
-  const Step2 = ({ previousStep, nextStep, text = "Pip >= 19.0" }) => (
+  const Step2 = ({ previousStep, nextStep }) => (
     <div>
       <h2>Step 2 Check for Pip</h2>
-      <p>{text}</p>
+      <p>
+        <StatusLog fullname={fullname} />
+      </p>
 
       <InstallLog messageLog={messageLog} />
-      {!service?.installer?.isPipInstalled && (
+      {!service?.pipVersionOk && (
         <Button variant="contained" color="primary" onClick={checkPipVersion}>
           Check
         </Button>
@@ -95,19 +98,21 @@ export default function OpenCVWizard({ fullname }) {
           <FormControlLabel value="noVenv" control={<Radio />} label="Do not use venv" />
         </RadioGroup>
       </FormControl>
-      <Button variant="contained" color="secondary" onClick={previousStep}>
-        Previous
-      </Button>
-      {selection === "noVenv" && (
-        <Button variant="contained" color="primary" onClick={nextStep}>
-          Next
+      <div style={{ marginTop: "20px" }}>
+        <Button variant="contained" color="secondary" onClick={previousStep} style={{ marginRight: "10px" }}>
+          Previous
         </Button>
-      )}
-      {selection === "useVenv" && (
-        <Button variant="contained" color="primary" onClick={handleInstallVenv}>
-          Install Virtual Env
-        </Button>
-      )}
+        {selection === "noVenv" && (
+          <Button variant="contained" color="primary" onClick={nextStep}>
+            Next
+          </Button>
+        )}
+        {selection === "useVenv" && (
+          <Button variant="contained" color="primary" onClick={handleInstallVenv}>
+            Install Virtual Env
+          </Button>
+        )}
+      </div>
     </div>
   )
 
@@ -133,10 +138,12 @@ export default function OpenCVWizard({ fullname }) {
 
   const checkPythonVersion = () => {
     sendTo(fullname, "checkPythonVersion")
+    sendTo(fullname, "broadcastState")
   }
 
   const checkPipVersion = () => {
     sendTo(fullname, "checkPipVersion")
+    sendTo(fullname, "broadcastState")
   }
 
   return (

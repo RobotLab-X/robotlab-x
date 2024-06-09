@@ -330,6 +330,13 @@ export default class Service implements Gateway {
   }
 
   publishStatus(status: Status) {
+    if (status.level === "error") {
+      log.error(status.detail)
+    } else if (status.level === "warn") {
+      log.warn(status.detail)
+    } else {
+      log.info(status.detail)
+    }
     return status
   }
 
