@@ -54,6 +54,8 @@ export default class Proxy extends Service {
   public clientInstalledOk: boolean = false
 
   /**
+   * FIXME - REMOVE the connection switch just obsoleted this
+   *
    * Method intercepts are methods that are handled by the proxy
    * directly.  This is a way to handle UI or other data that
    * is not available until "after" the proxied service is installed
@@ -110,19 +112,30 @@ export default class Proxy extends Service {
 
     log.warn(`sendRemote ${this.fullname} got msg ${JSON.stringify(msg)}`)
 
-    if (msg.method in this.methodIntercepts) {
+    // Initially before a client has been installed or connected all messages
+    // are intercepted and handled by this stub/proxy
+    // Once the client is installed and connected, the messages will be
+    // sent via connection to the client
+
+    // Very cool switch - if i have an active connection to the client,
+    // then we switch from sending messages to the proxy stub to sending
+    // messages to the client
+    let ws: any = RobotLabXRuntime.getInstance().getConnectionImpl(this.id)
+
+    // if (msg.method in this.methodIntercepts /* && this.clientConnected */) {
+    if (!ws) {
       // TODO - extend to any method not just invokeMsg
       this.invokeMsg(msg)
-    }
+    } else {
+      // We should be the correct gateway to route this incoming message
+      // it "may" be the process (gatewayRouteId) were are connected directly to
+      // or it gatewayRouteId may be a gateway to msg.id remote process
 
-    // if (msg.method === "checkPythonVersion") {
-    //   this.checkPythonVersion()
-    // } else if (msg.method === "checkPipVersion") {
-    //   this.checkPipVersion()
-    // } else if (msg.method === "addListener") {
-    //   this.invokeMsg(msg)
-    //   // this.checkPipVersion()
-    // }
+      // we'll do the appropriate encoding based on the connection
+      let json = JSON.stringify(msg)
+      // and send it to the locally connected process for it to route
+      ws.send(json)
+    }
   }
 
   /**
@@ -377,7 +390,10 @@ print(result.stderr.decode(), file=sys.stderr)
 
       pipProcess.stdout.on("data", (data: Buffer) => {
         this.info(`stdout: ${data.toString()}`)
-        if (data.toString().includes("Successfully installed")) {
+        if (
+          data.toString().includes("Successfully installed") ||
+          data.toString().includes("Requirement already satisfied")
+        ) {
           this.requirementsOk = true
           this.invoke("broadcastState")
         }

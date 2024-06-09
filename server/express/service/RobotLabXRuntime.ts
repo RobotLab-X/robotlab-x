@@ -781,6 +781,10 @@ export default class RobotLabXRuntime extends Service {
     return this.connections
   }
 
+  getConnectionImpl(gatewayId: string): WebSocket {
+    return this.connectionImpl.get(gatewayId) as WebSocket
+  }
+
   getRegistry(): Object {
     return Store.getInstance().getRegistry()
   }
@@ -960,6 +964,7 @@ export default class RobotLabXRuntime extends Service {
     let json = JSON.stringify(msg)
     // and send it to the locally connected process for it to route
     ws.send(json)
+    // TODO - service call returns uuid of message so upstream can sync?
     return null
   }
 

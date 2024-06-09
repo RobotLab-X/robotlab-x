@@ -139,7 +139,7 @@ export default function OpenCVWizard({ fullname, statusLog }) {
 
   const StartOpenCVClient = ({ previousStep, nextStep }) => (
     <div>
-      <h2>Step 6 Start OpenCV Client</h2>
+      <h2>Step 6 Start RobotLab-X Client</h2>
       <StatusLog statusLog={statusLog} />
       {service?.pythonVersionOk && service?.pipVersionOk && service?.requirementsOk && (
         <Button variant="contained" color="primary" onClick={startClient}>
