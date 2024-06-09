@@ -1,3 +1,5 @@
+import fs from "fs"
+import path from "path"
 import { PythonShell } from "python-shell"
 import semver from "semver"
 import { CodecUtil } from "../framework/CodecUtil"
@@ -45,6 +47,10 @@ export default class Proxy extends Service {
 
   public pipVersionOk: boolean = false
 
+  public venvOk: boolean = false
+
+  public venvPath: string = null
+
   /**
    * Method intercepts are methods that are handled by the proxy
    * directly.  This is a way to handle UI or other data that
@@ -55,7 +61,8 @@ export default class Proxy extends Service {
     addListener: "invokeMsg",
     checkPythonVersion: "invokeMsg",
     checkPipVersion: "invokeMsg",
-    broadcastState: "broadcastState"
+    installVirtualEnv: "invokeMsg",
+    broadcastState: "invokeMsg"
   }
 
   constructor(
@@ -216,6 +223,8 @@ export default class Proxy extends Service {
       pythonVersionOk: this.pythonVersionOk,
       pipVersionOk: this.pipVersionOk,
       pipVersion: this.pipVersion,
+      venvOk: this.venvOk,
+      venvPath: this.venvPath,
       installer: this.installer.toJSON()
     }
   }
@@ -242,10 +251,12 @@ export default class Proxy extends Service {
         this.pythonVersion = currentVersion
         this.pythonVersionOk = true
         this.info(`Worky !`)
+        this.invoke("broadcastState")
       } else {
         this.error(`Current Python version (${currentVersion}) is < required version (${requiredVersion})`)
         this.pythonVersion = currentVersion
         this.pythonVersionOk = false
+        this.invoke("broadcastState")
       }
     } catch (err: any) {
       console.error("Error:", err)
@@ -283,13 +294,15 @@ export default class Proxy extends Service {
           // Compare the current version with the required version
           if (semver.gte(currentVersion, requiredVersion)) {
             this.info(`Current pip version (${currentVersion}) is >= required version (${requiredVersion})`)
-            this.info(`Worky !`)
+            this.info(`Worky again here too !`)
             this.pipVersion = currentVersion
             this.pipVersionOk = true
+            this.invoke("broadcastState")
           } else {
             this.error(`Current pip version (${currentVersion}) is < required version (${requiredVersion})`)
             this.pipVersion = currentVersion
             this.pipVersionOk = false
+            this.invoke("broadcastState")
           }
         })
         .catch((err) => {
@@ -298,5 +311,91 @@ export default class Proxy extends Service {
     } catch (err: any) {
       this.error(`Error: ${err.message}`)
     }
+  }
+
+  installVirtualEnv(envName = "venv", envPath = this.pkg.cwd) {
+    return new Promise((resolve, reject) => {
+      // Full path to the virtual environment
+      const fullPath = path.join(envPath, envName)
+      this.info(`Creating virtual environment in '${fullPath}`)
+
+      // Python script to create the virtual environment
+      const pythonScript = `
+import subprocess
+import sys
+result = subprocess.run([sys.executable, '-m', 'venv', '${fullPath}'], capture_output=True)
+print(result.stdout.decode())
+print(result.stderr.decode(), file=sys.stderr)
+    `
+
+      // Run the Python script to create the virtual environment
+      PythonShell.runString(pythonScript, null)
+        .then(() => {
+          // Check if the virtual environment was created successfully
+          const activateScript = path.join(fullPath, "bin", "activate") // On Windows: 'Scripts' instead of 'bin'
+          if (fs.existsSync(activateScript)) {
+            this.venvOk = true
+            this.info(`Virtual environment '${envName}' created successfully at ${fullPath}`)
+            resolve(`Virtual environment '${envName}' created successfully at ${fullPath}`)
+
+            // So do not rely on the UI send order ...
+            // the asyncio of express will switch on a long running task
+            // So, if the ui does sendTo("installVirtualEnv") then sendTo("broadcastState")
+            // the broadcastState will be processed first .. that's why we broadcast here
+
+            this.invoke("broadcastState")
+          } else {
+            this.venvOk = false
+            this.error(`Virtual environment '${envName}' creation failed`)
+            this.invoke("broadcastState")
+            reject(`Virtual environment '${envName}' creation failed`)
+          }
+        })
+        .catch((err) => {
+          this.venvOk = false
+          this.error(`Error: ${err.message}`)
+          this.invoke("broadcastState")
+          reject(`Error: ${err.message}`)
+        })
+    })
+  }
+
+  installPipRequirements(envName = "venv", envPath = this.pkg.cwd, requirementsFile = "requirements.txt") {
+    return new Promise((resolve, reject) => {
+      // Full path to the virtual environment
+      const fullPath = path.join(envPath, envName)
+      // Path to the requirements file
+      const requirementsPath = path.join(envPath, requirementsFile)
+
+      // Validate that the requirements file exists
+      if (!fs.existsSync(requirementsPath)) {
+        this.error(`Requirements file '${requirementsFile}' not found at ${envPath}`)
+        this.invoke("broadcastState")
+        return reject(`Requirements file '${requirementsFile}' not found at ${envPath}`)
+      }
+
+      // Command to install pip requirements
+      const pythonCommand = `
+import subprocess
+import sys
+result = subprocess.run([sys.executable, '-m', 'pip', 'install', '-r', '${requirementsPath}'], capture_output=True, text=True)
+print(result.stdout)
+print(result.stderr, file=sys.stderr)
+      `
+
+      // Run the Python command to install the requirements
+      const options = { pythonPath: path.join(fullPath, process.platform === "win32" ? "Scripts" : "bin", "python") }
+      PythonShell.runString(pythonCommand, options)
+        .then((results) => {
+          this.info(`Pip requirements installed successfully: ${results}`)
+          this.invoke("broadcastState")
+          resolve(`Pip requirements installed successfully`)
+        })
+        .catch((err) => {
+          this.error(`Error installing pip requirements: ${err.message}`)
+          this.invoke("broadcastState")
+          reject(`Error installing pip requirements: ${err.message}`)
+        })
+    })
   }
 }

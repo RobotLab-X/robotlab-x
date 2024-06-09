@@ -27,8 +27,10 @@ export default function OpenCV({ fullname }) {
   const [editMode, setEditMode] = useState(false)
   const { useMessage, sendTo } = useStore()
 
+  const statusMsg = useMessage(fullname, "publishStatus")
+
   // creates subscriptions to topics and returns the broadcastState message reference
-  const serviceMsg = useServiceSubscription(fullname, [])
+  const serviceMsg = useServiceSubscription(fullname, ["publishStatus"])
 
   // processes the msg.data[0] and returns the data
   const service = useProcessedMessage(serviceMsg)
@@ -40,6 +42,22 @@ export default function OpenCV({ fullname }) {
   const [filterName, setFilterName] = useState("")
   const [dialogOpen, setDialogOpen] = useState(false)
   const filterNameRef = useRef(null)
+
+  const [statusLog, setStatusLog] = useState([])
+  // const addStatus = useStore((state) => state.addStatus)
+  // const statusLog = useStore((state) => state.statusLog)
+
+  const status = useProcessedMessage(statusMsg)
+
+  useEffect(() => {
+    if (statusMsg) {
+      console.log("new status msg:", statusMsg)
+      // addStatus(status)
+      setStatusLog((log) => [...log, statusMsg.data[0]])
+    } else {
+      console.error("no status message")
+    }
+  }, [statusMsg])
 
   const toggleEditMode = () => {
     setEditMode(!editMode)
@@ -124,7 +142,7 @@ export default function OpenCV({ fullname }) {
 
   return (
     <>
-      <OpenCVWizard fullname={fullname} />
+      <OpenCVWizard fullname={fullname} statusLog={statusLog} />
 
       <h3 style={{ display: "flex", alignItems: "center", cursor: "pointer" }} onClick={toggleEditMode}>
         Configuration
