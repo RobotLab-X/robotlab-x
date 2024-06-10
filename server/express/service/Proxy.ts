@@ -308,7 +308,7 @@ export default class Proxy extends Service {
           // Compare the current version with the required version
           if (semver.gte(currentVersion, requiredVersion)) {
             this.info(`Current pip version (${currentVersion}) is >= required version (${requiredVersion})`)
-            this.info(`Worky again here too !`)
+            this.info(`More Worky !`)
             this.pipVersion = currentVersion
             this.pipVersionOk = true
             this.invoke("broadcastState")
@@ -400,7 +400,15 @@ print(result.stderr.decode(), file=sys.stderr)
       })
 
       pipProcess.stderr.on("data", (data: Buffer) => {
-        this.error(`stderr: ${data.toString()}`)
+        const str = data.toString()
+        // this.error(`stderr: ${data.toString()}`)
+        if (str.startsWith("ERROR:")) {
+          this.error(str)
+        } else if (str.startsWith("WARN:")) {
+          this.warn(str)
+        } else {
+          this.info(str)
+        }
       })
 
       pipProcess.on("close", (code: number) => {
@@ -441,7 +449,15 @@ print(result.stderr.decode(), file=sys.stderr)
       })
 
       pipProcess.stderr.on("data", (data: Buffer) => {
-        this.error(`stderr: ${data.toString()}`)
+        const str = data.toString()
+        // this.error(`stderr: ${data.toString()}`)
+        if (str.startsWith("ERROR:")) {
+          this.error(str)
+        } else if (str.startsWith("WARN:")) {
+          this.warn(str)
+        } else {
+          this.info(str)
+        }
       })
 
       pipProcess.on("close", (code: number) => {
@@ -461,7 +477,7 @@ print(result.stderr.decode(), file=sys.stderr)
 
   startClient(packages = {}, envName = "venv", envPath = this.pkg.cwd): Promise<string> {
     return new Promise((resolve, reject) => {
-      const args = ["-u", "OpenCV.py"]
+      const args = ["-u", "OpenCV.py", "-i", this.name, "-c", "http://localhost:3001"]
       const fullPath = path.join(envPath, envName)
       const pipPath = path.join(fullPath, process.platform === "win32" ? "Scripts" : "bin", "python")
       const command = pipPath
@@ -478,7 +494,15 @@ print(result.stderr.decode(), file=sys.stderr)
       })
 
       pipProcess.stderr.on("data", (data: Buffer) => {
-        this.error(`stderr: ${data.toString()}`)
+        const str = data.toString()
+        // this.error(`stderr: ${data.toString()}`)
+        if (str.startsWith("ERROR:")) {
+          this.error(str)
+        } else if (str.startsWith("WARN:")) {
+          this.warn(str)
+        } else {
+          this.info(str)
+        }
       })
 
       pipProcess.on("close", (code: number) => {

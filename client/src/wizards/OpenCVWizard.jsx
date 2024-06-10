@@ -15,16 +15,19 @@ export default function OpenCVWizard({ fullname, statusLog }) {
 
   const service = useProcessedMessage(serviceMsg)
   const [selection, setSelection] = useState("")
+  const [isInstalling, setIsInstalling] = useState(false)
 
   const handleSelectionChange = (event) => {
     setSelection(event.target.value)
   }
 
   const handleInstallVenv = () => {
+    setIsInstalling(true)
     sendTo(fullname, "installVirtualEnv")
   }
 
   const installOpenCV = () => {
+    setIsInstalling(true)
     sendTo(fullname, "installPipRequirements", service?.pkg?.requirements)
   }
 
@@ -78,38 +81,45 @@ export default function OpenCVWizard({ fullname, statusLog }) {
     </div>
   )
 
-  const Step3 = ({ previousStep, nextStep }) => (
-    <div>
-      <h2>Step 3 Virtual Environment</h2>
-      <StatusLog statusLog={statusLog} />
-      <FormControl component="fieldset">
-        <RadioGroup aria-label="venv" name="venv" value={selection} onChange={handleSelectionChange}>
-          <FormControlLabel value="useVenv" control={<Radio />} label="Virtual env (recommended)" />
-          <FormControlLabel value="noVenv" control={<Radio />} label="Do not use venv" />
-        </RadioGroup>
-      </FormControl>
-      <div style={{ marginTop: "20px" }}>
-        {(selection === "noVenv" || service?.venvOk) && (
-          <Button variant="contained" color="primary" onClick={nextStep}>
-            Next
-          </Button>
-        )}
-        {selection === "useVenv" && !service?.venvOk && (
-          <Button variant="contained" color="primary" onClick={handleInstallVenv}>
-            Install Virtual Env
-          </Button>
-        )}
+  const Step3 = ({ previousStep, nextStep }) => {
+    const handleNextStep = () => {
+      setIsInstalling(false)
+      nextStep()
+    }
+
+    return (
+      <div>
+        <h2>Step 3 Virtual Environment</h2>
+        <StatusLog statusLog={statusLog} />
+        <FormControl component="fieldset">
+          <RadioGroup aria-label="venv" name="venv" value={selection} onChange={handleSelectionChange}>
+            <FormControlLabel value="useVenv" control={<Radio />} label="Virtual env (recommended)" />
+            <FormControlLabel value="noVenv" control={<Radio />} label="Do not use venv" />
+          </RadioGroup>
+        </FormControl>
+        <div style={{ marginTop: "20px" }}>
+          {(selection === "noVenv" || service?.venvOk) && (
+            <Button variant="contained" color="primary" onClick={handleNextStep}>
+              Next
+            </Button>
+          )}
+          {selection === "useVenv" && !service?.venvOk && (
+            <Button variant="contained" color="primary" onClick={handleInstallVenv} disabled={isInstalling}>
+              {isInstalling ? "Installing..." : "Install Virtual Env"}
+            </Button>
+          )}
+        </div>
       </div>
-    </div>
-  )
+    )
+  }
 
   const Step4 = ({ previousStep, nextStep }) => (
     <div>
       <h2>Step 4 Install OpenCV</h2>
       <StatusLog statusLog={statusLog} />
       {service?.pythonVersionOk && service?.pipVersionOk && !service?.requirementsOk && (
-        <Button variant="contained" color="primary" onClick={installOpenCV}>
-          Install
+        <Button variant="contained" color="primary" onClick={installOpenCV} disabled={isInstalling}>
+          {isInstalling ? "Installing..." : "Install"}
         </Button>
       )}
       {service?.requirementsOk && (
