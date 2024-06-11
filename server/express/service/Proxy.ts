@@ -53,6 +53,8 @@ export default class Proxy extends Service {
 
   public clientInstalledOk: boolean = false
 
+  public clientConnectionState: string = "disconnected" // connected, disconnected, connecting enum
+
   /**
    * FIXME - REMOVE the connection switch just obsoleted this
    *
@@ -124,12 +126,31 @@ export default class Proxy extends Service {
 
     // if (msg.method in this.methodIntercepts /* && this.clientConnected */) {
     if (!ws) {
+      this.clientConnectionState = "disconnected"
       // TODO - extend to any method not just invokeMsg
       this.invokeMsg(msg)
     } else {
       // We should be the correct gateway to route this incoming message
       // it "may" be the process (gatewayRouteId) were are connected directly to
       // or it gatewayRouteId may be a gateway to msg.id remote process
+      if (this.clientConnectionState === "disconnected") {
+        // we send all our notifyList to the client, when it first
+        // connects, so it can re-establish all the listeners
+        for (let key in this.notifyList) {
+          const ne = this.notifyList[key]
+          ne.forEach((notifyEntry: any) => {
+            let notifyMsg = new Message(this.name, "addListener", [
+              key,
+              notifyEntry.callbackName,
+              notifyEntry.callbackMethod
+            ])
+            notifyMsg.sender = this.fullname
+            ws.send(JSON.stringify(notifyMsg))
+          })
+
+          this.clientConnectionState = "connected"
+        }
+      }
 
       // we'll do the appropriate encoding based on the connection
       let json = JSON.stringify(msg)

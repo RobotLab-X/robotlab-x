@@ -1,3 +1,4 @@
+import argparse
 import cv2
 import os
 import numpy as np
@@ -293,7 +294,15 @@ class OpenCV:
         }
 
 def main():
-    cv = OpenCV("cv8")
+
+    parser = argparse.ArgumentParser(description='WebSocket Client')
+    parser.add_argument('-c', '--connect', required=False, help='WebSocket url to connect to', default='http://localhost:3001')
+    parser.add_argument('-i', '--id', required=False, help='Client ID', default='python-client-1')
+
+    args = parser.parse_args()
+    print(args)
+
+    cv = OpenCV(args.id)
     # cv.add_filter("canny", "Canny")
     # cv.add_filter("yolo", "Yolo3")
     # cv.capture()
@@ -301,8 +310,8 @@ def main():
     # sleep(100)
     # cv.stop_capture()
 
-    client = RobotLabXClient("cv8")
-    client.connect("http://localhost:3001")
+    client = RobotLabXClient(args.id)
+    client.connect(args.connect)
     client.set_service(cv)
     client.start_service()
 
