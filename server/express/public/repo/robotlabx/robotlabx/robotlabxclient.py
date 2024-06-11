@@ -251,6 +251,7 @@ class RobotLabXClient:
         self.loop.create_task(self.receive_messages())
         self.loop.create_task(self.check_for_input())
         self.loop.create_task(self.wait_for_stop())
+        log.info("Service started")
         self.loop.run_forever()
 
     def set_service(self, service):

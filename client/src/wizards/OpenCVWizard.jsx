@@ -35,7 +35,8 @@ export default function OpenCVWizard({ fullname, statusLog }) {
     sendTo(fullname, "startClient")
   }
 
-  const installClient = () => {
+  const installClientHandler = () => {
+    setIsInstalling(true)
     sendTo(fullname, "installClient")
   }
 
@@ -113,33 +114,40 @@ export default function OpenCVWizard({ fullname, statusLog }) {
     )
   }
 
-  const Step4 = ({ previousStep, nextStep }) => (
-    <div>
-      <h2>Step 4 Install OpenCV</h2>
-      <StatusLog statusLog={statusLog} />
-      {service?.pythonVersionOk && service?.pipVersionOk && !service?.requirementsOk && (
-        <Button variant="contained" color="primary" onClick={installOpenCV} disabled={isInstalling}>
-          {isInstalling ? "Installing..." : "Install"}
-        </Button>
-      )}
-      {service?.requirementsOk && (
-        <Button variant="contained" color="primary" onClick={nextStep}>
-          Next
-        </Button>
-      )}
-    </div>
-  )
+  const Step4 = ({ previousStep, nextStep }) => {
+    const handleNextStep = () => {
+      setIsInstalling(false)
+      nextStep()
+    }
+
+    return (
+      <div>
+        <h2>Step 4 Install OpenCV</h2>
+        <StatusLog statusLog={statusLog} />
+        {service?.pythonVersionOk && service?.pipVersionOk && !service?.requirementsOk && (
+          <Button variant="contained" color="primary" onClick={installOpenCV} disabled={isInstalling}>
+            {isInstalling ? "Installing..." : "Install"}
+          </Button>
+        )}
+        {service?.requirementsOk && (
+          <Button variant="contained" color="primary" onClick={handleNextStep}>
+            Next
+          </Button>
+        )}
+      </div>
+    )
+  }
 
   const InstallClient = ({ previousStep, nextStep }) => (
     <div>
       <h2>Step 5 Install RobotLab-X Client</h2>
       <StatusLog statusLog={statusLog} />
-      {
-        <Button variant="contained" color="primary" onClick={installClient}>
-          Install
+      {service?.pythonVersionOk && service?.pipVersionOk && service?.requirementsOk && !service?.clientInstalledOk && (
+        <Button variant="contained" color="primary" onClick={installClientHandler} disabled={isInstalling}>
+          {isInstalling ? "Installing..." : "Install"}
         </Button>
-      }
-      {service?.requirementsOk && (
+      )}
+      {service?.clientInstalledOk && (
         <Button variant="contained" color="primary" onClick={nextStep}>
           Next
         </Button>
@@ -151,7 +159,7 @@ export default function OpenCVWizard({ fullname, statusLog }) {
     <div>
       <h2>Step 6 Start RobotLab-X Client</h2>
       <StatusLog statusLog={statusLog} />
-      {service?.pythonVersionOk && service?.pipVersionOk && service?.requirementsOk && (
+      {service?.pythonVersionOk && service?.pipVersionOk && service?.requirementsOk && !service?.clientConnected && (
         <Button variant="contained" color="primary" onClick={startClient}>
           Start
         </Button>

@@ -8,10 +8,12 @@ import asyncio
 from time import sleep
 from concurrent.futures import ThreadPoolExecutor
 from robotlabx.robotlabxclient import RobotLabXClient
+from typing import List
 
 class OpenCVFilter:
     def __init__(self, name):
         self.name = name
+        self.config = {}
 
     def apply(self, frame):
         print(f"Applying filter: {self.name}")
@@ -189,6 +191,7 @@ class OpenCVFilterFaceDetect(OpenCVFilter):
     """
     def __init__(self, name, cascade_path='haarcascade_frontalface_default.xml'):
         super().__init__(name)
+        self.cascade_path = cascade_path
         self.face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + cascade_path)
 
     def apply(self, frame):
@@ -203,21 +206,31 @@ class OpenCVFilterFaceDetect(OpenCVFilter):
     def to_dict(self):
         return {
             "name": self.name,
-            "typeKey": "FaceDetect"
+            "typeKey": "FaceDetect",
+            "cascade_path": self.cascade_path
         }
 
 class OpenCV:
     def __init__(self, id):
-        self.id = id
-        self.version = cv2.__version__
+        self.id:str = id
+        self.version:str = cv2.__version__
         self.cap = None
         # FIXME - this is serving dual purpose, both write and read
         # the command to start capturing and the status of capturing
-        self.capturing = False
+        self.capturing: bool = False
         self.loop = asyncio.get_event_loop()
         self.executor = ThreadPoolExecutor()
-        self.filters = []
+        self.filters:List[str] = []
+        self.config = {
+          "camera_index": "0",
+        }
+        # needed when json definition of proxy switches to this service
+        self.installed: bool = True
+
         print(f"OpenCV version: {self.version}")
+
+    def set_camera(self, camera_index):
+        self.config["camera_index"] = camera_index
 
     def capture(self):
         if self.capturing:
@@ -230,7 +243,7 @@ class OpenCV:
     def _capture(self):
         try:
             print("Starting webcam capture...")
-            self.cap = cv2.VideoCapture(0)
+            self.cap = cv2.VideoCapture(int(self.config.get("camera_index")))
             while self.capturing:
                 start_time = time.perf_counter()
 
@@ -289,7 +302,9 @@ class OpenCV:
             "name": self.id,
             "typeKey": "OpenCV",
             "version": self.version,
+            "config": self.config,
             "capturing": self.capturing,
+            "installed": self.installed,
             "filters": [filter.to_dict() for filter in self.filters]
         }
 

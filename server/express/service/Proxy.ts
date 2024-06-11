@@ -55,6 +55,8 @@ export default class Proxy extends Service {
 
   public clientConnectionState: string = "disconnected" // connected, disconnected, connecting enum
 
+  public clientConnected: boolean = false
+
   /**
    * FIXME - REMOVE the connection switch just obsoleted this
    *
@@ -260,7 +262,8 @@ export default class Proxy extends Service {
       venvOk: this.venvOk,
       venvPath: this.venvPath,
       requirementsOk: this.requirementsOk,
-      clientInstalledOk: this.clientInstalledOk
+      clientInstalledOk: this.clientInstalledOk,
+      clientConnected: this.clientConnected
     }
   }
 
@@ -508,10 +511,6 @@ print(result.stderr.decode(), file=sys.stderr)
 
       pipProcess.stdout.on("data", (data: Buffer) => {
         this.info(`stdout: ${data.toString()}`)
-        if (data.toString().includes("Successfully installed")) {
-          this.requirementsOk = true
-          this.invoke("broadcastState")
-        }
       })
 
       pipProcess.stderr.on("data", (data: Buffer) => {
@@ -523,6 +522,12 @@ print(result.stderr.decode(), file=sys.stderr)
           this.warn(str)
         } else {
           this.info(str)
+          // Check if the client has connected
+          // This comes in on stderr because its "logging" from the client
+          if (str.includes("Service started")) {
+            this.clientConnected = true
+            this.invoke("broadcastState")
+          }
         }
       })
 
