@@ -53,7 +53,8 @@ paths:
               type: array
               items:
                 - type: string
-            example: []
+            example:
+              - uno
       responses:
         '200':
           description: attach method executed successfully
@@ -87,4 +88,80 @@ paths:
       responses:
         '200':
           description: getServoControllers method executed successfully
+  /removeController:
+    put:
+      summary: Remove the servo from a specific controller
+      description: Remove the servo from a specific controller
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - uno
+      responses:
+        '200':
+          description: removeController method executed successfully
+  /setController:
+    put:
+      summary: Set the controller for the servo
+      description: Set the controller for the servo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - uno
+      responses:
+        '200':
+          description: setController method executed successfully
+  /setPin:
+    put:
+      summary: Set the current pin for the servo
+      description: Set the current pin for the servo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example: []
+      responses:
+        '200':
+          description: setPin method executed successfully
+  /setRest:
+    put:
+      summary: Set the current rest position for the servo
+      description: Set the current rest position for the servo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: integer
+            example: []
+      responses:
+        '200':
+          description: setRest method executed successfully
+  /rest:
+    put:
+      summary: A position set by the user to be the rest position of the servo
+      description: A position set by the user to be the rest position of the servo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        '200':
+          description: rest method executed successfully
 tags: []

@@ -26,9 +26,111 @@ components:
         type: object
     type: object
 paths:
-  /onUptime:
+  /startService:
     put:
-      summary: Executes onUptime method
+      summary: Executes startService method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        '200':
+          description: startService method executed successfully
+  /sendRemote:
+    put:
+      summary: Requesting to send a message to a remote process
+      description: Requesting to send a message to a remote process
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: Message
+            example: []
+      responses:
+        '200':
+          description: sendRemote method executed successfully
+  /invoke:
+    put:
+      summary: >-
+        Invoke on a Proxy has a very different meaning than invoke on a "local"
+        Service.
+
+        This Proxy is local and can assist in routing messages to a remote
+        service or installing
+
+        a client service on the same host.  However, since its process id is
+        different, it cannot
+
+        use Service.invoke.
+      description: >-
+        Invoke on a Proxy has a very different meaning than invoke on a "local"
+        Service.
+
+        This Proxy is local and can assist in routing messages to a remote
+        service or installing
+
+        a client service on the same host.  However, since its process id is
+        different, it cannot
+
+        use Service.invoke.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+                - type: any[]
+            example: []
+      responses:
+        '200':
+          description: invoke method executed successfully
+  /invokeMsg:
+    put:
+      summary: >-
+        Invoke a message on the remote service
+
+        Overloaded from Service, because for a proxy it means something
+        different
+      description: >-
+        Invoke a message on the remote service
+
+        Overloaded from Service, because for a proxy it means something
+        different
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: Message
+            example: []
+      responses:
+        '200':
+          description: invokeMsg method executed successfully
+  /toJSON:
+    put:
+      summary: Executes toJSON method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        '200':
+          description: toJSON method executed successfully
+  /checkPythonVersion:
+    put:
+      summary: Executes checkPythonVersion method
       description: ''
       requestBody:
         content:
@@ -40,5 +142,105 @@ paths:
             example: []
       responses:
         '200':
-          description: onUptime method executed successfully
+          description: checkPythonVersion method executed successfully
+  /normalizeVersion:
+    put:
+      summary: Executes normalizeVersion method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example: []
+      responses:
+        '200':
+          description: normalizeVersion method executed successfully
+  /checkPipVersion:
+    put:
+      summary: |-
+        Check the pip version - part of necessary preparations
+        to install a python client
+      description: |-
+        Check the pip version - part of necessary preparations
+        to install a python client
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example: []
+      responses:
+        '200':
+          description: checkPipVersion method executed successfully
+  /installVirtualEnv:
+    put:
+      summary: Executes installVirtualEnv method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+                - type: any
+            example: []
+      responses:
+        '200':
+          description: installVirtualEnv method executed successfully
+  /installPipRequirements:
+    put:
+      summary: Executes installPipRequirements method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: '{}'
+                - type: string
+                - type: any
+            example: []
+      responses:
+        '200':
+          description: installPipRequirements method executed successfully
+  /installClient:
+    put:
+      summary: Executes installClient method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+                - type: any
+            example: []
+      responses:
+        '200':
+          description: installClient method executed successfully
+  /startClient:
+    put:
+      summary: Executes startClient method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: '{}'
+                - type: string
+                - type: any
+            example: []
+      responses:
+        '200':
+          description: startClient method executed successfully
 tags: []

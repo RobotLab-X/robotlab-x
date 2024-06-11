@@ -26,6 +26,20 @@ components:
         type: object
     type: object
 paths:
+  /toJSON:
+    put:
+      summary: Executes toJSON method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        '200':
+          description: toJSON method executed successfully
   /save:
     put:
       summary: Executes save method
@@ -342,8 +356,8 @@ paths:
           description: getUptime method executed successfully
   /getService:
     put:
-      summary: Executes getService method
-      description: ''
+      summary: getService gets a service from the registry if it exists
+      description: getService gets a service from the registry if it exists
       requestBody:
         content:
           application/json:
@@ -576,6 +590,21 @@ paths:
       responses:
         '200':
           description: getConnections method executed successfully
+  /getConnectionImpl:
+    put:
+      summary: Executes getConnectionImpl method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example: []
+      responses:
+        '200':
+          description: getConnectionImpl method executed successfully
   /getRegistry:
     put:
       summary: Executes getRegistry method
@@ -690,6 +719,21 @@ paths:
       responses:
         '200':
           description: removeConnection method executed successfully
+  /removeRoute:
+    put:
+      summary: Executes removeRoute method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example: []
+      responses:
+        '200':
+          description: removeRoute method executed successfully
   /getGatewayConnection:
     put:
       summary: Executes getGatewayConnection method

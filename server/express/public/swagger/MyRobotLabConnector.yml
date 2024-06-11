@@ -108,20 +108,6 @@ paths:
       responses:
         '200':
           description: sendMessage method executed successfully
-  /getRepo:
-    put:
-      summary: Executes getRepo method
-      description: ''
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items: []
-            example: []
-      responses:
-        '200':
-          description: getRepo method executed successfully
   /getConfigName:
     put:
       summary: Executes getConfigName method
@@ -150,20 +136,6 @@ paths:
       responses:
         '200':
           description: getConfigList method executed successfully
-  /toJSON:
-    put:
-      summary: Executes toJSON method
-      description: ''
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items: []
-            example: []
-      responses:
-        '200':
-          description: toJSON method executed successfully
   /sendRemote:
     put:
       summary: |-
@@ -198,4 +170,18 @@ paths:
       responses:
         '200':
           description: publishMessage method executed successfully
+  /toJSON:
+    put:
+      summary: Executes toJSON method
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        '200':
+          description: toJSON method executed successfully
 tags: []

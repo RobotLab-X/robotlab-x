@@ -28,8 +28,12 @@ components:
 paths:
   /toJSON:
     put:
-      summary: Executes toJSON method
-      description: ''
+      summary: |-
+        Serializes the RobotLabXUI instance to JSON.
+        Excludes intervalId from serialization.
+      description: |-
+        Serializes the RobotLabXUI instance to JSON.
+        Excludes intervalId from serialization.
       requestBody:
         content:
           application/json:

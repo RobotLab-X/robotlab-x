@@ -1,4 +1,6 @@
 ## TODO
+* Status Log moved into ServicePage.jsx
+* Need a refresh icon in the ServicePage.jsx that does a broadcastState
 * Node Python interface (in process !?!?) -> https://www.npmjs.com/package/node-calls-python  python shell - https://www.npmjs.com/package/python-shell
 * convienence - noworky - http://localhost:3001/api/v1/services/cv8 "should" be promoted to working http://localhost:3001/api/v1/services/cv8@cv8 - shortname to fullname index - error on collisions
 * npm neopixel
