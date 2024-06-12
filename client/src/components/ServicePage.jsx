@@ -109,7 +109,7 @@ export default function ServicePage({ fullname, name, id }) {
       <Typography variant="h4" component="div" sx={{ display: "flex", alignItems: "center" }}>
         {resolvedType && resolvedType !== "MyRobotLabProxy" && (
           <img
-            src={`${getRepoUrl()}/${resolvedType}/${resolvedType}.png`}
+            src={`${getRepoUrl()}/${resolvedType}/image.png`}
             alt={registered?.name}
             width="32"
             style={{ verticalAlign: "middle" }}

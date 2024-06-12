@@ -1,11 +1,6 @@
+import { Button, Grid, MenuItem, Select, TextField } from "@mui/material" // Import MUI components
 import React, { useEffect, useState } from "react"
-import Box from "@mui/material/Box"
-import Slider from "@mui/material/Slider"
-import Typography from "@mui/material/Typography"
-import Autocomplete from "@mui/material/Autocomplete"
 import { useStore } from "../store/store"
-import { Select, MenuItem } from "@mui/material" // Import MUI components
-import { TextField, Button, Grid } from "@mui/material" // Import MUI components
 
 // Props should put in "name"
 // and all service types defined here
@@ -42,14 +37,14 @@ export default function Runtime(props) {
 
   const [formData, setFormData] = useState({
     name: "",
-    type: "",
+    type: ""
   })
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
     setFormData((prevData) => ({
       ...prevData,
-      [name]: value,
+      [name]: value
     }))
   }
 
@@ -66,7 +61,7 @@ export default function Runtime(props) {
       </h3>
       {/*
       {JSON.stringify(registry)}
-  
+
       {JSON.stringify(props)}
 
       */}
@@ -94,7 +89,7 @@ export default function Runtime(props) {
         renderOption={(props, option) => (
           <li {...props}>
             <img
-              src={`service/${option.simpleName}/${option.simpleName}.png`}
+              src={`service/${option.simpleName}/image.png`}
               alt={option.simpleName}
               style={{ width: 24, height: 24, marginRight: 8 }}
             />

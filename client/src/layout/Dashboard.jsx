@@ -81,7 +81,7 @@ const Dashboard = () => {
         // https://www.npmjs.com/package/xterm-for-react
 
         const xtermRef = React.useRef(null)
- 
+
         React.useEffect(() => {
             // You can call any method in XTerm.js by using 'xterm xtermRef.current.terminal.[What you want to call]
             xtermRef.current.terminal.writeln("Hello, World!")
@@ -92,7 +92,7 @@ const Dashboard = () => {
             xtermRef.current.terminal.writeln("Hello, World!")
             xtermRef.current.terminal.writeln("Hello, World!")
             xtermRef.current.terminal.writeln("Hello, World again!")
-        }, [])  
+        }, [])
   */
 
   // FIXME - probably not needed, redundant data fetching vs ws
@@ -142,7 +142,7 @@ const Dashboard = () => {
     const [open, setOpen] = useState(false)
     const typeKey = sd?.typeKey // `${sd?.typeKey}@${sd?.version}`
     const type = repo[typeKey]
-    const imagePath = `${getRepoUrl()}/${sd.typeKey}/${sd.typeKey}.png`
+    const imagePath = `${getRepoUrl()}/${sd.typeKey}/image.png`
     const connectedPath = `${process.env.PUBLIC_URL}/green.png`
 
     return (

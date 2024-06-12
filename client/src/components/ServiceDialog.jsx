@@ -127,7 +127,7 @@ const ServiceDialog = ({ packages, open, fullname, setOpen }) => {
                     {filteredPackages.map((pkg) => (
                       <TableRow key={pkg.typeKey}>
                         <TableCell>
-                          <img src={`${getRepoUrl()}/${pkg.typeKey}/${pkg.typeKey}.png`} alt={pkg.typeKey} />
+                          <img src={`${getRepoUrl()}/${pkg.typeKey}/image.png`} alt={pkg.typeKey} />
                         </TableCell>
                         <TableCell>{pkg.title}</TableCell>
                         <TableCell>{`${pkg.platform} ${pkg.platformVersion}`}</TableCell>

@@ -49,7 +49,6 @@ function Home() {
                 <CardContent>
                   <Typography variant="h5">
                     <img
-                      // src={`${getRepoUrl()}/${card.proxyTypeKey ? card.proxyTypeKey : card.typeKey}/${card.proxyTypeKey ? card.proxyTypeKey : card.typeKey}.png`}
                       src={getTypeImage(card.fullname)}
                       alt={card.name}
                       width="32"
