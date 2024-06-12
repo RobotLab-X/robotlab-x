@@ -1,5 +1,5 @@
 import debug from "debug"
-import Electron from "electron"
+import Electron, { Tray } from "electron"
 import "module-alias/register"
 import os from "os"
 import path from "path"
@@ -31,8 +31,26 @@ export default class Main {
   // The root of the extracted asar file if it exists
   public static extractPath: string
 
+  // Service API AND WS URL - in Prod this will be the same as startUrl
+  // defaults:
+  //
+  // dev Main.serviceUrl = "http://localhost:3001"
+  // dev Main.startUrl = "http://localhost:3000"
+  //
+  // prod Main.serviceUrl = "http://localhost:3000"
+  // prod Main.startUrl = "http://localhost:3000"
+  public static serviceUrl: string
+
+  /**
+   * BrowserWindow.loadURL() will use this URL to load the app
+   */
+  public static startUrl: string
+
   // if this variable is set to true in the main constructor, the app will quit when closing it in macOS
   private static quitOnCloseOSX: boolean
+
+  // Tray instance
+  public static tray: Tray
 
   public static main(electronApp: Electron.App, browserWindow: typeof Electron.BrowserWindow) {
     Main.BrowserWindow = browserWindow
@@ -45,25 +63,31 @@ export default class Main {
   }
 
   private static onReady() {
+    log.error(`onReady: Main.expressRoot ${Main.expressRoot}`)
     Main.mainWindow = new Main.BrowserWindow({
       width: 800,
       height: 600,
+      icon: path.join(Main.expressRoot, "repo", "robotlab-x-48.png"),
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
         preload: path.join(__dirname, "Preload.js")
       }
     })
-    // const startUrl = process.env.ELECTRON_START_URL || `file://${path.join(__dirname, "../client/index.html")}`
-    const startUrl = process.env.ELECTRON_START_URL || "http://localhost:3001/"
+    // Set in Store.ts !!!! not here
+    Main.startUrl = process.env.ELECTRON_START_URL || "http://localhost:3001/"
     // FIXME - startUrl is not correct when packaged
-    log.info(`onReady: startUrl == ${startUrl}`)
-    Main.mainWindow.loadURL(startUrl)
+    log.info(`onReady: Main.startUrl == ${Main.startUrl}`)
+    Main.mainWindow.loadURL(Main.startUrl)
     if (!Main.isPackaged) {
       Main.mainWindow.webContents.openDevTools()
     }
 
     Main.mainWindow.on("closed", Main.onClose)
+
+    // Create the Tray instance and set the tooltip
+    Main.tray = new Tray(path.join(Main.expressRoot, "repo", "robotlab-x-48.png"))
+    Main.tray.setToolTip("RobotLab-X")
   }
 
   private static onWindowAllClosed() {
@@ -121,6 +145,7 @@ export default class Main {
     let configName = argv.config ? argv.config : "default"
     // must create instance before startServiceType to fix chicken egg problem
     let runtime: RobotLabXRuntime = RobotLabXRuntime.createInstance("./config", configName)
+
     // Store needs getId/id to be set
 
     // starting self .. chicken egg problem
@@ -140,6 +165,17 @@ export default class Main {
     runtime.registerProcess(pd)
     runtime.register(runtime)
   }
-}
+
+  public static toJSON(): any {
+    return {
+      serviceUrl: Main.serviceUrl,
+      startUrl: Main.startUrl,
+      isPackaged: Main.isPackaged,
+      distRoot: Main.distRoot,
+      expressRoot: Main.expressRoot,
+      extractPath: Main.extractPath
+    }
+  }
+} // Main
 
 Main.main(Electron.app, Electron.BrowserWindow)

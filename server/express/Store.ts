@@ -69,6 +69,10 @@ export default class Store {
       // FIXME - this is dumb - RuntimeXServer should have config
       log.info(`setting port ${runtime.getConfig().port}`)
       store.express.set("port", runtime.getConfig().port)
+
+      // FIXME - need to appropriately switch https when asked
+      Main.serviceUrl = `http://localhost:${runtime.getConfig().port}`
+
       store.http.listen(runtime.getConfig().port)
       store.http.on("error", Store.onError)
       store.http.on("listening", Store.onListening)

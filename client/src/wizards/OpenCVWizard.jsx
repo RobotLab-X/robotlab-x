@@ -1,5 +1,4 @@
 import { Button, FormControl, FormControlLabel, Radio, RadioGroup } from "@mui/material"
-import StatusLog from "components/StatusLog"
 import React, { useState } from "react"
 import StepWizard from "react-step-wizard"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
@@ -7,7 +6,7 @@ import { useStore } from "../store/store"
 import useServiceSubscription from "../store/useServiceSubscription"
 
 // FIXME remove fullname with context provider
-export default function OpenCVWizard({ fullname, statusLog }) {
+export default function OpenCVWizard({ fullname }) {
   const { sendTo } = useStore()
 
   // creates subscriptions to topics and returns the broadcastState message reference
@@ -49,7 +48,6 @@ export default function OpenCVWizard({ fullname, statusLog }) {
     return (
       <div>
         <h2>Step 1 Check for Python</h2>
-        <StatusLog statusLog={statusLog} />
         {!service?.pythonVersionOk && (
           <Button variant="contained" color="primary" onClick={checkPythonVersion}>
             Check
@@ -68,7 +66,6 @@ export default function OpenCVWizard({ fullname, statusLog }) {
   const Step2 = ({ previousStep, nextStep }) => (
     <div>
       <h2>Step 2 Check for Pip</h2>
-      <StatusLog statusLog={statusLog} />
       {!service?.pipVersionOk && (
         <Button variant="contained" color="primary" onClick={checkPipVersion}>
           Check
@@ -91,7 +88,6 @@ export default function OpenCVWizard({ fullname, statusLog }) {
     return (
       <div>
         <h2>Step 3 Virtual Environment</h2>
-        <StatusLog statusLog={statusLog} />
         <FormControl component="fieldset">
           <RadioGroup aria-label="venv" name="venv" value={selection} onChange={handleSelectionChange}>
             <FormControlLabel value="useVenv" control={<Radio />} label="Virtual env (recommended)" />
@@ -123,7 +119,6 @@ export default function OpenCVWizard({ fullname, statusLog }) {
     return (
       <div>
         <h2>Step 4 Install OpenCV</h2>
-        <StatusLog statusLog={statusLog} />
         {service?.pythonVersionOk && service?.pipVersionOk && !service?.requirementsOk && (
           <Button variant="contained" color="primary" onClick={installOpenCV} disabled={isInstalling}>
             {isInstalling ? "Installing..." : "Install"}
@@ -141,7 +136,6 @@ export default function OpenCVWizard({ fullname, statusLog }) {
   const InstallClient = ({ previousStep, nextStep }) => (
     <div>
       <h2>Step 5 Install RobotLab-X Client</h2>
-      <StatusLog statusLog={statusLog} />
       {service?.pythonVersionOk && service?.pipVersionOk && service?.requirementsOk && !service?.clientInstalledOk && (
         <Button variant="contained" color="primary" onClick={installClientHandler} disabled={isInstalling}>
           {isInstalling ? "Installing..." : "Install"}
@@ -158,7 +152,6 @@ export default function OpenCVWizard({ fullname, statusLog }) {
   const StartOpenCVClient = ({ previousStep, nextStep }) => (
     <div>
       <h2>Step 6 Start RobotLab-X Client</h2>
-      <StatusLog statusLog={statusLog} />
       {service?.pythonVersionOk && service?.pipVersionOk && service?.requirementsOk && !service?.clientConnected && (
         <Button variant="contained" color="primary" onClick={startClient}>
           Start

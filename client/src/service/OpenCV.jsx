@@ -89,7 +89,7 @@ export default function OpenCV({ fullname }) {
   }
 
   if (!service?.installed) {
-    return <OpenCVWizard fullname={fullname} statusLog={statusLog} />
+    return <OpenCVWizard fullname={fullname} />
   }
 
   return (

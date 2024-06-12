@@ -57,25 +57,6 @@ export default class Proxy extends Service {
 
   public clientConnected: boolean = false
 
-  /**
-   * FIXME - REMOVE the connection switch just obsoleted this
-   *
-   * Method intercepts are methods that are handled by the proxy
-   * directly.  This is a way to handle UI or other data that
-   * is not available until "after" the proxied service is installed
-   * and  started and connected.
-   */
-  methodIntercepts: any = {
-    addListener: "invokeMsg",
-    checkPythonVersion: "invokeMsg",
-    checkPipVersion: "invokeMsg",
-    installVirtualEnv: "invokeMsg",
-    broadcastState: "invokeMsg",
-    installPipRequirements: "invokeMsg",
-    startClient: "invokeMsg",
-    installClient: "invokeMsg"
-  }
-
   constructor(
     public id: string,
     public name: string,
@@ -126,7 +107,6 @@ export default class Proxy extends Service {
     // messages to the client
     let ws: any = RobotLabXRuntime.getInstance().getConnectionImpl(this.id)
 
-    // if (msg.method in this.methodIntercepts /* && this.clientConnected */) {
     if (!ws) {
       this.clientConnectionState = "disconnected"
       // TODO - extend to any method not just invokeMsg
@@ -450,10 +430,19 @@ print(result.stderr.decode(), file=sys.stderr)
     })
   }
 
+  /**
+   * Local Repo Requirements - client minimally installed but other local requirements
+   * may be needed - from:
+   * repoReqs in package.yml
+   *
+   * @param envName
+   * @param envPath
+   * @returns
+   */
   installClient(envName = "venv", envPath = this.pkg.cwd): Promise<string> {
     const fullPath = path.join(envPath, envName)
     const clientPath = path.join(`${Main.expressRoot}`, "repo", "robotlabx")
-    this.info(`Installing client ${clientPath} to ${fullPath}`)
+    this.error(`Installing client ${clientPath} to ${fullPath}`)
     return new Promise((resolve, reject) => {
       const args = ["install", "-e", clientPath]
 
@@ -461,11 +450,11 @@ print(result.stderr.decode(), file=sys.stderr)
       const pipPath = path.join(fullPath, process.platform === "win32" ? "Scripts" : "bin", "pip")
       const command = pipPath
 
-      this.info(`${pipPath} ${args.join(" ")}`)
+      this.error(`${pipPath} ${args.join(" ")}`)
       const pipProcess = spawn(command, args)
 
       pipProcess.stdout.on("data", (data: Buffer) => {
-        this.info(`stdout: ${data.toString()}`)
+        this.error(`stdout: ${data.toString()}`)
         if (data.toString().includes("Successfully installed")) {
           this.clientInstalledOk = true
           this.invoke("broadcastState")
@@ -474,7 +463,7 @@ print(result.stderr.decode(), file=sys.stderr)
 
       pipProcess.stderr.on("data", (data: Buffer) => {
         const str = data.toString()
-        // this.error(`stderr: ${data.toString()}`)
+        this.error(`stderr: ${data.toString()}`)
         if (str.startsWith("ERROR:")) {
           this.error(str)
         } else if (str.startsWith("WARN:")) {
@@ -501,7 +490,29 @@ print(result.stderr.decode(), file=sys.stderr)
 
   startClient(packages = {}, envName = "venv", envPath = this.pkg.cwd): Promise<string> {
     return new Promise((resolve, reject) => {
-      const args = ["-u", "OpenCV.py", "-i", this.name, "-c", "http://localhost:3001"]
+      // python has specific path to the executable resolved by this Proxy service - with full path
+      // but pkg cmd should be generalized .. how to reconcile ?
+
+      // THIS MUST BE FIXED !!!
+
+      const searchReplace: Record<string, string> = {
+        "{{name}}": this.name,
+        "{{id}}": this.id,
+        "{{serviceUrl}}": Main.serviceUrl
+      }
+
+      const args: string[] = []
+
+      for (let arg of this.pkg.args) {
+        const keys: string[] = Object.keys(searchReplace)
+
+        for (let key of keys) {
+          arg = arg.replace(key, searchReplace[key])
+        }
+
+        args.push(arg)
+      }
+
       const fullPath = path.join(envPath, envName)
       const pipPath = path.join(fullPath, process.platform === "win32" ? "Scripts" : "bin", "python")
       const command = pipPath

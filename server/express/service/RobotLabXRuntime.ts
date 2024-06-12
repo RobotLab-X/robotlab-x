@@ -92,7 +92,8 @@ export default class RobotLabXRuntime extends Service {
       connections: this.connections,
       defaultRoute: this.defaultRoute,
       routeTable: this.routeTable,
-      types: this.types
+      types: this.types,
+      main: Main.toJSON()
     }
   }
 
@@ -465,12 +466,7 @@ export default class RobotLabXRuntime extends Service {
 
       log.info(`starting service: ${serviceName}, type: ${serviceType} in ${process.cwd()}`)
 
-      // repo should be immutable - make a copy to service/{name} if one doesn't already exist
-      const targetDir = path.join(Main.expressRoot, `service/${serviceName}`)
-
-      this.repo.copyPackage(serviceName, serviceType)
-      log.info(`successful ${targetDir}`)
-
+      const targetDir = path.join(Main.expressRoot, `repo/${serviceType}`)
       const pkgYmlFile = `${targetDir}/package.yml`
 
       // loading type info
@@ -490,11 +486,6 @@ export default class RobotLabXRuntime extends Service {
       // TODO - if service request to add a service
       // and mrl and process exists - then /runtime/start
       log.info(`package.platform: ${pkg.platform}, type: ${serviceType} in ${process.cwd()}`)
-
-      let dependenciesMet = true
-
-      let platformInfo = null
-
       log.info(`starting process ${targetDir}/${pkg.cmd} ${pkg.args}`)
       let service: Service = null
       // FIXME "all" types of platform have a corresponding node service ..
@@ -542,80 +533,10 @@ export default class RobotLabXRuntime extends Service {
       this.installInfo(`platform is ok`)
       this.register(service)
       this.installInfo(`registered service ${serviceName}`)
-      // }
-      // SAVE FOR PYTHON SERVICES - which could be proxied
-      //  else if (dependenciesMet) {
-      //   // FIXME - REMOVE ALL BELOW - because starting a new process should ALWAYS
-      //   // be in the context of the node service ..
-      //   log.info(`dependencies met for ${serviceName} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
-      //   // spawn the process
-      //   log.info(`spawning process ${pkg.cmd} ${pkg.args} in ${targetDir}`)
-      //   const childProcess = spawn(pkg.cmd, pkg.args, { cwd: targetDir, shell: true })
 
-      //   childProcess.on("error", (err) => {
-      //     log.error(`failed to start subprocess. ${err}`)
-      //     // send message with error to UI
-      //     return
-      //   })
-
-      //   if (childProcess.pid) {
-      //     // register the service
-      //     service = new Service(childProcess.pid.toString(), serviceName, serviceType, version, this.getHostname())
-      //   } else {
-      //     log.error("Process PID is undefined, indicating an issue with spawning the process.")
-      //     return
-      //   }
-
-      //   // Stream stdout and stderr
-      //   childProcess.stdout.on("data", (data) => {
-      //     log.info(`STDOUT: ${data}`)
-      //     // TODO more structured publishStdOutRecord
-      //     // where record.level record.ts record.msg
-      //     service.invoke("publishStdOut", data.toString())
-      //   })
-
-      //   childProcess.stderr.on("data", (data) => {
-      //     log.error(`STDERR: ${data}`)
-      //     service.invoke("publishStdOut", data.toString())
-      //   })
-
-      //   // Handle process exit
-      //   childProcess.on("close", (code) => {
-      //     log.info(`Subprocess exited with code ${code}`)
-      //     // Optionally handle process cleanup or restart
-      //   })
-
-      //   // register the process
-      //   let platformVersion = "0.0.0" // platformInfo?.platformVersion
-      //   const pd: ProcessData = new ProcessData(
-      //     serviceName,
-      //     childProcess.pid.toString(),
-      //     this.getHostname(),
-      //     pkg.platform,
-      //     platformVersion ? platformVersion : pkg.platformVersion // actual vs requested version
-      //   )
-      //   this.registerProcess(pd)
-
-      //   // service = new Service(childProcess.pid.toString(), serviceName, serviceType, version, this.getHostname())
-      //   // for unaliased ids for services - single process services will be serviceName@serviceName
-      //   // FIXME MAKE A PROXY TYPE !!!
-      //   service = new Service(this.getId(), serviceName, serviceType, version, this.getHostname())
-
-      //   log.info(`process ${JSON.stringify(childProcess)}`)
-      // } else {
-      //   log.error(`dependencies not met for ${serviceName} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
-      //   return null
-      // }
-
-      // register and start the service
-      // this.register(service)
       return service
     } catch (e: unknown) {
       const error = e as Error
-
-      // // Get the file and line number where the error occurred
-      // const file = e.stack.split("\n")[1].match(/\((?<file>.+):\d+\)/)?.groups?.file
-      // const lineNumber = e.stack.split("\n")[1].match(/\((?<file>.+):(?<lineNumber>\d+)\)/)?.groups?.lineNumber
       let errStr = `error: ${error} ${error.stack}`
       log.error(errStr)
       this.invoke("publishInstallLog", errStr)

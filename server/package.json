@@ -6,7 +6,7 @@
   "main": "./dist/electron/ElectronStarter.js",
   "build": {
     "appId": "org.robotlab-x.app",
-    "productName": "RobotLab-X-Server",
+    "productName": "RobotLab-X",
     "extends": null,
     "files": [
       "dist/**/*"

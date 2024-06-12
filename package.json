@@ -1,5 +1,6 @@
 {
   "name": "robotlab-x",
+  "productName": "RobotLabX",
   "version": "0.9.0",
   "description": "A cross platform desktop application for creating and running robots",
   "scripts": {
