@@ -12,6 +12,8 @@ interfaces:
     - endpoint: "/api/v1/resource"
       method: "GET"
       description: "Retrieves list of resources."
+requirements:
+  opencv-python: ">=4.10.0"
 author: "GroG"
 license: "MIT"
 categories:
