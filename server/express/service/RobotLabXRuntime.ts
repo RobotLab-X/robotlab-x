@@ -507,9 +507,9 @@ export default class RobotLabXRuntime extends Service {
           log.info("system starting - local runtime already created")
           service = RobotLabXRuntime.instance
         } else {
-          // a native (in process) Node service, no Proxy needed
-          service = this.repo.getNewService(this.getId(), serviceName, serviceType, version, this.getHostname())
           if (pkg.platform === "node") {
+            // a native (in process) Node service, no Proxy needed
+            service = this.repo.getNewService(this.getId(), serviceName, serviceType, version, this.getHostname())
           } else {
             // Important, if the service is a python service, the id will be the same as the service name
             // because it really "is" a remote service - hopefully proxied and using the robotlabx py client
