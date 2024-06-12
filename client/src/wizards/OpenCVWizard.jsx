@@ -11,16 +11,23 @@ export default function OpenCVWizard({ fullname }) {
 
   // creates subscriptions to topics and returns the broadcastState message reference
   const serviceMsg = useServiceSubscription(fullname)
-
   const service = useProcessedMessage(serviceMsg)
   const [selection, setSelection] = useState("")
   const [isInstalling, setIsInstalling] = useState(false)
 
-  const handleSelectionChange = (event) => {
+  const checkPythonVersion = () => {
+    sendTo(fullname, "checkPythonVersion")
+  }
+
+  const checkPipVersion = () => {
+    sendTo(fullname, "checkPipVersion")
+  }
+
+  const handleVenvSelection = (event) => {
     setSelection(event.target.value)
   }
 
-  const handleInstallVenv = () => {
+  const installVenv = () => {
     setIsInstalling(true)
     sendTo(fullname, "installVirtualEnv")
   }
@@ -30,21 +37,21 @@ export default function OpenCVWizard({ fullname }) {
     sendTo(fullname, "installPipRequirements", service?.pkg?.requirements)
   }
 
-  const startClient = () => {
-    sendTo(fullname, "startClient")
+  const startProxy = () => {
+    sendTo(fullname, "startProxy")
   }
 
-  const installClientHandler = () => {
+  const installRepoRequirements = () => {
     setIsInstalling(true)
     sendTo(fullname, "installClient")
   }
 
-  const handleFinished = () => {
+  const finished = () => {
     sendTo(fullname, "setInstalled", true)
     sendTo(fullname, "broadcastState")
   }
 
-  const Step1 = ({ nextStep }) => {
+  const CheckPythonVersion = ({ nextStep }) => {
     return (
       <div>
         <h2>Step 1 Check for Python</h2>
@@ -63,7 +70,7 @@ export default function OpenCVWizard({ fullname }) {
     )
   }
 
-  const Step2 = ({ previousStep, nextStep }) => (
+  const CheckPipVersion = ({ previousStep, nextStep }) => (
     <div>
       <h2>Step 2 Check for Pip</h2>
       {!service?.pipVersionOk && (
@@ -79,7 +86,7 @@ export default function OpenCVWizard({ fullname }) {
     </div>
   )
 
-  const Step3 = ({ previousStep, nextStep }) => {
+  const InstallVenv = ({ previousStep, nextStep }) => {
     const handleNextStep = () => {
       setIsInstalling(false)
       nextStep()
@@ -89,7 +96,7 @@ export default function OpenCVWizard({ fullname }) {
       <div>
         <h2>Step 3 Virtual Environment</h2>
         <FormControl component="fieldset">
-          <RadioGroup aria-label="venv" name="venv" value={selection} onChange={handleSelectionChange}>
+          <RadioGroup aria-label="venv" name="venv" value={selection} onChange={handleVenvSelection}>
             <FormControlLabel value="useVenv" control={<Radio />} label="Virtual env (recommended)" />
             <FormControlLabel value="noVenv" control={<Radio />} label="Do not use venv" />
           </RadioGroup>
@@ -101,7 +108,7 @@ export default function OpenCVWizard({ fullname }) {
             </Button>
           )}
           {selection === "useVenv" && !service?.venvOk && (
-            <Button variant="contained" color="primary" onClick={handleInstallVenv} disabled={isInstalling}>
+            <Button variant="contained" color="primary" onClick={installVenv} disabled={isInstalling}>
               {isInstalling ? "Installing..." : "Install Virtual Env"}
             </Button>
           )}
@@ -110,7 +117,7 @@ export default function OpenCVWizard({ fullname }) {
     )
   }
 
-  const Step4 = ({ previousStep, nextStep }) => {
+  const InstallOpenCV = ({ previousStep, nextStep }) => {
     const handleNextStep = () => {
       setIsInstalling(false)
       nextStep()
@@ -133,11 +140,11 @@ export default function OpenCVWizard({ fullname }) {
     )
   }
 
-  const InstallClient = ({ previousStep, nextStep }) => (
+  const InstallRepoRequirements = ({ previousStep, nextStep }) => (
     <div>
       <h2>Step 5 Install RobotLab-X Client</h2>
       {service?.pythonVersionOk && service?.pipVersionOk && service?.requirementsOk && !service?.clientInstalledOk && (
-        <Button variant="contained" color="primary" onClick={installClientHandler} disabled={isInstalling}>
+        <Button variant="contained" color="primary" onClick={installRepoRequirements} disabled={isInstalling}>
           {isInstalling ? "Installing..." : "Install"}
         </Button>
       )}
@@ -149,11 +156,11 @@ export default function OpenCVWizard({ fullname }) {
     </div>
   )
 
-  const StartOpenCVClient = ({ previousStep, nextStep }) => (
+  const StartProxy = ({ previousStep, nextStep }) => (
     <div>
       <h2>Step 6 Start RobotLab-X Client</h2>
       {service?.pythonVersionOk && service?.pipVersionOk && service?.requirementsOk && !service?.clientConnected && (
-        <Button variant="contained" color="primary" onClick={startClient}>
+        <Button variant="contained" color="primary" onClick={startProxy}>
           Start
         </Button>
       )}
@@ -165,35 +172,27 @@ export default function OpenCVWizard({ fullname }) {
     </div>
   )
 
-  const StepFinished = ({ previousStep, nextStep, text = "Git Clone the DepthAI SDK" }) => (
+  const Finished = ({ previousStep, nextStep, text = "Git Clone the DepthAI SDK" }) => (
     <div>
       <h2>Finished</h2>
       <p>You should be able to use the OpenCV service now</p>
-      <Button variant="contained" color="primary" onClick={handleFinished}>
+      <Button variant="contained" color="primary" onClick={finished}>
         Finish
       </Button>
     </div>
   )
 
-  const checkPythonVersion = () => {
-    sendTo(fullname, "checkPythonVersion")
-  }
-
-  const checkPipVersion = () => {
-    sendTo(fullname, "checkPipVersion")
-  }
-
   return (
     <>
       <h1>OpenCV Setup</h1>
       <StepWizard>
-        <Step1 />
-        <Step2 />
-        <Step3 />
-        <Step4 />
-        <InstallClient />
-        <StartOpenCVClient />
-        <StepFinished />
+        <CheckPythonVersion />
+        <CheckPipVersion />
+        <InstallVenv />
+        <InstallOpenCV />
+        <InstallRepoRequirements />
+        <StartProxy />
+        <Finished />
       </StepWizard>
     </>
   )

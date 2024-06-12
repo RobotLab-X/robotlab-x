@@ -1,6 +1,6 @@
 typeKey: "Proxy"
 title: "Proxy"
-platform: "node"
+platform: "node" # should be null or Proxy or a new proxy field
 platformVersion: "v20.9.0"
 description: "Proxy service"
 version: "0.0.1"

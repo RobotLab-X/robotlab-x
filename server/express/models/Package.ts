@@ -9,7 +9,8 @@ export default class Package {
   platformVersion: string | null = null // "v12.18.3"
   description: string | null = null // "Node test service for testing!"
   version: string | null = null // "0.0.1"
-  requirements: string | null = null // "node"
+  requirements: string[] | null = [] // pip requirements.txt
+  repoRequirements: string[] | null = [] // requirements.txt
   cmd: string | null = null // "python"
   args: string[] | null = null // ["-m", "http.server", "8000"]
   cwd: null | string = null // "/path/to/instanceDir"

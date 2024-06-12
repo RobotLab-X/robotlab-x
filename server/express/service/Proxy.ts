@@ -431,6 +431,8 @@ print(result.stderr.decode(), file=sys.stderr)
   }
 
   /**
+   * @deprecated - use installRepoRequirements
+   *
    * Local Repo Requirements - client minimally installed but other local requirements
    * may be needed - from:
    * repoReqs in package.yml
@@ -488,7 +490,8 @@ print(result.stderr.decode(), file=sys.stderr)
     })
   }
 
-  startClient(packages = {}, envName = "venv", envPath = this.pkg.cwd): Promise<string> {
+  // FIXME - startProxy
+  startProxy(packages = {}, envName = "venv", envPath = this.pkg.cwd): Promise<string> {
     return new Promise((resolve, reject) => {
       // python has specific path to the executable resolved by this Proxy service - with full path
       // but pkg cmd should be generalized .. how to reconcile ?
@@ -539,6 +542,61 @@ print(result.stderr.decode(), file=sys.stderr)
             this.clientConnected = true
             this.invoke("broadcastState")
           }
+        }
+      })
+
+      pipProcess.on("close", (code: number) => {
+        if (code === 0) {
+          resolve(`Package ${args} installed successfully.`)
+        } else {
+          reject(`pip install process exited with code ${code}`)
+        }
+      })
+
+      pipProcess.on("error", (error: Error) => {
+        this.error(`Error: ${error.message}`)
+        reject(`Error: ${error.message}`)
+      })
+    })
+  }
+
+  installRepoRequirements(envName = "venv", envPath = this.pkg.cwd): Promise<string> {
+    for (let req of this.pkg.requirements) {
+      // stupid lossy to_lower comparison of type name match
+      const parts: string[] = req.split("-")
+      // this.info(`installing ${key} ${this.pkg.repoReqs[key]}`)
+    }
+
+    const fullPath = path.join(envPath, envName)
+    const clientPath = path.join(`${Main.expressRoot}`, "repo", "robotlabx")
+    this.error(`Installing client ${clientPath} to ${fullPath}`)
+    return new Promise((resolve, reject) => {
+      const args = ["install", "-e", clientPath]
+
+      // const fullPath = path.join(envPath, envName)
+      const pipPath = path.join(fullPath, process.platform === "win32" ? "Scripts" : "bin", "pip")
+      const command = pipPath
+
+      this.error(`${pipPath} ${args.join(" ")}`)
+      const pipProcess = spawn(command, args)
+
+      pipProcess.stdout.on("data", (data: Buffer) => {
+        this.error(`stdout: ${data.toString()}`)
+        if (data.toString().includes("Successfully installed")) {
+          this.clientInstalledOk = true
+          this.invoke("broadcastState")
+        }
+      })
+
+      pipProcess.stderr.on("data", (data: Buffer) => {
+        const str = data.toString()
+        this.error(`stderr: ${data.toString()}`)
+        if (str.startsWith("ERROR:")) {
+          this.error(str)
+        } else if (str.startsWith("WARN:")) {
+          this.warn(str)
+        } else {
+          this.info(str)
         }
       })
 
