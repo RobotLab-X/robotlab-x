@@ -430,67 +430,6 @@ print(result.stderr.decode(), file=sys.stderr)
       })
     })
   }
-
-  /**
-   * @deprecated - use installRepoRequirements
-   *
-   * Local Repo Requirements - client minimally installed but other local requirements
-   * may be needed - from:
-   * repoReqs in package.yml
-   *
-   * @param envName
-   * @param envPath
-   * @returns
-   */
-  installClient(envName = "venv", envPath = this.pkg.cwd): Promise<string> {
-    const fullPath = path.join(envPath, envName)
-    const clientPath = path.join(`${Main.expressRoot}`, "repo", "robotlabx")
-    this.error(`Installing client ${clientPath} to ${fullPath}`)
-    return new Promise((resolve, reject) => {
-      const args = ["install", "-e", clientPath]
-
-      // const fullPath = path.join(envPath, envName)
-      const pipPath = path.join(fullPath, process.platform === "win32" ? "Scripts" : "bin", "pip")
-      const command = pipPath
-
-      this.error(`${pipPath} ${args.join(" ")}`)
-      const pipProcess = spawn(command, args)
-
-      pipProcess.stdout.on("data", (data: Buffer) => {
-        this.error(`stdout: ${data.toString()}`)
-        if (data.toString().includes("Successfully installed")) {
-          this.clientInstalledOk = true
-          this.invoke("broadcastState")
-        }
-      })
-
-      pipProcess.stderr.on("data", (data: Buffer) => {
-        const str = data.toString()
-        this.error(`stderr: ${data.toString()}`)
-        if (str.startsWith("ERROR:")) {
-          this.error(str)
-        } else if (str.startsWith("WARN:")) {
-          this.warn(str)
-        } else {
-          this.info(str)
-        }
-      })
-
-      pipProcess.on("close", (code: number) => {
-        if (code === 0) {
-          resolve(`Package ${args} installed successfully.`)
-        } else {
-          reject(`pip install process exited with code ${code}`)
-        }
-      })
-
-      pipProcess.on("error", (error: Error) => {
-        this.error(`Error: ${error.message}`)
-        reject(`Error: ${error.message}`)
-      })
-    })
-  }
-
   // FIXME - startProxy
   startProxy(packages = {}, envName = "venv", envPath = this.pkg.cwd): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -570,41 +509,44 @@ print(result.stderr.decode(), file=sys.stderr)
 
       const fullPath = path.join(envPath, envName)
       const clientPath = path.join(`${Main.expressRoot}`, "repo", typeKey.toLowerCase(), rlx_pkg)
-      this.error(`Installing client ${clientPath} to ${fullPath}`)
+      this.info(`Installing client ${clientPath} to ${fullPath}`)
 
       return new Promise<string>((resolve, reject) => {
         const args = ["install", "-e", clientPath]
         const pipPath = path.join(fullPath, process.platform === "win32" ? "Scripts" : "bin", "pip")
         const command = pipPath
 
-        this.error(`${pipPath} ${args.join(" ")}`)
+        this.info(`${pipPath} ${args.join(" ")}`)
         const pipProcess = spawn(command, args)
 
+        let stdoutData = ""
+        let stderrData = ""
+
         pipProcess.stdout.on("data", (data: Buffer) => {
-          this.error(`stdout: ${data.toString()}`)
-          if (data.toString().includes("Successfully installed")) {
-            this.clientInstalledOk = true
-            this.invoke("broadcastState")
-          }
+          const output = data.toString()
+          stdoutData += output
+          this.info(`stdout: ${output}`)
         })
 
         pipProcess.stderr.on("data", (data: Buffer) => {
-          const str = data.toString()
-          this.error(`stderr: ${data.toString()}`)
-          if (str.startsWith("ERROR:")) {
-            this.error(str)
-          } else if (str.startsWith("WARN:")) {
-            this.warn(str)
+          const output = data.toString()
+          stderrData += output
+          if (output.startsWith("ERROR:")) {
+            this.error(output)
+          } else if (output.startsWith("WARN:")) {
+            this.warn(output)
           } else {
-            this.info(str)
+            this.info(output)
           }
         })
 
         pipProcess.on("close", (code: number) => {
-          if (code === 0) {
+          if (code === 0 && stdoutData.includes("Successfully installed")) {
+            this.clientInstalledOk = true
+            this.invoke("broadcastState")
             resolve(`Package ${args.join(" ")} installed successfully.`)
           } else {
-            reject(`pip install process exited with code ${code}`)
+            reject(`pip install process exited with code ${code}. Stderr: ${stderrData}`)
           }
         })
 

@@ -44,7 +44,7 @@ class RobotLabXClient:
     """
 
     def __init__(self, client_id):
-        log.info(f"WebSocket client ID: {client_id}")
+        log.info("WebSocket client ID: %s", client_id)
         self.client_id = client_id
         self.websocket = None
         self.stop_event = asyncio.Event()

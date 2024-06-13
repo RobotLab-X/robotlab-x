@@ -1,4 +1,7 @@
 ## TODO
+* FIGURE OUT WHY Promise.all IS NOT WORKING with installRepoRequirements !!!
+* Implement face recognition filter with modes
+* Implement filter sub panels in jsx
 * Status Log moved into ServicePage.jsx
 * Need a refresh icon in the ServicePage.jsx that does a broadcastState
 * Node Python interface (in process !?!?) -> https://www.npmjs.com/package/node-calls-python  python shell - https://www.npmjs.com/package/python-shell

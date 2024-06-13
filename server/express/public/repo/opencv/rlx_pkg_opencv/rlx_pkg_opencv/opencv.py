@@ -1,6 +1,7 @@
 import argparse
 import cv2
 import os
+import importlib
 import uuid
 import numpy as np
 import urllib.request
@@ -84,14 +85,23 @@ class OpenCV:
         print("Webcam capture stopped.")
 
     def add_filter(self, name_of_filter, type_of_filter):
+        # Construct the module path
+        module_name = f"rlx_pkg_opencv.filter.open_cv_filter_{type_of_filter.lower()}"
         filter_class_name = f"OpenCVFilter{type_of_filter}"
-        filter_class = globals().get(filter_class_name)
-        if filter_class:
+
+        try:
+            # Dynamically import the module
+            module = importlib.import_module(module_name)
+            # Get the filter class
+            filter_class = getattr(module, filter_class_name)
+            # Create an instance of the filter class
             filter_instance = filter_class(name_of_filter)
             self.filters.append(filter_instance)
             print(f"Added filter: {name_of_filter} of type: {type_of_filter}")
-        else:
-            print(f"Filter class {filter_class_name} not found.")
+        except ModuleNotFoundError:
+            print(f"Module {module_name} not found.")
+        except AttributeError:
+            print(f"Filter class {filter_class_name} not found in {module_name}.")
 
     def remove_filter(self, name_of_filter):
         self.filters = [
