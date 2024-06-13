@@ -63,7 +63,7 @@ export default class Main {
   }
 
   private static onReady() {
-    log.error(`onReady: Main.expressRoot ${Main.expressRoot}`)
+    log.info(`onReady: Main.expressRoot ${Main.expressRoot}`)
     Main.mainWindow = new Main.BrowserWindow({
       width: 800,
       height: 600,
