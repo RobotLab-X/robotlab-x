@@ -7,7 +7,11 @@ import time
 import asyncio
 from time import sleep
 from concurrent.futures import ThreadPoolExecutor
-from robotlabx.robotlabxclient import RobotLabXClient
+
+# from robotlabx.robotlabxclient import RobotLabXClient
+from rlx_pkg_proxy.robotlabxclient import RobotLabXClient
+
+# from proxy.rlx_pkg_proxy.rlx_pkg_proxy.robotlabxclient import RobotLabXClient
 from typing import List
 from rlx_pkg_opencv.opencv import OpenCV
 

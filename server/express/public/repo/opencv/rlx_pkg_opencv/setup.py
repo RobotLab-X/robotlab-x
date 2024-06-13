@@ -1,14 +1,14 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="rlx-pkg-proxy",
+    name="rlx_pkg_opencv",
     version="0.0.9",
     author="GroG",
     author_email="supertick@gmail.com",
-    description="RobotLabX Client Proxy Package",
+    description="rlx_pkg_opencv",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
-    url="https://github.com/RobotLab-X/rlx-pkg-proxy",
+    url="https://github.com/yourusername/robotlabxclient",
     packages=find_packages(),
     install_requires=["websockets", "requests"],
     classifiers=[

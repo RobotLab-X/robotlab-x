@@ -1,4 +1,4 @@
-import { Button, FormControl, FormControlLabel, Radio, RadioGroup } from "@mui/material"
+import { Button } from "@mui/material"
 import React, { useState } from "react"
 import StepWizard from "react-step-wizard"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
@@ -43,7 +43,8 @@ export default function OpenCVWizard({ fullname }) {
 
   const installRepoRequirements = () => {
     setIsInstalling(true)
-    sendTo(fullname, "installClient")
+    // sendTo(fullname, "installClient")
+    sendTo(fullname, "installRepoRequirements")
   }
 
   const finished = () => {
@@ -95,19 +96,19 @@ export default function OpenCVWizard({ fullname }) {
     return (
       <div>
         <h2>Step 3 Virtual Environment</h2>
-        <FormControl component="fieldset">
+        {/* <FormControl component="fieldset">
           <RadioGroup aria-label="venv" name="venv" value={selection} onChange={handleVenvSelection}>
             <FormControlLabel value="useVenv" control={<Radio />} label="Virtual env (recommended)" />
             <FormControlLabel value="noVenv" control={<Radio />} label="Do not use venv" />
           </RadioGroup>
-        </FormControl>
+        </FormControl> */}
         <div style={{ marginTop: "20px" }}>
-          {(selection === "noVenv" || service?.venvOk) && (
+          {service?.venvOk && (
             <Button variant="contained" color="primary" onClick={handleNextStep}>
               Next
             </Button>
           )}
-          {selection === "useVenv" && !service?.venvOk && (
+          {!service?.venvOk && (
             <Button variant="contained" color="primary" onClick={installVenv} disabled={isInstalling}>
               {isInstalling ? "Installing..." : "Install Virtual Env"}
             </Button>

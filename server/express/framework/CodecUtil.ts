@@ -1,4 +1,8 @@
+import { getLogger } from "../framework/Log"
 import RobotLabXRuntime from "../service/RobotLabXRuntime"
+
+const log = getLogger("Proxy")
+
 class CodecUtil {
   /**
    * Retrieves the full name by appending the runtime ID to the name if no ID is associated with the name.
@@ -54,6 +58,20 @@ class CodecUtil {
   // Helper method to capitalize the first letter of a string
   static capitalize(str: string): string {
     return str.charAt(0).toUpperCase() + str.slice(1)
+  }
+
+  static getNpmPackageName(type: string): string {
+    if (!type) {
+      log.error("Type is null")
+    }
+    return `rlx-pkg-${type.toLowerCase()}`
+  }
+
+  static getPipPackageName(type: string): string {
+    if (!type) {
+      log.error("Type is null")
+    }
+    return `rlx_pkg_${type.toLowerCase()}`
   }
 }
 

@@ -5,7 +5,7 @@ platformVersion: null # minimum version ?
 description: "OpenCV pipeline"
 version: "0.0.1"
 cmd: "python"
-args: ["-u","OpenCV.py", "-i", "{{name}}", "-c", "{{serviceUrl}}"] # -u unbuffered output
+args: ["-u","proxy.py", "-i", "{{name}}", "-c", "{{serviceUrl}}"] # -u unbuffered output
 cwd: null
 interfaces:
   restAPI:
@@ -15,8 +15,8 @@ interfaces:
 requirements:
   opencv-python: ">=4.10.0"
 repoRequirements:
-  - "rlx-pkg-proxy"
-  - "rlx-pkg-opencv"
+  - "Proxy"
+  - "OpenCV"
 author: "GroG"
 license: "MIT"
 categories:

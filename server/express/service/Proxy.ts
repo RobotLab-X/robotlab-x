@@ -561,58 +561,68 @@ print(result.stderr.decode(), file=sys.stderr)
     })
   }
 
-  installRepoRequirements(envName = "venv", envPath = this.pkg.cwd): Promise<string> {
-    for (let req of this.pkg.requirements) {
-      // stupid lossy to_lower comparison of type name match
-      const parts: string[] = req.split("-")
-      // this.info(`installing ${key} ${this.pkg.repoReqs[key]}`)
-    }
+  installRepoRequirements(envName = "venv", envPath = this.pkg.cwd): Promise<string[]> {
+    this.info(`This service requires the following repo packages: ${this.pkg.repoRequirements}`)
 
-    const fullPath = path.join(envPath, envName)
-    const clientPath = path.join(`${Main.expressRoot}`, "repo", "robotlabx")
-    this.error(`Installing client ${clientPath} to ${fullPath}`)
-    return new Promise((resolve, reject) => {
-      const args = ["install", "-e", clientPath]
+    const installationPromises = this.pkg.repoRequirements.map((typeKey) => {
+      this.info(`Installing repo package ${typeKey}`)
+      const rlx_pkg = CodecUtil.getPipPackageName(typeKey)
 
-      // const fullPath = path.join(envPath, envName)
-      const pipPath = path.join(fullPath, process.platform === "win32" ? "Scripts" : "bin", "pip")
-      const command = pipPath
+      const fullPath = path.join(envPath, envName)
+      const clientPath = path.join(`${Main.expressRoot}`, "repo", typeKey.toLowerCase(), rlx_pkg)
+      this.error(`Installing client ${clientPath} to ${fullPath}`)
 
-      this.error(`${pipPath} ${args.join(" ")}`)
-      const pipProcess = spawn(command, args)
+      return new Promise<string>((resolve, reject) => {
+        const args = ["install", "-e", clientPath]
+        const pipPath = path.join(fullPath, process.platform === "win32" ? "Scripts" : "bin", "pip")
+        const command = pipPath
 
-      pipProcess.stdout.on("data", (data: Buffer) => {
-        this.error(`stdout: ${data.toString()}`)
-        if (data.toString().includes("Successfully installed")) {
-          this.clientInstalledOk = true
-          this.invoke("broadcastState")
-        }
-      })
+        this.error(`${pipPath} ${args.join(" ")}`)
+        const pipProcess = spawn(command, args)
 
-      pipProcess.stderr.on("data", (data: Buffer) => {
-        const str = data.toString()
-        this.error(`stderr: ${data.toString()}`)
-        if (str.startsWith("ERROR:")) {
-          this.error(str)
-        } else if (str.startsWith("WARN:")) {
-          this.warn(str)
-        } else {
-          this.info(str)
-        }
-      })
+        pipProcess.stdout.on("data", (data: Buffer) => {
+          this.error(`stdout: ${data.toString()}`)
+          if (data.toString().includes("Successfully installed")) {
+            this.clientInstalledOk = true
+            this.invoke("broadcastState")
+          }
+        })
 
-      pipProcess.on("close", (code: number) => {
-        if (code === 0) {
-          resolve(`Package ${args} installed successfully.`)
-        } else {
-          reject(`pip install process exited with code ${code}`)
-        }
-      })
+        pipProcess.stderr.on("data", (data: Buffer) => {
+          const str = data.toString()
+          this.error(`stderr: ${data.toString()}`)
+          if (str.startsWith("ERROR:")) {
+            this.error(str)
+          } else if (str.startsWith("WARN:")) {
+            this.warn(str)
+          } else {
+            this.info(str)
+          }
+        })
 
-      pipProcess.on("error", (error: Error) => {
-        this.error(`Error: ${error.message}`)
-        reject(`Error: ${error.message}`)
+        pipProcess.on("close", (code: number) => {
+          if (code === 0) {
+            resolve(`Package ${args.join(" ")} installed successfully.`)
+          } else {
+            reject(`pip install process exited with code ${code}`)
+          }
+        })
+
+        pipProcess.on("error", (error: Error) => {
+          this.error(`Error: ${error.message}`)
+          reject(`Error: ${error.message}`)
+        })
       })
     })
+
+    return Promise.all(installationPromises)
+      .then((results) => {
+        this.info(`All packages installed successfully: ${results.join(", ")}`)
+        return results
+      })
+      .catch((error) => {
+        this.error(`One or more packages failed to install: ${error}`)
+        throw error
+      })
   }
 }
