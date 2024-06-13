@@ -500,71 +500,75 @@ print(result.stderr.decode(), file=sys.stderr)
     })
   }
 
-  installRepoRequirements(envName = "venv", envPath = this.pkg.cwd): Promise<string[]> {
-    this.info(`This service requires the following repo packages: ${this.pkg.repoRequirements}`)
+  async installRepoRequirement(typeKey: string, envName = "venv", envPath = this.pkg.cwd): Promise<string> {
+    this.info(`Installing repo package ${typeKey}`)
+    const rlx_pkg = CodecUtil.getPipPackageName(typeKey)
 
-    const installationPromises = this.pkg.repoRequirements.map((typeKey) => {
-      this.info(`Installing repo package ${typeKey}`)
-      const rlx_pkg = CodecUtil.getPipPackageName(typeKey)
+    const fullPath = path.join(envPath, envName)
+    const clientPath = path.join(`${Main.expressRoot}`, "repo", typeKey.toLowerCase(), rlx_pkg)
+    this.info(`Installing client ${clientPath} to ${fullPath}`)
 
-      const fullPath = path.join(envPath, envName)
-      const clientPath = path.join(`${Main.expressRoot}`, "repo", typeKey.toLowerCase(), rlx_pkg)
-      this.info(`Installing client ${clientPath} to ${fullPath}`)
+    return new Promise<string>((resolve, reject) => {
+      const args = ["install", "-e", clientPath]
+      const pipPath = path.join(fullPath, process.platform === "win32" ? "Scripts" : "bin", "pip")
+      const command = pipPath
 
-      return new Promise<string>((resolve, reject) => {
-        const args = ["install", "-e", clientPath]
-        const pipPath = path.join(fullPath, process.platform === "win32" ? "Scripts" : "bin", "pip")
-        const command = pipPath
+      this.info(`${pipPath} ${args.join(" ")}`)
+      const pipProcess = spawn(command, args)
 
-        this.info(`${pipPath} ${args.join(" ")}`)
-        const pipProcess = spawn(command, args)
+      let stdoutData = ""
+      let stderrData = ""
 
-        let stdoutData = ""
-        let stderrData = ""
+      pipProcess.stdout.on("data", (data: Buffer) => {
+        const output = data.toString()
+        stdoutData += output
+        this.info(`stdout: ${output}`)
+      })
 
-        pipProcess.stdout.on("data", (data: Buffer) => {
-          const output = data.toString()
-          stdoutData += output
-          this.info(`stdout: ${output}`)
-        })
+      pipProcess.stderr.on("data", (data: Buffer) => {
+        const output = data.toString()
+        stderrData += output
+        if (output.startsWith("ERROR:")) {
+          this.error(output)
+        } else if (output.startsWith("WARN:")) {
+          this.warn(output)
+        } else {
+          this.info(output)
+        }
+      })
 
-        pipProcess.stderr.on("data", (data: Buffer) => {
-          const output = data.toString()
-          stderrData += output
-          if (output.startsWith("ERROR:")) {
-            this.error(output)
-          } else if (output.startsWith("WARN:")) {
-            this.warn(output)
-          } else {
-            this.info(output)
-          }
-        })
+      pipProcess.on("close", (code: number) => {
+        if (code === 0 && stdoutData.includes("Successfully installed")) {
+          this.clientInstalledOk = true
+          this.invoke("broadcastState")
+          resolve(`Package ${args.join(" ")} installed successfully.`)
+        } else {
+          reject(`pip install process exited with code ${code}. Stderr: ${stderrData}`)
+        }
+      })
 
-        pipProcess.on("close", (code: number) => {
-          if (code === 0 && stdoutData.includes("Successfully installed")) {
-            this.clientInstalledOk = true
-            this.invoke("broadcastState")
-            resolve(`Package ${args.join(" ")} installed successfully.`)
-          } else {
-            reject(`pip install process exited with code ${code}. Stderr: ${stderrData}`)
-          }
-        })
-
-        pipProcess.on("error", (error: Error) => {
-          this.error(`Error: ${error.message}`)
-          reject(`Error: ${error.message}`)
-        })
+      pipProcess.on("error", (error: Error) => {
+        this.error(`Error: ${error.message}`)
+        reject(`Error: ${error.message}`)
       })
     })
+  }
 
-    return Promise.all(installationPromises)
-      .then((results) => {
-        this.info(`All packages installed successfully: ${results.join(", ")}`)
-        return results
-      })
-      .catch((error) => {
+  async installRepoRequirements(envName = "venv", envPath = this.pkg.cwd): Promise<string[]> {
+    this.info(`This service requires the following repo packages: ${this.pkg.repoRequirements}`)
+
+    const results: string[] = []
+    for (const typeKey of this.pkg.repoRequirements) {
+      try {
+        const result = await this.installRepoRequirement(typeKey, envName, envPath)
+        results.push(result)
+      } catch (error) {
         this.error(`One or more packages failed to install: ${error}`)
         throw error
-      })
+      }
+    }
+
+    this.info(`All packages installed successfully: ${results.join(", ")}`)
+    return results
   }
 }
