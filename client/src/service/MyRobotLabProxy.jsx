@@ -56,7 +56,7 @@ export default function MyRobotLabProxy({ name, fullname, id }) {
       <br />
       {service && (
         <img
-          src={`${getRepoUrl()}/MyRobotLabConnector/images/${service?.serviceType?.simpleName}.png`}
+          src={`${getRepoUrl()}/myrobotlabconnector/images/${service?.serviceType?.simpleName}.png`}
           alt={service.name}
           width="32"
           style={{ verticalAlign: "middle" }}

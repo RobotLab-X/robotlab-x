@@ -1,0 +1,25 @@
+{
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+      "source.organizeImports": "always",
+      "importSorter.fixOnSave": "always",
+      "source.importsSorter.python": "always",
+      "source.fixAll": "always"
+  },
+  "python.analysis.typeCheckingMode": "basic",
+  "python.analysis.extraPaths": [
+      "./src"
+  ],
+  "python.analysis.autoImportCompletions": true,
+  "python.analysis.diagnosticMode": "workspace",
+  "python.analysis.packageIndexDepths": [{ "name":"cv2", "index": 5 }],
+  "[python]": {
+      "editor.defaultFormatter": "ms-python.black-formatter",
+      "editor.codeActionsOnSave": {
+        "source.organizeImports": "always",
+        "importSorter.fixOnSave": "always",
+        "source.importsSorter.python": "always",
+        "source.fixAll": "always"
+        }
+  }
+}

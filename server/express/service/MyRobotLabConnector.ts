@@ -31,10 +31,15 @@ export default class MyRobotLabConnector extends Service {
   }
 
   disconnect() {
+    log.info(`disconneting from ${this.config.wsUrl}`)
+
     if (this.webSocket) {
       this.webSocket.close()
     }
     this.webSocket = null
+    this.connected = false
+    this.connecting = false
+    this.invoke("broadcastState")
   }
 
   // Method to establish a WebSocket connection

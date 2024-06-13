@@ -335,9 +335,9 @@ const store = (set, get) => ({
     const imgType = type === "Proxy" ? registered.proxyTypeKey : type
 
     if (type === "MyRobotLabProxy") {
-      return `${get().getRepoUrl()}/MyRobotLabConnector/images/${registered.proxyTypeKey}.png`
+      return `${get().getRepoUrl()}/myrobotlabconnector/images/${registered.proxyTypeKey}.png`
     } else {
-      return `${get().getRepoUrl()}/${imgType}/image.png`
+      return `${get().getRepoUrl()}/${imgType.toLowerCase()}/image.png`
     }
   }
 })

@@ -464,9 +464,9 @@ export default class RobotLabXRuntime extends Service {
         return check
       }
 
-      log.info(`starting service: ${serviceName}, type: ${serviceType} in ${process.cwd()}`)
+      log.info(`starting service: ${serviceName}, type: ${serviceType.toLowerCase()} in ${process.cwd()}`)
 
-      const targetDir = path.join(Main.expressRoot, `repo/${serviceType}`)
+      const targetDir = path.join(Main.expressRoot, `repo/${serviceType.toLowerCase()}`)
       const pkgYmlFile = `${targetDir}/package.yml`
 
       // loading type info

@@ -270,7 +270,7 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
                       <img src={`${imagesUrl}/os/${host.platform}.png`} alt={host.platform} />
                       &nbsp;&nbsp;{host.hostname} {/**  {host.platform} {host.architecture} */}
                       {/**
-                    <img src={`${getRepoUrl()}/${host.typeKey}/${host.typeKey}.png`} alt={host.name} width="32" />
+                    <img src={`${getRepoUrl()}/${host.typeKey.toLowerCase()}/${host.typeKey}.png`} alt={host.name} width="32" />
                      */}
                       &nbsp;{host.name}
                     </Typography>

@@ -142,7 +142,7 @@ const Dashboard = () => {
     const [open, setOpen] = useState(false)
     const typeKey = sd?.typeKey // `${sd?.typeKey}@${sd?.version}`
     const type = repo[typeKey]
-    const imagePath = `${getRepoUrl()}/${sd.typeKey}/image.png`
+    const imagePath = `${getRepoUrl()}/${sd.typeKey.toLowerCase()}/image.png`
     const connectedPath = `${process.env.PUBLIC_URL}/green.png`
 
     return (

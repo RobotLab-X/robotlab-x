@@ -157,7 +157,7 @@ export class Repo {
   }
 
   public copyPackage(name: string, typeKey: string) {
-    const source = path.join(Main.expressRoot, `repo/${typeKey}/`)
+    const source = path.join(Main.expressRoot, `repo/${typeKey.toLowerCase()}/`)
     const target = path.join(Main.expressRoot, `/service/${name}`)
     this.copyRecursiveSync(source, target)
     log.info("copy operation completed successfully")

@@ -334,6 +334,7 @@ export default class Proxy extends Service {
   installVirtualEnv(envName = "venv", envPath = this.pkg.cwd) {
     return new Promise((resolve, reject) => {
       // Full path to the virtual environment
+      this.info(`envPath '${envPath}`)
       const fullPath = path.join(envPath, envName)
       this.info(`Creating virtual environment in '${fullPath}`)
 
