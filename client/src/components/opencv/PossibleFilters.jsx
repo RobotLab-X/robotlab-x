@@ -1,7 +1,8 @@
-import { Box, List, ListItem, ListItemText, Paper } from "@mui/material"
+import AddIcon from "@mui/icons-material/Add"
+import { Box, IconButton, List, ListItem, ListItemText, Paper } from "@mui/material"
 import React from "react"
 
-export default function PossibleFilters({ possibleFilters, selectedFilterType, setSelectedFilterType }) {
+export default function PossibleFilters({ possibleFilters, selectedFilterType, setSelectedFilterType, setDialogOpen }) {
   const handleSelectFilterType = (filterType) => setSelectedFilterType(filterType)
 
   return (
@@ -15,6 +16,11 @@ export default function PossibleFilters({ possibleFilters, selectedFilterType, s
               button
               onClick={() => handleSelectFilterType(filterType)}
               selected={filterType === selectedFilterType}
+              secondaryAction={
+                <IconButton edge="end" onClick={() => setDialogOpen(true)}>
+                  <AddIcon />
+                </IconButton>
+              }
             >
               <ListItemText primary={filterType} />
             </ListItem>

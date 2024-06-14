@@ -203,7 +203,7 @@ class RobotLabXClient:
         for subscriber in subscribers:
             msg: Message = Message(subscriber.callbackName, subscriber.callbackMethod)
             log.info(
-                f"<--------------------------broadcasting state to {subscriber.callbackName}.{subscriber.callbackMethod}"
+                f"<--- broadcasting state to {subscriber.callbackName}.{subscriber.callbackMethod}"
             )
             msg.data = [self.service.to_dict()]
             self.send_message(msg.__dict__)

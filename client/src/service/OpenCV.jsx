@@ -1,7 +1,6 @@
-import ArrowBackIcon from "@mui/icons-material/ArrowBack"
 import ExpandLessIcon from "@mui/icons-material/ExpandLess"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
-import { Box, Button } from "@mui/material"
+import { Box } from "@mui/material"
 // import StatusLog from "components/StatusLog"
 import React, { useEffect, useRef, useState } from "react"
 import OpenCVWizard from "wizards/OpenCVWizard"
@@ -16,8 +15,7 @@ import useServiceSubscription from "../store/useServiceSubscription"
 
 export default function OpenCV({ fullname }) {
   const [editMode, setEditMode] = useState(false)
-  const { useMessage, sendTo } = useStore()
-  const statusMsg = useMessage(fullname, "publishStatus")
+  const { sendTo } = useStore()
   const serviceMsg = useServiceSubscription(fullname)
   const service = useProcessedMessage(serviceMsg)
   const [possibleFilters] = useState(["Canny", "Yolo3", "FaceDetect", "FaceRecognition"])
@@ -26,17 +24,6 @@ export default function OpenCV({ fullname }) {
   const [filterName, setFilterName] = useState("")
   const [dialogOpen, setDialogOpen] = useState(false)
   const filterNameRef = useRef(null)
-  // const [statusLog, setStatusLog] = useState([])
-  const debug = useStore((state) => state.debug)
-
-  // useEffect(() => {
-  //   if (statusMsg) {
-  //     console.log("new status msg:", statusMsg)
-  //     setStatusLog((log) => [...log, statusMsg.data[0]])
-  //   } else {
-  //     console.error("no status message")
-  //   }
-  // }, [statusMsg])
 
   useEffect(() => {
     if (service?.installed) {
@@ -84,10 +71,6 @@ export default function OpenCV({ fullname }) {
     sendTo(fullname, "broadcastState")
   }
 
-  // const handleClearLog = (event) => {
-  //   setStatusLog([])
-  // }
-
   if (!service?.installed) {
     return <OpenCVWizard fullname={fullname} />
   }
@@ -113,12 +96,8 @@ export default function OpenCV({ fullname }) {
           possibleFilters={possibleFilters}
           selectedFilterType={selectedFilterType}
           setSelectedFilterType={setSelectedFilterType}
+          setDialogOpen={setDialogOpen}
         />
-      </Box>
-      <Box sx={{ textAlign: "center", mt: 2 }}>
-        <Button variant="contained" onClick={() => setDialogOpen(true)} startIcon={<ArrowBackIcon />}>
-          Add Filter
-        </Button>
       </Box>
       <FilterDialog
         dialogOpen={dialogOpen}

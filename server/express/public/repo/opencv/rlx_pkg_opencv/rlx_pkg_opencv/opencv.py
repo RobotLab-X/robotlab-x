@@ -15,7 +15,7 @@ from typing import List
 
 
 logging.basicConfig(level=logging.INFO)
-log = logging.getLogger("RobotLabXClient")
+log = logging.getLogger("OpenCV")
 
 
 class OpenCV:

@@ -12,12 +12,15 @@ import {
   Slider,
   Typography
 } from "@mui/material"
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 
 export default function Filters({ service, selectedFilter, setSelectedFilter, sendTo, fullname }) {
   const selectedFilterDetails = selectedFilter !== null ? service?.filters[selectedFilter] : null
+  const [filter, setFilter] = useState(selectedFilterDetails)
 
-  const [selectedOption, setSelectedOption] = useState("")
+  useEffect(() => {
+    setFilter(selectedFilterDetails)
+  }, [selectedFilterDetails])
 
   const handleSelectFilter = (index) => setSelectedFilter(index)
   const handleRemoveFilter = (index) => {
@@ -26,39 +29,18 @@ export default function Filters({ service, selectedFilter, setSelectedFilter, se
     setSelectedFilter(null)
   }
 
-  const [lowerThreshold, setLowerThreshold] = useState(0)
-  const [upperThreshold, setUpperThreshold] = useState(255)
-  const [kernel, setKernel] = useState(3)
-
-  const handleLowerThresholdChange = (event, newValue) => {
-    setLowerThreshold(newValue)
-  }
-
-  const handleUpperThresholdChange = (event, newValue) => {
-    setUpperThreshold(newValue)
-  }
-
-  const handleKernelChange = (event) => {
-    setKernel(event.target.value)
-  }
-
-  const cascadeChange = (event) => {
-    // setSelectedOption(event.target.value)
-    sendTo(fullname, "apply_filter_config", selectedFilterDetails.name, {
-      cascade_path: event.target.value
-    })
-    sendTo(fullname, "broadcastState")
-  }
-
   const handleApply = () => {
     console.log("handleApply")
-    // Add logic to apply these values where needed
+    sendTo(fullname, "apply_filter_config", filter.name, filter.config)
+    sendTo(fullname, "broadcastState")
   }
 
   return (
     <Box sx={{ width: "45%" }}>
       <Paper elevation={3} sx={{ p: 2, m: 2 }}>
-        <h4>Filters here {JSON.stringify(selectedFilterDetails)}</h4>
+        <h4>filter : {JSON.stringify(filter)}</h4>
+        <br />
+        <h4>selectedFilterDetails : {JSON.stringify(selectedFilterDetails)}</h4>
         <List>
           {(service?.filters ?? []).map((filter, index) => (
             <ListItem key={index} button selected={index === selectedFilter} onClick={() => handleSelectFilter(index)}>
@@ -77,8 +59,16 @@ export default function Filters({ service, selectedFilter, setSelectedFilter, se
               <Box>
                 <Typography variant="body1">Face Detection Type</Typography>
                 <Select
-                  value={selectedOption || selectedFilterDetails?.config?.cascade_path}
-                  onChange={cascadeChange}
+                  value={filter?.config?.cascade_path || "haarcascade_frontalface_default.xml"}
+                  onChange={(event) =>
+                    setFilter((prev) => ({
+                      ...prev,
+                      config: {
+                        ...prev.config,
+                        cascade_path: event.target.value
+                      }
+                    }))
+                  }
                   displayEmpty
                   sx={{ mt: 1, width: "100%" }}
                 >
@@ -102,27 +92,54 @@ export default function Filters({ service, selectedFilter, setSelectedFilter, se
 
             {selectedFilterDetails.typeKey === "OpenCVFilterCanny" && (
               <Box sx={{ width: 300, padding: 2 }}>
-                <Typography variant="h6">Threshold Settings</Typography>
                 <Typography variant="body1">Lower Threshold</Typography>
                 <Slider
-                  value={lowerThreshold}
-                  onChange={handleLowerThresholdChange}
+                  value={filter?.config?.lower_threshold ?? 0}
+                  onChange={(event, newValue) =>
+                    setFilter((prev) => ({
+                      ...prev,
+                      config: {
+                        ...prev.config,
+                        lower_threshold: newValue
+                      }
+                    }))
+                  }
                   min={0}
                   max={255}
                   valueLabelDisplay="auto"
                 />
                 <Typography variant="body1">Upper Threshold</Typography>
                 <Slider
-                  value={upperThreshold}
-                  onChange={handleUpperThresholdChange}
+                  value={filter?.config?.upper_threshold ?? 255}
+                  onChange={(event, newValue) =>
+                    setFilter((prev) => ({
+                      ...prev,
+                      config: {
+                        ...prev.config,
+                        upper_threshold: newValue
+                      }
+                    }))
+                  }
                   min={0}
                   max={255}
                   valueLabelDisplay="auto"
                   track="inverted"
                 />
                 <Typography variant="body1">Kernel</Typography>
-                <Select value={kernel} onChange={handleKernelChange} fullWidth>
-                  {[3, 5, 7, 11].map((value) => (
+                <Select
+                  value={filter?.config?.kernel ?? 3}
+                  onChange={(event) =>
+                    setFilter((prev) => ({
+                      ...prev,
+                      config: {
+                        ...prev.config,
+                        kernel: event.target.value
+                      }
+                    }))
+                  }
+                  fullWidth
+                >
+                  {[3, 5, 7].map((value) => (
                     <MenuItem key={value} value={value}>
                       {value}
                     </MenuItem>
