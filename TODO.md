@@ -1,5 +1,4 @@
 ## TODO
-* FIGURE OUT WHY Promise.all IS NOT WORKING with installRepoRequirements !!!
 * Implement face recognition filter with modes
 * Implement filter sub panels in jsx
 * Status Log moved into ServicePage.jsx
@@ -118,3 +117,6 @@ serial rebuild
 export PYTHONPATH=/home/gperry/mrl/robotlab-x/server/express/public/repo/robotlabx:$PYTHONPATH
 
 export PYTHONPATH=../robotlabx:$PYTHONPATH
+
+DONE !!!
+* FIGURE OUT WHY Promise.all IS NOT WORKING with installRepoRequirements !!!

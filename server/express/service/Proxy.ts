@@ -69,6 +69,7 @@ export default class Proxy extends Service {
 
   startService(): void {
     super.startService()
+    this.ready = false // not ready until connected
     const runtime: RobotLabXRuntime = RobotLabXRuntime.getInstance()
 
     runtime.registerConnection(

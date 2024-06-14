@@ -7,10 +7,15 @@ import numpy as np
 import urllib.request
 import time
 import asyncio
+import logging
 from time import sleep
 from concurrent.futures import ThreadPoolExecutor
 from rlx_pkg_proxy.robotlabxclient import RobotLabXClient
 from typing import List
+
+
+logging.basicConfig(level=logging.INFO)
+log = logging.getLogger("RobotLabXClient")
 
 
 class OpenCV:
@@ -18,6 +23,7 @@ class OpenCV:
         self.id: str = id
         self.version: str = cv2.__version__
         self.cap = None
+        self.ready = True
         # FIXME - this is serving dual purpose, both write and read
         # the command to start capturing and the status of capturing
         self.capturing: bool = False
@@ -76,6 +82,10 @@ class OpenCV:
         finally:
             self.stop_capture()
 
+    def setInstalled(self, installed):
+        log.info("setInstalled")
+        self.installed = installed
+
     def stop_capture(self):
         self.capturing = False
         if self.cap:
@@ -109,6 +119,18 @@ class OpenCV:
         ]
         print(f"Removed filter: {name_of_filter}")
 
+    def releaseService(self):
+        # releaseService or release_service ?
+        # super().release_service()
+        # FIXME teardown the client
+        self.stop_capture()
+
+    def apply_filter_config(self, name, config):
+        for filter in self.filters:
+            if filter.name == name:
+                filter.apply_config(config)
+                return
+
     def to_dict(self):
         return {
             "id": self.id,
@@ -120,6 +142,7 @@ class OpenCV:
             "capturing": self.capturing,
             "installed": self.installed,
             "filters": [filter.to_dict() for filter in self.filters],
+            "ready": self.ready,
         }
 
 

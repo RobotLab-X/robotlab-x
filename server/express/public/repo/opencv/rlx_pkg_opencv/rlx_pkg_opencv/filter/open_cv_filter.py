@@ -2,9 +2,13 @@ class OpenCVFilter:
     """
     Base class for OpenCV filters.
     """
+
     def __init__(self, name):
         self.name = name
         self.config = {}
+
+    def apply_config(self, config):
+        self.config = config
 
     def apply(self, frame):
         """
@@ -19,5 +23,6 @@ class OpenCVFilter:
         """
         return {
             "name": self.name,
-            "typeKey": "Filter"
+            "typeKey": self.__class__.__name__,
+            "config": self.config,
         }

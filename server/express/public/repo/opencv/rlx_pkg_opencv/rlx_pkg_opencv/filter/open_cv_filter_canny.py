@@ -7,30 +7,30 @@ class OpenCVFilterCanny(OpenCVFilter):
     Canny edge detection filter.
     """
 
-    def __init__(self, name, threshold1=50, threshold2=150):
+    def __init__(self, name, lower_threshold=50, upper_threshold=150):
         super().__init__(name)
-        self.threshold1 = threshold1
-        self.threshold2 = threshold2
+        self.config = {
+            "lower_threshold": lower_threshold,
+            "upper_threshold": upper_threshold,
+            "kernel": 3,
+        }
         print("Canny Edge Detector initialized with thresholds: ")
 
     def apply(self, frame):
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        edges = cv2.Canny(gray, self.threshold1, self.threshold2)
+        edges = cv2.Canny(
+            gray,
+            self.config.get("lower_threshold"),
+            self.config.get("upper_threshold"),
+            apertureSize=self.config.get("kernel"),
+        )
         return edges
-
-    def to_dict(self):
-        return {
-            "name": self.name,
-            "typeKey": "Canny",
-            "threshold1": self.threshold1,
-            "threshold2": self.threshold2,
-        }
 
 
 def main():
     # Initialize the filter
     canny_filter = OpenCVFilterCanny(
-        name="Canny Edge Detector", threshold1=50, threshold2=150
+        name="Canny Edge Detector", lower_threshold=50, upper_threshold=150
     )
 
     # Capture video from the default camera

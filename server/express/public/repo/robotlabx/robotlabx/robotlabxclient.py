@@ -13,22 +13,29 @@ from robotlabx.message import Message
 import re
 
 logging.basicConfig(level=logging.INFO)
-log = logging.getLogger('RobotLabXClient')
+log = logging.getLogger("RobotLabXClient")
+
 
 class SubscriptionListener:
-  topicMethod: str = None
-  callbackName: str = None
-  callbackMethod: str = None
+    topicMethod: str = None
+    callbackName: str = None
+    callbackMethod: str = None
 
-  def __init__(self, topicMethod: str = None, callbackName: str = None, callbackMethod: str = None):
-    self.topicMethod = topicMethod
-    self.callbackName = callbackName
-    self.callbackMethod = callbackMethod
+    def __init__(
+        self,
+        topicMethod: str = None,
+        callbackName: str = None,
+        callbackMethod: str = None,
+    ):
+        self.topicMethod = topicMethod
+        self.callbackName = callbackName
+        self.callbackMethod = callbackMethod
 
 
 class State(Enum):
     READY = auto()
     SHUTDOWN = auto()
+
 
 class RobotLabXClient:
     """WebSocket client that connects to a WebSocket server and sends/receives messages.
@@ -59,18 +66,22 @@ class RobotLabXClient:
                 self.remote_id = json.loads(response.text.strip())
                 log.info(f"Remote ID: {self.remote_id}")
             else:
-                log.info(f"Failed to get remote ID, status code: {response.status_code}")
+                log.info(
+                    f"Failed to get remote ID, status code: {response.status_code}"
+                )
         except requests.RequestException as e:
             log.info(f"Failed to get remote ID: {e}")
 
     def connect(self, url):
         try:
-          self.url = url
-          # Try to get remote ID before connecting
-          self.get_remote_id(self.url)
-          websocket_url = f"ws://{self.url.split('//')[1]}/api/messages?id={self.client_id}"
-          log.info(f"Connecting to WebSocket server at: {websocket_url}")
-          self.loop.run_until_complete(self._connect(websocket_url))
+            self.url = url
+            # Try to get remote ID before connecting
+            self.get_remote_id(self.url)
+            websocket_url = (
+                f"ws://{self.url.split('//')[1]}/api/messages?id={self.client_id}"
+            )
+            log.info(f"Connecting to WebSocket server at: {websocket_url}")
+            self.loop.run_until_complete(self._connect(websocket_url))
         except Exception as e:
             log.info(f"Could not connect: {e}")
 
@@ -83,22 +94,26 @@ class RobotLabXClient:
     async def _send_message(self, message):
         try:
             # FOR WORKY-NESS required to add sender info
-            message['sender'] = f"{self.client_id}@{self.client_id}"
-            log.info(f"<-- {message.get('name')} {message.get('method')} <-- @{self.client_id}{message.get('data')}")
+            message["sender"] = f"{self.client_id}@{self.client_id}"
+            log.info(
+                f"<-- {message.get('name')} {message.get('method')} <-- @{self.client_id}{message.get('data')}"
+            )
             json_data = json.dumps(message)
             await self.websocket.send(json_data)
         except websockets.exceptions.ConnectionClosedError as e:
             log.info(f"Connection closed: {e}")
 
     def subscribe(self, fullname, method_name):
-        asyncio.run_coroutine_threadsafe(self._subscribe(fullname, method_name), self.loop)
+        asyncio.run_coroutine_threadsafe(
+            self._subscribe(fullname, method_name), self.loop
+        )
 
     async def _subscribe(self, fullname, method_name):
         try:
             message = {
                 "name": fullname,
                 "method": "addListener",
-                "data": [method_name, "runtime@" + self.client_id]
+                "data": [method_name, "runtime@" + self.client_id],
             }
             await self.websocket.send(json.dumps(message))
         except websockets.exceptions.ConnectionClosedError as e:
@@ -106,11 +121,9 @@ class RobotLabXClient:
 
     async def start_heartbeat(self):
         while self.state != State.SHUTDOWN:
-            await self._send_message({
-                "id": self.remote_id,
-                "name": "runtime",
-                "method": "getUptime"
-            })
+            await self._send_message(
+                {"id": self.remote_id, "name": "runtime", "method": "getUptime"}
+            )
             await asyncio.sleep(1)  # Send message every second
 
     async def receive_messages(self):
@@ -122,23 +135,30 @@ class RobotLabXClient:
     async def check_for_input(self):
         loop = asyncio.get_running_loop()
         user_input = await loop.run_in_executor(None, sys.stdin.readline)
-        if user_input.strip().lower() == 'q':
+        if user_input.strip().lower() == "q":
             self.shutdown()
 
     def addListener(self, method: str, remoteName: str, remoteMethod: str = None):
-        log.info(f"== addListener {self.client_id}.{method} --> {remoteName}.{remoteMethod}")
+        log.info(
+            f"== addListener {self.client_id}.{method} --> {remoteName}.{remoteMethod}"
+        )
 
         if not remoteMethod:
-          remoteMethod = CodecUtil.get_callback_topic_name(method)
+            remoteMethod = CodecUtil.get_callback_topic_name(method)
 
         if not method in self.notifyList:
-          self.notifyList[method] = []
+            self.notifyList[method] = []
 
-        listeners:List[SubscriptionListener] = self.notifyList[method]
+        listeners: List[SubscriptionListener] = self.notifyList[method]
         for listener in listeners:
-          if listener.callbackName == remoteName and listener.callbackMethod == remoteMethod:
-            log.info(f"listener on {method} for -> {remoteName}.{remoteMethod} already exists")
-            return listener
+            if (
+                listener.callbackName == remoteName
+                and listener.callbackMethod == remoteMethod
+            ):
+                log.info(
+                    f"listener on {method} for -> {remoteName}.{remoteMethod} already exists"
+                )
+                return listener
 
         listener = SubscriptionListener(method, remoteName, remoteMethod)
         self.notifyList[method].append(listener)
@@ -169,21 +189,27 @@ class RobotLabXClient:
             #     # log.info(f"removed listener on {method} for -> {remote_name}.{remote_method}")
             #     return
 
-
     def broadcastState(self):
+        """
+        Broadcasts the current state of the service. Since this is a
+        framework call, naming is CamelCase.
+        @returns returns self
+        """
         log.info(f"== broadcastState {self.client_id}")
 
         # get the notify list and send msgs to all subscribers
-        subscribers:List[SubscriptionListener] = self.notifyList["broadcastState"]
+        subscribers: List[SubscriptionListener] = self.notifyList["broadcastState"]
 
         for subscriber in subscribers:
-          msg:Message = Message(subscriber.callbackName, subscriber.callbackMethod)
-          log.info(f"<--------------------------broadcasting state to {subscriber.callbackName}.{subscriber.callbackMethod}")
-          msg.data = [self.service.to_dict()]
-          self.send_message(msg.__dict__)
+            msg: Message = Message(subscriber.callbackName, subscriber.callbackMethod)
+            log.info(
+                f"<--------------------------broadcasting state to {subscriber.callbackName}.{subscriber.callbackMethod}"
+            )
+            msg.data = [self.service.to_dict()]
+            self.send_message(msg.__dict__)
 
     # I get a broadcastState from the runtime I connected even though I didn't subscribe to it
-    def onBroadcastState(self, data:List[any]):
+    def onBroadcastState(self, data: List[any]):
         log.info(f"--> onBroadcastState {data}")
 
     def handle_message(self, message):
@@ -192,10 +218,12 @@ class RobotLabXClient:
         methodName = None
         try:
             msg = json.loads(message)
-            params = msg.get('data')
-            methodName:str = msg.get('method')
+            params = msg.get("data")
+            methodName: str = msg.get("method")
 
-            log.info(f"{msg.get('sender')} --> {msg.get('name')}.{methodName}(data={params})")
+            log.info(
+                f"{msg.get('sender')} --> {msg.get('name')}.{methodName}(data={params})"
+            )
 
             # ROUTE CORE REQUIRED MESSAGING HERE
             # addListener broadcastState ...
@@ -215,7 +243,7 @@ class RobotLabXClient:
                 self.onBroadcastState(params)
                 return
 
-            method = getattr(self.service, msg.get('method'))
+            method = getattr(self.service, msg.get("method"))
 
             if not method:
                 log.info(f"Method {msg.get('method')} not found.")
@@ -258,10 +286,19 @@ class RobotLabXClient:
     def set_service(self, service):
         self.service = service
 
+
 def main():
-    parser = argparse.ArgumentParser(description='WebSocket Client')
-    parser.add_argument('-c', '--connect', required=False, help='WebSocket url to connect to', default='http://localhost:3001')
-    parser.add_argument('-i', '--id', required=False, help='Client ID', default='python-client-1')
+    parser = argparse.ArgumentParser(description="WebSocket Client")
+    parser.add_argument(
+        "-c",
+        "--connect",
+        required=False,
+        help="WebSocket url to connect to",
+        default="http://localhost:3001",
+    )
+    parser.add_argument(
+        "-i", "--id", required=False, help="Client ID", default="python-client-1"
+    )
 
     args = parser.parse_args()
 
@@ -278,5 +315,6 @@ def main():
     except KeyboardInterrupt:
         client.shutdown()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

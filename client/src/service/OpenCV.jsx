@@ -2,7 +2,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack"
 import ExpandLessIcon from "@mui/icons-material/ExpandLess"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import { Box, Button } from "@mui/material"
-import StatusLog from "components/StatusLog"
+// import StatusLog from "components/StatusLog"
 import React, { useEffect, useRef, useState } from "react"
 import OpenCVWizard from "wizards/OpenCVWizard"
 import CaptureControl from "../components/opencv/CaptureControl"
@@ -26,17 +26,17 @@ export default function OpenCV({ fullname }) {
   const [filterName, setFilterName] = useState("")
   const [dialogOpen, setDialogOpen] = useState(false)
   const filterNameRef = useRef(null)
-  const [statusLog, setStatusLog] = useState([])
+  // const [statusLog, setStatusLog] = useState([])
   const debug = useStore((state) => state.debug)
 
-  useEffect(() => {
-    if (statusMsg) {
-      console.log("new status msg:", statusMsg)
-      setStatusLog((log) => [...log, statusMsg.data[0]])
-    } else {
-      console.error("no status message")
-    }
-  }, [statusMsg])
+  // useEffect(() => {
+  //   if (statusMsg) {
+  //     console.log("new status msg:", statusMsg)
+  //     setStatusLog((log) => [...log, statusMsg.data[0]])
+  //   } else {
+  //     console.error("no status message")
+  //   }
+  // }, [statusMsg])
 
   useEffect(() => {
     if (service?.installed) {
@@ -84,9 +84,9 @@ export default function OpenCV({ fullname }) {
     sendTo(fullname, "broadcastState")
   }
 
-  const handleClearLog = (event) => {
-    setStatusLog([])
-  }
+  // const handleClearLog = (event) => {
+  //   setStatusLog([])
+  // }
 
   if (!service?.installed) {
     return <OpenCVWizard fullname={fullname} />
@@ -130,7 +130,6 @@ export default function OpenCV({ fullname }) {
         handleDialogKeyDown={handleDialogKeyDown}
       />
       <CaptureControl service={service} handleCapture={handleCapture} handleStopCapture={handleStopCapture} />
-      {debug && <StatusLog statusLog={statusLog} handleClearLog={handleClearLog} />}
     </>
   )
 }
