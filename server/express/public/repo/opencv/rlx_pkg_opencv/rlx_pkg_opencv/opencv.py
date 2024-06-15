@@ -10,7 +10,7 @@ import asyncio
 import logging
 from time import sleep
 from concurrent.futures import ThreadPoolExecutor
-from rlx_pkg_proxy.robotlabxclient import RobotLabXClient
+from rlx_pkg_proxy.service import Service
 from typing import List
 
 
@@ -18,12 +18,16 @@ logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("OpenCV")
 
 
-class OpenCV:
+class OpenCV(Service):
     def __init__(self, id=uuid.uuid1()):
+        super().__init__(id)
+        # FIXME remove all Service defined members from here
+
         self.id: str = id
+
         self.version: str = cv2.__version__
         self.cap = None
-        self.ready = True
+
         # FIXME - this is serving dual purpose, both write and read
         # the command to start capturing and the status of capturing
         self.capturing: bool = False
@@ -33,8 +37,6 @@ class OpenCV:
         self.config = {
             "camera_index": "0",
         }
-        # needed when json definition of proxy switches to this service
-        self.installed: bool = True
 
         print(f"OpenCV version: {self.version}")
 
@@ -150,6 +152,7 @@ class OpenCV:
 def main():
 
     parser = argparse.ArgumentParser(description="OpenCV Service")
+
     parser.add_argument(
         "-c",
         "--connect",
@@ -165,17 +168,9 @@ def main():
     print(args)
 
     cv = OpenCV(args.id)
-    # cv.add_filter("canny", "Canny")
-    # cv.add_filter("yolo", "Yolo3")
-    # cv.capture()
-
-    # sleep(100)
-    # cv.stop_capture()
-
-    client = RobotLabXClient(args.id)
-    client.connect(args.connect)
-    client.set_service(cv)
-    client.start_service()
+    cv.connect(args.connect)
+    cv.set_service(cv)
+    cv.start_service()
 
 
 if __name__ == "__main__":
