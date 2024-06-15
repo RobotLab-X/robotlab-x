@@ -3,11 +3,12 @@ class OpenCVFilter:
     Base class for OpenCV filters.
     """
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, service: any = None):
         self.name: str = name
         # FIXME do an import to resolve OpenCV
         self.opencv: any = None
         self.config = {}
+        self.service = service
 
     def apply_config(self, config: any):
         self.config = config

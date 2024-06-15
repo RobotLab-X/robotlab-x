@@ -7,8 +7,8 @@ class OpenCVFilterCanny(OpenCVFilter):
     Canny edge detection filter.
     """
 
-    def __init__(self, name, lower_threshold=50, upper_threshold=150):
-        super().__init__(name)
+    def __init__(self, name, service, lower_threshold=50, upper_threshold=150):
+        super().__init__(name, service)
         self.config = {
             "lower_threshold": lower_threshold,
             "upper_threshold": upper_threshold,

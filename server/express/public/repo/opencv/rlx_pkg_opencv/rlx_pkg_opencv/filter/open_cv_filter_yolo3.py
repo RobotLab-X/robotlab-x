@@ -1,3 +1,4 @@
+import time
 import cv2
 import os
 import numpy as np
@@ -6,8 +7,8 @@ from rlx_pkg_opencv.filter.open_cv_filter import OpenCVFilter
 
 
 class OpenCVFilterYolo3(OpenCVFilter):
-    def __init__(self, name, conf_threshold=0.5, nms_threshold=0.4):
-        super().__init__(name)
+    def __init__(self, name, service, conf_threshold=0.5, nms_threshold=0.4):
+        super().__init__(name, service)
         print("OpenCVFilterYolo3")
         self.conf_threshold = conf_threshold
         self.nms_threshold = nms_threshold
@@ -93,6 +94,20 @@ class OpenCVFilterYolo3(OpenCVFilter):
                     boxes.append([x, y, w, h])
                     confidences.append(float(confidence))
                     class_ids.append(class_id)
+                    if self.service:
+                        self.service.invoke(
+                            "publishDetection",
+                            {
+                                "class_id": class_id,
+                                "confidence": confidence,
+                                "label": str(self.classes[class_id]),
+                                "x": x,
+                                "y": y,
+                                "w": w,
+                                "h": h,
+                                "ts": int(time.time()),
+                            },
+                        )
 
         indices = cv2.dnn.NMSBoxes(
             boxes, confidences, self.conf_threshold, self.nms_threshold

@@ -1,3 +1,4 @@
+import time
 import os
 import cv2
 import numpy as np
@@ -17,8 +18,8 @@ class OpenCVFilterFaceRecognition(OpenCVFilter):
     Face recognition filter.
     """
 
-    def __init__(self, name, mode="recognize", num_images=10):
-        super().__init__(name)
+    def __init__(self, name, service, mode="recognize", num_images=10):
+        super().__init__(name, service)
         self.config = {
             "mode": mode,
             "name": "unknown",
@@ -155,6 +156,20 @@ class OpenCVFilterFaceRecognition(OpenCVFilter):
                 (36, 255, 12),
                 2,
             )
+
+            if self.service:
+                self.service.invoke(
+                    "publishRecognition",
+                    {
+                        "confidence": proba,
+                        "label": str(name[0]),
+                        "x": x,
+                        "y": y,
+                        "w": w,
+                        "h": h,
+                        "ts": int(time.time()),
+                    },
+                )
 
         return frame
 

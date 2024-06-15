@@ -91,6 +91,14 @@ class OpenCV(Service):
         log.info(f"publish_fps: {fps}")
         return fps
 
+    def publishDetection(self, detection):
+        log.info(f"publishDetection: {detection}")
+        return detection
+
+    def publishRecognition(self, recognition):
+        log.info(f"publishRecognition: {recognition}")
+        return recognition
+
     def setInstalled(self, installed):
         log.info("setInstalled")
         self.installed = installed
@@ -103,6 +111,9 @@ class OpenCV(Service):
             self.cap = None
         print("Webcam capture stopped.")
 
+    def onStatus(self, status):
+        log.error(f"why should I be receiving a onStatus: {status}")
+
     def add_filter(self, name_of_filter, type_of_filter):
         # Construct the module path
         module_name = f"rlx_pkg_opencv.filter.open_cv_filter_{type_of_filter.lower()}"
@@ -114,7 +125,7 @@ class OpenCV(Service):
             # Get the filter class
             filter_class = getattr(module, filter_class_name)
             # Create an instance of the filter class
-            filter_instance = filter_class(name_of_filter)
+            filter_instance = filter_class(name_of_filter, self)
             self.filters.append(filter_instance)
             print(f"Added filter: {name_of_filter} of type: {type_of_filter}")
         except ModuleNotFoundError:

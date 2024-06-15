@@ -5,8 +5,10 @@ from rlx_pkg_opencv.filter.open_cv_filter import OpenCVFilter
 class OpenCVFilterFaceDetect(OpenCVFilter):
     """Face detection filter using Haar cascades."""
 
-    def __init__(self, name, cascade_path="haarcascade_frontalface_default.xml"):
-        super().__init__(name)
+    def __init__(
+        self, name, service, cascade_path="haarcascade_frontalface_default.xml"
+    ):
+        super().__init__(name, service)
         self.config = {"cascade_path": cascade_path}
         self.face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + cascade_path)
 
