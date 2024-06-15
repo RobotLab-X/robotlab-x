@@ -36,7 +36,7 @@ export default function ServicePage({ fullname, name, id }) {
   const service = useProcessedMessage(serviceMsg)
 
   let resolvedType = registered.typeKey === "Proxy" ? registered.proxyTypeKey : registered.typeKey
-  resolvedType = resolvedType.includes(".") ? "MyRobotLabProxy" : resolvedType
+  resolvedType = resolvedType?.includes(".") ? "MyRobotLabProxy" : resolvedType
   const { useMessage, sendTo } = useStore()
   const getRepoUrl = useStore((state) => state.getRepoUrl)
   const [showJson, setShowJson] = useState(false)
@@ -49,16 +49,18 @@ export default function ServicePage({ fullname, name, id }) {
 
   useEffect(() => {
     // Dynamically import the service page component
-    const loadAsyncPage = async () => {
-      try {
-        const LoadedPage = await loadable(() => import(`../service/${resolvedType}`))
-        setAsyncPage(() => LoadedPage)
-      } catch (error) {
-        setAsyncPage(() => () => <div>Service not found</div>)
+    if (resolvedType) {
+      const loadAsyncPage = async () => {
+        try {
+          const LoadedPage = await loadable(() => import(`../service/${resolvedType}`))
+          setAsyncPage(() => LoadedPage)
+        } catch (error) {
+          setAsyncPage(() => () => <div>Service not found</div>)
+        }
       }
-    }
 
-    loadAsyncPage()
+      loadAsyncPage()
+    }
   }, [resolvedType])
 
   useEffect(() => {

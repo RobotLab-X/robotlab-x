@@ -118,6 +118,7 @@ export default class Store {
     this.registry[key] = value
   }
 
+  // FIXME !!! - should be unregister not release !
   public release(key: string): void {
     if (this.registry[key]) {
       delete this.registry[key]
@@ -135,8 +136,14 @@ export default class Store {
     return this.registry[key]
   }
 
+  public getServiceNames(): any {
+    return Object.keys(this.registry)
+  }
+
+  // FIXME !!! - should be unregister not release !
+  // FIXME remove this method
   public releaseService(key: string): void {
-    delete this.registry[key]
+    this.release(key)
   }
 
   // Run configuration methods on the Express instance.

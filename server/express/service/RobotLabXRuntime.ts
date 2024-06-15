@@ -570,6 +570,7 @@ export default class RobotLabXRuntime extends Service {
     log.info("stopping service")
     service.stopService()
     log.info("service stopped")
+    // FIXME - should be unregister not release
     Store.getInstance().release(name)
     log.info(`Released service: ${name}`)
     this.invoke("released", service.fullname)
@@ -799,6 +800,11 @@ export default class RobotLabXRuntime extends Service {
     // TODO - lots of possiblities with this
     // "disabling" remote services and wait for reconnection
     // removing services, etc.
+    // What was this connection responsible for ? a single process/service
+    // or a group of processes/services ?
+    // Was it a gateway with multi routes through it ?
+    // To handle this gracefully, these use cases need to be handled
+
     if (!this.connectionImpl.has(gatewayId)) {
       log.error(`client ${gatewayId} not found`)
       return
@@ -807,6 +813,23 @@ export default class RobotLabXRuntime extends Service {
     this.connectionImpl.delete(gatewayId)
     delete this.connections[`${gatewayId}`]
     this.removeRoute(gatewayId)
+
+    // spin through all services look for the same gatewayId/processId
+    Store.getInstance()
+      .getServiceNames()
+      .forEach((serviceName: string) => {
+        const service = Store.getInstance().getService(serviceName)
+        if (service?.id === gatewayId) {
+          log.info(`service ${serviceName} has id ${gatewayId}`)
+          Store.getInstance().release(serviceName)
+        }
+      })
+
+    // FIXME - handle resolving default route do to changes
+
+    // ATM - we are going to unregister the service
+    this.invoke("getRegistry")
+    this.invoke("broadcastState")
   }
 
   removeRoute(remoteId: string) {

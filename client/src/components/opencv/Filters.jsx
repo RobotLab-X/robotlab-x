@@ -247,9 +247,9 @@ export default function Filters({ service, selectedFilter, setSelectedFilter, se
                         alt={name}
                         style={{ width: 50, height: 50, marginRight: 16 }}
                       />
-                      <Typography variant="body1">
-                        Name: {name} Images: {count}
-                      </Typography>
+                      <Typography variant="body1">Name: {name}</Typography>
+                      <br />
+                      <Typography variant="body1">Images: {count}</Typography>
                     </CardContent>
                   </Card>
                 ))}

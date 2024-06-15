@@ -26,6 +26,7 @@ class OpenCV(Service):
 
         self.version: str = cv2.__version__
         self.cap = None
+        self.frame_count = 0
 
         # FIXME - this is serving dual purpose, both write and read
         # the command to start capturing and the status of capturing
@@ -76,12 +77,19 @@ class OpenCV(Service):
                 sleep_time = max(0.01 - frame_time, 0)
                 sleep(sleep_time)
 
-                actual_fps = 1.0 / (frame_time + sleep_time)
+                self.frame_count = self.frame_count + 1
+                if self.frame_count % 100 == 0:
+                    fps = 1.0 / (frame_time + sleep_time)
+                    self.invoke("publish_fps", fps)
 
         except Exception as e:
             print(f"Error: {e}")
         finally:
             self.stop_capture()
+
+    def publish_fps(self, fps):
+        log.info(f"publish_fps: {fps}")
+        return fps
 
     def setInstalled(self, installed):
         log.info("setInstalled")

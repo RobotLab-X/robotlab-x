@@ -1,4 +1,5 @@
 import os
+import importlib
 import argparse
 import traceback
 import asyncio
@@ -309,6 +310,29 @@ class Service:
         # self.loop.call_soon_threadsafe(self.loop.stop)
         # self.loop.run_forever()
         # self.loop.close()
+
+    def invoke(self, method_name, *args, **kwargs):
+        # return self.invoke_method(self.service.__class__.__module__, self.service, method_name, *args, **kwargs)
+        return self.invoke_method(self, method_name, *args, **kwargs)
+
+    def invoke_method(self, instance, method_name, *args, **kwargs):
+        try:
+            # Import the module
+            # module = importlib.import_module(module_name)
+
+            # Get the method from the instance
+            method = getattr(instance, method_name)
+
+            # Call the method with the provided arguments and keyword arguments
+            result = method(*args, **kwargs)
+
+            return result
+        # except ImportError:
+        #     return f"Module {module_name} could not be imported."
+        except AttributeError:
+            return f"Method {method_name} not found in the instance."
+        except Exception as e:
+            return f"An error occurred: {e}"
 
 
 def main():
