@@ -1,5 +1,5 @@
 import cv2
-from .open_cv_filter import OpenCVFilter
+from rlx_pkg_opencv.filter.open_cv_filter import OpenCVFilter
 
 
 class OpenCVFilterCanny(OpenCVFilter):

@@ -29,7 +29,7 @@ class OpenCV:
         self.capturing: bool = False
         self.loop = asyncio.get_event_loop()
         self.executor = ThreadPoolExecutor()
-        self.filters: List[str] = []
+        self.filters: List[any] = []
         self.config = {
             "camera_index": "0",
         }
