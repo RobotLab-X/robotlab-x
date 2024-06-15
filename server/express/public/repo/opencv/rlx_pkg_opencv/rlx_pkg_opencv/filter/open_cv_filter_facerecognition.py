@@ -5,6 +5,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.svm import SVC
 from joblib import dump, load
 from rlx_pkg_opencv.filter.open_cv_filter import OpenCVFilter
+from typing import Dict
 
 # Directory to save face images and model
 BASE_DIR = "face_recognition_data"
@@ -20,9 +21,31 @@ class OpenCVFilterFaceRecognition(OpenCVFilter):
         super().__init__(name)
         self.config = {
             "mode": mode,
+            "name": "unknown",
             "num_images": num_images,
         }
+
+        self.image_counts: Dict[str, int] = {}
         print(f"Face Recognition initialized in {mode} mode.")
+        self.get_model_image_counts()
+
+    def list_models(self):
+        """List all the models in the directory."""
+        return [
+            name
+            for name in os.listdir(BASE_DIR)
+            if os.path.isdir(os.path.join(BASE_DIR, name))
+        ]
+
+    def list_images(self, model_name):
+        """List all the images in the directory."""
+        return os.listdir(os.path.join(BASE_DIR, model_name))
+
+    def get_model_image_counts(self):
+        """Get the number of images in each model."""
+        for model_name in self.list_models():
+            self.image_counts[model_name] = len(self.list_images(model_name))
+        return self.image_counts
 
     def apply(self, frame):
         mode = self.config.get("mode")
@@ -67,8 +90,8 @@ class OpenCVFilterFaceRecognition(OpenCVFilter):
             # Draw a rectangle around the face
             cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
 
-        cv2.imshow("Learning Mode - Press q to quit", frame)
-        cv2.waitKey(1)
+        # cv2.imshow("Learning Mode - Press q to quit", frame)
+        # cv2.waitKey(1)
 
     def train_model(self):
         face_cascade = cv2.CascadeClassifier(
@@ -134,6 +157,14 @@ class OpenCVFilterFaceRecognition(OpenCVFilter):
             )
 
         return frame
+
+    def to_dict(self):
+        """
+        Convert the filter to a dictionary for serialization.
+        """
+        base_dict = super().to_dict()
+        base_dict.update({"image_counts": self.image_counts})
+        return base_dict
 
 
 def main():

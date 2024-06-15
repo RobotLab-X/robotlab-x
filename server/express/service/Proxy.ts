@@ -332,7 +332,7 @@ export default class Proxy extends Service {
     }
   }
 
-  installVirtualEnv(envName = "venv", envPath = this.pkg.cwd) {
+  installVirtualEnv(envName = ".venv", envPath = this.pkg.cwd) {
     return new Promise((resolve, reject) => {
       // Full path to the virtual environment
       this.info(`envPath '${envPath}`)
@@ -380,7 +380,7 @@ print(result.stderr.decode(), file=sys.stderr)
     })
   }
 
-  installPipRequirements(packages = {}, envName = "venv", envPath = this.pkg.cwd): Promise<string> {
+  installPipRequirements(packages = {}, envName = ".venv", envPath = this.pkg.cwd): Promise<string> {
     return new Promise((resolve, reject) => {
       const packageList = ["install"]
       Object.entries(packages).map(([pkg, version]) => packageList.push(`${pkg}${version}`))
@@ -432,7 +432,7 @@ print(result.stderr.decode(), file=sys.stderr)
     })
   }
   // FIXME - startProxy
-  startProxy(packages = {}, envName = "venv", envPath = this.pkg.cwd): Promise<string> {
+  startProxy(packages = {}, envName = ".venv", envPath = this.pkg.cwd): Promise<string> {
     return new Promise((resolve, reject) => {
       // python has specific path to the executable resolved by this Proxy service - with full path
       // but pkg cmd should be generalized .. how to reconcile ?
@@ -442,6 +442,7 @@ print(result.stderr.decode(), file=sys.stderr)
       const searchReplace: Record<string, string> = {
         "{{name}}": this.name,
         "{{id}}": this.id,
+        // this is runtimes serviceUrl - should proxy open a new one ?
         "{{serviceUrl}}": Main.serviceUrl
       }
 
@@ -501,7 +502,7 @@ print(result.stderr.decode(), file=sys.stderr)
     })
   }
 
-  async installRepoRequirement(typeKey: string, envName = "venv", envPath = this.pkg.cwd): Promise<string> {
+  async installRepoRequirement(typeKey: string, envName = ".venv", envPath = this.pkg.cwd): Promise<string> {
     this.info(`Installing repo package ${typeKey}`)
     const rlx_pkg = CodecUtil.getPipPackageName(typeKey)
 
@@ -555,7 +556,7 @@ print(result.stderr.decode(), file=sys.stderr)
     })
   }
 
-  async installRepoRequirements(envName = "venv", envPath = this.pkg.cwd): Promise<string[]> {
+  async installRepoRequirements(envName = ".venv", envPath = this.pkg.cwd): Promise<string[]> {
     this.info(`This service requires the following repo packages: ${this.pkg.repoRequirements}`)
 
     const results: string[] = []

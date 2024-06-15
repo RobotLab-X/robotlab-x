@@ -1,4 +1,8 @@
 ## TODO
+* cool idea - http://host:port/api/discovery/services
+* cool idea - http://host:port/api/discovery/services/type
+* cool idea - http://host:port/api/discovery/services/type/version
+* cool idea - http://host:port/api/discovery/services/type/version/id
 * Implement face recognition filter with modes
 * Implement filter sub panels in jsx
 * Status Log moved into ServicePage.jsx
@@ -45,7 +49,7 @@
 * every incoming connection should identify a remote process, connecting with no additional info would mean the process definition should be generated
 * remove current "mac" terminal - replace with - https://www.npmjs.com/package/xterm-for-react - check Dashboard.jsx for details
 * REALIZED "runtime" is really the same a Process which is really the same as id which is the same as "the whole process" - connections in and out belong to "the whole process"
-* WebRTC IS NOT activating venv when int does a pip install -r requirements
+* WebRTC IS NOT activating .venv when int does a pip install -r requirements
 * WebRTC next .. need "minimal" actual "register" which locks with service description started by RobotLabXRuntime.ts
 * add Arduino J5Servo and Node-Red
 * focus on stdout from new process & Distributed rlx !
@@ -70,6 +74,7 @@ which would be possible ... but may not be worth the trouble
 a nice LifeCycleNode
 
 ### Other
+* OpenCV.py - OpenCV.jsx - have add button to add a new filter
 * all std out from any process published -  eg. InstallPython also make different levels info, warn, error
 * config "schema" defined in json that conforms to the form generation & will generate swagger as well
 * services with platform icon - make it 1/2 in both dimentions and put it in right upper corner (transparent)

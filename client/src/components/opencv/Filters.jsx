@@ -2,6 +2,8 @@ import CloseIcon from "@mui/icons-material/Close"
 import {
   Box,
   Button,
+  Card,
+  CardContent,
   IconButton,
   List,
   ListItem,
@@ -13,10 +15,12 @@ import {
   Typography
 } from "@mui/material"
 import React, { useEffect, useState } from "react"
+import { useStore } from "store/store"
 
 export default function Filters({ service, selectedFilter, setSelectedFilter, sendTo, fullname }) {
   const selectedFilterDetails = selectedFilter !== null ? service?.filters[selectedFilter] : null
   const [filter, setFilter] = useState(selectedFilterDetails)
+  const getRepoUrl = useStore((state) => state.getRepoUrl)
 
   useEffect(() => {
     setFilter(selectedFilterDetails)
@@ -38,8 +42,8 @@ export default function Filters({ service, selectedFilter, setSelectedFilter, se
   return (
     <Box sx={{ width: "45%", p: 2, m: 2 }}>
       <h3>Filter Pipeline</h3>
-      {JSON.stringify(filter)}
-      <br /> {JSON.stringify(selectedFilterDetails)}
+      {/* {JSON.stringify(filter)}
+      <br /> {JSON.stringify(selectedFilterDetails)} */}
       <List>
         {(service?.filters ?? []).map((filter, index) => (
           <ListItem key={index} button selected={index === selectedFilter} onClick={() => handleSelectFilter(index)}>
@@ -148,89 +152,109 @@ export default function Filters({ service, selectedFilter, setSelectedFilter, se
           )}
 
           {selectedFilterDetails.typeKey === "OpenCVFilterFaceRecognition" && (
-            <Box sx={{ display: "flex", alignItems: "center", mt: 2 }}>
-              <Typography variant="body1" sx={{ mr: 2 }}>
-                Mode
-              </Typography>
-              <Button
-                variant="contained"
-                sx={{
-                  ml: 1,
-                  bgcolor: filter?.config?.mode === "learn" ? "grey.700" : "grey.300",
-                  color: filter?.config?.mode === "learn" ? "white" : "black"
-                }}
-                onClick={() =>
-                  setFilter((prev) => ({
-                    ...prev,
-                    config: {
-                      ...prev.config,
-                      mode: "learn"
-                    }
-                  }))
-                }
-              >
-                Learn
-              </Button>
-              <Button
-                variant="contained"
-                sx={{
-                  ml: 1,
-                  bgcolor: filter?.config?.mode === "train" ? "grey.700" : "grey.300",
-                  color: filter?.config?.mode === "train" ? "white" : "black"
-                }}
-                onClick={() =>
-                  setFilter((prev) => ({
-                    ...prev,
-                    config: {
-                      ...prev.config,
-                      mode: "train"
-                    }
-                  }))
-                }
-              >
-                Train
-              </Button>
+            <>
+              <Box sx={{ display: "flex", alignItems: "center", mt: 2 }}>
+                <Typography variant="body1" sx={{ mr: 2 }}>
+                  Mode
+                </Typography>
+                <Button
+                  variant="contained"
+                  sx={{
+                    ml: 1,
+                    bgcolor: filter?.config?.mode === "learn" ? "grey.700" : "grey.300",
+                    color: filter?.config?.mode === "learn" ? "white" : "black"
+                  }}
+                  onClick={() =>
+                    setFilter((prev) => ({
+                      ...prev,
+                      config: {
+                        ...prev.config,
+                        mode: "learn"
+                      }
+                    }))
+                  }
+                >
+                  Learn
+                </Button>
+                <Button
+                  variant="contained"
+                  sx={{
+                    ml: 1,
+                    bgcolor: filter?.config?.mode === "train" ? "grey.700" : "grey.300",
+                    color: filter?.config?.mode === "train" ? "white" : "black"
+                  }}
+                  onClick={() =>
+                    setFilter((prev) => ({
+                      ...prev,
+                      config: {
+                        ...prev.config,
+                        mode: "train"
+                      }
+                    }))
+                  }
+                >
+                  Train
+                </Button>
 
-              <Button
-                variant="contained"
-                sx={{
-                  ml: 1,
-                  bgcolor: filter?.config?.mode === "recognize" ? "grey.700" : "grey.300",
-                  color: filter?.config?.mode === "recognize" ? "white" : "black"
-                }}
-                onClick={() =>
-                  setFilter((prev) => ({
-                    ...prev,
-                    config: {
-                      ...prev.config,
-                      mode: "recognize"
-                    }
-                  }))
-                }
-              >
-                Recognize
-              </Button>
-            </Box>
-          )}
+                <Button
+                  variant="contained"
+                  sx={{
+                    ml: 1,
+                    bgcolor: filter?.config?.mode === "recognize" ? "grey.700" : "grey.300",
+                    color: filter?.config?.mode === "recognize" ? "white" : "black"
+                  }}
+                  onClick={() =>
+                    setFilter((prev) => ({
+                      ...prev,
+                      config: {
+                        ...prev.config,
+                        mode: "recognize"
+                      }
+                    }))
+                  }
+                >
+                  Recognize
+                </Button>
+              </Box>
 
-          {filter?.config?.mode === "learn" && (
-            <Box sx={{ mt: 2 }}>
-              <TextField
-                label="Name"
-                variant="outlined"
-                fullWidth
-                value={filter?.config?.name}
-                onChange={(event) =>
-                  setFilter((prev) => ({
-                    ...prev,
-                    config: {
-                      ...prev.config,
-                      name: event.target.value
+              {filter?.config?.mode === "learn" && (
+                <Box sx={{ mt: 2 }}>
+                  <TextField
+                    label="Name"
+                    variant="outlined"
+                    fullWidth
+                    value={filter?.config?.name}
+                    onChange={(event) =>
+                      setFilter((prev) => ({
+                        ...prev,
+                        config: {
+                          ...prev.config,
+                          name: event.target.value
+                        }
+                      }))
                     }
-                  }))
-                }
-              />
-            </Box>
+                  />
+                </Box>
+              )}
+
+              <Box sx={{ mt: 2 }}>
+                <Typography variant="h6">Models</Typography>
+                {Object.entries(filter?.image_counts || {}).map(([name, count]) => (
+                  <Card key={name} sx={{ mt: 1, display: "flex", alignItems: "center" }}>
+                    <CardContent sx={{ display: "flex", alignItems: "center" }}>
+                      <img
+                        src={`${getRepoUrl()}/opencv/face_recognition_data/${name}/0.jpg`}
+                        alt={name}
+                        style={{ width: 50, height: 50, marginRight: 16 }}
+                      />
+                      <Typography variant="body1">
+                        Name: {name} Images: {count}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                ))}
+              </Box>
+            </>
           )}
 
           <Box sx={{ mt: 2 }}>

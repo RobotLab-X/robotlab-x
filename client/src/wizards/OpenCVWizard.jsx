@@ -97,9 +97,9 @@ export default function OpenCVWizard({ fullname }) {
       <div>
         <h2>Step 3 Virtual Environment</h2>
         {/* <FormControl component="fieldset">
-          <RadioGroup aria-label="venv" name="venv" value={selection} onChange={handleVenvSelection}>
+          <RadioGroup aria-label=".venv" name=".venv" value={selection} onChange={handleVenvSelection}>
             <FormControlLabel value="useVenv" control={<Radio />} label="Virtual env (recommended)" />
-            <FormControlLabel value="noVenv" control={<Radio />} label="Do not use venv" />
+            <FormControlLabel value="noVenv" control={<Radio />} label="Do not use .venv" />
           </RadioGroup>
         </FormControl> */}
         <div style={{ marginTop: "20px" }}>

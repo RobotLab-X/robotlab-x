@@ -120,6 +120,7 @@ class OpenCV:
         print(f"Removed filter: {name_of_filter}")
 
     def releaseService(self):
+        print("releaseService")
         # releaseService or release_service ?
         # super().release_service()
         # FIXME teardown the client

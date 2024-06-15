@@ -2,8 +2,8 @@ import argparse
 import traceback
 import asyncio
 from typing import List
-import websockets
 import json
+import websockets
 import sys
 import requests
 import logging
@@ -34,6 +34,7 @@ class SubscriptionListener:
 class State(Enum):
     READY = auto()
     SHUTDOWN = auto()
+    # RECONNECTING = auto()
 
 
 class RobotLabXClient:
