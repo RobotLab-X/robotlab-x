@@ -219,6 +219,7 @@ export default function Filters({ service, selectedFilter, setSelectedFilter, se
                 label="Name"
                 variant="outlined"
                 fullWidth
+                value={filter?.config?.name}
                 onChange={(event) =>
                   setFilter((prev) => ({
                     ...prev,
