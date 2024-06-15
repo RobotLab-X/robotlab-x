@@ -562,7 +562,8 @@ export default class RobotLabXRuntime extends Service {
       log.error(`cannot release runtime`)
       return
     }
-    if (service?.id !== this.id) {
+    if (service?.id !== this.id && service?.typeKey !== "Proxy") {
+      // FIXME other proxy types need to be handled
       log.error(`will not release remote service: ${name}`)
       return
     }
