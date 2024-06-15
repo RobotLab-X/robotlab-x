@@ -13,7 +13,6 @@ from concurrent.futures import ThreadPoolExecutor
 from rlx_pkg_proxy.service import Service
 from typing import List
 
-
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("OpenCV")
 
@@ -122,11 +121,19 @@ class OpenCV(Service):
         print(f"Removed filter: {name_of_filter}")
 
     def releaseService(self):
-        print("releaseService")
-        # releaseService or release_service ?
-        # super().release_service()
-        # FIXME teardown the client
-        self.stop_capture()
+        """Releases the service from the proxied runtime
+        Will shutdown our capture and websocket and coroutines
+        """
+        print("Releasing service")
+
+        # Stop capturing
+        try:
+            self.stop_capture()
+        except Exception as e:
+            print(f"Error stopping capture: {e}")
+
+        # Call the super class's releaseService method
+        super().releaseService()
 
     def apply_filter_config(self, name, config):
         for filter in self.filters:

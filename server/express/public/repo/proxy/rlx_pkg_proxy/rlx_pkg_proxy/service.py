@@ -1,3 +1,4 @@
+import os
 import argparse
 import traceback
 import asyncio
@@ -261,15 +262,15 @@ class Service:
     async def wait_for_stop(self):
         await self.stop_event.wait()
 
-    def stop_service(self):
+    def stopService(self):
         log.info("Stopping service...")
         self.state = State.SHUTDOWN
         self.stop_event.set()
 
     def shutdown(self):
-        self.stop_service()
+        self.stopService()
         log.info("Shutting down...")
-        sys.exit(0)
+        os._exit(0)
 
     def start_service(self):
         log.info("Starting service...")
@@ -283,6 +284,31 @@ class Service:
 
     def set_service(self, service):
         self.service = service
+
+    def releaseService(self):
+        """Releases the service from the proxied runtime
+        Will shutdown our capture and websocket and coroutines
+        """
+        print("Releasing service")
+
+        # # Stop the service
+        self.shutdown()
+
+        # # Close the WebSocket connection gracefully
+        # if self.websocket:
+        #     self.loop.run_until_complete(self.websocket.close())
+        #     print("WebSocket connection closed.")
+
+        # # Cancel all running tasks
+        # tasks = asyncio.all_tasks(self.loop)
+        # for task in tasks:
+        #     task.cancel()
+        # self.loop.run_until_complete(asyncio.gather(*tasks, return_exceptions=True))
+
+        # # Stop the event loop
+        # self.loop.call_soon_threadsafe(self.loop.stop)
+        # self.loop.run_forever()
+        # self.loop.close()
 
 
 def main():
