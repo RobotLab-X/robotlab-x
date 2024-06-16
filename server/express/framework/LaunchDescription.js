@@ -1,10 +1,7 @@
-// JavaScript doesn't support type declarations directly, but you can use JSDoc to annotate types for better IDE support.
-
 /**
  * Represents a launch action with optional parameters and output settings.
  * @typedef {Object} LaunchAction
  * @property {string} package - The package name.
- * @property {string} executable - The executable name.
  * @property {string} name - The name of the action.
  * @property {string} [namespace] - Optional namespace.
  * @property {Object} [parameters] - Optional parameters as an object.
@@ -17,6 +14,8 @@ class LaunchDescription {
    * @param {LaunchAction[]} [actions] - Optional initial actions.
    */
   constructor(actions) {
+    this.description = "Default description"
+    this.version = "1.0"
     this.actions = actions || []
   }
 
@@ -50,5 +49,4 @@ class LaunchDescription {
   }
 }
 
-// The above JavaScript code reflects the structure and functionality of the TypeScript version but does not enforce types at runtime.
 module.exports = LaunchDescription

@@ -17,7 +17,7 @@ import {
 } from "@mui/material"
 import Checkbox from "@mui/material/Checkbox"
 import FormControlLabel from "@mui/material/FormControlLabel"
-import React, { useEffect, useState } from "react"
+import React, { useState } from "react"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
 import { useStore } from "../store/store"
 import useServiceSubscription from "../store/useServiceSubscription"
@@ -42,25 +42,13 @@ export default function Docker({ fullname }) {
 
   const psMsg = useMessage(fullname, "publishPs")
   const publishImagesMsg = useMessage(fullname, "publishImages")
-  const publishInstallLogMsg = useMessage(fullname, "publishInstallLog")
 
   // creates subscriptions to topics and returns the broadcastState message reference
-  const serviceMsg = useServiceSubscription(fullname, ["publishPs", "publishImages", "publishInstallLog"])
+  const serviceMsg = useServiceSubscription(fullname, ["publishPs", "publishImages"])
 
   // processes the msg.data[0] and returns the data
   const ps = useProcessedMessage(psMsg)
   const publishImages = useProcessedMessage(publishImagesMsg)
-
-  const publishInstallLog = useProcessedMessage(publishInstallLogMsg)
-
-  useEffect(() => {
-    if (publishInstallLog) {
-      setLogEntries((prevEntries) => {
-        const newEntries = [...prevEntries, publishInstallLog].slice(-maxLogEntries)
-        return newEntries
-      })
-    }
-  }, [publishInstallLog, maxLogEntries])
 
   const handleAction = (containerId, action) => {
     if (action === "delete") {

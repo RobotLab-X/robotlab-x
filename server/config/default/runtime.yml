@@ -1,2 +1,2 @@
-id: rlx1
-port: 3001
+id: rlx7
+port: 30017 # does not work in dev

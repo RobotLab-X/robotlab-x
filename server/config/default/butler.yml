@@ -1,0 +1,7 @@
+installed: true
+url: http://fast:11434
+model: llama3
+maxHistory: 10
+wakeWord: wake
+sleepWord: sleep
+prompt: ButlerBot

@@ -78,28 +78,28 @@ export default class Docker extends Service {
   createAndStartContainer(imageName: string, containerName: string): void {
     const that = this
     // FIXME change it to a InstallLog object ?
-    that.installInfo(`${imageName} ${containerName}`)
+    that.info(`${imageName} ${containerName}`)
     const createAndStartContainer = async (imageName: string, containerName: string) => {
       try {
         // Pull the image if it doesn't exist locally
         await new Promise((resolve, reject) => {
           this.docker.pull(imageName, (err: any, stream: any) => {
             if (err) {
-              that.installError(JSON.stringify(err))
+              that.error(JSON.stringify(err))
               return reject(err)
             }
             that.docker.modem.followProgress(stream, onFinished, onProgress)
 
             function onFinished(err: any, output: any) {
               if (err) {
-                that.installError(JSON.stringify(err))
+                that.error(JSON.stringify(err))
                 return reject(err)
               }
               resolve(output)
-              that.installInfo(JSON.stringify(output))
+              that.info(JSON.stringify(output))
             }
             function onProgress(event: any) {
-              that.installInfo(JSON.stringify(JSON.stringify(event)))
+              that.info(JSON.stringify(JSON.stringify(event)))
             }
           })
         })
@@ -125,7 +125,7 @@ export default class Docker extends Service {
         await container.start()
         log.info(`Container ${containerName} started successfully.`)
       } catch (err) {
-        that.installError(JSON.stringify(err))
+        that.error(JSON.stringify(err))
       }
     }
     createAndStartContainer(imageName, containerName)
@@ -133,15 +133,15 @@ export default class Docker extends Service {
 
   deleteContainer(containerId: string): void {
     const that = this
-    that.installInfo(`Deleting container ${containerId}`)
+    that.info(`Deleting container ${containerId}`)
     const deleteContainer = async (containerId: string) => {
       try {
         const container = this.docker.getContainer(containerId)
         // await container.stop() throws if already stopped
         await container.remove()
-        that.installInfo(`Container ${containerId} deleted successfully.`)
+        that.info(`Container ${containerId} deleted successfully.`)
       } catch (err) {
-        that.installError(JSON.stringify(err))
+        that.error(JSON.stringify(err))
       }
     }
     deleteContainer(containerId)
@@ -149,15 +149,15 @@ export default class Docker extends Service {
 
   deleteImage(imageId: string): void {
     const that = this
-    that.installInfo(`Deleting image ${imageId}`)
+    that.info(`Deleting image ${imageId}`)
     const deleteImage = async (imageId: string) => {
       try {
         const image = this.docker.getImage(imageId)
         await image.remove()
-        that.installInfo(`Image ${imageId} deleted successfully.`)
+        that.info(`Image ${imageId} deleted successfully.`)
         that.invoke("getImages")
       } catch (err) {
-        that.installError(JSON.stringify(err))
+        that.error(JSON.stringify(err))
       }
     }
     deleteImage(imageId)
@@ -165,10 +165,10 @@ export default class Docker extends Service {
 
   pullImage(imageName: string): void {
     let that = this
-    that.installInfo(`Pulling image ${imageName}.`)
+    that.info(`Pulling image ${imageName}.`)
     this.docker.pull(imageName, function (err: any, stream: any) {
       if (err) {
-        that.installError(JSON.stringify(err))
+        that.error(JSON.stringify(err))
         return console.error(err)
       }
 
@@ -176,46 +176,46 @@ export default class Docker extends Service {
 
       function onFinished(err: any, output: any) {
         if (err) {
-          that.installError(JSON.stringify(err))
+          that.error(JSON.stringify(err))
           return console.error(err)
         }
-        that.installInfo(`Image pulled successfully.`)
+        that.info(`Image pulled successfully.`)
         that.invoke("getImages")
       }
 
       function onProgress(event: any) {
-        that.installInfo(`${JSON.stringify(event)}`)
+        that.info(`${JSON.stringify(event)}`)
       }
     })
   }
 
   startContainer = async (containerId: string) => {
     const that = this
-    that.installInfo(`Starting container ${containerId}.`)
+    that.info(`Starting container ${containerId}.`)
     try {
       const container = this.docker.getContainer(containerId)
       await container.start()
-      that.installInfo(`Container ${containerId} started successfully.`)
+      that.info(`Container ${containerId} started successfully.`)
     } catch (err) {
-      that.installError(`Error starting container ${containerId}: ${err}`)
+      that.error(`Error starting container ${containerId}: ${err}`)
     }
   }
 
   runContainer = async (containerId: string) => {
     const that = this
-    that.installInfo(`Running container ${containerId}.`)
+    that.info(`Running container ${containerId}.`)
     try {
       const container = this.docker.getContainer(containerId)
       await container.run
-      that.installInfo(`Container ${containerId} started successfully.`)
+      that.info(`Container ${containerId} started successfully.`)
     } catch (err) {
-      that.installError(`Error starting container ${containerId}: ${err}`)
+      that.error(`Error starting container ${containerId}: ${err}`)
     }
   }
 
   createAndRunContainer = async (imageId: string, containerName: string, cmd: string) => {
     const that = this
-    that.installInfo(`creating and starting container ${imageId} ${containerName}.`)
+    that.info(`creating and starting container ${imageId} ${containerName}.`)
     try {
       const container = await this.docker.createContainer({
         Image: "alpine",
@@ -225,7 +225,7 @@ export default class Docker extends Service {
       })
 
       let result = await container.start()
-      that.installInfo(`start ${containerName} ${result}`)
+      that.info(`start ${containerName} ${result}`)
 
       const exec = await container.exec({
         Cmd: ["/bin/sh"],
@@ -248,21 +248,21 @@ export default class Docker extends Service {
         container.remove()
       })
 
-      that.installInfo(`Container ${containerName} started successfully.`)
+      that.info(`Container ${containerName} started successfully.`)
     } catch (err) {
-      that.installError(`Error starting container ${containerName}: ${err}`)
+      that.error(`Error starting container ${containerName}: ${err}`)
     }
   }
 
   stopContainer = async (containerId: string) => {
     const that = this
-    that.installInfo(`Stopping container ${containerId}.`)
+    that.info(`Stopping container ${containerId}.`)
     try {
       const container = this.docker.getContainer(containerId)
       await container.stop()
-      that.installInfo(`Container ${containerId} stopped successfully.`)
+      that.info(`Container ${containerId} stopped successfully.`)
     } catch (err) {
-      that.installError(`Error stopping container ${containerId}:${err}`)
+      that.error(`Error stopping container ${containerId}:${err}`)
     }
   }
 
@@ -270,7 +270,7 @@ export default class Docker extends Service {
     let that = this
     this.docker.listImages(function (err: any, images: any) {
       if (err) {
-        that.installError(`Listing images error ${err}`)
+        that.error(`Listing images error ${err}`)
         return
       }
 

@@ -1,6 +1,8 @@
 // import Service from "express/framework/Service"
 // FIXME - aliases don't appear to be work, neither does root reference path
-import { LaunchAction } from "express/framework/LaunchDescription"
+// import LaunchDescription, { LaunchAction } from "express/framework/LaunchDescription"
+import LaunchDescription, { LaunchAction } from "../framework/LaunchDescription"
+
 import Gateway from "express/interfaces/Gateway"
 import fs from "fs"
 import http from "http"
@@ -25,8 +27,6 @@ import RouteEntry from "../models/RouteEntry"
 import { ServiceTypeData } from "../models/ServiceTypeData"
 import Proxy from "../service/Proxy"
 import Unknown from "../service/Unknown"
-// import LaunchDescription from "express/framework/LaunchDescription"
-// const LaunchDescription = require("express/framework/LaunchDescription").default
 
 const log = getLogger("RobotLabXRuntime")
 
@@ -420,32 +420,36 @@ export default class RobotLabXRuntime extends Service {
     log.info("started runtime")
   }
 
-  installInfo(msg: string) {
-    log.info(msg)
-    this.invoke("publishInstallLog", msg)
-  }
-
   async start(launcher: string) {
     log.info(`Starting launcher: ${launcher}`)
 
     try {
       log.info(`cwd ${process.cwd()}`)
-      // Dynamically import the Default configuration based on the launcher name
-      const modulePath = `../../config/${launcher}` // Construct the module path dynamically
+      // Dynamically import the configuration based on the launcher name
+      const modulePath = `../../config/default/${launcher}` // Construct the module path dynamically
       const configModule = await import(modulePath)
-      const DefaultConfig = configModule.default
+      const generateLaunchDescription = configModule.generateLaunchDescription
 
       // Create an instance of the dynamically loaded configuration
-      const configInstance = new DefaultConfig()
+      const launchDescription = generateLaunchDescription()
 
       // Process the configuration - this example just logs the loaded configuration
-      log.info(`Loaded configuration with ${configInstance.getLaunchActions().length} actions.`)
+      log.info(`Loaded configuration with ${launchDescription.getLaunchActions().length} actions.`)
 
       // You might want to do more here, such as applying the configuration or starting nodes
-      configInstance.getLaunchActions().forEach((action: LaunchAction) => {
-        log.info(`Starting ${action.package}/${action.executable} named ${action.name}`)
-        this.startServiceType(action.name, action.executable)
-      })
+      // launchDescription.getLaunchActions().forEach((action: LaunchAction) => {
+      //   const targetDir = path.join(Main.expressRoot, `repo/${action.package}`)
+      //   const pkgYmlFile = `${targetDir}/package.yml`
+
+      //   log.info(`loading type data from ${pkgYmlFile}`)
+      //   const file = fs.readFileSync(pkgYmlFile, "utf8")
+      //   const pkg: Package = YAML.parse(file)
+
+      //   log.info(`Starting ${action.package}/${pkg.typeKey} named ${action.name}`)
+      //   this.startServiceType(action.name, pkg.typeKey)
+      // })
+
+      this.launch(launchDescription)
     } catch (error) {
       if (error instanceof Error) {
         log.error(`Error loading configuration for ${launcher}: ${error.message}`)
@@ -455,24 +459,25 @@ export default class RobotLabXRuntime extends Service {
     }
   }
 
-  startServiceType(serviceName: string, serviceType: string): Service {
-    log.info(`startServiceType: ${serviceName}, type: ${serviceType}`)
-    try {
-      const check = this.getService(serviceName)
-      if (check != null) {
-        log.info(`service ${check.getName()}@${check.getId()} already exists`)
-        return check
-      }
+  launch(launch: LaunchDescription) {
+    log.info(`launching ${launch.getLaunchActions().length} actions`)
 
-      log.info(`starting service: ${serviceName}, type: ${serviceType.toLowerCase()} in ${process.cwd()}`)
+    // list of started services returned from LaunchDescription
+    const services: Service[] = []
 
-      const targetDir = path.join(Main.expressRoot, `repo/${serviceType.toLowerCase()}`)
+    launch.getLaunchActions().forEach((action: LaunchAction) => {
+      log.info(`launching ${action.package}/${action.name}`)
+
+      const targetDir = path.join(Main.expressRoot, `repo/${action.package}`)
       const pkgYmlFile = `${targetDir}/package.yml`
 
-      // loading type info
       log.info(`loading type data from ${pkgYmlFile}`)
       const file = fs.readFileSync(pkgYmlFile, "utf8")
       const pkg: Package = YAML.parse(file)
+      const serviceType = pkg.typeKey
+      const serviceName = action.name
+
+      log.info(`Starting ${action.package}/${pkg.typeKey} named ${action.name}`)
 
       // validating and preprocessing package.yml
       if (pkg.cwd == null) {
@@ -488,11 +493,8 @@ export default class RobotLabXRuntime extends Service {
       log.info(`package.platform: ${pkg.platform}, type: ${serviceType} in ${process.cwd()}`)
       log.info(`starting process ${targetDir}/${pkg.cmd} ${pkg.args}`)
       let service: Service = null
-      // FIXME "all" types of platform have a corresponding node service ..
-      // the service may be used as an install wizard, connecting service, or some other wizard
-      // spawn the process if none node process .. this should be fixed ASAP
-      // if (pkg.platform === "node" || pkg.platform === "myrobotlab") {
-      this.installInfo(`node process ${serviceName} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
+
+      this.info(`node process ${serviceName} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
       try {
         if (serviceName === "runtime" && serviceType === "RobotLabXRuntime") {
           log.info("system starting - local runtime already created")
@@ -501,6 +503,7 @@ export default class RobotLabXRuntime extends Service {
           if (pkg.platform === "node") {
             // a native (in process) Node service, no Proxy needed
             service = this.repo.getNewService(this.getId(), serviceName, serviceType, version, this.getHostname())
+            this.info(`node process ${serviceName} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
           } else {
             // Important, if the service is a python service, the id will be the same as the service name
             // because it really "is" a remote service - hopefully proxied and using the robotlabx py client
@@ -508,8 +511,8 @@ export default class RobotLabXRuntime extends Service {
             service = this.repo.getNewService(serviceName, serviceName, "Proxy", version, this.getHostname())
             let cast = service as Proxy
             cast.proxyTypeKey = serviceType
+            this.info(`python process ${serviceName} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
           }
-
           service.pkg = pkg
         }
       } catch (e: unknown) {
@@ -517,30 +520,56 @@ export default class RobotLabXRuntime extends Service {
 
         let errStr = `error: ${error} ${error.stack}`
         log.error(errStr)
-        this.invoke("publishInstallLog", errStr)
-        this.invoke("publishInstallLog", "warn: using default Unknown service type")
         service = this.repo.getNewService(this.getId(), serviceName, "Unknown", version, this.getHostname())
         if (service instanceof Unknown) {
           service.requestTypeKey = serviceType
         }
       }
+      services.push(service)
+    })
 
-      // service.load(pkg)
-      // service.applyConfig(this.readConfig(serviceName, {})
-      // config to start or not to start
-      service.startService()
+    // start and register all services
+    services.forEach((service) => {
       log.info(`service ${JSON.stringify(service)}`)
-      this.installInfo(`platform is ok`)
+      log.info(`starting ${service?.name} ${service?.typeKey} in ${process.cwd()}`)
+      service.startService()
+      log.info(`registered service ${service?.name}`)
       this.register(service)
-      this.installInfo(`registered service ${serviceName}`)
+    })
+    return services
+  }
 
-      return service
+  startServiceType(serviceName: string, serviceType: string): Service {
+    log.info(`startServiceType: ${serviceName}, type: ${serviceType}`)
+    try {
+      const check = this.getService(serviceName)
+      if (check != null) {
+        log.info(`service ${check.getName()}@${check.getId()} already exists`)
+        return check
+      }
+
+      log.info(`starting service: ${serviceName}, package: ${serviceType.toLowerCase()} in ${process.cwd()}`)
+
+      // create generic LaunchDescription
+      const ld = new LaunchDescription()
+      ld.description = `Generated ${serviceName} ${serviceType}`
+      ld.version = "0.0.1"
+
+      ld.addNode({
+        package: serviceType.toLowerCase(),
+        name: serviceName
+      })
+
+      const services = this.launch(ld)
+      if (services.length > 0) {
+        return services[0]
+      }
+      return null
     } catch (e: unknown) {
       const error = e as Error
-      let errStr = `error: ${error} ${error.stack}`
-      log.error(errStr)
-      this.invoke("publishInstallLog", errStr)
+      log.error(`error: ${error} ${error.stack}`)
     }
+    return null
   }
 
   /**

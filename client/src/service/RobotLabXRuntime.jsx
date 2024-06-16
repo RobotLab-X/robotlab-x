@@ -55,14 +55,12 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
   const [activeTab, setActiveTab] = useState(0)
 
   // use msgs
-  const installLogMsg = useMessage(fullname, "publishInstallLog")
   const newServiceMsg = useMessage(fullname, "registered")
   const repoMsg = useMessage(fullname, "getRepo")
 
-  const serviceMsg = useServiceSubscription(fullname, ["getRepo", "publishInstallLog"])
+  const serviceMsg = useServiceSubscription(fullname, ["getRepo"])
   const service = useProcessedMessage(serviceMsg)
   const repo = useProcessedMessage(repoMsg)
-  const installLog = useProcessedMessage(installLogMsg)
   const [messageLog, setMessageLog] = useState([])
 
   const imagesUrl = `${getBaseUrl()}/images`
@@ -109,25 +107,6 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
       // updateRegistryOnRegistered(newServiceMsg)
     }
   }, [newServiceMsg])
-
-  useEffect(() => {
-    if (installLog) {
-      // Add the new message to the log
-      console.log("new install log msg:", installLog)
-      setMessageLog((log) => [...log, installLog])
-    }
-  }, [installLog]) // Dependency array includes message, so this runs only if message changes
-
-  // const ExpandMore = styled((props) => {
-  //   const { expand, ...other } = props
-  //   return <IconButton {...other} />
-  // })(({ theme, expand }) => ({
-  //   transform: !expand ? "rotate(0deg)" : "rotate(180deg)",
-  //   marginLeft: "auto",
-  //   transition: theme.transitions.create("transform", {
-  //     duration: theme.transitions.duration.shortest
-  //   })
-  // }))
 
   const TabPanel = ({ children, value, index }) => {
     return (
