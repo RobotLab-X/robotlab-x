@@ -514,6 +514,10 @@ export default class RobotLabXRuntime extends Service {
             this.info(`python process ${serviceName} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
           }
           service.pkg = pkg
+          // check for config to be merged from action
+          if (action.config) {
+            service.config = { ...service.config, ...action.config }
+          }
         }
       } catch (e: unknown) {
         const error = e as Error

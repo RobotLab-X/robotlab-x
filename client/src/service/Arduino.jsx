@@ -123,7 +123,7 @@ export default function Arduino({ id, fullname, name }) {
           <Box sx={{ m: 2 }}>
             {service && service?.boardType && (
               <img
-                src={`${getRepoUrl()}/Arduino/${service?.boardType}.png`}
+                src={`${getRepoUrl()}/arduino/${service?.boardType}.png`}
                 alt={service.name}
                 style={{ verticalAlign: "middle" }}
               />
