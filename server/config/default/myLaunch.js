@@ -12,7 +12,7 @@ function generateLaunchDescription() {
   // Create a node with parameters and remappings
   const clock01 = {
     package: "clock",
-    config: { intervalMs: 1000 },
+    config: { intervalMs: 500 },
     name: "clock01",
     listeners: {
       publishEpoch: [
@@ -27,7 +27,7 @@ function generateLaunchDescription() {
 
   const clock02 = {
     package: "clock",
-    config: { intervalMs: 1000 },
+    config: { intervalMs: 2000 },
     name: "clock02",
     listeners: {
       publishEpoch: [

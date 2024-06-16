@@ -1,18 +1,16 @@
 import { Box, FormControl, InputLabel, MenuItem, Select, Slider, Typography } from "@mui/material"
 import CodecUtil from "framework/CodecUtil"
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
 import { useStore } from "../store/store"
 import useServiceSubscription from "../store/useServiceSubscription"
 
 export default function Servo({ name, fullname, id }) {
-  const [value, setValue] = React.useState([20, 80])
-  const [mainSliderValue, setMainSliderValue] = React.useState(70)
-  const [speedValue, setSpeedValue] = React.useState(50)
-  const [selectedController, setSelectedController] = React.useState("")
-  const [selectedPin, setSelectedPin] = React.useState("")
-
-  const [editMode, setEditMode] = useState(false)
+  const [value, setValue] = useState([20, 80])
+  const [mainSliderValue, setMainSliderValue] = useState(70)
+  const [speedValue, setSpeedValue] = useState(50)
+  const [selectedController, setSelectedController] = useState("")
+  const [selectedPin, setSelectedPin] = useState("")
 
   const { useMessage, sendTo } = useStore()
 
@@ -28,14 +26,27 @@ export default function Servo({ name, fullname, id }) {
   const publishServoMoveTo = useProcessedMessage(publishServoMoveToMsg)
   const getServoControllers = useProcessedMessage(getServoControllersMsg)
 
-  const toggleEditMode = () => {
-    setEditMode(!editMode)
-  }
+  useEffect(() => {
+    if (service?.config?.controller) {
+      setSelectedController(service.config.controller)
+    }
+  }, [service?.config?.controller])
+
+  useEffect(() => {
+    if (service?.config?.pin) {
+      setSelectedPin(service.config.pin)
+    }
+  }, [service?.config?.pin])
 
   const handleControllerOpen = () => {
     // Fetch the currently available controllers
     sendTo(fullname, "getServoControllers")
   }
+
+  useEffect(() => {
+    // Fetch the currently available controllers when the component mounts
+    handleControllerOpen()
+  }, [])
 
   const handleMoveTo = (event, newValue) => {
     // Ensure the upper slider handle does not move between the min/max positions of the lower slider
@@ -58,14 +69,16 @@ export default function Servo({ name, fullname, id }) {
 
   const handleControllerChange = (event) => {
     setSelectedController(event.target.value)
-    // This must simply addListener of the appropraite name etc
+    // This must simply addListener of the appropriate name etc
     sendTo(fullname, "setController", event.target.value)
+    sendTo(fullname, "broadcastState")
   }
 
   const handlePinChange = (event) => {
     setSelectedPin(event.target.value)
-    // This must simply removeListener of the appropraite name etc
+    // This must simply removeListener of the appropriate name etc
     sendTo(fullname, "setPin", event.target.value)
+    sendTo(fullname, "broadcastState")
   }
 
   const sliderStyles = {
@@ -95,11 +108,14 @@ export default function Servo({ name, fullname, id }) {
             <MenuItem value="">
               <em>None</em>
             </MenuItem>
-            {getServoControllers?.map((controller, index) => (
-              <MenuItem key={index} value={CodecUtil.getShortName(controller)}>
-                {CodecUtil.getShortName(controller)}
-              </MenuItem>
-            ))}
+            {getServoControllers?.map((controller, index) => {
+              const shortName = CodecUtil.getShortName(controller)
+              return (
+                <MenuItem key={index} value={shortName}>
+                  {shortName}
+                </MenuItem>
+              )
+            })}
           </Select>
         </FormControl>
         <FormControl fullWidth sx={{ mt: 2, ml: 1 }}>
@@ -132,11 +148,6 @@ export default function Servo({ name, fullname, id }) {
             {speedValue}
           </Typography>
         </Box>
-        {/*}
-        <Button variant="contained" color="primary">
-          Attach
-        </Button>
-        */}
       </Box>
       <Slider
         value={mainSliderValue}

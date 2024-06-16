@@ -75,6 +75,9 @@ export default class Servo extends Service {
    * @example ["uno"]
    */
   removeController(controller: string): void {
+    if (this.config.controller === controller) {
+      this.config.controller = null
+    }
     this.removeListener("publishServoMoveTo", controller, "onServoMoveTo")
   }
 
@@ -84,6 +87,8 @@ export default class Servo extends Service {
    * @example ["uno"]
    */
   setController(controller: string): void {
+    log.info(`Servo.setController: Setting controller to ${controller}`)
+    this.config.controller = controller
     this.addListener("publishServoMoveTo", controller, "onServoMoveTo")
   }
 
