@@ -218,7 +218,10 @@ class Service:
 
     # I get a broadcastState from the runtime I connected even though I didn't subscribe to it
     def onBroadcastState(self, data: List[any]):
-        log.info(f"--> onBroadcastState {data}")
+        # BUG - this can be an infinite loop where it updates the display
+        # the display redraws, which sends a broadcastState, which updates the display
+        # log.info(f"--> onBroadcastState {data}")
+        pass
 
     def handle_message(self, message):
         msg = None

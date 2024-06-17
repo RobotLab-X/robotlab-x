@@ -101,6 +101,14 @@ export default class Service implements Gateway {
     this.config = config
   }
 
+  apply(config: any) {
+    this.applyConfig(config)
+  }
+
+  applyFileConfig(filename: string = null) {
+    RobotLabXRuntime.getInstance().applyServiceFileConfig(this.name, filename)
+  }
+
   saveConfig() {
     RobotLabXRuntime.getInstance().saveServiceConfig(this.name, this.config)
   }

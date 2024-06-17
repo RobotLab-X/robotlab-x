@@ -159,11 +159,11 @@ export default class RobotLabXRuntime extends Service {
           continue
         }
         // FIXME - can't get the default export to work
-        // let la: LaunchAction = LaunchAction.fromService(service)
-        let la = {
-          name: service.name,
-          package: service.pkg.typeKey.toLowerCase()
-        }
+        let la: LaunchAction = LaunchAction.fromService(service)
+        // let la = {
+        //   name: service.name,
+        //   package: service.pkg.typeKey.toLowerCase()
+        // }
         reg.push(la)
       }
       this.config.registry = reg
@@ -192,9 +192,52 @@ export default class RobotLabXRuntime extends Service {
     }
   }
 
+  /**
+   * Overloaded apply to apply launch actions from config.registry info
+   */
   apply(config: any) {
     this.config = config
-    this.save()
+
+    let ld: LaunchDescription = new LaunchDescription()
+    ld.description = "Generated from applying config"
+    ld.version = "0.0.1"
+
+    for (const entry of this.config.registry) {
+      ld.addNode({
+        package: entry.package,
+        name: entry.name
+        // config: entry.config // FIXME - read config yml
+      })
+    }
+
+    this.launch(ld)
+
+    // FIXME - should this always be seperate from the config ?
+    // this.save()
+    return this.config
+  }
+
+  /**
+   * Apply file {serviceName}.yml to the service
+   * @param serviceName
+   * @param filename - probably @deprecated
+   * @returns
+   */
+  applyServiceFileConfig(serviceName: string, filename: string = null) {
+    let cfg: any = this.readConfig(serviceName, this.configName)
+    // let cfg: any = this.getServiceFileConfig(serviceName, filename)
+    if (cfg === null) {
+      log.error(`Failed to load config for ${serviceName}`)
+      return
+    }
+
+    // this.invokeMsg("apply", cfg) should I route this as a message ?
+    const service: Service = this.getService(serviceName)
+    if (service === null) {
+      log.error(`Failed to load service ${serviceName}`)
+      return
+    }
+    service.apply(cfg)
   }
 
   createMessage(inName: string, inMethod: string, inParams: any[]) {

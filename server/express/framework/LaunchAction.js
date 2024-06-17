@@ -6,10 +6,11 @@ class LaunchAction {
   }
 
   static fromService(service) {
-    return new LaunchAction(service.name, service.typeKey, service.config)
+    return new LaunchAction(service.name, service.pkg.typeKey.toLowerCase(), service.config)
   }
 }
 
 // FIXME - can't get this to work
 // SyntaxError: Unexpected token 'export'
 // export default LaunchAction
+module.exports = LaunchAction
