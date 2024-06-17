@@ -33,7 +33,7 @@
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig-build.json && shx cp -r ./express/public ./dist/express && shx cp -r ./config ./dist/config && shx cp ./express/framework/LaunchDescription.js ./dist/express/framework && shx cp ./express/framework/*.tpl ./dist/express/framework",
+    "build": "tsc -p tsconfig-build.json && shx cp -r ./express/public ./dist/express && shx cp -r ./config ./dist/config && shx cp ./express/framework/*.js ./dist/express/framework && shx cp ./express/framework/*.tpl ./dist/express/framework",
     "copy-static": "cpx 'src/public/**/*' dist/public",
     "watch-build": "tsc -p tsconfig-build.json --watch",
     "watch-static": "cpx 'src/public/**/*' dist/public --watch",

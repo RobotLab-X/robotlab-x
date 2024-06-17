@@ -1,3 +1,6 @@
+// FIXME - remove all Node serverside code
+// serialize must return strings
+
 const fs = require("fs")
 const path = require("path")
 const yaml = require("js-yaml")

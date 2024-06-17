@@ -1,7 +1,8 @@
 // import Service from "express/framework/Service"
 // FIXME - aliases don't appear to be work, neither does root reference path
-// import LaunchDescription, { LaunchAction } from "express/framework/LaunchDescription"
-import LaunchDescription, { LaunchAction } from "../framework/LaunchDescription"
+
+import LaunchAction from "../framework/LaunchAction"
+import LaunchDescription from "../framework/LaunchDescription"
 
 import Gateway from "express/interfaces/Gateway"
 import fs from "fs"
@@ -102,7 +103,8 @@ export default class RobotLabXRuntime extends Service {
     id: null as string,
     logLevel: "info",
     port: 3001,
-    registry: [] as string[],
+    // FIXME - should be registry:LaunchAction[]
+    registry: [] as any[],
     // list of processes to connect to
     connect: [] as string[]
   }
@@ -121,15 +123,55 @@ export default class RobotLabXRuntime extends Service {
     // will need to resolve
   }
 
+  /**
+   * Overloaded from Service.ts - other services will call
+   * this.saveServiceConfig(serviceName, config)
+   * to save their config
+   *
+   * We overload because RobotLabXRuntime.ts requires more information
+   * to be saved besides just config - e.g. registry
+   */
   save() {
+    log.info(`runtime overloaded save() ${this.name} ${this.typeKey} ${this.config}`)
     const filePath = path.join(this.configDir, this.configName, "runtime.yml")
     try {
       const yamlStr = YAML.stringify(this.config)
       fs.mkdirSync(path.dirname(filePath), { recursive: true })
       fs.writeFileSync(filePath, yamlStr, "utf8")
-      log.info("Config saved to", filePath)
+      log.info("Runtime config saved to", filePath)
     } catch (error) {
-      this.error(`Failed to save config: ${error}`)
+      this.error(`Runtime failed to save config: ${error}`)
+    }
+  }
+
+  /**
+   * Overloaded from Service.ts - other services will simply return config
+   * RobotLabXRuntime.ts requires more processing to return current config
+   * @returns
+   */
+  getConfig(): any {
+    try {
+      const reg = []
+      for (const [key, s] of Object.entries(Store.getInstance().getRegistry())) {
+        let service: Service = s as Service
+        if (service.name === "runtime" || (service.id !== this.id && service.typeKey !== "Proxy")) {
+          log.info(`skipping service ${service.name} ${service.id} not responsible for serializing`)
+          continue
+        }
+        // FIXME - can't get the default export to work
+        // let la: LaunchAction = LaunchAction.fromService(service)
+        let la = {
+          name: service.name,
+          package: service.pkg.typeKey.toLowerCase()
+        }
+        reg.push(la)
+      }
+      this.config.registry = reg
+
+      return this.config
+    } catch (error) {
+      this.error(`Runtime failed to get config: ${error}`)
+      return null
     }
   }
 

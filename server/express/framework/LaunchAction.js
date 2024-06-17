@@ -1,0 +1,15 @@
+class LaunchAction {
+  constructor(name, pkg, config = null) {
+    this.name = name
+    this.package = pkg
+    this.config = config
+  }
+
+  static fromService(service) {
+    return new LaunchAction(service.name, service.typeKey, service.config)
+  }
+}
+
+// FIXME - can't get this to work
+// SyntaxError: Unexpected token 'export'
+// export default LaunchAction

@@ -93,7 +93,7 @@ export default class Service implements Gateway {
     return this
   }
 
-  getConfig() {
+  getConfig(): any {
     return this.config
   }
 
