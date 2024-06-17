@@ -369,6 +369,10 @@ export default class Service implements Gateway {
     this.installed = installed
   }
 
+  public save() {
+    this.saveConfig()
+  }
+
   toJSON() {
     return {
       config: this.config,

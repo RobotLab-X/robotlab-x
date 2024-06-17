@@ -1,4 +1,5 @@
 import os
+import yaml
 import importlib
 import argparse
 import traceback
@@ -7,11 +8,13 @@ from typing import List
 import json
 import websockets
 import sys
+from numpy import save
 import requests
 import logging
 from enum import Enum, auto
 from rlx_pkg_proxy.codecutil import CodecUtil
 from rlx_pkg_proxy.message import Message
+from pathlib import Path
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("Service")
@@ -48,18 +51,23 @@ class Service:
 
     def __init__(self, client_id):
         log.info("WebSocket client ID: %s", client_id)
+        self.name = client_id
+        self.id = client_id
         self.client_id = client_id
         self.websocket = None
         self.stop_event = asyncio.Event()
         self.state = State.READY
+        # "local" RLX runtime service which started this process
         self.remote_id = None
         self.loop = asyncio.get_event_loop()
         # integration point for service
         self.service = None
         self.notifyList = {}
         self.ready = True
+        self.confg = None
         # needed when json definition of proxy switches to this service
         self.installed: bool = True
+        self.config: any = None
 
         CodecUtil.id = self.client_id
 
@@ -240,7 +248,8 @@ class Service:
                 return
 
             if methodName == "onBroadcastState":
-                self.onBroadcastState(params)
+                log.warning("why onBroadcastState?")
+                self.onBroadcastState(*params)
                 return
 
             method = getattr(self.service, msg.get("method"))
@@ -333,6 +342,23 @@ class Service:
             return f"Method {method_name} not found in the instance."
         except Exception as e:
             return f"An error occurred: {e}"
+
+    def save(self, configName: str = "default"):
+        log.info(f"cwd {os.getcwd()}")
+        full_path = (
+            # FIXME - YIKES !!! needs local data of where config root is
+            # os.getcwd()
+            Path("../../../../")
+            / Path("config/")
+            / Path(configName)
+            / f"{self.name}.yml"
+        )
+        log.info(f"save {self.name} to {full_path}")
+        with open(full_path, "w", encoding="utf-8") as file:
+            yaml.dump(self.config, file, default_flow_style=False)
+        # FIXME - pass in configName or directory
+        # determine if "local" proxy
+        # need to know the runtime id and configName directory
 
 
 def main():

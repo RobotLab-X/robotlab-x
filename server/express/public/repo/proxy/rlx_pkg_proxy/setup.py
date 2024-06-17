@@ -10,7 +10,7 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/RobotLab-X/rlx_pkg_proxy",
     packages=find_packages(),
-    install_requires=["websockets", "requests"],
+    install_requires=["websockets", "requests", "pyyaml"],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

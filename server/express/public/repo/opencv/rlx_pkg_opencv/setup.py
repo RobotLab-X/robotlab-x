@@ -10,7 +10,8 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/yourusername/robotlabxclient",
     packages=find_packages(),
-    install_requires=["websockets", "requests"],
+    # FIXME - i don't think "websockets", "requests" - it was just brought over from the client
+    install_requires=["jinja2", "typeguard"],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

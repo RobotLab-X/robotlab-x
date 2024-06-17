@@ -337,11 +337,12 @@ export default class RobotLabXRuntime extends Service {
 
   saveServiceConfig(serviceName: string, config: any) {
     const filePath = path.join(this.configDir, this.configName, `${serviceName}.yml`)
+    log.info(`saveServiceConfig ${filePath}`)
     try {
       const yamlStr = YAML.stringify(config)
       fs.mkdirSync(path.dirname(filePath), { recursive: true })
       fs.writeFileSync(filePath, yamlStr, "utf8")
-      log.info("Config saved to", filePath)
+      log.info(`Config saved to ${filePath}`)
     } catch (error) {
       this.error(`Failed to save config: ${error}`)
     }

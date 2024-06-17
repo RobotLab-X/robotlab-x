@@ -107,6 +107,12 @@ export default function ServicePage({ fullname, name, id }) {
     sendTo(fullname, "broadcastState")
   }
 
+  const handleSaveClick = () => {
+    // Perform refresh action here
+    console.log(`Saving ${fullname}`)
+    sendTo(fullname, "save")
+  }
+
   return (
     <div className="service-content-div">
       <Typography variant="h4" component="div" sx={{ display: "flex", alignItems: "center" }}>
@@ -135,7 +141,7 @@ export default function ServicePage({ fullname, name, id }) {
           </IconButton>
         </Tooltip>
         <Tooltip title="Save">
-          <IconButton onClick={handleRefreshClick} aria-label="save">
+          <IconButton onClick={handleSaveClick} aria-label="save">
             <SaveIcon />
           </IconButton>
         </Tooltip>
