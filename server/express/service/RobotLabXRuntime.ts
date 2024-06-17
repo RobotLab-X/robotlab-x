@@ -459,6 +459,36 @@ export default class RobotLabXRuntime extends Service {
     }
   }
 
+  isPkgProxy(pkg: Package): boolean {
+    // if platform isn't node it can not be "in process"
+    // therefore requires a proxy
+    return pkg.platform !== "node"
+  }
+
+  getPackage(pkgName: string): Package {
+    try {
+      if (pkgName === null || pkgName === "" || pkgName === undefined) {
+        log.error(`getPackage ${pkgName} not found`)
+        return null
+      }
+      pkgName = pkgName.toLowerCase()
+      log.info(`${pkgName} getting package`)
+      const targetDir = path.join(Main.expressRoot, `repo/${pkgName}`)
+      log.info(`successful ${targetDir}`)
+      const pkgYmlFile = `${targetDir}/package.yml`
+
+      // loading type info
+      log.info(`loading type data from ${pkgYmlFile}`)
+      const file = fs.readFileSync(pkgYmlFile, "utf8")
+      const pkg: Package = YAML.parse(file)
+      log.info(`package ${pkgName} loaded`)
+      return pkg
+    } catch (e) {
+      log.error(`failed to load package ${e}`)
+    }
+    return null
+  }
+
   launch(launch: LaunchDescription) {
     log.info(`launching ${launch.getLaunchActions().length} actions`)
 
@@ -466,14 +496,11 @@ export default class RobotLabXRuntime extends Service {
     const services: Service[] = []
 
     launch.getLaunchActions().forEach((action: LaunchAction) => {
-      log.info(`launching ${action.package}/${action.name}`)
+      log.info(`launching package:${action.package} name:${action.name}`)
 
       const targetDir = path.join(Main.expressRoot, `repo/${action.package}`)
-      const pkgYmlFile = `${targetDir}/package.yml`
 
-      log.info(`loading type data from ${pkgYmlFile}`)
-      const file = fs.readFileSync(pkgYmlFile, "utf8")
-      const pkg: Package = YAML.parse(file)
+      const pkg: Package = this.getPackage(action.package)
       const serviceType = pkg.typeKey
       const serviceName = action.name
 
@@ -485,7 +512,6 @@ export default class RobotLabXRuntime extends Service {
         pkg.cwd = targetDir
       }
 
-      let version = pkg.version
       log.info(`package.yml ${JSON.stringify(pkg)}`)
 
       // TODO - if service request to add a service
@@ -500,15 +526,15 @@ export default class RobotLabXRuntime extends Service {
           log.info("system starting - local runtime already created")
           service = RobotLabXRuntime.instance
         } else {
-          if (pkg.platform === "node") {
+          if (!this.isPkgProxy(pkg)) {
             // a native (in process) Node service, no Proxy needed
-            service = this.repo.getNewService(this.getId(), serviceName, serviceType, version, this.getHostname())
+            service = this.repo.getNewService(this.getId(), serviceName, serviceType, pkg.version, this.getHostname())
             this.info(`node process ${serviceName} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
           } else {
             // Important, if the service is a python service, the id will be the same as the service name
             // because it really "is" a remote service - hopefully proxied and using the robotlabx py client
             // library
-            service = this.repo.getNewService(serviceName, serviceName, "Proxy", version, this.getHostname())
+            service = this.repo.getNewService(serviceName, serviceName, "Proxy", pkg.version, this.getHostname())
             let cast = service as Proxy
             cast.proxyTypeKey = serviceType
             this.info(`python process ${serviceName} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
@@ -524,7 +550,7 @@ export default class RobotLabXRuntime extends Service {
 
         let errStr = `error: ${error} ${error.stack}`
         log.error(errStr)
-        service = this.repo.getNewService(this.getId(), serviceName, "Unknown", version, this.getHostname())
+        service = this.repo.getNewService(this.getId(), serviceName, "Unknown", pkg.version, this.getHostname())
         if (service instanceof Unknown) {
           service.requestTypeKey = serviceType
         }
@@ -543,8 +569,8 @@ export default class RobotLabXRuntime extends Service {
     return services
   }
 
-  startServiceType(serviceName: string, serviceType: string): Service {
-    log.info(`startServiceType: ${serviceName}, type: ${serviceType}`)
+  startServiceType(serviceName: string, pkg: string): Service {
+    log.info(`startServiceType: ${serviceName}, type: ${pkg}`)
     try {
       const check = this.getService(serviceName)
       if (check != null) {
@@ -552,15 +578,15 @@ export default class RobotLabXRuntime extends Service {
         return check
       }
 
-      log.info(`starting service: ${serviceName}, package: ${serviceType.toLowerCase()} in ${process.cwd()}`)
+      log.info(`starting service: ${serviceName}, package: ${pkg.toLowerCase()} in ${process.cwd()}`)
 
       // create generic LaunchDescription
       const ld = new LaunchDescription()
-      ld.description = `Generated ${serviceName} ${serviceType}`
+      ld.description = `Generated ${serviceName} ${pkg}`
       ld.version = "0.0.1"
 
       ld.addNode({
-        package: serviceType.toLowerCase(),
+        package: pkg.toLowerCase(),
         name: serviceName
       })
 
@@ -972,5 +998,62 @@ export default class RobotLabXRuntime extends Service {
     }
     log.info(`getServicesFromInterface ${methodName} ${services}`)
     return services
+  }
+
+  /**
+   * Build LaunchDescription from running services
+   */
+  saveAll(
+    filename: string = "testLaunch",
+    format: string = "js",
+    description: string = "Saved from RobotLabXRuntime"
+  ): string {
+    log.info(`saveAll ${filename} ${format} ${description}`)
+    const ld: LaunchDescription = new LaunchDescription()
+    ld.description = description
+    ld.version = "0.0.1" // FIXME - version of release
+
+    // add all services
+    for (const [key, s] of Object.entries(Store.getInstance().getRegistry())) {
+      const service: Service = s as Service
+      if (service.name === "runtime") {
+        continue
+      }
+
+      if (service.pkg === null) {
+        log.warn(`skipping service ${service.name} has no package not responsible for serializing`)
+        continue
+      }
+
+      log.info(`adding service ${key} ${service.name} ${service.typeKey}`)
+
+      let originalPkgName: string = null
+      if (this.isPkgProxy(service.pkg)) {
+        // when saving a proxy, we need the original package name
+        const proxy: Proxy = service as Proxy
+        originalPkgName = proxy.proxyTypeKey.toLowerCase()
+      } else {
+        originalPkgName = service.typeKey.toLowerCase()
+      }
+
+      ld.addNode({
+        // package: service.typeKey.toLowerCase(),
+        package: originalPkgName,
+        name: service.name,
+        // typeKey: service.typeKey,
+        config: service.config
+      })
+    }
+
+    // json yml and/or js representation of LaunchDescription
+
+    // to js
+
+    // load template
+    const ldjs = ld.serialize(format)
+
+    // write to file
+    fs.writeFileSync(filename + "." + format, ldjs)
+    return ldjs
   }
 }

@@ -1,3 +1,8 @@
+const fs = require("fs")
+const path = require("path")
+const yaml = require("js-yaml")
+const { add } = require("winston")
+
 /**
  * Represents a launch action with optional parameters and output settings.
  * @typedef {Object} LaunchAction
@@ -46,6 +51,61 @@ class LaunchDescription {
     //     .then(response => response.json())
     //     .then(data => console.log('Server response:', data))
     //     .catch(error => console.error('Error sending data to server:', error));
+  }
+
+  toLDJS() {
+    const ldtpl = fs.readFileSync(path.join(__dirname, "LaunchDescription.tpl"), "utf8")
+
+    let launchActions = ""
+    let addNodesData = ""
+    // let addNodes = ""
+    // const ld = new LaunchDescription()
+    // ld.description = this.description
+    // ld.version = this.version
+    for (const [key, launchAction] of Object.entries(this.actions)) {
+      console.log(`key ${key} s ${launchAction}`)
+      let lsdAction = fs.readFileSync(path.join(__dirname, "LaunchAction.tpl"), "utf8")
+      lsdAction = lsdAction.replaceAll("{{name}}", launchAction.name)
+      // lsdAction = lsdAction.replace("{{config}}", JSON.stringify(s.config))  Maybe Future?
+      lsdAction = lsdAction.replaceAll("{{package}}", launchAction.package)
+      if (launchAction.config) {
+        lsdAction = lsdAction.replaceAll("{{config}}", JSON.stringify(launchAction.config))
+      } else {
+        lsdAction = lsdAction.replaceAll("{{config}}", "")
+      }
+
+      launchActions += lsdAction
+
+      addNodesData += "\tld.addNode(" + launchAction.name + ")\n"
+
+      // const lsdAction = lsdActionTpl.replace("{{name}}", s.name)
+      // const lsdActionConfig = lsdActionTpl.replace("{{config}}", JSON.stringify(s.config))
+      // const lsdActionOutput = lsdActionTpl.replace("{{output}}", s.output)
+      // const service = s as Service
+      // ld.addNode({
+      //   package: service.typeKey,
+      //   name: service.name,
+      //   config: service.config,
+      //   output: service.config.output
+      // })
+    }
+
+    let ldjs = ldtpl.replaceAll("{{launchActions}}", launchActions)
+    ldjs = ldjs.replaceAll("{{addNodes}}", addNodesData)
+
+    return ldjs
+  }
+
+  serialize(format = "json") {
+    if (format === "json") {
+      return JSON.stringify(this)
+    } else if (format === "yaml") {
+      return yaml.dump(this)
+    } else if (format === "js") {
+      return this.toLDJS()
+    }
+    console.error(`Invalid format ${format}`)
+    return null
   }
 }
 

@@ -124,21 +124,27 @@ const ServiceDialog = ({ packages, open, fullname, setOpen }) => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {filteredPackages.map((pkg) => (
-                      <TableRow key={pkg.typeKey}>
-                        <TableCell>
-                          <img src={`${getRepoUrl()}/${pkg.typeKey.toLowerCase()}/image.png`} alt={pkg.typeKey} />
-                        </TableCell>
-                        <TableCell>{pkg.title}</TableCell>
-                        <TableCell>{`${pkg.platform} ${pkg.platformVersion}`}</TableCell>
-                        <TableCell>{pkg.description}</TableCell>
-                        <TableCell>
-                          <Button onClick={() => handleSelectServiceType(pkg.typeKey, pkg.version)} variant="contained">
-                            Select
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {filteredPackages.map(
+                      (pkg) =>
+                        pkg.visible && (
+                          <TableRow key={pkg.typeKey}>
+                            <TableCell>
+                              <img src={`${getRepoUrl()}/${pkg.typeKey.toLowerCase()}/image.png`} alt={pkg.typeKey} />
+                            </TableCell>
+                            <TableCell>{pkg.title}</TableCell>
+                            <TableCell>{`${pkg.platform} ${pkg.platformVersion}`}</TableCell>
+                            <TableCell>{pkg.description}</TableCell>
+                            <TableCell>
+                              <Button
+                                onClick={() => handleSelectServiceType(pkg.typeKey, pkg.version)}
+                                variant="contained"
+                              >
+                                Select
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        )
+                    )}
                   </TableBody>
                 </Table>
               </TableContainer>

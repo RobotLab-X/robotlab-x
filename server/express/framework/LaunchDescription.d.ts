@@ -18,4 +18,6 @@ export default class LaunchDescription {
   addNode(action: LaunchAction): void
   getLaunchActions(): LaunchAction[]
   sendToServer(url: string): void
+  serialize(format?: string): string
+  toLDJS(): string
 }

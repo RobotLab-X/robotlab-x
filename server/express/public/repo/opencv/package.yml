@@ -4,6 +4,7 @@ platform: "python"
 platformVersion: null # minimum version ?
 description: "OpenCV pipeline"
 version: "0.0.1"
+visible: true
 cmd: "python"
 args: ["-u","proxy.py", "-i", "{{name}}", "-c", "{{serviceUrl}}"] # -u unbuffered output
 cwd: null

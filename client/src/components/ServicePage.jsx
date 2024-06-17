@@ -2,6 +2,7 @@ import loadable from "@loadable/component"
 import DeleteIcon from "@mui/icons-material/Delete"
 import DescriptionIcon from "@mui/icons-material/Description"
 import RefreshIcon from "@mui/icons-material/Refresh"
+import SaveIcon from "@mui/icons-material/Save"
 import StatusLog from "components/StatusLog"
 
 import SettingsIcon from "@mui/icons-material/Settings"
@@ -131,6 +132,11 @@ export default function ServicePage({ fullname, name, id }) {
         <Tooltip title="Refresh">
           <IconButton onClick={handleRefreshClick} aria-label="refresh">
             <RefreshIcon />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Save">
+          <IconButton onClick={handleRefreshClick} aria-label="save">
+            <SaveIcon />
           </IconButton>
         </Tooltip>
         <Tooltip title="API">

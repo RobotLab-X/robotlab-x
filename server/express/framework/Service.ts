@@ -1,8 +1,6 @@
 import InstallStatus from "express/models/InstallStatus"
 import Package from "express/models/Package"
-import fs from "fs"
 import path from "path"
-import YAML from "yaml"
 import Main from "../../electron/ElectronStarter"
 import Gateway from "../interfaces/Gateway"
 import Message from "../models/Message"
@@ -85,23 +83,6 @@ export default class Service implements Gateway {
     const listener = new SubscriptionListener(method, remoteName, remoteMethod)
     this.notifyList[method].push(listener)
     return listener
-  }
-
-  getPackage() {
-    try {
-      log.info(`${this.name} getting package`)
-      const targetDir = path.join(Main.expressRoot, `service/${this.name}`)
-      log.info(`successful ${targetDir}`)
-
-      const pkgYmlFile = `${targetDir}/package.yml`
-
-      // loading type info
-      log.info(`loading type data from ${pkgYmlFile}`)
-      const file = fs.readFileSync(pkgYmlFile, "utf8")
-      this.pkg = YAML.parse(file)
-    } catch (e) {
-      log.error(`failed to load package ${e}`)
-    }
   }
 
   /**
