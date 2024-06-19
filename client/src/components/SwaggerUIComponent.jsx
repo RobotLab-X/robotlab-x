@@ -1,8 +1,8 @@
-import yaml from "js-yaml"
 import React, { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
 import SwaggerUI from "swagger-ui-react"
 import "swagger-ui-react/swagger-ui.css"
+import yaml from "yaml"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
 import useServiceSubscription from "../store/useServiceSubscription"
 

@@ -9,7 +9,14 @@ components:
   schemas:
     $schema: http://json-schema.org/draft-07/schema#
     definitions:
-      Config:
+      A<object>:
+        description: An AsyncIterator which can be aborted
+        properties:
+          abortController: {}
+          doneCallback: {}
+          itr: {}
+        type: object
+      a:
         properties:
           fetch:
             type: object
@@ -19,17 +26,20 @@ components:
             type: boolean
         type: object
     properties:
-      abortController: {}
       config:
-        $ref: '#/definitions/Config'
+        $ref: "#/definitions/a"
       fetch:
         type: object
+      ongoingStreamedRequests:
+        items:
+          $ref: "#/definitions/A<object>"
+        type: array
     type: object
 paths:
   /startService:
     put:
       summary: Executes startService method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -38,7 +48,7 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: startService method executed successfully
   /sendRemote:
     put:
@@ -53,7 +63,7 @@ paths:
                 - type: Message
             example: []
       responses:
-        '200':
+        "200":
           description: sendRemote method executed successfully
   /invoke:
     put:
@@ -89,7 +99,7 @@ paths:
                 - type: any[]
             example: []
       responses:
-        '200':
+        "200":
           description: invoke method executed successfully
   /invokeMsg:
     put:
@@ -112,12 +122,12 @@ paths:
                 - type: Message
             example: []
       responses:
-        '200':
+        "200":
           description: invokeMsg method executed successfully
   /toJSON:
     put:
       summary: Executes toJSON method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -126,12 +136,12 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: toJSON method executed successfully
   /checkPythonVersion:
     put:
       summary: Executes checkPythonVersion method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -141,12 +151,12 @@ paths:
                 - type: string
             example: []
       responses:
-        '200':
+        "200":
           description: checkPythonVersion method executed successfully
   /normalizeVersion:
     put:
       summary: Executes normalizeVersion method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -156,7 +166,7 @@ paths:
                 - type: string
             example: []
       responses:
-        '200':
+        "200":
           description: normalizeVersion method executed successfully
   /checkPipVersion:
     put:
@@ -175,12 +185,12 @@ paths:
                 - type: string
             example: []
       responses:
-        '200':
+        "200":
           description: checkPipVersion method executed successfully
   /installVirtualEnv:
     put:
       summary: Executes installVirtualEnv method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -191,29 +201,63 @@ paths:
                 - type: any
             example: []
       responses:
-        '200':
+        "200":
           description: installVirtualEnv method executed successfully
   /installPipRequirements:
     put:
       summary: Executes installPipRequirements method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
             schema:
               type: array
               items:
-                - type: '{}'
+                - type: "{}"
                 - type: string
                 - type: any
             example: []
       responses:
-        '200':
+        "200":
           description: installPipRequirements method executed successfully
-  /installClient:
+  /startProxy:
     put:
-      summary: Executes installClient method
-      description: ''
+      summary: Executes startProxy method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: "{}"
+                - type: string
+                - type: any
+            example: []
+      responses:
+        "200":
+          description: startProxy method executed successfully
+  /installRepoRequirement:
+    put:
+      summary: Executes installRepoRequirement method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+                - type: string
+                - type: any
+            example: []
+      responses:
+        "200":
+          description: installRepoRequirement method executed successfully
+  /installRepoRequirements:
+    put:
+      summary: Executes installRepoRequirements method
+      description: ""
       requestBody:
         content:
           application/json:
@@ -224,23 +268,6 @@ paths:
                 - type: any
             example: []
       responses:
-        '200':
-          description: installClient method executed successfully
-  /startClient:
-    put:
-      summary: Executes startClient method
-      description: ''
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                - type: '{}'
-                - type: string
-                - type: any
-            example: []
-      responses:
-        '200':
-          description: startClient method executed successfully
+        "200":
+          description: installRepoRequirements method executed successfully
 tags: []

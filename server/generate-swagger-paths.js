@@ -1,7 +1,7 @@
 const fs = require("fs")
 const path = require("path")
 const ts = require("typescript")
-const yaml = require("js-yaml")
+const yaml = require("yaml")
 const swaggerJsdoc = require("swagger-jsdoc")
 
 // Load the JSON schemas
@@ -113,7 +113,7 @@ function processDirectory(directoryPath) {
       const swaggerSpec = swaggerJsdoc(options)
       const outputFileName = path.basename(file, ".ts") + ".yml"
       const outputPath = path.join("./express/public/swagger", outputFileName)
-      fs.writeFileSync(outputPath, yaml.dump(swaggerSpec))
+      fs.writeFileSync(outputPath, yaml.stringify(swaggerSpec))
 
       console.log(`Swagger documentation generated for ${file} and saved to ${outputFileName}`)
     }

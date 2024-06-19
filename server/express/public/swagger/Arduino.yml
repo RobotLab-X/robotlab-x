@@ -9,7 +9,14 @@ components:
   schemas:
     $schema: http://json-schema.org/draft-07/schema#
     definitions:
-      Config:
+      A<object>:
+        description: An AsyncIterator which can be aborted
+        properties:
+          abortController: {}
+          doneCallback: {}
+          itr: {}
+        type: object
+      a:
         properties:
           fetch:
             type: object
@@ -19,17 +26,20 @@ components:
             type: boolean
         type: object
     properties:
-      abortController: {}
       config:
-        $ref: '#/definitions/Config'
+        $ref: "#/definitions/a"
       fetch:
         type: object
+      ongoingStreamedRequests:
+        items:
+          $ref: "#/definitions/A<object>"
+        type: array
     type: object
 paths:
   /startService:
     put:
       summary: Executes startService method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -38,12 +48,12 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: startService method executed successfully
   /stopService:
     put:
       summary: Executes stopService method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -52,12 +62,12 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: stopService method executed successfully
   /connect:
     put:
       summary: Executes connect method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -67,12 +77,12 @@ paths:
                 - type: string
             example: []
       responses:
-        '200':
+        "200":
           description: connect method executed successfully
   /disconnect:
     put:
       summary: Executes disconnect method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -81,12 +91,12 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: disconnect method executed successfully
   /getPorts:
     put:
       summary: Executes getPorts method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -95,12 +105,12 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: getPorts method executed successfully
   /getBoardInfo:
     put:
       summary: Executes getBoardInfo method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -109,12 +119,12 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: getBoardInfo method executed successfully
   /createPins:
     put:
       summary: Executes createPins method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -123,12 +133,12 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: createPins method executed successfully
   /getPins:
     put:
       summary: Executes getPins method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -137,12 +147,12 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: getPins method executed successfully
   /write:
     put:
       summary: Executes write method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -153,12 +163,12 @@ paths:
                 - type: integer
             example: []
       responses:
-        '200':
+        "200":
           description: write method executed successfully
   /servoWrite:
     put:
       summary: Executes servoWrite method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -169,12 +179,12 @@ paths:
                 - type: integer
             example: []
       responses:
-        '200':
+        "200":
           description: servoWrite method executed successfully
   /onServoMoveTo:
     put:
       summary: Executes onServoMoveTo method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -184,12 +194,12 @@ paths:
                 - type: ServoMove
             example: []
       responses:
-        '200':
+        "200":
           description: onServoMoveTo method executed successfully
   /toJSON:
     put:
       summary: Executes toJSON method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -198,6 +208,6 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: toJSON method executed successfully
 tags: []

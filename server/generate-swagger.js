@@ -1,6 +1,6 @@
 const swaggerJsdoc = require("swagger-jsdoc")
 const fs = require("fs")
-const yaml = require("js-yaml")
+const yaml = require("yaml")
 
 // Load the JSON schemas
 const schemas = require("./schemas.json")

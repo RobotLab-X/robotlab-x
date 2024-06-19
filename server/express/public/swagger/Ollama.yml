@@ -9,7 +9,14 @@ components:
   schemas:
     $schema: http://json-schema.org/draft-07/schema#
     definitions:
-      Config:
+      A<object>:
+        description: An AsyncIterator which can be aborted
+        properties:
+          abortController: {}
+          doneCallback: {}
+          itr: {}
+        type: object
+      a:
         properties:
           fetch:
             type: object
@@ -19,11 +26,14 @@ components:
             type: boolean
         type: object
     properties:
-      abortController: {}
       config:
-        $ref: '#/definitions/Config'
+        $ref: "#/definitions/a"
       fetch:
         type: object
+      ongoingStreamedRequests:
+        items:
+          $ref: "#/definitions/A<object>"
+        type: array
     type: object
 paths:
   /setModel:
@@ -40,7 +50,7 @@ paths:
             example:
               - llama2
       responses:
-        '200':
+        "200":
           description: setModel method executed successfully
   /applyConfig:
     put:
@@ -62,7 +72,7 @@ paths:
                 sleepWord: sleep
                 prompt: PirateBot
       responses:
-        '200':
+        "200":
           description: applyConfig method executed successfully
   /startCheckTimer:
     put:
@@ -80,7 +90,7 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: startCheckTimer method executed successfully
   /check:
     put:
@@ -94,7 +104,7 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: check method executed successfully
   /stopCheckTimer:
     put:
@@ -108,7 +118,7 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: stopCheckTimer method executed successfully
   /publishResponse:
     put:
@@ -123,7 +133,7 @@ paths:
                 - type: any
             example: []
       responses:
-        '200':
+        "200":
           description: publishResponse method executed successfully
   /publishChat:
     put:
@@ -138,7 +148,7 @@ paths:
                 - type: string
             example: []
       responses:
-        '200':
+        "200":
           description: publishChat method executed successfully
   /publishRequest:
     put:
@@ -153,7 +163,7 @@ paths:
                 - type: any
             example: []
       responses:
-        '200':
+        "200":
           description: publishRequest method executed successfully
   /processInputs:
     put:
@@ -169,7 +179,7 @@ paths:
                 - type: string
             example: []
       responses:
-        '200':
+        "200":
           description: processInputs method executed successfully
   /chat:
     put:
@@ -189,7 +199,7 @@ paths:
             example:
               - Hello there !  What can you do ?
       responses:
-        '200':
+        "200":
           description: chat method executed successfully
   /getResponse:
     put:
@@ -204,7 +214,7 @@ paths:
                 - type: any
             example: []
       responses:
-        '200':
+        "200":
           description: getResponse method executed successfully
   /setPrompt:
     put:
@@ -220,7 +230,7 @@ paths:
                 - type: any
             example: []
       responses:
-        '200':
+        "200":
           description: setPrompt method executed successfully
   /publishPythonCall:
     put:
@@ -235,7 +245,7 @@ paths:
                 - type: any
             example: []
       responses:
-        '200':
+        "200":
           description: publishPythonCall method executed successfully
   /publishNodeCall:
     put:
@@ -250,12 +260,12 @@ paths:
                 - type: any
             example: []
       responses:
-        '200':
+        "200":
           description: publishNodeCall method executed successfully
   /loadPrompts:
     put:
       summary: Executes loadPrompts method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -264,12 +274,12 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: loadPrompts method executed successfully
   /startService:
     put:
       summary: Executes startService method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -278,12 +288,12 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: startService method executed successfully
   /stopService:
     put:
       summary: Executes stopService method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -292,12 +302,12 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: stopService method executed successfully
   /addInput:
     put:
       summary: Executes addInput method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -309,12 +319,12 @@ paths:
                 - type: any
             example: []
       responses:
-        '200':
+        "200":
           description: addInput method executed successfully
   /toJSON:
     put:
       summary: Executes toJSON method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -323,6 +333,6 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: toJSON method executed successfully
 tags: []

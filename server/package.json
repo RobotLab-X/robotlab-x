@@ -49,7 +49,8 @@
     "test": "vitest",
     "test-coverage": "nyc yarn run test",
     "generate-schemas": "typescript-json-schema tsconfig.json 'Ollama' --out schemas.json",
-    "generate-swagger": "node generate-swagger-paths.js"
+    "generate-swagger": "node generate-swagger-paths.js",
+    "postinstall": "electron-builder install-app-deps"
   },
   "author": "GroG",
   "license": "MPL-2.0",
@@ -79,7 +80,8 @@
   "dependencies": {
     "@types/johnny-five": "^2.1.9",
     "@types/node": "^20.11.30",
-    "@types/serialport": "^8.0.5",
+    "@serialport/bindings-cpp": "12.0.1",
+    "@types/serialport": "8.0.5",
     "@types/winston": "^2.4.4",
     "asar": "^3.2.0",
     "axios": "^1.7.2",

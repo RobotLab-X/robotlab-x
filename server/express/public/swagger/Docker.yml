@@ -9,7 +9,14 @@ components:
   schemas:
     $schema: http://json-schema.org/draft-07/schema#
     definitions:
-      Config:
+      A<object>:
+        description: An AsyncIterator which can be aborted
+        properties:
+          abortController: {}
+          doneCallback: {}
+          itr: {}
+        type: object
+      a:
         properties:
           fetch:
             type: object
@@ -19,17 +26,20 @@ components:
             type: boolean
         type: object
     properties:
-      abortController: {}
       config:
-        $ref: '#/definitions/Config'
+        $ref: "#/definitions/a"
       fetch:
         type: object
+      ongoingStreamedRequests:
+        items:
+          $ref: "#/definitions/A<object>"
+        type: array
     type: object
 paths:
   /startService:
     put:
       summary: Executes startService method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -38,12 +48,12 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: startService method executed successfully
   /stopService:
     put:
       summary: Executes stopService method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -52,12 +62,12 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: stopService method executed successfully
   /showAll:
     put:
       summary: Executes showAll method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -67,12 +77,12 @@ paths:
                 - type: boolean
             example: []
       responses:
-        '200':
+        "200":
           description: showAll method executed successfully
   /ps:
     put:
       summary: Executes ps method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -81,12 +91,12 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: ps method executed successfully
   /publishPs:
     put:
       summary: Executes publishPs method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -95,12 +105,12 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: publishPs method executed successfully
   /createAndStartContainer:
     put:
       summary: Executes createAndStartContainer method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -111,12 +121,12 @@ paths:
                 - type: string
             example: []
       responses:
-        '200':
+        "200":
           description: createAndStartContainer method executed successfully
   /deleteContainer:
     put:
       summary: Executes deleteContainer method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -126,12 +136,12 @@ paths:
                 - type: string
             example: []
       responses:
-        '200':
+        "200":
           description: deleteContainer method executed successfully
   /deleteImage:
     put:
       summary: Executes deleteImage method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -141,12 +151,12 @@ paths:
                 - type: string
             example: []
       responses:
-        '200':
+        "200":
           description: deleteImage method executed successfully
   /pullImage:
     put:
       summary: Executes pullImage method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -156,12 +166,12 @@ paths:
                 - type: string
             example: []
       responses:
-        '200':
+        "200":
           description: pullImage method executed successfully
   /getImages:
     put:
       summary: Executes getImages method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -170,12 +180,12 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: getImages method executed successfully
   /publishImages:
     put:
       summary: Executes publishImages method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -185,12 +195,12 @@ paths:
                 - type: any
             example: []
       responses:
-        '200':
+        "200":
           description: publishImages method executed successfully
   /startPs:
     put:
       summary: Executes startPs method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -199,12 +209,12 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: startPs method executed successfully
   /stopPs:
     put:
       summary: Executes stopPs method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -213,12 +223,12 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: stopPs method executed successfully
   /toJSON:
     put:
       summary: Executes toJSON method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -227,6 +237,6 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: toJSON method executed successfully
 tags: []

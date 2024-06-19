@@ -3,7 +3,7 @@
 
 const fs = require("fs")
 const path = require("path")
-const yaml = require("js-yaml")
+const yaml = require("yaml")
 const { add } = require("winston")
 
 /**

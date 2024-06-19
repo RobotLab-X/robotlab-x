@@ -9,7 +9,14 @@ components:
   schemas:
     $schema: http://json-schema.org/draft-07/schema#
     definitions:
-      Config:
+      A<object>:
+        description: An AsyncIterator which can be aborted
+        properties:
+          abortController: {}
+          doneCallback: {}
+          itr: {}
+        type: object
+      a:
         properties:
           fetch:
             type: object
@@ -19,17 +26,20 @@ components:
             type: boolean
         type: object
     properties:
-      abortController: {}
       config:
-        $ref: '#/definitions/Config'
+        $ref: "#/definitions/a"
       fetch:
         type: object
+      ongoingStreamedRequests:
+        items:
+          $ref: "#/definitions/A<object>"
+        type: array
     type: object
 paths:
   /toJSON:
     put:
       summary: Executes toJSON method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -38,12 +48,24 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: toJSON method executed successfully
   /save:
     put:
-      summary: Executes save method
-      description: ''
+      summary: |-
+        Overloaded from Service.ts - other services will call
+        this.saveServiceConfig(serviceName, config)
+        to save their config
+
+        We overload because RobotLabXRuntime.ts requires more information
+        to be saved besides just config - e.g. registry
+      description: |-
+        Overloaded from Service.ts - other services will call
+        this.saveServiceConfig(serviceName, config)
+        to save their config
+
+        We overload because RobotLabXRuntime.ts requires more information
+        to be saved besides just config - e.g. registry
       requestBody:
         content:
           application/json:
@@ -52,12 +74,30 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: save method executed successfully
+  /getConfig:
+    put:
+      summary: |-
+        Overloaded from Service.ts - other services will simply return config
+        RobotLabXRuntime.ts requires more processing to return current config
+      description: |-
+        Overloaded from Service.ts - other services will simply return config
+        RobotLabXRuntime.ts requires more processing to return current config
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: getConfig method executed successfully
   /addRoute:
     put:
       summary: Executes addRoute method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -69,12 +109,12 @@ paths:
                 - type: string
             example: []
       responses:
-        '200':
+        "200":
           description: addRoute method executed successfully
   /apply:
     put:
-      summary: Executes apply method
-      description: ''
+      summary: Overloaded apply to apply launch actions from config.registry info
+      description: Overloaded apply to apply launch actions from config.registry info
       requestBody:
         content:
           application/json:
@@ -84,12 +124,28 @@ paths:
                 - type: any
             example: []
       responses:
-        '200':
+        "200":
           description: apply method executed successfully
+  /applyServiceFileConfig:
+    put:
+      summary: Apply file {serviceName}.yml to the service
+      description: Apply file {serviceName}.yml to the service
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+                - type: string
+            example: []
+      responses:
+        "200":
+          description: applyServiceFileConfig method executed successfully
   /createMessage:
     put:
       summary: Executes createMessage method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -101,7 +157,7 @@ paths:
                 - type: any[]
             example: []
       responses:
-        '200':
+        "200":
           description: createMessage method executed successfully
   /connect:
     put:
@@ -136,12 +192,12 @@ paths:
                 - type: string
             example: []
       responses:
-        '200':
+        "200":
           description: connect method executed successfully
   /readConfig:
     put:
       summary: Executes readConfig method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -152,12 +208,12 @@ paths:
                 - type: any
             example: []
       responses:
-        '200':
+        "200":
           description: readConfig method executed successfully
   /saveServiceConfig:
     put:
       summary: Executes saveServiceConfig method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -168,12 +224,12 @@ paths:
                 - type: any
             example: []
       responses:
-        '200':
+        "200":
           description: saveServiceConfig method executed successfully
   /createInstance:
     put:
       summary: Executes createInstance method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -184,12 +240,12 @@ paths:
                 - type: string
             example: []
       responses:
-        '200':
+        "200":
           description: createInstance method executed successfully
   /getClientKeys:
     put:
       summary: Executes getClientKeys method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -198,12 +254,12 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: getClientKeys method executed successfully
   /getInstance:
     put:
       summary: Executes getInstance method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -212,12 +268,12 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: getInstance method executed successfully
   /getLocalProcessData:
     put:
       summary: Executes getLocalProcessData method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -226,12 +282,12 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: getLocalProcessData method executed successfully
   /releaseService:
     put:
       summary: Executes releaseService method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -240,12 +296,12 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: releaseService method executed successfully
   /startService:
     put:
       summary: Executes startService method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -254,27 +310,12 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: startService method executed successfully
-  /installInfo:
-    put:
-      summary: Executes installInfo method
-      description: ''
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                - type: string
-            example: []
-      responses:
-        '200':
-          description: installInfo method executed successfully
   /start:
     put:
       summary: Executes start method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -284,12 +325,57 @@ paths:
                 - type: string
             example: []
       responses:
-        '200':
+        "200":
           description: start method executed successfully
+  /isPkgProxy:
+    put:
+      summary: Executes isPkgProxy method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: Package
+            example: []
+      responses:
+        "200":
+          description: isPkgProxy method executed successfully
+  /getPackage:
+    put:
+      summary: Executes getPackage method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example: []
+      responses:
+        "200":
+          description: getPackage method executed successfully
+  /launch:
+    put:
+      summary: Executes launch method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: LaunchDescription
+            example: []
+      responses:
+        "200":
+          description: launch method executed successfully
   /startServiceType:
     put:
       summary: Executes startServiceType method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -300,7 +386,7 @@ paths:
                 - type: string
             example: []
       responses:
-        '200':
+        "200":
           description: startServiceType method executed successfully
   /release:
     put:
@@ -323,12 +409,12 @@ paths:
                 - type: string
             example: []
       responses:
-        '200':
+        "200":
           description: release method executed successfully
   /released:
     put:
       summary: Executes released method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -338,12 +424,12 @@ paths:
                 - type: string
             example: []
       responses:
-        '200':
+        "200":
           description: released method executed successfully
   /getUptime:
     put:
       summary: Executes getUptime method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -352,7 +438,7 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: getUptime method executed successfully
   /getService:
     put:
@@ -367,12 +453,12 @@ paths:
                 - type: string
             example: []
       responses:
-        '200':
+        "200":
           description: getService method executed successfully
   /registerHost:
     put:
       summary: Executes registerHost method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -382,12 +468,12 @@ paths:
                 - type: HostData
             example: []
       responses:
-        '200':
+        "200":
           description: registerHost method executed successfully
   /registerProcess:
     put:
       summary: Executes registerProcess method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -397,12 +483,12 @@ paths:
                 - type: ProcessData
             example: []
       responses:
-        '200':
+        "200":
           description: registerProcess method executed successfully
   /registerType:
     put:
       summary: Executes registerType method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -412,7 +498,7 @@ paths:
                 - type: ServiceTypeData
             example: []
       responses:
-        '200':
+        "200":
           description: registerType method executed successfully
   /onRegistry:
     put:
@@ -433,7 +519,7 @@ paths:
                 - type: Registry
             example: []
       responses:
-        '200':
+        "200":
           description: onRegistry method executed successfully
   /register:
     put:
@@ -474,12 +560,12 @@ paths:
                 - type: Service
             example: []
       responses:
-        '200':
+        "200":
           description: register method executed successfully
   /registered:
     put:
       summary: Executes registered method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -489,12 +575,12 @@ paths:
                 - type: Service
             example: []
       responses:
-        '200':
+        "200":
           description: registered method executed successfully
   /setConfigName:
     put:
       summary: Executes setConfigName method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -504,12 +590,12 @@ paths:
                 - type: string
             example: []
       responses:
-        '200':
+        "200":
           description: setConfigName method executed successfully
   /getRepo:
     put:
       summary: Executes getRepo method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -518,12 +604,12 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: getRepo method executed successfully
   /getConfigList:
     put:
       summary: Executes getConfigList method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -532,12 +618,12 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: getConfigList method executed successfully
   /getHosts:
     put:
       summary: Executes getHosts method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -546,12 +632,12 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: getHosts method executed successfully
   /getHost:
     put:
       summary: Executes getHost method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -560,12 +646,12 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: getHost method executed successfully
   /getProcesses:
     put:
       summary: Executes getProcesses method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -574,12 +660,12 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: getProcesses method executed successfully
   /getConnections:
     put:
       summary: Executes getConnections method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -588,12 +674,12 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: getConnections method executed successfully
   /getConnectionImpl:
     put:
       summary: Executes getConnectionImpl method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -603,12 +689,12 @@ paths:
                 - type: string
             example: []
       responses:
-        '200':
+        "200":
           description: getConnectionImpl method executed successfully
   /getRegistry:
     put:
       summary: Executes getRegistry method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -617,7 +703,7 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: getRegistry method executed successfully
   /getServiceNames:
     put:
@@ -631,7 +717,7 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: getServiceNames method executed successfully
   /getLocalServiceNames:
     put:
@@ -645,7 +731,7 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: getLocalServiceNames method executed successfully
   /getRouteClient:
     put:
@@ -664,12 +750,12 @@ paths:
                 - type: string
             example: []
       responses:
-        '200':
+        "200":
           description: getRouteClient method executed successfully
   /setDebug:
     put:
       summary: Executes setDebug method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -679,7 +765,7 @@ paths:
                 - type: boolean
             example: []
       responses:
-        '200':
+        "200":
           description: setDebug method executed successfully
   /registerConnection:
     put:
@@ -702,12 +788,12 @@ paths:
                 - type: WebSocket
             example: []
       responses:
-        '200':
+        "200":
           description: registerConnection method executed successfully
   /removeConnection:
     put:
       summary: Executes removeConnection method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -717,12 +803,12 @@ paths:
                 - type: string
             example: []
       responses:
-        '200':
+        "200":
           description: removeConnection method executed successfully
   /removeRoute:
     put:
       summary: Executes removeRoute method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -732,12 +818,12 @@ paths:
                 - type: string
             example: []
       responses:
-        '200':
+        "200":
           description: removeRoute method executed successfully
   /getGatewayConnection:
     put:
       summary: Executes getGatewayConnection method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -747,12 +833,12 @@ paths:
                 - type: string
             example: []
       responses:
-        '200':
+        "200":
           description: getGatewayConnection method executed successfully
   /getClients:
     put:
       summary: Executes getClients method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -761,12 +847,12 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: getClients method executed successfully
   /broadcastJsonMessage:
     put:
       summary: Executes broadcastJsonMessage method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -776,12 +862,12 @@ paths:
                 - type: string
             example: []
       responses:
-        '200':
+        "200":
           description: broadcastJsonMessage method executed successfully
   /broadcast:
     put:
       summary: Executes broadcast method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -791,12 +877,12 @@ paths:
                 - type: Message
             example: []
       responses:
-        '200':
+        "200":
           description: broadcast method executed successfully
   /getGateway:
     put:
       summary: Executes getGateway method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -806,12 +892,12 @@ paths:
                 - type: string
             example: []
       responses:
-        '200':
+        "200":
           description: getGateway method executed successfully
   /getRouteId:
     put:
       summary: Executes getRouteId method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -821,7 +907,7 @@ paths:
                 - type: string
             example: []
       responses:
-        '200':
+        "200":
           description: getRouteId method executed successfully
   /sendRemote:
     put:
@@ -836,12 +922,12 @@ paths:
                 - type: Message
             example: []
       responses:
-        '200':
+        "200":
           description: sendRemote method executed successfully
   /getConfigName:
     put:
       summary: Executes getConfigName method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -850,7 +936,7 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: getConfigName method executed successfully
   /getServicesFromInterface:
     put:
@@ -871,6 +957,23 @@ paths:
                 - type: string
             example: []
       responses:
-        '200':
+        "200":
           description: getServicesFromInterface method executed successfully
+  /saveAll:
+    put:
+      summary: Build LaunchDescription from running services
+      description: Build LaunchDescription from running services
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+                - type: string
+                - type: string
+            example: []
+      responses:
+        "200":
+          description: saveAll method executed successfully
 tags: []

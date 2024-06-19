@@ -9,7 +9,14 @@ components:
   schemas:
     $schema: http://json-schema.org/draft-07/schema#
     definitions:
-      Config:
+      A<object>:
+        description: An AsyncIterator which can be aborted
+        properties:
+          abortController: {}
+          doneCallback: {}
+          itr: {}
+        type: object
+      a:
         properties:
           fetch:
             type: object
@@ -19,17 +26,20 @@ components:
             type: boolean
         type: object
     properties:
-      abortController: {}
       config:
-        $ref: '#/definitions/Config'
+        $ref: "#/definitions/a"
       fetch:
         type: object
+      ongoingStreamedRequests:
+        items:
+          $ref: "#/definitions/A<object>"
+        type: array
     type: object
 paths:
   /onUptime:
     put:
       summary: Executes onUptime method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -39,6 +49,6 @@ paths:
                 - type: string
             example: []
       responses:
-        '200':
+        "200":
           description: onUptime method executed successfully
 tags: []

@@ -28,6 +28,20 @@
   },
   "[javascriptreact]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
-  }
-
+  },
+  "pylint.args": ["--disable=W1203,W0718", "--max-line-length=120"],
+  "python.analysis.extraPaths":
+    ["/usr/local/lib/python3.10/dist-packages","/usr/lib/python3/dist-packages","/usr/lib/python3.10/dist-packages"]
+,
+"python.sortImports.path": "isort",
+"[python]": {
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "ms-python.black-formatter",
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "always",
+    "source.fixAll": "always"
+    }
+},
+"python.analysis.autoImportCompletions": true,
+"python.analysis.typeCheckingMode": "off"
 }

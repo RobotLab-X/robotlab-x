@@ -9,7 +9,14 @@ components:
   schemas:
     $schema: http://json-schema.org/draft-07/schema#
     definitions:
-      Config:
+      A<object>:
+        description: An AsyncIterator which can be aborted
+        properties:
+          abortController: {}
+          doneCallback: {}
+          itr: {}
+        type: object
+      a:
         properties:
           fetch:
             type: object
@@ -19,11 +26,14 @@ components:
             type: boolean
         type: object
     properties:
-      abortController: {}
       config:
-        $ref: '#/definitions/Config'
+        $ref: "#/definitions/a"
       fetch:
         type: object
+      ongoingStreamedRequests:
+        items:
+          $ref: "#/definitions/A<object>"
+        type: array
     type: object
 paths:
   /publishEpoch:
@@ -38,7 +48,7 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: publishEpoch method executed successfully
   /onTick:
     put:
@@ -52,12 +62,12 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: onTick method executed successfully
   /stopService:
     put:
       summary: Executes stopService method
-      description: ''
+      description: ""
       requestBody:
         content:
           application/json:
@@ -66,7 +76,7 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: stopService method executed successfully
   /startClock:
     put:
@@ -82,7 +92,7 @@ paths:
             example:
               - 1000
       responses:
-        '200':
+        "200":
           description: startClock method executed successfully
   /stopClock:
     put:
@@ -96,7 +106,7 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: stopClock method executed successfully
   /toJSON:
     put:
@@ -114,6 +124,6 @@ paths:
               items: []
             example: []
       responses:
-        '200':
+        "200":
           description: toJSON method executed successfully
 tags: []
