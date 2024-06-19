@@ -343,7 +343,7 @@ export default class Proxy extends Service {
       const pythonScript = `
 import subprocess
 import sys
-result = subprocess.run([sys.executable, '-m', 'venv', '${fullPath}'], capture_output=True)
+result = subprocess.run([sys.executable, '-m', 'venv', r'${fullPath}'], capture_output=True)
 print(result.stdout.decode())
 print(result.stderr.decode(), file=sys.stderr)
     `
@@ -352,7 +352,7 @@ print(result.stderr.decode(), file=sys.stderr)
       PythonShell.runString(pythonScript, null)
         .then(() => {
           // Check if the virtual environment was created successfully
-          const activateScript = path.join(fullPath, "bin", "activate") // On Windows: 'Scripts' instead of 'bin'
+          const activateScript = path.join(fullPath, process.platform === "win32" ? "Scripts" : "bin", "activate") // On Windows: 'Scripts' instead of 'bin'
           if (fs.existsSync(activateScript)) {
             this.venvOk = true
             this.info(`Virtual environment '${envName}' created successfully at ${fullPath}`)

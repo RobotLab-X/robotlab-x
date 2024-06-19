@@ -6,7 +6,7 @@
   "license": "MPL-2.0",
   "scripts": {
     "react-start": "react-scripts start",
-    "move-client": "mv build ../server/dist/client || move build ../server/dist/client",
+    "move-client": "shx mv build ../server/dist/client || (move build ../server/dist/client && rmdir /s /q build)",
     "react-build": "react-scripts build && yarn run move-client",
     "test": "react-scripts test --env=jsdom",
     "test-no-watch": "react-scripts test --env=jsdom --watchAll=false",

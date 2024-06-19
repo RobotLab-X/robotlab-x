@@ -21,7 +21,7 @@ class CodecUtil:
         return s2.lower()
 
     @staticmethod
-    def get_full_name(name: str | None) -> str | None:
+    def get_full_name(name: str) -> str:
         if name is None:
             return None
 
@@ -31,7 +31,7 @@ class CodecUtil:
             return name
 
     @staticmethod
-    def get_id(name: str | None) -> str | None:
+    def get_id(name: str) -> str :
         if not name:
             return None
         at_index = name.rfind("@")

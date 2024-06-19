@@ -2,7 +2,7 @@
   "name": "robotlab-x-server",
   "version": "0.9.0",
   "description": "A cross platform desktop application for creating and running robots (Server side)",
-  "liscense": "MPL-2.0",
+  "license": "MPL-2.0",
   "main": "./dist/electron/ElectronStarter.js",
   "build": {
     "appId": "org.robotlab-x.app",
@@ -37,9 +37,9 @@
     "copy-static": "cpx 'src/public/**/*' dist/public",
     "watch-build": "tsc -p tsconfig-build.json --watch",
     "watch-static": "cpx 'src/public/**/*' dist/public --watch",
-    "remove-package-folder": "rm -rf dist/packages",
-    "move-packages": "shx cp -r dist/packages/* ../dist && rm -rf dist/packages/*",
-    "move-build": "yarn run remove-package-folder && shx cp -r dist/* ../build && rm -rf dist/* dist/.[0-z]* && rm -rf dist",
+    "remove-package-folder": "shx rm -rf dist/packages",
+    "move-packages": "shx cp -r dist/packages/* ../dist && shx rm -rf dist/packages/*",
+    "move-build": "yarn run remove-package-folder && shx cp -r dist/* ../build && shx rm -rf dist/* dist/.[0-z]* && shx rm -rf dist",
     "electron-build-all": "yarn run electron-build-mac && yarn run electron-build-win && yarn run electron-build-linux && yarn run move-build",
     "electron-build-mac": "electron-builder -m && yarn run move-packages",
     "electron-build-win": "electron-builder -w && yarn run move-packages",
@@ -49,8 +49,7 @@
     "test": "vitest",
     "test-coverage": "nyc yarn run test",
     "generate-schemas": "typescript-json-schema tsconfig.json 'Ollama' --out schemas.json",
-    "generate-swagger": "node generate-swagger-paths.js",
-    "postinstall": "electron-builder install-app-deps"
+    "generate-swagger": "node generate-swagger-paths.js"
   },
   "author": "GroG",
   "license": "MPL-2.0",
@@ -80,8 +79,7 @@
   "dependencies": {
     "@types/johnny-five": "^2.1.9",
     "@types/node": "^20.11.30",
-    "@serialport/bindings-cpp": "12.0.1",
-    "@types/serialport": "8.0.5",
+    "@types/serialport": "^8.0.5",
     "@types/winston": "^2.4.4",
     "asar": "^3.2.0",
     "axios": "^1.7.2",
