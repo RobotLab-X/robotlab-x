@@ -8,7 +8,6 @@ from typing import List
 import json
 import websockets
 import sys
-from numpy import save
 import requests
 import logging
 from enum import Enum, auto
@@ -53,6 +52,7 @@ class Service:
         log.info("WebSocket client ID: %s", client_id)
         self.name = client_id
         self.id = client_id
+        self.fullname = f"{self.name}@{self.id}"
         self.client_id = client_id
         self.websocket = None
         self.stop_event = asyncio.Event()
@@ -362,6 +362,17 @@ class Service:
         # FIXME - pass in configName or directory
         # determine if "local" proxy
         # need to know the runtime id and configName directory
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "fullname": self.fullname,
+            "name": self.id,
+            "typeKey": self.__class__.__name__,
+            "config": self.config,
+            "installed": self.installed,
+            "ready": self.ready,
+        }
 
 
 def main():

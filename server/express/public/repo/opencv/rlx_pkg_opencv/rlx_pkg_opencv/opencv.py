@@ -160,6 +160,7 @@ class OpenCV(Service):
                 filter.apply_config(config)
                 return
 
+    # FIXME - REFACTOR WITH SERVICE
     def to_dict(self):
         return {
             "id": self.id,
