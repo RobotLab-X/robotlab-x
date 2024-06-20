@@ -19,9 +19,6 @@ interface MicrophoneConfig {
  * @description A service that provides microphone and streaming audio functionality
  */
 export default class Microphone extends Service {
-  /**
-   * @property {MicrophoneConfig} config - The configuration for the microphone service.
-   */
   config: MicrophoneConfig = {
     mic: "",
     recording: false,
@@ -29,17 +26,8 @@ export default class Microphone extends Service {
   }
 
   micInstance: any = null
-
   microphoneList: { [key: string]: string } = {}
 
-  /**
-   * Creates an instance of Microphone.
-   * @param {string} id - The unique identifier for the service.
-   * @param {string} name - The name of the service.
-   * @param {string} typeKey - The type key of the service.
-   * @param {string} version - The version of the service.
-   * @param {string} hostname - The hostname of the service.
-   */
   constructor(
     public id: string,
     public name: string,
@@ -50,11 +38,6 @@ export default class Microphone extends Service {
     super(id, name, typeKey, version, hostname)
   }
 
-  /**
-   * Serializes the Microphone instance to JSON.
-   * Excludes intervalId from serialization.
-   * @returns {object} The serialized Microphone instance.
-   */
   toJSON() {
     return {
       ...super.toJSON(),
@@ -79,8 +62,9 @@ export default class Microphone extends Service {
     }
 
     try {
-      const output = execSync(`arecord ${listCommand.join(" ")}`).toString()
-      this.microphoneList = this.parseMicrophoneList(output)
+      const command = platform === "linux" ? listCommand.join(" ") : listCommand.join(" ")
+      const output = execSync(command).toString()
+      this.microphoneList = this.parseMicrophoneList(output, platform)
       return this.microphoneList
     } catch (error: any) {
       log.error(`Error listing microphones: ${error.message}`)
@@ -88,29 +72,46 @@ export default class Microphone extends Service {
     }
   }
 
-  /**
-   * Parses the output of arecord -l and converts it to a dictionary of microphone devices.
-   * @param {string} output - The output of the arecord -l command.
-   * @returns {object} The dictionary of ALSA device strings with their descriptions.
-   */
-  parseMicrophoneList(output: string): { [key: string]: string } {
-    const lines = output.split("\n")
+  parseMicrophoneList(output: string, platform: string): { [key: string]: string } {
     const devices: { [key: string]: string } = {}
 
-    let currentCard = -1
-    lines.forEach((line) => {
-      const cardMatch = line.match(/^card (\d+): (.*)/)
-      if (cardMatch) {
-        currentCard = parseInt(cardMatch[1], 10)
-      }
+    if (platform === "linux") {
+      const lines = output.split("\n")
+      let currentCard = -1
+      lines.forEach((line) => {
+        const cardMatch = line.match(/^card (\d+): (.*)/)
+        if (cardMatch) {
+          currentCard = parseInt(cardMatch[1], 10)
+        }
 
-      const deviceMatch = line.match(/device (\d+): (.*)/)
-      if (deviceMatch && currentCard !== -1) {
-        const device = parseInt(deviceMatch[1], 10)
-        const description = deviceMatch[2].trim()
-        devices[`plughw:${currentCard},${device}`] = `plughw:${currentCard},${device} - ${description}`
-      }
-    })
+        const deviceMatch = line.match(/device (\d+): (.*)/)
+        if (deviceMatch && currentCard !== -1) {
+          const device = parseInt(deviceMatch[1], 10)
+          const description = deviceMatch[2].trim()
+          devices[`plughw:${currentCard},${device}`] = `plughw:${currentCard},${device} - ${description}`
+        }
+      })
+    } else if (platform === "win32") {
+      const lines = output.split("\n")
+      lines.forEach((line) => {
+        const match = line.match(/FriendlyName\s*:\s*(.*)/)
+        if (match) {
+          const key = match[1].trim()
+          devices[key] = key
+        }
+      })
+    } else if (platform === "darwin") {
+      const lines = output.split("\n")
+      let currentMic = ""
+      lines.forEach((line) => {
+        if (line.includes("Input Device: Yes")) {
+          currentMic = line.trim()
+        } else if (currentMic && line.includes("Device Input Level:")) {
+          devices[currentMic] = currentMic
+          currentMic = ""
+        }
+      })
+    }
 
     return devices
   }
@@ -120,9 +121,6 @@ export default class Microphone extends Service {
     this.listMicrophones()
   }
 
-  /**
-   * Stops the current recording.
-   */
   stopRecording() {
     if (this.config.recording) {
       if (this.micInstance) {
@@ -161,9 +159,6 @@ export default class Microphone extends Service {
     }
   }
 
-  /**
-   * Starts recording from the selected microphone.
-   */
   startRecording() {
     if (!this.config.mic) {
       log.error("No microphone selected.")
@@ -187,7 +182,6 @@ export default class Microphone extends Service {
       channels: 1
     })
 
-    // FIXME - pipe it to STT
     micInputStream.pipe(outputFileStream)
 
     micInputStream.on("data", (data: any) => {
@@ -228,10 +222,6 @@ export default class Microphone extends Service {
     this.invoke("broadcastState")
   }
 
-  /**
-   * Selects a microphone to be used.
-   * @param {string} mic - The identifier of the microphone to select.
-   */
   setMicrophone(mic: string) {
     this.config.mic = mic
     log.info(`Microphone selected: ${mic}`)
