@@ -91,12 +91,7 @@ export default function Microphone({ fullname }) {
       <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "80%" }, mt: 2 }}>
         <FormControl fullWidth>
           <InputLabel id="microphone-select-label">Microphone</InputLabel>
-          <Select
-            labelId="microphone-select-label"
-            value={service?.config?.mic}
-            label="Microphone"
-            onChange={handleMicChange}
-          >
+          <Select labelId="microphone-select-label" value={selectedMic} label="Microphone" onChange={handleMicChange}>
             {service &&
               Object.entries(service?.microphoneList).map(([key, value]) => (
                 <MenuItem key={key} value={key}>

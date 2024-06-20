@@ -137,6 +137,32 @@ export default class Microphone extends Service {
     }
   }
 
+  pauseRecording() {
+    if (this.config.recording) {
+      if (this.micInstance) {
+        this.micInstance.pause()
+      }
+      this.config.recording = false
+      log.info("Recording paused.")
+      this.invoke("broadcastState")
+    } else {
+      log.info("No active recording to pause.")
+    }
+  }
+
+  resumeRecording() {
+    if (this.config.recording) {
+      if (this.micInstance) {
+        this.micInstance.resume()
+      }
+      this.config.recording = true
+      log.info("Recording resumed.")
+      this.invoke("broadcastState")
+    } else {
+      log.info("No active recording to resume.")
+    }
+  }
+
   /**
    * Starts recording from the selected microphone.
    */
@@ -201,6 +227,7 @@ export default class Microphone extends Service {
     this.micInstance.start()
 
     this.config.recording = true
+    this.invoke("broadcastState")
   }
 
   /**
