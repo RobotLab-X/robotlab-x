@@ -10,6 +10,7 @@ const log = getLogger("Microphone")
 interface MicrophoneConfig {
   mic: string
   recording: boolean
+  paused: boolean
 }
 
 /**
@@ -23,7 +24,8 @@ export default class Microphone extends Service {
    */
   config: MicrophoneConfig = {
     mic: "",
-    recording: false
+    recording: false,
+    paused: false
   }
 
   micInstance: any = null
@@ -61,22 +63,18 @@ export default class Microphone extends Service {
     }
   }
 
-  /**
-   * Lists available microphones.
-   * @returns {object} The dictionary of available microphones.
-   */
   listMicrophones(): { [key: string]: string } {
     const platform = os.platform()
     let listCommand: string[]
 
     if (platform === "linux") {
-      listCommand = ["-l"]
+      listCommand = ["arecord", "-l"]
     } else if (platform === "win32") {
       listCommand = ["powershell", "-Command", 'Get-PnpDevice | Where-Object { $_.Class -eq "AudioEndpoint" }']
     } else if (platform === "darwin") {
-      log.info("Listing microphones on macOS is not directly supported by a single command.")
-      return {}
+      listCommand = ["system_profiler", "SPAUDIODataType"]
     } else {
+      log.info(`Unsupported platform: ${platform}`)
       return {}
     }
 
