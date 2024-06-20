@@ -92,7 +92,7 @@ export default class Microphone extends Service {
         })
 
         arecord.on("close", () => {
-          const microphones = output.split("\n").filter((line) => line.trim() !== "")
+          const microphones = this.parseMicrophoneList(output)
           this.microphoneList = microphones
           resolve(microphones)
         })
@@ -102,6 +102,35 @@ export default class Microphone extends Service {
     })
   }
 
+  /**
+   * Parses the output of arecord -l and converts it to a list of microphone devices.
+   * @param {string} output - The output of the arecord -l command.
+   * @returns {string[]} The list of ALSA device strings.
+   */
+  parseMicrophoneList(output: string): string[] {
+    const lines = output.split("\n")
+    const devices: string[] = []
+
+    let currentCard = -1
+    lines.forEach((line) => {
+      const cardMatch = line.match(/^card (\d+):/)
+      if (cardMatch) {
+        currentCard = parseInt(cardMatch[1], 10)
+      }
+
+      const deviceMatch = line.match(/device (\d+):/)
+      if (deviceMatch && currentCard !== -1) {
+        const device = parseInt(deviceMatch[1], 10)
+        devices.push(`plughw:${currentCard},${device}`)
+      }
+    })
+
+    return devices
+  }
+
+  /**
+   * Stops the current recording.
+   */
   stopRecording() {
     if (this.config.recording) {
       if (this.micInstance) {
