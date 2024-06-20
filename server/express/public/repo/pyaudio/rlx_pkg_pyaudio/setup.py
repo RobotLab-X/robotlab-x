@@ -1,16 +1,17 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="rlx_pkg_proxy",
+    name="rlx_pkg_pyaudio",
     version="0.0.9",
     author="GroG",
     author_email="supertick@gmail.com",
-    description="RobotLabX Client Proxy Package",
+    description="rlx_pkg_pyaudio",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
-    url="https://github.com/RobotLab-X/rlx_pkg_proxy",
+    url="https://github.com/yourusername/robotlabxclient",
     packages=find_packages(),
-    install_requires=["websockets", "requests", "pyyaml", "jinja2", "typeguard"],
+    # FIXME - i don't think "websockets", "requests" - it was just brought over from the client
+    install_requires=["jinja2", "typeguard"],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

@@ -1,0 +1,17 @@
+typeKey: "PyAudio"
+title: "PyAudio"
+platform: "python"
+platformVersion: "3.6"
+description: "A python microphone for audio input"
+version: "0.0.1"
+requirements:
+  pyaudio: ">=0.2.14"
+repoRequirements:
+  - "Proxy"
+  - "PyAudio"
+visible: true
+args: ["-u","proxy.py", "-i", "{{name}}", "-c", "{{serviceUrl}}"] # -u unbuffered output
+author: "GroG"
+license: "MIT"
+categories: ["audio", "microphone", "sound", "speech"]
+dependencies: null
