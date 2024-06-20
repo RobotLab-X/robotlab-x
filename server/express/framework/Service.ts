@@ -105,8 +105,9 @@ export default class Service implements Gateway {
     this.applyConfig(config)
   }
 
+  // TODO - handle ad hoc config file
   applyFileConfig(filename: string = null) {
-    RobotLabXRuntime.getInstance().applyServiceFileConfig(this.name, filename)
+    RobotLabXRuntime.getInstance().applyServiceFileConfig(this.name)
   }
 
   saveConfig() {
@@ -393,7 +394,8 @@ export default class Service implements Gateway {
       pkg: this.pkg,
       ready: this.ready,
       typeKey: this.typeKey,
-      version: this.version
+      version: this.version,
+      startTime: this.startTime
     }
   }
 }

@@ -1,9 +1,13 @@
 import ServoMove from "express/models/ServoMove"
+import { readdir } from "fs"
 import { Board, Pin, Servo } from "johnny-five"
+import { platform } from "os"
 import { SerialPort } from "serialport"
+import { promisify } from "util"
 import { getLogger } from "../framework/Log"
 import Service from "../framework/Service"
 
+const readdirAsync = promisify(readdir)
 const log = getLogger("Arduino")
 /**
  * Arduino service class using the johnny-five library
@@ -99,17 +103,17 @@ export default class Arduino extends Service {
         this.invoke("broadcastState")
       })
 
-      this.board.on("error", (err) => {
+      this.board.on("error", (err: any) => {
         console.error("Board error:", err)
         this.disconnect()
       })
 
-      this.board.on("fail", (event) => {
+      this.board.on("fail", (event: any) => {
         console.error("Board fail:", event.message)
         this.disconnect()
       })
 
-      this.board.on("info", (event) => {
+      this.board.on("info", (event: any) => {
         console.log("Board info:", event.message)
       })
     } catch (error) {
@@ -135,8 +139,13 @@ export default class Arduino extends Service {
 
   public async getPorts(): Promise<string[]> {
     try {
-      const portList = await SerialPort.list()
-      this.ports = portList.map((port) => port.path).filter((path) => !path.startsWith("/dev/ttyS"))
+      if (platform() === "linux") {
+        const files = await readdirAsync("/dev")
+        this.ports = files.filter((file) => file.startsWith("ttyACM")).map((file) => `/dev/${file}`)
+      } else {
+        const portList = await SerialPort.list()
+        this.ports = portList.map((port: any) => port.path).filter((path: any) => !path.startsWith("/dev/ttyS"))
+      }
       return this.ports
     } catch (error) {
       console.error("Error listing serial ports:", error)

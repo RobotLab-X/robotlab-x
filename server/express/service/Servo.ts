@@ -12,7 +12,7 @@ export default class Servo extends Service {
     rest: 90,
     idleTimeout: 3000,
     speed: 50.0,
-    pin: "9"
+    pin: ""
   }
 
   constructor(

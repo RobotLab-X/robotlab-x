@@ -135,43 +135,15 @@ export default class RobotLabXRuntime extends Service {
     log.info(`runtime overloaded save() ${this.name} ${this.typeKey} ${this.config}`)
     const filePath = path.join(this.configDir, this.configName, "runtime.yml")
     try {
+      // FIXME !!! - getConfig() vs config !!! config should be updated when new service is
+      // added to the registry
       const yamlStr = YAML.stringify(this.config)
+      // const yamlStr = YAML.stringify(this.getConfig())
       fs.mkdirSync(path.dirname(filePath), { recursive: true })
       fs.writeFileSync(filePath, yamlStr, "utf8")
       log.info("Runtime config saved to", filePath)
     } catch (error) {
       this.error(`Runtime failed to save config: ${error}`)
-    }
-  }
-
-  /**
-   * Overloaded from Service.ts - other services will simply return config
-   * RobotLabXRuntime.ts requires more processing to return current config
-   * @returns
-   */
-  getConfig(): any {
-    try {
-      const reg = []
-      for (const [key, s] of Object.entries(Store.getInstance().getRegistry())) {
-        let service: Service = s as Service
-        if (service.name === "runtime" || (service.id !== this.id && service.typeKey !== "Proxy")) {
-          log.info(`skipping service ${service.name} ${service.id} not responsible for serializing`)
-          continue
-        }
-        // FIXME - can't get the default export to work
-        let la: LaunchAction = LaunchAction.fromService(service)
-        // let la = {
-        //   name: service.name,
-        //   package: service.pkg.typeKey.toLowerCase()
-        // }
-        reg.push(la)
-      }
-      this.config.registry = reg
-
-      return this.config
-    } catch (error) {
-      this.error(`Runtime failed to get config: ${error}`)
-      return null
     }
   }
 
@@ -219,11 +191,12 @@ export default class RobotLabXRuntime extends Service {
 
   /**
    * Apply file {serviceName}.yml to the service
+   * TODO - capability to apply ad hoc filename
    * @param serviceName
-   * @param filename - probably @deprecated
+   * @param filename
    * @returns
    */
-  applyServiceFileConfig(serviceName: string, filename: string = null) {
+  applyServiceFileConfig(serviceName: string) {
     let cfg: any = this.readConfig(serviceName, this.configName)
     // let cfg: any = this.getServiceFileConfig(serviceName, filename)
     if (cfg === null) {
@@ -799,6 +772,20 @@ export default class RobotLabXRuntime extends Service {
     }
 
     Store.getInstance().register(`${service.name}@${service.id}`, service)
+
+    // add to config.registry launch action if appropriate
+    // FIXME - there still needs to be an "originating id" for a Proxy service !
+    if (
+      service.name !== "runtime" &&
+      (service.id === this.id || (service.id !== this.id && service.typeKey !== "Proxy"))
+    ) {
+      this.config.registry.push({
+        name: service.name,
+        package: service?.pkg?.typeKey.toLowerCase(),
+        config: service.config
+      })
+    }
+
     this.invoke("registered", service)
 
     // FIXME you got things registering to getRegistry

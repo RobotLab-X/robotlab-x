@@ -9,7 +9,7 @@ import useServiceSubscription from "../store/useServiceSubscription"
 
 export default function Microphone({ fullname }) {
   const [editMode, setEditMode] = useState(false)
-  const [microphones, setMicrophones] = useState([])
+  // const [microphones, setMicrophones] = useState([])
   const [selectedMic, setSelectedMic] = useState("")
   const [isRecording, setIsRecording] = useState(false)
 
@@ -23,14 +23,10 @@ export default function Microphone({ fullname }) {
 
   useEffect(() => {
     // Function to list available microphones
-    const listMicrophones = async () => {
-      const response = await fetch("/api/listMicrophones") // Assuming you have an API endpoint to list microphones
-      const mics = await response.json()
-      setMicrophones(mics)
+    if (service?.config?.mic) {
+      setSelectedMic(service?.config?.mic)
     }
-
-    listMicrophones()
-  }, [])
+  }, [service, service?.config?.mic])
 
   const toggleEditMode = () => {
     setEditMode(!editMode)
@@ -48,8 +44,8 @@ export default function Microphone({ fullname }) {
 
   const handleMicChange = (event) => {
     const mic = event.target.value
-    setSelectedMic(mic)
-    sendTo(fullname, "selectMicrophone", { mic })
+    // setSelectedMic(mic)
+    sendTo(fullname, "setMicrophone", mic)
   }
 
   const handleConfigChange = (event) => {
@@ -78,7 +74,7 @@ export default function Microphone({ fullname }) {
               variant="outlined"
               fullWidth
               margin="normal"
-              value={service?.config?.intervalMs}
+              value={selectedMic}
               onChange={handleConfigChange}
               sx={{ flex: 1 }} // Ensure consistent width
             />
@@ -95,12 +91,18 @@ export default function Microphone({ fullname }) {
       <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "80%" }, mt: 2 }}>
         <FormControl fullWidth>
           <InputLabel id="microphone-select-label">Microphone</InputLabel>
-          <Select labelId="microphone-select-label" value={selectedMic} label="Microphone" onChange={handleMicChange}>
-            {microphones.map((mic, index) => (
-              <MenuItem key={index} value={mic}>
-                {mic}
-              </MenuItem>
-            ))}
+          <Select
+            labelId="microphone-select-label"
+            value={service?.config?.mic}
+            label="Microphone"
+            onChange={handleMicChange}
+          >
+            {service &&
+              Object.entries(service?.microphoneList).map(([key, value]) => (
+                <MenuItem key={key} value={key}>
+                  {value}
+                </MenuItem>
+              ))}
           </Select>
         </FormControl>
       </Box>

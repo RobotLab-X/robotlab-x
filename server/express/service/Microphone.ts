@@ -28,7 +28,7 @@ export default class Microphone extends Service {
 
   micInstance: any = null
 
-  microphoneList: string[] = []
+  microphoneList: { [key: string]: string } = {}
 
   /**
    * Creates an instance of Microphone.
@@ -63,9 +63,9 @@ export default class Microphone extends Service {
 
   /**
    * Lists available microphones.
-   * @returns {string[]} The list of available microphones.
+   * @returns {object} The dictionary of available microphones.
    */
-  listMicrophones(): string[] {
+  listMicrophones(): { [key: string]: string } {
     const platform = os.platform()
     let listCommand: string[]
 
@@ -75,9 +75,9 @@ export default class Microphone extends Service {
       listCommand = ["powershell", "-Command", 'Get-PnpDevice | Where-Object { $_.Class -eq "AudioEndpoint" }']
     } else if (platform === "darwin") {
       log.info("Listing microphones on macOS is not directly supported by a single command.")
-      return []
+      return {}
     } else {
-      return []
+      return {}
     }
 
     try {
@@ -86,34 +86,40 @@ export default class Microphone extends Service {
       return this.microphoneList
     } catch (error: any) {
       log.error(`Error listing microphones: ${error.message}`)
-      return []
+      return {}
     }
   }
 
   /**
-   * Parses the output of arecord -l and converts it to a list of microphone devices.
+   * Parses the output of arecord -l and converts it to a dictionary of microphone devices.
    * @param {string} output - The output of the arecord -l command.
-   * @returns {string[]} The list of ALSA device strings.
+   * @returns {object} The dictionary of ALSA device strings with their descriptions.
    */
-  parseMicrophoneList(output: string): string[] {
+  parseMicrophoneList(output: string): { [key: string]: string } {
     const lines = output.split("\n")
-    const devices: string[] = []
+    const devices: { [key: string]: string } = {}
 
     let currentCard = -1
     lines.forEach((line) => {
-      const cardMatch = line.match(/^card (\d+):/)
+      const cardMatch = line.match(/^card (\d+): (.*)/)
       if (cardMatch) {
         currentCard = parseInt(cardMatch[1], 10)
       }
 
-      const deviceMatch = line.match(/device (\d+):/)
+      const deviceMatch = line.match(/device (\d+): (.*)/)
       if (deviceMatch && currentCard !== -1) {
         const device = parseInt(deviceMatch[1], 10)
-        devices.push(`plughw:${currentCard},${device}`)
+        const description = deviceMatch[2].trim()
+        devices[`plughw:${currentCard},${device}`] = `plughw:${currentCard},${device} - ${description}`
       }
     })
 
     return devices
+  }
+
+  startService() {
+    super.startService()
+    this.listMicrophones()
   }
 
   /**
@@ -139,6 +145,8 @@ export default class Microphone extends Service {
       log.error("No microphone selected.")
       return
     }
+
+    this.info(`Starting recording from ${this.config.mic}`)
 
     this.micInstance = mic({
       rate: "16000",
@@ -193,20 +201,15 @@ export default class Microphone extends Service {
     this.micInstance.start()
 
     this.config.recording = true
-
-    // Stop recording after 5 seconds
-    // setTimeout(() => {
-    //   micInstance.stop()
-    //   this.config.recording = false
-    // }, 5000);
   }
 
   /**
    * Selects a microphone to be used.
    * @param {string} mic - The identifier of the microphone to select.
    */
-  selectMicrophone(mic: string) {
+  setMicrophone(mic: string) {
     this.config.mic = mic
     log.info(`Microphone selected: ${mic}`)
+    this.invoke("broadcastState")
   }
 }

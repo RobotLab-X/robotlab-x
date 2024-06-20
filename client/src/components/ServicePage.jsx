@@ -1,6 +1,7 @@
 import loadable from "@loadable/component"
 import DeleteIcon from "@mui/icons-material/Delete"
 import DescriptionIcon from "@mui/icons-material/Description"
+import FileOpenIcon from "@mui/icons-material/FileOpen"
 import RefreshIcon from "@mui/icons-material/Refresh"
 import SaveIcon from "@mui/icons-material/Save"
 import StatusLog from "components/StatusLog"
@@ -113,6 +114,12 @@ export default function ServicePage({ fullname, name, id }) {
     sendTo(fullname, "save")
   }
 
+  const handleOpenClick = () => {
+    // Perform refresh action here
+    console.log(`loading config file for ${fullname}`)
+    sendTo(fullname, "applyFileConfig")
+  }
+
   return (
     <div className="service-content-div">
       <Typography variant="h4" component="div" sx={{ display: "flex", alignItems: "center" }}>
@@ -138,6 +145,11 @@ export default function ServicePage({ fullname, name, id }) {
         <Tooltip title="Refresh">
           <IconButton onClick={handleRefreshClick} aria-label="refresh">
             <RefreshIcon />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Load Configuration">
+          <IconButton onClick={handleOpenClick} aria-label="open">
+            <FileOpenIcon />
           </IconButton>
         </Tooltip>
         <Tooltip title="Save">
