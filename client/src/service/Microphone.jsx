@@ -1,7 +1,20 @@
 import ExpandLessIcon from "@mui/icons-material/ExpandLess"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import MicIcon from "@mui/icons-material/Mic"
-import { Box, Button, FormControl, IconButton, InputLabel, MenuItem, Select, TextField } from "@mui/material"
+import MicOffIcon from "@mui/icons-material/MicOff"
+import PauseIcon from "@mui/icons-material/Pause"
+import PlayArrowIcon from "@mui/icons-material/PlayArrow"
+import {
+  Box,
+  Button,
+  FormControl,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+  Typography
+} from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
 import { useStore } from "../store/store"
@@ -9,9 +22,9 @@ import useServiceSubscription from "../store/useServiceSubscription"
 
 export default function Microphone({ fullname }) {
   const [editMode, setEditMode] = useState(false)
-  // const [microphones, setMicrophones] = useState([])
   const [selectedMic, setSelectedMic] = useState("")
   const [isRecording, setIsRecording] = useState(false)
+  const [isPaused, setIsPaused] = useState(false)
 
   const { useMessage, sendTo } = useStore()
 
@@ -22,11 +35,25 @@ export default function Microphone({ fullname }) {
   const service = useProcessedMessage(serviceMsg)
 
   useEffect(() => {
-    // Function to list available microphones
+    // mic selected state
     if (service?.config?.mic) {
       setSelectedMic(service?.config?.mic)
     }
   }, [service, service?.config?.mic])
+
+  useEffect(() => {
+    // backend update to set paused state
+    if (service) {
+      setIsPaused(service.config.paused)
+    }
+  }, [service, service?.config?.paused])
+
+  useEffect(() => {
+    // backend update to set recording state
+    if (service) {
+      setIsRecording(service.config.recording)
+    }
+  }, [service, service?.config?.recording])
 
   const toggleEditMode = () => {
     setEditMode(!editMode)
@@ -34,12 +61,23 @@ export default function Microphone({ fullname }) {
 
   const handleStartRecording = () => {
     sendTo(fullname, "startRecording")
-    setIsRecording(true)
+    // setIsRecording(true)
+    // setIsPaused(false)
   }
 
   const handleStopRecording = () => {
     sendTo(fullname, "stopRecording")
-    setIsRecording(false)
+    // setIsRecording(false)
+    // setIsPaused(false)
+  }
+
+  const handlePauseResumeRecording = () => {
+    if (isPaused) {
+      sendTo(fullname, "resumeRecording")
+    } else {
+      sendTo(fullname, "pauseRecording")
+    }
+    // setIsPaused(!isPaused)
   }
 
   const handleMicChange = (event) => {
@@ -102,13 +140,22 @@ export default function Microphone({ fullname }) {
         </FormControl>
       </Box>
 
-      <Box sx={{ mt: 2 }}>
-        <IconButton
-          color={isRecording ? "secondary" : "default"}
-          onClick={isRecording ? handleStopRecording : handleStartRecording}
-        >
-          <MicIcon />
-        </IconButton>
+      <Box sx={{ mt: 2, display: "flex", gap: 2, alignItems: "center" }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <IconButton
+            color={isRecording ? "secondary" : "default"}
+            onClick={isRecording ? handleStopRecording : handleStartRecording}
+          >
+            {isRecording ? <MicIcon /> : <MicOffIcon />}
+          </IconButton>
+          <Typography variant="body1">{isRecording ? "Recording" : "Not Recording"}</Typography>
+        </Box>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <IconButton color={isPaused ? "default" : "secondary"} onClick={handlePauseResumeRecording}>
+            {isPaused ? <PlayArrowIcon /> : <PauseIcon />}
+          </IconButton>
+          <Typography variant="body1">{isPaused ? "Paused" : "Not Paused"}</Typography>
+        </Box>
       </Box>
     </>
   )

@@ -77,18 +77,19 @@ export default class Microphone extends Service {
 
     if (platform === "linux") {
       const lines = output.split("\n")
-      let currentCard = -1
+      let currentCard: string | null = null
       lines.forEach((line) => {
         const cardMatch = line.match(/^card (\d+): (.*)/)
         if (cardMatch) {
-          currentCard = parseInt(cardMatch[1], 10)
+          currentCard = cardMatch[0].trim() // entire card line
         }
 
         const deviceMatch = line.match(/device (\d+): (.*)/)
-        if (deviceMatch && currentCard !== -1) {
+        if (deviceMatch && currentCard) {
           const device = parseInt(deviceMatch[1], 10)
           const description = deviceMatch[2].trim()
-          devices[`plughw:${currentCard},${device}`] = `plughw:${currentCard},${device} - ${description}`
+          devices[`plughw:${cardMatch[1]},${device}`] =
+            `plughw:${cardMatch[1]},${device}: card ${cardMatch[1]}, device${device} - ${currentCard}`
         }
       })
     } else if (platform === "win32") {
@@ -119,15 +120,25 @@ export default class Microphone extends Service {
   startService() {
     super.startService()
     this.listMicrophones()
+    if (this.config.recording) {
+      this.startRecording()
+    }
   }
 
   stopRecording() {
     if (this.config.recording) {
       if (this.micInstance) {
+        // I think it needs to resume before it can be stopped
+        if (this.config.paused) {
+          this.info("Resuming recording to stop")
+          this.micInstance.resume()
+        }
+        this.info("Stopping recording")
         this.micInstance.stop()
       }
       this.config.recording = false
       log.info("Recording stopped.")
+      this.invoke("broadcastState")
     } else {
       log.error("No active recording to stop.")
     }
@@ -138,11 +149,15 @@ export default class Microphone extends Service {
       if (this.micInstance) {
         this.micInstance.pause()
       }
-      this.config.recording = false
       log.info("Recording paused.")
       this.invoke("broadcastState")
     } else {
       log.info("No active recording to pause.")
+    }
+    if (!this.config.paused) {
+      // state change to paused
+      this.config.paused = true
+      this.invoke("broadcastState")
     }
   }
 
@@ -151,11 +166,15 @@ export default class Microphone extends Service {
       if (this.micInstance) {
         this.micInstance.resume()
       }
-      this.config.recording = true
       log.info("Recording resumed.")
       this.invoke("broadcastState")
     } else {
       log.info("No active recording to resume.")
+    }
+    if (this.config.paused) {
+      // state change to unpaused
+      this.config.paused = false
+      this.invoke("broadcastState")
     }
   }
 
@@ -217,6 +236,11 @@ export default class Microphone extends Service {
     })
 
     this.micInstance.start()
+
+    if (this.config.paused) {
+      log.info("Starting as paused")
+      this.micInstance.pause()
+    }
 
     this.config.recording = true
     this.invoke("broadcastState")

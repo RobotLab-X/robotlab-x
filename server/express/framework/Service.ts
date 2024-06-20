@@ -108,6 +108,7 @@ export default class Service implements Gateway {
   // TODO - handle ad hoc config file
   applyFileConfig(filename: string = null) {
     RobotLabXRuntime.getInstance().applyServiceFileConfig(this.name)
+    this.invoke("broadcastState")
   }
 
   saveConfig() {
