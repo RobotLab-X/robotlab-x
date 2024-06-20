@@ -1,2 +1,8 @@
 id: rlx7
-port: 30017 # does not work in dev
+logLevel: info
+port: 3001
+registry:
+  - name: cv9
+    package: opencv
+    config: {}
+connect: []

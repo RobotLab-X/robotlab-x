@@ -1,4 +1,5 @@
 ## TODO
+* Try Server using Client models ! (attempt to normalize)
 * config part that affects Runtime ? chicken egg issue - since its the thing that starts nodes
 * WebRTC https://github.com/node-webrtc/node-webrtc https://github.com/WonderInventions/node-webrtc https://github.com/aiortc/aiortc
 * HATEOS ----------------------------------
