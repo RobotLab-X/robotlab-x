@@ -1,4 +1,4 @@
-import { spawn } from "child_process"
+import { execSync } from "child_process"
 import mic from "mic"
 import os from "os"
 import wav from "wav"
@@ -63,43 +63,31 @@ export default class Microphone extends Service {
 
   /**
    * Lists available microphones.
+   * @returns {string[]} The list of available microphones.
    */
-  listMicrophones(): Promise<string[]> {
-    return new Promise((resolve, reject) => {
-      const platform = os.platform()
-      let listCommand: string[]
+  listMicrophones(): string[] {
+    const platform = os.platform()
+    let listCommand: string[]
 
-      if (platform === "linux") {
-        listCommand = ["-l"]
-      } else if (platform === "win32") {
-        listCommand = ["powershell", "-Command", 'Get-PnpDevice | Where-Object { $_.Class -eq "AudioEndpoint" }']
-      } else if (platform === "darwin") {
-        log.info("Listing microphones on macOS is not directly supported by a single command.")
-        return resolve([])
-      }
+    if (platform === "linux") {
+      listCommand = ["-l"]
+    } else if (platform === "win32") {
+      listCommand = ["powershell", "-Command", 'Get-PnpDevice | Where-Object { $_.Class -eq "AudioEndpoint" }']
+    } else if (platform === "darwin") {
+      log.info("Listing microphones on macOS is not directly supported by a single command.")
+      return []
+    } else {
+      return []
+    }
 
-      if (listCommand) {
-        const arecord = spawn("arecord", listCommand)
-
-        let output = ""
-        arecord.stdout.on("data", (data) => {
-          output += data.toString()
-        })
-
-        arecord.stderr.on("data", (data) => {
-          console.error(`Error listing microphones: ${data}`)
-          reject(new Error(`Error listing microphones: ${data}`))
-        })
-
-        arecord.on("close", () => {
-          const microphones = this.parseMicrophoneList(output)
-          this.microphoneList = microphones
-          resolve(microphones)
-        })
-      } else {
-        resolve([])
-      }
-    })
+    try {
+      const output = execSync(`arecord ${listCommand.join(" ")}`).toString()
+      this.microphoneList = this.parseMicrophoneList(output)
+      return this.microphoneList
+    } catch (error: any) {
+      log.error(`Error listing microphones: ${error.message}`)
+      return []
+    }
   }
 
   /**
@@ -210,7 +198,7 @@ export default class Microphone extends Service {
     // setTimeout(() => {
     //   micInstance.stop()
     //   this.config.recording = false
-    // }, 5000)
+    // }, 5000);
   }
 
   /**
