@@ -2,7 +2,7 @@ typeKey: "Clock"
 title: "Clock"
 platform: "node"
 platformVersion: "v20.9.0"
-description: "My Robot Lab Runtime"
+description: "A timer for scheduled events"
 version: "0.0.1"
 visible: true
 interfaces:

@@ -1,0 +1,11 @@
+typeKey: "Microphone"
+title: "Microphone"
+platform: "node"
+platformVersion: "v20.9.0"
+description: "A microphone for audio input"
+version: "0.0.1"
+visible: true
+author: "GroG"
+license: "MIT"
+categories: ["audio", "microphone", "sound", "speech"]
+dependencies: null
