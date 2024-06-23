@@ -165,8 +165,21 @@ class PyAudio(Service):
             wav_buffer.seek(0)
 
             # Send the WAV data to the ASR endpoint
-            files = {"file": ("output.wav", wav_buffer, "audio/wav")}
-            response = requests.post("http://localhost:9000/asr", files=files)
+            files = {"audio_file": ("output.wav", wav_buffer, "audio/wav")}
+            params = {
+                "encode": "true",
+                "task": "transcribe",
+                "language": "en",
+                "word_timestamps": "false",
+                "output": "txt",
+            }
+            headers = {
+                "accept": "application/json",
+                "Content-Type": "multipart/form-data",
+            }
+            response = requests.post(
+                "http://localhost:9000/asr", params=params, files=files, headers=headers
+            )
 
             if response.status_code == 200:
                 log.info("Audio successfully sent to ASR endpoint.")
