@@ -21,7 +21,7 @@ class PyAudio(Service):
 
         self.recording: bool = False
         self.paused: bool = False
-        self.config = {"mic": "", "recording": False, "paused": False}
+        self.config = {"mic": "", "recording": False, "paused": False, "rate": 44100}
 
         self.audio = pyaudio.PyAudio()
         self.stream = None
@@ -65,7 +65,7 @@ class PyAudio(Service):
         self.stream = self.audio.open(
             format=pyaudio.paInt16,
             channels=1,
-            rate=44100,
+            rate=self.config["rate"],
             input=True,
             input_device_index=int(self.config["mic"]),
             frames_per_buffer=1024,
@@ -91,6 +91,40 @@ class PyAudio(Service):
             except OSError as e:
                 log.warning(f"Input overflowed: {e}")
                 continue
+
+    def clear(self):
+        log.info("Clearing buffer...")
+        self.frames.clear()
+
+    def getMicDetails(self, mic: int):
+        log.info(f"Getting details for microphone index {mic}")
+        try:
+            device_info = self.audio.get_device_info_by_index(mic)
+            mic_details = {
+                "name": device_info.get("name"),
+                "maxInputChannels": device_info.get("maxInputChannels"),
+                "defaultSampleRate": device_info.get("defaultSampleRate"),
+                "supportedSampleRates": [],
+            }
+
+            # Querying supported sample rates
+            for rate in [8000, 11025, 16000, 22050, 32000, 44100, 48000, 96000, 192000]:
+                try:
+                    if self.audio.is_format_supported(
+                        rate,
+                        input_device=device_info["index"],
+                        input_channels=device_info["maxInputChannels"],
+                        input_format=pyaudio.paInt16,
+                    ):
+                        mic_details["supportedSampleRates"].append(rate)
+                except ValueError:
+                    continue
+
+            log.info(f"Microphone details: {mic_details}")
+            return mic_details
+        except Exception as e:
+            log.error(f"Error getting microphone details: {e}")
+            return {}
 
     def stopRecording(self):
         log.info("Stopping recording...")
@@ -149,6 +183,29 @@ class PyAudio(Service):
         except Exception as e:
             log.error(f"Failed to load audio file: {e}")
 
+    def publishAudio(self):
+        try:
+            log.info(
+                f"Publishing current audio in memory frame count {len(self.frames)}"
+            )
+
+            # Prepare the WAV data in memory
+            wav_buffer = BytesIO()
+            with wave.open(wav_buffer, "wb") as wf:
+                wf.setnchannels(1)
+                wf.setsampwidth(self.audio.get_sample_size(pyaudio.paInt16))
+                wf.setframerate(44100)
+                wf.writeframes(b"".join(self.frames))
+
+            wav_buffer.seek(0)
+            return wav_buffer
+        except Exception as e:
+            log.error(f"Failed to send audio to ASR endpoint: {e}")
+            return None
+
+    # FIXME - needs to be part of the Whisper service
+    # since its Whisper specific
+    # this service should publish a wav file (in memory or on disk)
     def sendToASR(self, save_to_file=False):
         if save_to_file:
             self.saveToFile()
