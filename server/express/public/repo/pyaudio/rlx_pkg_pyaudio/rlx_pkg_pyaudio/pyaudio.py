@@ -1,17 +1,18 @@
 import argparse
-import os
-import importlib
-import uuid
-import urllib.request
-import time
 import asyncio
+import importlib
 import logging
-from time import sleep
+import os
+import urllib.request
+import uuid
 from concurrent.futures import ThreadPoolExecutor
-from rlx_pkg_proxy.service import Service
+from time import sleep
 from typing import List
+
 import pyaudio
 import wave
+
+from rlx_pkg_proxy.service import Service
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("PyAudio")
@@ -29,34 +30,37 @@ class PyAudio(Service):
         self.audio = pyaudio.PyAudio()
         self.stream = None
         self.frames = []
-        self.current_mic_index = None
         self.output_filename = "output.wav"
         self.mics = {}
 
-    def list_microphones(self):
-        info = self.audio.get_host_api_info_by_index(0)
-        numdevices = info.get("deviceCount")
-        mics = {}
-        for i in range(0, numdevices):
-            if (
-                self.audio.get_device_info_by_host_api_device_index(0, i).get(
-                    "maxInputChannels"
-                )
-                > 0
-            ):
-                self.mics[i] = self.audio.get_device_info_by_host_api_device_index(
-                    0, i
-                ).get("name")
-        return mics
+    def getMicrophones(self):
+        log.info("Getting microphones")
+        try:
+            info = self.audio.get_host_api_info_by_index(0)
+            numdevices = info.get("deviceCount")
+            mics = {}
+            for i in range(0, numdevices):
+                device_info = self.audio.get_device_info_by_host_api_device_index(0, i)
+                if device_info.get("maxInputChannels") > 0:
+                    mics[i] = device_info.get("name")
+            self.mics = mics
+            log.info(f"Found {len(self.mics)} mics")
+            return mics
+        except Exception as e:
+            log.error(f"Error getting microphones: {e}")
+            return {}
 
-    def set_microphone(self, mic: int):
+    def setMicrophone(self, mic: int):
         self.config["mic"] = mic
-        self.current_mic_index = mic
+        log.info(f"Setting microphone to {self.config['mic']}")
+        self.invoke("broadcastState")
 
-    def start_recording(self, duration=5, output_filename="output.wav"):
-        if self.current_mic_index is None:
-            log.error("No microphone set. Use set_microphone() to set a microphone.")
+    def startRecording(self, duration=5, output_filename="output.wav"):
+        if self.config["mic"] is None:
+            log.error("No microphone set. Use setMicrophone(int) to set a microphone.")
             return
+
+        log.info(f"Starting mic: {self.config['mic']} recording for {duration} seconds")
 
         self.config["recording"] = True
         self.output_filename = output_filename
@@ -67,7 +71,7 @@ class PyAudio(Service):
             channels=1,
             rate=44100,
             input=True,
-            input_device_index=self.current_mic_index,
+            input_device_index=int(self.config["mic"]),
             frames_per_buffer=1024,
         )
 
@@ -77,9 +81,9 @@ class PyAudio(Service):
             # self.frames.append(data)
 
         log.info("Finished recording.")
-        self.stop_recording()
+        self.stopRecording()
 
-    def stop_recording(self):
+    def stopRecording(self):
         if self.stream is not None:
             self.stream.stop_stream()
             self.stream.close()
@@ -94,13 +98,13 @@ class PyAudio(Service):
             log.info(f"Audio saved as {self.output_filename}")
         self.config["recording"] = False
 
-    def pause_recording(self):
+    def pauseRecording(self):
         if self.recording and not self.paused:
             self.paused = True
             self.config["paused"] = True
             log.info("Recording paused.")
 
-    def resume_recording(self):
+    def resumeRecording(self):
         if self.recording and self.paused:
             self.paused = False
             self.config["paused"] = False
@@ -127,6 +131,12 @@ class PyAudio(Service):
         base_dict.update(derived)
         return base_dict
 
+    def startService(self):
+        log.info("Starting PyAudio service...")
+        self.getMicrophones()
+        super().startService()
+        # BE AWARE - this coroutine super.startService() blocks forever
+
 
 def main():
 
@@ -149,7 +159,7 @@ def main():
     cv = PyAudio(args.id)
     cv.connect(args.connect)
     cv.set_service(cv)
-    cv.start_service()
+    cv.startService()
 
 
 if __name__ == "__main__":
