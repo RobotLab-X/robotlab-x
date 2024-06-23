@@ -173,17 +173,15 @@ class PyAudio(Service):
                 "word_timestamps": "false",
                 "output": "txt",
             }
-            headers = {
-                "accept": "application/json",
-                "Content-Type": "multipart/form-data",
-            }
             response = requests.post(
-                "http://localhost:9000/asr", params=params, files=files, headers=headers
+                "http://localhost:9000/asr", params=params, files=files, timeout=30
             )
 
             if response.status_code == 200:
                 log.info("Audio successfully sent to ASR endpoint.")
-                return response.json()
+                log.info(f"Response: {response.text}")
+                return response.text
+                # return response.json()
             else:
                 log.error(
                     f"Failed to send audio to ASR endpoint: {response.status_code} {response.text}"
