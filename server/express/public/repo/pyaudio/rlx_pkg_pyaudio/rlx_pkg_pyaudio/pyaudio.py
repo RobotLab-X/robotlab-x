@@ -6,6 +6,7 @@ from time import sleep
 import pyaudio
 import wave
 from rlx_pkg_proxy.service import Service
+from collections import deque
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("PyAudio")
@@ -22,7 +23,7 @@ class PyAudio(Service):
 
         self.audio = pyaudio.PyAudio()
         self.stream = None
-        self.frames = []
+        self.frames = deque(maxlen=512)  # Fixed-size buffer for frames
         self.output_filename = "output.wav"
         self.mics = {}
         self.recording_thread = None
@@ -57,7 +58,7 @@ class PyAudio(Service):
         log.info(f"Starting mic: {self.config['mic']} recording")
         self.config["recording"] = True
         self.output_filename = output_filename
-        self.frames = []
+        self.frames.clear()
 
         self.stream = self.audio.open(
             format=pyaudio.paInt16,
