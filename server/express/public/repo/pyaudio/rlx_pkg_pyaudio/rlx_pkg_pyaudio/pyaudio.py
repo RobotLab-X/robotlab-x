@@ -1,5 +1,6 @@
 import argparse
 import logging
+import threading
 import uuid
 from time import sleep
 import pyaudio
@@ -24,6 +25,7 @@ class PyAudio(Service):
         self.frames = []
         self.output_filename = "output.wav"
         self.mics = {}
+        self.recording_thread = None
 
     def getMicrophones(self):
         log.info("Getting microphones")
@@ -47,13 +49,12 @@ class PyAudio(Service):
         log.info(f"Setting microphone to {self.config['mic']}")
         self.invoke("broadcastState")
 
-    def startRecording(self, duration=5, output_filename="output.wav"):
+    def startRecording(self, output_filename="output.wav"):
         if not self.config["mic"]:
             log.error("No microphone set. Use setMicrophone(int) to set a microphone.")
             return
 
-        log.info(f"Starting mic: {self.config['mic']} recording for {duration} seconds")
-
+        log.info(f"Starting mic: {self.config['mic']} recording")
         self.config["recording"] = True
         self.output_filename = output_filename
         self.frames = []
@@ -69,21 +70,31 @@ class PyAudio(Service):
 
         log.info("Recording...")
         self.recording = True
-        for _ in range(0, int(44100 / 1024 * duration)):
+        self.recording_thread = threading.Thread(target=self._record)
+        self.recording_thread.start()
+        self.invoke("broadcastState")
+
+    def _record(self):
+        while self.recording:
             if self.paused:
                 log.info("Recording paused, waiting to resume...")
-                while self.paused:
+                while self.paused and self.recording:
                     sleep(0.1)
+                if not self.recording:
+                    break
             try:
                 data = self.stream.read(1024, exception_on_overflow=False)
                 self.frames.append(data)
             except OSError as e:
                 log.warning(f"Input overflowed: {e}")
-
-        log.info("Finished recording.")
-        self.stopRecording()
+                continue
 
     def stopRecording(self):
+        log.info("Stopping recording...")
+        self.recording = False
+        if self.recording_thread is not None:
+            self.recording_thread.join()
+
         if self.stream is not None:
             try:
                 self.stream.stop_stream()
@@ -107,27 +118,28 @@ class PyAudio(Service):
 
         self.config["recording"] = False
         self.recording = False
+        self.invoke("broadcastState")
 
     def pauseRecording(self):
         if self.recording and not self.paused:
             self.paused = True
             self.config["paused"] = True
             log.info("Recording paused.")
+            self.invoke("broadcastState")
 
     def resumeRecording(self):
         if self.recording and self.paused:
             self.paused = False
             self.config["paused"] = False
             log.info("Recording resumed.")
+            self.invoke("broadcastState")
 
     def releaseService(self):
         """Releases the service from the proxied runtime
         Will shutdown our capture and websocket and coroutines
         """
-        print("Releasing service")
-        if self.stream is not None:
-            self.stream.stop_stream()
-            self.stream.close()
+        log.info("Releasing service")
+        self.stopRecording()
         self.audio.terminate()
         super().releaseService()
 
