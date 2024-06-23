@@ -196,8 +196,7 @@ def main():
 
     cv = OpenCV(args.id)
     cv.connect(args.connect)
-    cv.set_service(cv)
-    cv.start_service()
+    cv.startService()
 
 
 if __name__ == "__main__":

@@ -8,6 +8,7 @@ from typing import List
 import json
 import websockets
 import sys
+import time
 import requests
 import logging
 from enum import Enum, auto
@@ -55,6 +56,7 @@ class Service:
         self.fullname = f"{self.name}@{self.id}"
         self.client_id = client_id
         self.websocket = None
+        self.startTime = None
         self.stop_event = asyncio.Event()
         self.state = State.READY
         # "local" RLX runtime service which started this process
@@ -202,6 +204,11 @@ class Service:
             #     # log.info(f"removed listener on {method} for -> {remote_name}.{remote_method}")
             #     return
 
+    def setInstalled(self, installed):
+        """FIXME - not sure the value of this method - maybe remove it"""
+        log.info("setInstalled")
+        self.installed = installed
+
     def broadcastState(self):
         log.info(f"== broadcastState {self.client_id}")
 
@@ -213,7 +220,7 @@ class Service:
             log.info(
                 f"<--------------------------broadcasting state to {subscriber.callbackName}.{subscriber.callbackMethod}"
             )
-            msg.data = [self.service.to_dict()]
+            msg.data = [self.to_dict()]
             self.send_message(msg.__dict__)
 
     # I get a broadcastState from the runtime I connected even though I didn't subscribe to it
@@ -255,14 +262,14 @@ class Service:
                 self.onBroadcastState(*params)
                 return
 
-            method = getattr(self.service, msg.get("method"))
+            method = getattr(self, msg.get("method"))
 
             if not method:
                 log.info(f"Method {msg.get('method')} not found.")
                 return
 
-            if self.service and params:
-                # self.loop.create_task(self.service.handle_message(data))
+            if params:
+                # self.loop.create_task(self.handle_message(data))
                 method(*params)
             else:
                 method()
@@ -285,8 +292,9 @@ class Service:
         log.info("Shutting down...")
         os._exit(0)
 
-    def start_service(self):
+    def startService(self):
         log.info("Starting service...")
+        self.startTime = int(time.time())
         # TODO - future connectivity status check
         # self.loop.create_task(self.start_heartbeat())
         self.loop.create_task(self.receive_messages())
@@ -294,9 +302,6 @@ class Service:
         self.loop.create_task(self.wait_for_stop())
         log.info("Service started")
         self.loop.run_forever()
-
-    def set_service(self, service):
-        self.service = service
 
     def releaseService(self):
         """Releases the service from the proxied runtime
@@ -324,7 +329,7 @@ class Service:
         # self.loop.close()
 
     def invoke(self, method_name, *args, **kwargs):
-        # return self.invoke_method(self.service.__class__.__module__, self.service, method_name, *args, **kwargs)
+        # return self.invoke_method(self.__class__.__module__, self.service, method_name, *args, **kwargs)
         return self.invoke_method(self, method_name, *args, **kwargs)
 
     def invoke_method(self, instance, method_name, *args, **kwargs):
@@ -372,6 +377,7 @@ class Service:
             "config": self.config,
             "installed": self.installed,
             "ready": self.ready,
+            "startTime": self.startTime,
         }
 
 
@@ -399,7 +405,7 @@ def main():
     client.subscribe("runtime", "getVersion")
 
     try:
-        client.start_service()
+        client.startService()
     except KeyboardInterrupt:
         client.shutdown()
 

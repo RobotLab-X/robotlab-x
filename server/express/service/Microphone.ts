@@ -26,7 +26,7 @@ export default class Microphone extends Service {
   }
 
   micInstance: any = null
-  microphoneList: { [key: string]: string } = {}
+  mics: { [key: string]: string } = {}
 
   constructor(
     public id: string,
@@ -42,11 +42,11 @@ export default class Microphone extends Service {
     return {
       ...super.toJSON(),
       config: this.config,
-      microphoneList: this.microphoneList
+      mics: this.mics
     }
   }
 
-  listMicrophones(): { [key: string]: string } {
+  getMicrophones(): { [key: string]: string } {
     const platform = os.platform()
     let listCommand: string[]
 
@@ -64,8 +64,8 @@ export default class Microphone extends Service {
     try {
       const command = platform === "linux" ? listCommand.join(" ") : listCommand.join(" ")
       const output = execSync(command).toString()
-      this.microphoneList = this.parseMicrophoneList(output, platform)
-      return this.microphoneList
+      this.mics = this.parseMicrophoneList(output, platform)
+      return this.mics
     } catch (error: any) {
       log.error(`Error listing microphones: ${error.message}`)
       return {}
@@ -119,7 +119,7 @@ export default class Microphone extends Service {
 
   startService() {
     super.startService()
-    this.listMicrophones()
+    this.getMicrophones()
     if (this.config.recording) {
       this.startRecording()
     }

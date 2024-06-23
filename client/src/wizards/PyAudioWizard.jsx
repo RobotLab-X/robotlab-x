@@ -5,6 +5,7 @@ import { useProcessedMessage } from "../hooks/useProcessedMessage"
 import { useStore } from "../store/store"
 import useServiceSubscription from "../store/useServiceSubscription"
 
+// FIXME Change to PythonProxyWizard !!!
 // FIXME remove fullname with context provider
 export default function PyAudioWizard({ fullname }) {
   const { sendTo } = useStore()
@@ -143,7 +144,7 @@ export default function PyAudioWizard({ fullname }) {
 
   const InstallRepoRequirements = ({ previousStep, nextStep }) => (
     <div>
-      <h2>Step 5 Install RobotLab-X Client</h2>
+      <h2>Step 5 Install Local Packages and RobotLab-X Client</h2>
       {service?.pythonVersionOk && service?.pipVersionOk && service?.requirementsOk && !service?.clientInstalledOk && (
         <Button variant="contained" color="primary" onClick={installRepoRequirements} disabled={isInstalling}>
           {isInstalling ? "Installing..." : "Install"}

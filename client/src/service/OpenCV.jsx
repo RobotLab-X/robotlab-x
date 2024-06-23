@@ -25,6 +25,8 @@ export default function OpenCV({ fullname }) {
   const [dialogOpen, setDialogOpen] = useState(false)
   const filterNameRef = useRef(null)
 
+  // FIXME !!! - no snake_case for interfaces !!!
+
   useEffect(() => {
     if (service?.installed) {
       sendTo(fullname, "broadcastState")
@@ -73,42 +75,45 @@ export default function OpenCV({ fullname }) {
 
   if (!service?.installed) {
     return <OpenCVWizard fullname={fullname} />
-  }
-
-  return (
-    <>
-      <h3 style={{ display: "flex", alignItems: "center", cursor: "pointer" }} onClick={toggleEditMode}>
-        Configuration
-        {editMode ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-      </h3>
-      {editMode && (
-        <Configuration service={service} handleConfigChange={handleConfigChange} handleSaveConfig={handleSaveConfig} />
-      )}
-      <Box sx={{ display: "flex", justifyContent: "space-between", maxWidth: { xs: "100%", sm: "80%", md: "80%" } }}>
-        <Filters
-          service={service}
-          selectedFilter={selectedFilter}
-          setSelectedFilter={setSelectedFilter}
-          sendTo={sendTo}
-          fullname={fullname}
+  } else
+    return (
+      <>
+        <h3 style={{ display: "flex", alignItems: "center", cursor: "pointer" }} onClick={toggleEditMode}>
+          Configuration
+          {editMode ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+        </h3>
+        {editMode && (
+          <Configuration
+            service={service}
+            handleConfigChange={handleConfigChange}
+            handleSaveConfig={handleSaveConfig}
+          />
+        )}
+        <Box sx={{ display: "flex", justifyContent: "space-between", maxWidth: { xs: "100%", sm: "80%", md: "80%" } }}>
+          <Filters
+            service={service}
+            selectedFilter={selectedFilter}
+            setSelectedFilter={setSelectedFilter}
+            sendTo={sendTo}
+            fullname={fullname}
+          />
+          <PossibleFilters
+            possibleFilters={possibleFilters}
+            selectedFilterType={selectedFilterType}
+            setSelectedFilterType={setSelectedFilterType}
+            setDialogOpen={setDialogOpen}
+          />
+        </Box>
+        <FilterDialog
+          dialogOpen={dialogOpen}
+          handleCloseDialog={handleCloseDialog}
+          filterName={filterName}
+          setFilterName={setFilterName}
+          handleAddFilter={handleAddFilter}
+          filterNameRef={filterNameRef}
+          handleDialogKeyDown={handleDialogKeyDown}
         />
-        <PossibleFilters
-          possibleFilters={possibleFilters}
-          selectedFilterType={selectedFilterType}
-          setSelectedFilterType={setSelectedFilterType}
-          setDialogOpen={setDialogOpen}
-        />
-      </Box>
-      <FilterDialog
-        dialogOpen={dialogOpen}
-        handleCloseDialog={handleCloseDialog}
-        filterName={filterName}
-        setFilterName={setFilterName}
-        handleAddFilter={handleAddFilter}
-        filterNameRef={filterNameRef}
-        handleDialogKeyDown={handleDialogKeyDown}
-      />
-      <CaptureControl service={service} handleCapture={handleCapture} handleStopCapture={handleStopCapture} />
-    </>
-  )
+        <CaptureControl service={service} handleCapture={handleCapture} handleStopCapture={handleStopCapture} />
+      </>
+    )
 }

@@ -131,7 +131,7 @@ export default function Microphone({ fullname }) {
           <InputLabel id="microphone-select-label">Microphone</InputLabel>
           <Select labelId="microphone-select-label" value={selectedMic} label="Microphone" onChange={handleMicChange}>
             {service &&
-              Object.entries(service?.microphoneList).map(([key, value]) => (
+              Object.entries(service?.mics).map(([key, value]) => (
                 <MenuItem key={key} value={key}>
                   {value}
                 </MenuItem>

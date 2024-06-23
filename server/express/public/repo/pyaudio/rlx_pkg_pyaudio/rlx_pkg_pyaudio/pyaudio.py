@@ -1,17 +1,9 @@
 import argparse
-import asyncio
-import importlib
 import logging
-import os
-import urllib.request
 import uuid
-from concurrent.futures import ThreadPoolExecutor
 from time import sleep
-from typing import List
-
 import pyaudio
 import wave
-
 from rlx_pkg_proxy.service import Service
 
 logging.basicConfig(level=logging.INFO)
@@ -21,7 +13,7 @@ log = logging.getLogger("PyAudio")
 class PyAudio(Service):
     def __init__(self, id=uuid.uuid1()):
         super().__init__(id)
-        self.id: str = id
+        self.id: str = str(id)
 
         self.recording: bool = False
         self.paused: bool = False
@@ -76,27 +68,42 @@ class PyAudio(Service):
         )
 
         log.info("Recording...")
+        self.recording = True
         for _ in range(0, int(44100 / 1024 * duration)):
+            if self.paused:
+                log.info("Recording paused, waiting to resume...")
+                while self.paused:
+                    sleep(0.1)
             data = self.stream.read(1024)
-            # self.frames.append(data)
+            self.frames.append(data)
 
-        log.info("Finished recording.")
-        self.stopRecording()
+        # log.info("Finished recording.")
+        # self.stopRecording()
 
     def stopRecording(self):
         if self.stream is not None:
-            self.stream.stop_stream()
-            self.stream.close()
+            try:
+                self.stream.stop_stream()
+            except OSError:
+                log.warning("Stream was already stopped.")
+            try:
+                self.stream.close()
+            except OSError:
+                log.warning("Stream was already closed.")
             self.stream = None
 
-            with wave.open(self.output_filename, "wb") as wf:
-                wf.setnchannels(1)
-                wf.setsampwidth(self.audio.get_sample_size(pyaudio.paInt16))
-                wf.setframerate(44100)
-                wf.writeframes(b"".join(self.frames))
+            try:
+                with wave.open(self.output_filename, "wb") as wf:
+                    wf.setnchannels(1)
+                    wf.setsampwidth(self.audio.get_sample_size(pyaudio.paInt16))
+                    wf.setframerate(44100)
+                    wf.writeframes(b"".join(self.frames))
+                log.info(f"Audio saved as {self.output_filename}")
+            except Exception as e:
+                log.error(f"Failed to save audio file: {e}")
 
-            log.info(f"Audio saved as {self.output_filename}")
         self.config["recording"] = False
+        self.recording = False
 
     def pauseRecording(self):
         if self.recording and not self.paused:
@@ -139,7 +146,6 @@ class PyAudio(Service):
 
 
 def main():
-
     parser = argparse.ArgumentParser(description="PyAudio Service")
 
     parser.add_argument(
@@ -157,8 +163,7 @@ def main():
     print(args)
 
     cv = PyAudio(args.id)
-    cv.connect(args.connect)
-    cv.set_service(cv)
+    # cv.connect(args.connect)
     cv.startService()
 
 

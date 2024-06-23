@@ -5,6 +5,7 @@ import { useProcessedMessage } from "../hooks/useProcessedMessage"
 import { useStore } from "../store/store"
 import useServiceSubscription from "../store/useServiceSubscription"
 
+// FIXME Change to PythonProxyWizard !!!
 // FIXME remove fullname with context provider
 export default function OpenCVWizard({ fullname }) {
   const { sendTo } = useStore()

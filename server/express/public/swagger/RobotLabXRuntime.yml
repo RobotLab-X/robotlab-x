@@ -76,24 +76,6 @@ paths:
       responses:
         "200":
           description: save method executed successfully
-  /getConfig:
-    put:
-      summary: |-
-        Overloaded from Service.ts - other services will simply return config
-        RobotLabXRuntime.ts requires more processing to return current config
-      description: |-
-        Overloaded from Service.ts - other services will simply return config
-        RobotLabXRuntime.ts requires more processing to return current config
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items: []
-            example: []
-      responses:
-        "200":
-          description: getConfig method executed successfully
   /addRoute:
     put:
       summary: Executes addRoute method
@@ -128,15 +110,18 @@ paths:
           description: apply method executed successfully
   /applyServiceFileConfig:
     put:
-      summary: Apply file {serviceName}.yml to the service
-      description: Apply file {serviceName}.yml to the service
+      summary: |-
+        Apply file {serviceName}.yml to the service
+        TODO - capability to apply ad hoc filename
+      description: |-
+        Apply file {serviceName}.yml to the service
+        TODO - capability to apply ad hoc filename
       requestBody:
         content:
           application/json:
             schema:
               type: array
               items:
-                - type: string
                 - type: string
             example: []
       responses:
