@@ -7,6 +7,8 @@ import pyaudio
 import wave
 from rlx_pkg_proxy.service import Service
 from collections import deque
+import requests
+from io import BytesIO
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("PyAudio")
@@ -107,19 +109,76 @@ class PyAudio(Service):
                 log.warning("Stream was already closed.")
             self.stream = None
 
-            try:
-                with wave.open(self.output_filename, "wb") as wf:
-                    wf.setnchannels(1)
-                    wf.setsampwidth(self.audio.get_sample_size(pyaudio.paInt16))
-                    wf.setframerate(44100)
-                    wf.writeframes(b"".join(self.frames))
-                log.info(f"Audio saved as {self.output_filename}")
-            except Exception as e:
-                log.error(f"Failed to save audio file: {e}")
-
         self.config["recording"] = False
         self.recording = False
         self.invoke("broadcastState")
+
+    def saveToFile(self):
+        try:
+            with wave.open(self.output_filename, "wb") as wf:
+                wf.setnchannels(1)
+                wf.setsampwidth(self.audio.get_sample_size(pyaudio.paInt16))
+                wf.setframerate(44100)
+                wf.writeframes(b"".join(self.frames))
+            log.info(f"Audio saved as {self.output_filename}")
+        except Exception as e:
+            log.error(f"Failed to save audio file: {e}")
+
+    def loadFromFile(self, input_filename):
+        try:
+            with wave.open(input_filename, "rb") as wf:
+                self.frames.clear()
+                n_channels = wf.getnchannels()
+                samp_width = wf.getsampwidth()
+                frame_rate = wf.getframerate()
+                if (
+                    n_channels != 1
+                    or samp_width != self.audio.get_sample_size(pyaudio.paInt16)
+                    or frame_rate != 44100
+                ):
+                    log.error("Unsupported audio format")
+                    return
+
+                while True:
+                    data = wf.readframes(1024)
+                    if not data:
+                        break
+                    self.frames.append(data)
+
+            log.info(f"Audio loaded from {input_filename}")
+        except Exception as e:
+            log.error(f"Failed to load audio file: {e}")
+
+    def sendToASR(self, save_to_file=False):
+        if save_to_file:
+            self.saveToFile()
+
+        try:
+            # Prepare the WAV data in memory
+            wav_buffer = BytesIO()
+            with wave.open(wav_buffer, "wb") as wf:
+                wf.setnchannels(1)
+                wf.setsampwidth(self.audio.get_sample_size(pyaudio.paInt16))
+                wf.setframerate(44100)
+                wf.writeframes(b"".join(self.frames))
+
+            wav_buffer.seek(0)
+
+            # Send the WAV data to the ASR endpoint
+            files = {"file": ("output.wav", wav_buffer, "audio/wav")}
+            response = requests.post("http://localhost:9000/asr", files=files)
+
+            if response.status_code == 200:
+                log.info("Audio successfully sent to ASR endpoint.")
+                return response.json()
+            else:
+                log.error(
+                    f"Failed to send audio to ASR endpoint: {response.status_code} {response.text}"
+                )
+                return None
+        except Exception as e:
+            log.error(f"Failed to send audio to ASR endpoint: {e}")
+            return None
 
     def pauseRecording(self):
         if self.recording and not self.paused:
@@ -178,7 +237,7 @@ def main():
     print(args)
 
     service = PyAudio(args.id)
-    # cv.connect(args.connect)
+    service.connect(args.connect)
     service.startService()
 
 

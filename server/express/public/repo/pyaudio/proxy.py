@@ -6,7 +6,7 @@ import asyncio
 from time import sleep
 from concurrent.futures import ThreadPoolExecutor
 from typing import List
-from rlx_pkg_pyaudio.pyaudio import PyAudio
+from rlx_pkg_pyaudio.rlx_pkg_pyaudio import PyAudio
 
 
 def main():
@@ -22,6 +22,7 @@ def main():
         "-i", "--id", required=False, help="Client ID", default="python-client-1"
     )
 
+    # parse
     args = parser.parse_args()
     print(args)
 
