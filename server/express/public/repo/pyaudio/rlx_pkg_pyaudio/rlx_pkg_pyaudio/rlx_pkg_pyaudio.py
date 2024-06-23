@@ -22,7 +22,10 @@ class PyAudio(Service):
 
         self.recording: bool = False
         self.paused: bool = False
-        self.config = {"mic": "", "recording": False, "paused": False, "rate": 44100}
+        # self.config = {"mic": "", "recording": False, "paused": False, "rate": 44100}
+        self.config = {"mic": "", "recording": False, "paused": False, "rate": 48000}
+
+        self.phrase_counter = 0
 
         self.audio = pyaudio.PyAudio()
         self.stream = None
@@ -45,7 +48,7 @@ class PyAudio(Service):
             for i in range(0, numdevices):
                 device_info = self.audio.get_device_info_by_host_api_device_index(0, i)
                 if device_info.get("maxInputChannels") > 0:
-                    mics[i] = device_info.get("name")
+                    mics[i] = f"{i}: {device_info.get('name')}"
             self.mics = mics
             log.info(f"Found {len(self.mics)} mics")
             return mics
@@ -85,6 +88,20 @@ class PyAudio(Service):
 
     def _record(self):
         silence_counter = 0
+        speech_counter = 0
+        is_silent = True  # Start with assuming silence
+        speech_threshold_duration = 0.5  # Duration in seconds to confirm speech
+        silence_threshold_duration = 1  # Duration in seconds to confirm silence
+        # speech_frames_threshold = int(
+        #     speech_threshold_duration * (self.config["rate"] / 10240)
+        # )
+        # silence_frames_threshold = int(
+        #     silence_threshold_duration * (self.config["rate"] / 10240)
+        # )
+        speech_frames_threshold = 3
+        silence_frames_threshold = 20
+        self.phrase_counter = 0
+
         while self.recording:
             if self.paused:
                 log.info("Recording paused, waiting to resume...")
@@ -94,9 +111,8 @@ class PyAudio(Service):
                     break
             try:
                 data = self.stream.read(1024, exception_on_overflow=False)
-                self.frames.append(data)
 
-                # Calculate RMS to detect silence
+                # Calculate RMS to detect sound
                 rms = np.sqrt(
                     np.mean(
                         np.square(
@@ -104,19 +120,36 @@ class PyAudio(Service):
                         )
                     )
                 )
-                if rms < self.silence_threshold:
-                    silence_counter += 1
-                else:
-                    silence_counter = 0
 
-                if silence_counter >= self.silence_frames:
-                    log.info("Silence detected, publishing audio.")
-                    self.publishAudio()
-                    silence_counter = 0  # Reset counter after publishing
+                # log.info(f"RMS: {rms}, Threshold: {self.silence_threshold}")
+                # log.info(
+                #     f"Speech Counter: {speech_counter}, Silence Counter: {silence_counter} spt {speech_frames_threshold} sft {silence_frames_threshold}"
+                # )
+
+                if rms >= self.silence_threshold:
+                    speech_counter += 1
+                    silence_counter = 0
+                    if is_silent and speech_counter >= speech_frames_threshold:
+                        log.info("Speech detected, starting to add frames.")
+                        is_silent = False
+                    if not is_silent:
+                        self.frames.append(data)
+                else:
+                    silence_counter += 1
+                    speech_counter = 0
+                    if not is_silent and silence_counter >= silence_frames_threshold:
+                        log.info("Silence threshold detected, stopping frame addition.")
+                        self.sendToASR()
+                        self.saveToFile(f"output-{self.phrase_counter}.wav")
+                        self.phrase_counter += 1
+                        self.frames.clear()
+                        is_silent = True
 
             except OSError as e:
                 log.warning(f"Input overflowed: {e}")
                 continue
+
+        log.info("Recording stopped.")
 
     def clear(self):
         log.info("Clearing buffer...")
@@ -173,7 +206,8 @@ class PyAudio(Service):
         self.recording = False
         self.invoke("broadcastState")
 
-    def saveToFile(self):
+    def saveToFile(self, filename="output.wav"):
+        self.output_filename = filename
         try:
             with wave.open(self.output_filename, "wb") as wf:
                 wf.setnchannels(1)
@@ -331,8 +365,11 @@ def main():
     print(args)
 
     service = PyAudio(args.id)
-    service.connect(args.connect)
-    service.startService()
+    # service.connect(args.connect)
+    # service.startService()
+    print(service.getMicrophones())
+    service.setMicrophone(7)
+    service.startRecording()
 
 
 if __name__ == "__main__":
