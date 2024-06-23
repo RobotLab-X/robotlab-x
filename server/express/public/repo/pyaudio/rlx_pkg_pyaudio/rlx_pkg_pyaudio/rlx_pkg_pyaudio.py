@@ -9,6 +9,7 @@ from rlx_pkg_proxy.service import Service
 from collections import deque
 import requests
 from io import BytesIO
+import numpy as np
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("PyAudio")
@@ -29,6 +30,11 @@ class PyAudio(Service):
         self.output_filename = "output.wav"
         self.mics = {}
         self.recording_thread = None
+        self.silence_threshold = 1000  # Adjust this threshold as needed
+        self.silence_duration = (
+            2  # Duration of silence to trigger publishing in seconds
+        )
+        self.silence_frames = int(self.silence_duration * (self.config["rate"] / 1024))
 
     def getMicrophones(self):
         log.info("Getting microphones")
@@ -78,6 +84,7 @@ class PyAudio(Service):
         self.invoke("broadcastState")
 
     def _record(self):
+        silence_counter = 0
         while self.recording:
             if self.paused:
                 log.info("Recording paused, waiting to resume...")
@@ -88,6 +95,25 @@ class PyAudio(Service):
             try:
                 data = self.stream.read(1024, exception_on_overflow=False)
                 self.frames.append(data)
+
+                # Calculate RMS to detect silence
+                rms = np.sqrt(
+                    np.mean(
+                        np.square(
+                            np.frombuffer(data, dtype=np.int16).astype(np.float64)
+                        )
+                    )
+                )
+                if rms < self.silence_threshold:
+                    silence_counter += 1
+                else:
+                    silence_counter = 0
+
+                if silence_counter >= self.silence_frames:
+                    log.info("Silence detected, publishing audio.")
+                    self.publishAudio()
+                    silence_counter = 0  # Reset counter after publishing
+
             except OSError as e:
                 log.warning(f"Input overflowed: {e}")
                 continue
