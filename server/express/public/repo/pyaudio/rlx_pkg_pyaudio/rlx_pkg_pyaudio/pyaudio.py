@@ -48,7 +48,7 @@ class PyAudio(Service):
         self.invoke("broadcastState")
 
     def startRecording(self, duration=5, output_filename="output.wav"):
-        if self.config["mic"] is None:
+        if not self.config["mic"]:
             log.error("No microphone set. Use setMicrophone(int) to set a microphone.")
             return
 
@@ -74,11 +74,14 @@ class PyAudio(Service):
                 log.info("Recording paused, waiting to resume...")
                 while self.paused:
                     sleep(0.1)
-            data = self.stream.read(1024)
-            self.frames.append(data)
+            try:
+                data = self.stream.read(1024, exception_on_overflow=False)
+                self.frames.append(data)
+            except OSError as e:
+                log.warning(f"Input overflowed: {e}")
 
-        # log.info("Finished recording.")
-        # self.stopRecording()
+        log.info("Finished recording.")
+        self.stopRecording()
 
     def stopRecording(self):
         if self.stream is not None:
@@ -147,7 +150,6 @@ class PyAudio(Service):
 
 def main():
     parser = argparse.ArgumentParser(description="PyAudio Service")
-
     parser.add_argument(
         "-c",
         "--connect",
@@ -162,9 +164,9 @@ def main():
     args = parser.parse_args()
     print(args)
 
-    cv = PyAudio(args.id)
+    service = PyAudio(args.id)
     # cv.connect(args.connect)
-    cv.startService()
+    service.startService()
 
 
 if __name__ == "__main__":
