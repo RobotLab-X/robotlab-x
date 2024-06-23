@@ -25,10 +25,10 @@ def main():
     args = parser.parse_args()
     print(args)
 
-    cv = PyAudio(args.id)
-    cv.connect(args.connect)
-    cv.set_service(cv)
-    cv.start_service()
+    service = PyAudio(args.id)
+    service.connect(args.connect)
+    # load config ???
+    service.startService()
 
 
 if __name__ == "__main__":
