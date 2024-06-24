@@ -33,7 +33,6 @@ class PySpeechRecognition(Service):
                     log.info("Captured audio, attempting to recognize speech...")
                     text = self.recognize_speech(audio)
                     log.info(f"Recognized text: {text}")
-                    # Add more logic here if you want to handle the recognized text
                 except sr.UnknownValueError:
                     log.warning("Speech Recognition could not understand audio")
                 except sr.RequestError as e:
@@ -110,6 +109,11 @@ class PySpeechRecognition(Service):
         log.info(f"Setting microphone to index {index}")
         self.mic_index = index
         self.microphone = sr.Microphone(device_index=self.mic_index)
+        mic_list = sr.Microphone.list_microphone_names()
+        if index < len(mic_list):
+            log.info(f"Microphone set to {mic_list[index]}")
+        else:
+            log.warning(f"Microphone index {index} is out of range.")
         self.invoke("broadcastState")
 
     def to_dict(self):
