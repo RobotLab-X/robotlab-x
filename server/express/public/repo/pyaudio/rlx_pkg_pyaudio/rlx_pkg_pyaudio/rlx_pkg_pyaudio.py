@@ -92,15 +92,22 @@ class PyAudio(Service):
         is_silent = True  # Start with assuming silence
         speech_threshold_duration = 0.5  # Duration in seconds to confirm speech
         silence_threshold_duration = 1  # Duration in seconds to confirm silence
+        pre_silence_frames = (
+            5  # Number of silent frames to add at the start of each phrase
+        )
+
         # speech_frames_threshold = int(
-        #     speech_threshold_duration * (self.config["rate"] / 10240)
+        #     speech_threshold_duration * (self.config["rate"] / 1024)
         # )
         # silence_frames_threshold = int(
-        #     silence_threshold_duration * (self.config["rate"] / 10240)
+        #     silence_threshold_duration * (self.config["rate"] / 1024)
         # )
-        speech_frames_threshold = 3
-        silence_frames_threshold = 20
+
+        speech_frames_threshold = 1
+
         self.phrase_counter = 0
+
+        silence_frames_threshold = 10
 
         while self.recording:
             if self.paused:
@@ -121,17 +128,15 @@ class PyAudio(Service):
                     )
                 )
 
-                # log.info(f"RMS: {rms}, Threshold: {self.silence_threshold}")
-                # log.info(
-                #     f"Speech Counter: {speech_counter}, Silence Counter: {silence_counter} spt {speech_frames_threshold} sft {silence_frames_threshold}"
-                # )
-
                 if rms >= self.silence_threshold:
                     speech_counter += 1
                     silence_counter = 0
                     if is_silent and speech_counter >= speech_frames_threshold:
                         log.info("Speech detected, starting to add frames.")
                         is_silent = False
+                        # Add pre-silence frames to the beginning of the phrase
+                        # for _ in range(pre_silence_frames):
+                        #     self.frames.append(b"\x00" * 1024)
                     if not is_silent:
                         self.frames.append(data)
                 else:
@@ -337,6 +342,7 @@ class PyAudio(Service):
             "mics": self.mics,
             "recording": self.recording,
             "paused": self.paused,
+            "frameCount": len(self.frames),
         }
         base_dict.update(derived)
         return base_dict
@@ -365,11 +371,11 @@ def main():
     print(args)
 
     service = PyAudio(args.id)
-    # service.connect(args.connect)
-    # service.startService()
-    print(service.getMicrophones())
-    service.setMicrophone(7)
-    service.startRecording()
+    service.connect(args.connect)
+    service.startService()
+    # print(service.getMicrophones())
+    # service.setMicrophone(7)
+    # service.startRecording()
 
 
 if __name__ == "__main__":

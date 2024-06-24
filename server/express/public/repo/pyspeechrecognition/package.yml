@@ -1,15 +1,15 @@
-typeKey: "PyAudio"
-title: "PyAudio"
+typeKey: "PySpeechRecognition"
+title: "Speech Recognition"
 platform: "python"
-platformVersion: "3.6"
-description: "A python microphone for audio input"
+platformVersion: "3.8"
+description: "Speech recognition service"
 version: "0.0.1"
 requirements:
-  pyaudio: ">=0.2.14"
-  numpy: ""
+  SpeechRecognition: ">=3.10.4"
+  PyAudio: ">=0.2.14"
 repoRequirements:
   - "Proxy"
-  - "PyAudio"
+  - "PySpeechRecognition"
 visible: true
 args: ["-u","proxy.py", "-i", "{{name}}", "-c", "{{serviceUrl}}"] # -u unbuffered output
 author: "GroG"

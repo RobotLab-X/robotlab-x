@@ -182,7 +182,8 @@ export default class Store {
       ws.on("message", this.handleWsMessage(ws, gatewayId))
 
       ws.on("close", () => {
-        this.runtime.removeConnection(gatewayId)
+        // NOT REMOVING CONNECTION TO TEST FROM PYTHON SIDE
+        //        this.runtime.removeConnection(gatewayId)
         RobotLabXRuntime.getInstance().invoke("broadcastState")
       })
 

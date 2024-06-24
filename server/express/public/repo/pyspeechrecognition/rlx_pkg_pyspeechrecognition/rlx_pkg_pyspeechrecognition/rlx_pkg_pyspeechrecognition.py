@@ -25,21 +25,24 @@ class PySpeechRecognition(Service):
         self.mic_index = None  # Added mic_index to select microphone
 
     def listen(self):
-        with self.microphone as source:
-            while self.listening:
-                log.info("Listening for speech...")
-                audio = self.recognizer.listen(source)
-                try:
+        try:
+            with self.microphone as source:
+                while self.listening:
+                    log.info("Listening for speech...")
+                    audio = self.recognizer.listen(source)
                     log.info("Captured audio, attempting to recognize speech...")
-                    text = self.recognize_speech(audio)
-                    log.info(f"Recognized text: {text}")
-                except sr.UnknownValueError:
-                    log.warning("Speech Recognition could not understand audio")
-                except sr.RequestError as e:
-                    log.error(
-                        f"Could not request results from Speech Recognition service; {e}"
-                    )
-                sleep(0.1)
+                    try:
+                        text = self.recognize_speech(audio)
+                        log.info(f"Recognized text: {text}")
+                    except sr.UnknownValueError:
+                        log.warning("Speech Recognition could not understand audio")
+                    except sr.RequestError as e:
+                        log.error(
+                            f"Could not request results from Speech Recognition service; {e}"
+                        )
+                    sleep(0.1)
+        except Exception as e:
+            log.error(f"Error in listen method: {e}")
 
     def recognize_speech(self, audio):
         log.info(f"Using {self.recognizer_backend} recognizer")
@@ -112,9 +115,18 @@ class PySpeechRecognition(Service):
         mic_list = sr.Microphone.list_microphone_names()
         if index < len(mic_list):
             log.info(f"Microphone set to {mic_list[index]}")
+            self.verify_microphone(index)
         else:
             log.warning(f"Microphone index {index} is out of range.")
         self.invoke("broadcastState")
+
+    def verify_microphone(self, index):
+        log.info(f"Verifying microphone at index {index}")
+        mic_list = sr.Microphone.list_microphone_names()
+        if index < len(mic_list):
+            log.info(f"Microphone {index}: {mic_list[index]}")
+        else:
+            log.warning(f"Microphone index {index} is out of range.")
 
     def to_dict(self):
         base_dict = super().to_dict()

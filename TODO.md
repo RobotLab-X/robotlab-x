@@ -1,4 +1,9 @@
 ## TODO
+* Whisper
+  - https://github.com/openai/whisper https://github.com/ahmetoner/whisper-asr-webservice  docker run -d -p 9000:9000 -e ASR_MODEL=base -e ASR_ENGINE=openai_whisper onerahmet/openai-whisper-asr-webservice:latest
+
+* Fix message name promotion .. e.g. "name":"p1" should resolve if unique, p1@p1 should not be required
+* PYTHON {package_name}.py - SHOULD ALWAYS FOLLOW camelCase Interfaces !!!! And they should be enforced by python interfaces
 * Try Server using Client models ! (attempt to normalize)
 * config part that affects Runtime ? chicken egg issue - since its the thing that starts nodes
 * WebRTC https://github.com/node-webrtc/node-webrtc https://github.com/WonderInventions/node-webrtc https://github.com/aiortc/aiortc
