@@ -21,8 +21,8 @@ class PySpeechRecognition(Service):
         self.microphone = sr.Microphone()
         self.listening = False
         self.thread = None
-        # self.recognizer_backend = "google"  # Default recognizer
-        self.recognizer_backend = "whisper"  # Default recognizer
+        self.recognizer_backend = "google"  # Default recognizer
+        self.mic_index = None  # Added mic_index to select microphone
 
     def listen(self):
         with self.microphone as source:
@@ -30,8 +30,10 @@ class PySpeechRecognition(Service):
                 log.info("Listening for speech...")
                 audio = self.recognizer.listen(source)
                 try:
+                    log.info("Captured audio, attempting to recognize speech...")
                     text = self.recognize_speech(audio)
                     log.info(f"Recognized text: {text}")
+                    # Add more logic here if you want to handle the recognized text
                 except sr.UnknownValueError:
                     log.warning("Speech Recognition could not understand audio")
                 except sr.RequestError as e:
@@ -41,6 +43,7 @@ class PySpeechRecognition(Service):
                 sleep(0.1)
 
     def recognize_speech(self, audio):
+        log.info(f"Using {self.recognizer_backend} recognizer")
         if self.recognizer_backend == "google":
             return self.recognizer.recognize_google(audio)
         elif self.recognizer_backend == "sphinx":
@@ -59,6 +62,22 @@ class PySpeechRecognition(Service):
             )
         elif self.recognizer_backend == "wit":
             return self.recognizer.recognize_wit(audio, key="YOUR_WIT_KEY")
+        elif self.recognizer_backend == "azure":
+            return self.recognizer.recognize_azure(
+                audio, key="YOUR_AZURE_KEY", location="YOUR_AZURE_LOCATION"
+            )
+        elif self.recognizer_backend == "google_cloud":
+            return self.recognizer.recognize_google_cloud(
+                audio, credentials_json="YOUR_GOOGLE_CLOUD_CREDENTIALS_JSON"
+            )
+        elif self.recognizer_backend == "vosk":
+            return self.recognizer.recognize_vosk(audio)
+        elif self.recognizer_backend == "whisper":
+            return self.recognizer.recognize_whisper(audio)
+        elif self.recognizer_backend == "whisper_api":
+            return self.recognizer.recognize_whisper_api(
+                audio, api_key="YOUR_OPENAI_API_KEY"
+            )
         else:
             raise ValueError("Unsupported recognizer backend")
 
@@ -81,10 +100,23 @@ class PySpeechRecognition(Service):
         self.recognizer_backend = recognizer_backend
         self.invoke("broadcastState")
 
+    def listMicrophones(self):
+        mic_list = sr.Microphone.list_microphone_names()
+        for i, mic_name in enumerate(mic_list):
+            log.info(f"Microphone {i}: {mic_name}")
+        return mic_list
+
+    def setMicrophone(self, index):
+        log.info(f"Setting microphone to index {index}")
+        self.mic_index = index
+        self.microphone = sr.Microphone(device_index=self.mic_index)
+        self.invoke("broadcastState")
+
     def to_dict(self):
         base_dict = super().to_dict()
         derived = {
             "listening": self.listening,
+            "mic_index": self.mic_index,
         }
         base_dict.update(derived)
         return base_dict
@@ -120,6 +152,8 @@ def main():
 
     service = PySpeechRecognition(args.id)
     service.setSpeechRecognizer(args.recognizer)
+    service.setMicrophone(8)
+    service.startListening()
     service.connect(args.connect)
     service.startService()
     # service.startListening()
