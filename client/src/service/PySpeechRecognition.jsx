@@ -1,30 +1,18 @@
-import ExpandLessIcon from "@mui/icons-material/ExpandLess"
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import MicIcon from "@mui/icons-material/Mic"
 import MicOffIcon from "@mui/icons-material/MicOff"
 import PauseIcon from "@mui/icons-material/Pause"
 import PlayArrowIcon from "@mui/icons-material/PlayArrow"
-import {
-  Box,
-  Button,
-  FormControl,
-  IconButton,
-  InputLabel,
-  MenuItem,
-  Select,
-  TextField,
-  Typography
-} from "@mui/material"
+import { Box, IconButton, Typography } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import PySpeechRecognitionWizard from "wizards/PySpeechRecognitionWizard"
+import MicrophoneSelect from "../components/MicrophoneSelect"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
 import { useStore } from "../store/store"
 import useServiceSubscription from "../store/useServiceSubscription"
 
 export default function PySpeechRecognition({ fullname }) {
-  const [editMode, setEditMode] = useState(false)
   const [selectedMic, setSelectedMic] = useState({})
-  const [isRecording, setIsRecording] = useState(false)
+  const [isListening, setIsListening] = useState(false)
   const [isPaused, setIsPaused] = useState(false)
 
   const { useMessage, sendTo } = useStore()
@@ -50,53 +38,32 @@ export default function PySpeechRecognition({ fullname }) {
   }, [service, service?.config?.paused])
 
   useEffect(() => {
-    // backend update to set recording state
+    // backend update to set listening state
     if (service) {
-      setIsRecording(service?.config?.recording)
+      setIsListening(service?.config?.listening)
     }
-  }, [service, service?.config?.recording])
+  }, [service, service?.config?.listening])
 
-  const toggleEditMode = () => {
-    setEditMode(!editMode)
+  const handleStartListening = () => {
+    sendTo(fullname, "startListening")
   }
 
-  const handleStartRecording = () => {
-    sendTo(fullname, "startRecording")
-    // setIsRecording(true)
-    // setIsPaused(false)
+  const handleStopListening = () => {
+    sendTo(fullname, "stopListening")
   }
 
-  const handleStopRecording = () => {
-    sendTo(fullname, "stopRecording")
-    // setIsRecording(false)
-    // setIsPaused(false)
-  }
-
-  const handlePauseResumeRecording = () => {
+  const handlePauseResumeListening = () => {
     if (isPaused) {
-      sendTo(fullname, "resumeRecording")
+      sendTo(fullname, "resumeListening")
     } else {
-      sendTo(fullname, "pauseRecording")
+      sendTo(fullname, "pauseListening")
     }
-    // setIsPaused(!isPaused)
   }
 
   const handleMicChange = (event) => {
     const mic = event.target.value
-    // setSelectedMic(mic)
     console.info(`sending ->setMicrophone ${mic}`)
     sendTo(fullname, "setMicrophone", mic)
-  }
-
-  const handleConfigChange = (event) => {
-    const { name, value, type } = event.target
-    const newValue = type === "number" ? Number(value) : value
-    // Handle configuration change
-  }
-
-  const handleSaveConfig = () => {
-    setEditMode(false)
-    // Save the configuration
   }
 
   if (!service?.installed) {
@@ -104,64 +71,23 @@ export default function PySpeechRecognition({ fullname }) {
   } else {
     return (
       <>
-        <h3 style={{ display: "flex", alignItems: "center", cursor: "pointer" }} onClick={toggleEditMode}>
-          Configuration
-          {editMode ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-        </h3>
-        {editMode ? (
-          <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "80%" } }}>
-            <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-              <TextField
-                label="Interval (ms)"
-                name="intervalMs"
-                variant="outlined"
-                fullWidth
-                margin="normal"
-                value={selectedMic}
-                onChange={handleConfigChange}
-                sx={{ flex: 1 }} // Ensure consistent width
-              />
-            </Box>
-
-            <Box sx={{ mt: 2, display: "flex", gap: 2 }}>
-              <Button variant="contained" color="primary" onClick={handleSaveConfig}>
-                Save
-              </Button>
-            </Box>
-          </Box>
-        ) : null}
-
         {service?.mics && (
           <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "80%" }, mt: 2 }}>
-            <FormControl fullWidth>
-              <InputLabel id="microphone-select-label">PySpeechRecognition</InputLabel>
-              <Select
-                labelId="microphone-select-label"
-                value={selectedMic}
-                label="PySpeechRecognition"
-                onChange={handleMicChange}
-              >
-                {Object.entries(service.mics).map(([key, value]) => (
-                  <MenuItem key={key} value={key}>
-                    {value}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <MicrophoneSelect mics={service.mics} selectedMic={selectedMic} handleMicChange={handleMicChange} />
           </Box>
         )}
         <Box sx={{ mt: 2, display: "flex", gap: 2, alignItems: "center" }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <IconButton
-              color={isRecording ? "secondary" : "default"}
-              onClick={isRecording ? handleStopRecording : handleStartRecording}
+              color={isListening ? "secondary" : "default"}
+              onClick={isListening ? handleStopListening : handleStartListening}
             >
-              {isRecording ? <MicIcon /> : <MicOffIcon />}
+              {isListening ? <MicIcon /> : <MicOffIcon />}
             </IconButton>
-            <Typography variant="body1">{isRecording ? "Recording" : "Not Recording"}</Typography>
+            <Typography variant="body1">{isListening ? "Listening" : "Not Listening"}</Typography>
           </Box>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <IconButton color={isPaused ? "default" : "secondary"} onClick={handlePauseResumeRecording}>
+            <IconButton color={isPaused ? "default" : "secondary"} onClick={handlePauseResumeListening}>
               {isPaused ? <PlayArrowIcon /> : <PauseIcon />}
             </IconButton>
             <Typography variant="body1">{isPaused ? "Paused" : "Not Paused"}</Typography>
