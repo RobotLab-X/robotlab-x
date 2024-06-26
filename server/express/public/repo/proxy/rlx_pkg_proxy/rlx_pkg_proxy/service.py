@@ -35,6 +35,13 @@ class SubscriptionListener:
         self.callbackName = callbackName
         self.callbackMethod = callbackMethod
 
+    def to_dict(self):
+        return {
+            "callbackMethod": self.callbackMethod,
+            "callbackName": self.callbackName,
+            "topicMethod": self.topicMethod,
+        }
+
 
 class State(Enum):
     READY = auto()
@@ -370,14 +377,15 @@ class Service:
 
     def to_dict(self):
         return {
-            "id": self.id,
-            "fullname": self.fullname,
-            "name": self.id,
-            "typeKey": self.__class__.__name__,
             "config": self.config,
+            "fullname": self.fullname,
+            "id": self.id,
             "installed": self.installed,
+            "name": self.id,
+            "notifyList": self.notifyList,
             "ready": self.ready,
             "startTime": self.startTime,
+            "typeKey": self.__class__.__name__,
         }
 
 
