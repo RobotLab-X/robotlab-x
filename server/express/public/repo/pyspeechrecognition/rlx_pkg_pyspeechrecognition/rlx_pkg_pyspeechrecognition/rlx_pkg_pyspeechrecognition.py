@@ -31,6 +31,7 @@ log = logging.getLogger("PySpeechRecognition")
 
 # on Linux FIXME
 
+
 class PySpeechRecognition(Service):
     def __init__(self, id=uuid.uuid1()):
         super().__init__(id)
@@ -80,7 +81,7 @@ class PySpeechRecognition(Service):
                     log.info("Captured audio, attempting to recognize speech...")
                     self.segment_cnt += 1
                     # Save the audio to a file
-                    if self.confg.get("saveAudio"):
+                    if self.config.get("saveAudio"):
                         with open(
                             "segement_" + str(self.segment_cnt) + ".wav", "wb"
                         ) as f:
