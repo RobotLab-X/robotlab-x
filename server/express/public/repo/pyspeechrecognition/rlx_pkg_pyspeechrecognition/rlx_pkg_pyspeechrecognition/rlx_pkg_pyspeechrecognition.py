@@ -19,6 +19,17 @@ log = logging.getLogger("PySpeechRecognition")
 # start debug proxy
 # python -u rlx_pkg_pyspeechrecognition.py -i sr1 -c http://localhost:3001
 
+# Stand-In Replacement Console Proxy Debugging
+#
+# Get-WmiObject Win32_Process | Where-Object { $_.CommandLine -like '*proxy.py*' } | Select-Object ProcessId, CommandLine
+# Stop-Process -Id 1234 -Force
+# cd server\express\public\repo\pyspeechrecognition
+# source .\.venv\Scripts\Activate.ps1
+# cd server\express\public\repo\pyspeechrecognition\rlx_pkg_pyspeechrecognition\rlx_pkg_pyspeechrecognition
+# python -u rlx_pkg_pyspeechrecognition.py -i sr1 -c http://localhost:3001
+
+
+# on Linux FIXME
 
 class PySpeechRecognition(Service):
     def __init__(self, id=uuid.uuid1()):
