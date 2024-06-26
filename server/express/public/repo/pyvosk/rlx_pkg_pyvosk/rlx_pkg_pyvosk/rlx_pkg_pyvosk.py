@@ -1,6 +1,7 @@
 import argparse
 import logging
 import threading
+import json
 import uuid
 from time import sleep
 import traceback
@@ -94,9 +95,12 @@ class PyVosk(Service):
                         continue
                     data = q.get()
                     if self.rec.AcceptWaveform(data):
-                        result = self.rec.Result()
-                        log.info(f"Recognized text: {result}")
-                        self.invoke("publishText", result)
+                        result_json = self.rec.Result()
+                        result_msg = json.loads(result_json)
+                        result = result_msg.get("text", "")
+                        if result:
+                          log.info(f"Recognized text: {result}")
+                          self.invoke("publishText", result)
                     else:
                         # log.info(f"Partial result: {self.rec.PartialResult()}")
                         pass

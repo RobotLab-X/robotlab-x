@@ -2,7 +2,7 @@ import MicIcon from "@mui/icons-material/Mic"
 import MicOffIcon from "@mui/icons-material/MicOff"
 import PauseIcon from "@mui/icons-material/Pause"
 import PlayArrowIcon from "@mui/icons-material/PlayArrow"
-import { Box, FormControl, IconButton, InputLabel, MenuItem, Select, TextField, Typography } from "@mui/material"
+import { Box, FormControl, IconButton, InputLabel, MenuItem, Paper, Select, TextField, Typography } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
 import { useStore } from "../store/store"
@@ -22,10 +22,8 @@ export default function PyVosk({ fullname }) {
 
   const recognizedTextMsg = useMessage(fullname, "publishText")
 
-  // Makes reference to the message object in store
   const serviceMsg = useServiceSubscription(fullname, ["publishText"])
 
-  // Processes the msg.data[0] and returns the data
   const service = useProcessedMessage(serviceMsg)
   const recognizedText = useProcessedMessage(recognizedTextMsg)
 
@@ -70,27 +68,23 @@ export default function PyVosk({ fullname }) {
   const backendsRequiringApiKey = ["ibm", "houndify", "azure", "google_cloud", "whisper_api"]
 
   useEffect(() => {
-    // mic selected state
     if (service?.config?.mic) {
       setSelectedMic(service?.config?.mic)
     }
-    // languages selected state
     if (service?.config?.language) {
       setSelectedBackend(service?.config?.language)
     }
   }, [service, service?.config?.mic, service?.config?.language])
 
   useEffect(() => {
-    // languages update to set paused state
     if (service) {
       setIsPaused(service?.paused)
     }
   }, [service, service?.paused])
 
   useEffect(() => {
-    // languages update to set listening state
     if (service) {
-      setIsListening(service?.listening) // the state not the command
+      setIsListening(service?.listening)
     }
   }, [service, service?.listening])
 
@@ -199,7 +193,7 @@ export default function PyVosk({ fullname }) {
           />
         )}
         <Box sx={{ mt: 2, display: "flex", gap: 2, alignItems: "center" }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Paper sx={{ display: "flex", alignItems: "center", gap: 1, p: 1 }}>
             <IconButton
               color={isListening ? "secondary" : "default"}
               onClick={isListening ? handleStopListening : handleStartListening}
@@ -207,13 +201,13 @@ export default function PyVosk({ fullname }) {
               {isListening ? <MicIcon /> : <MicOffIcon />}
             </IconButton>
             <Typography variant="body1">{isListening ? "Listening" : "Not Listening"}</Typography>
-          </Box>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          </Paper>
+          <Paper sx={{ display: "flex", alignItems: "center", gap: 1, p: 1 }}>
             <IconButton color={isPaused ? "default" : "secondary"} onClick={handlePauseResumeListening}>
               {isPaused ? <PlayArrowIcon /> : <PauseIcon />}
             </IconButton>
             <Typography variant="body1">{isPaused ? "Paused" : "Not Paused"}</Typography>
-          </Box>
+          </Paper>
         </Box>
         <Box sx={{ mt: 2 }}>
           <Typography variant="body1">Recognized: {recognizedText}</Typography>

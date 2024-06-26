@@ -217,18 +217,9 @@ class Service:
         self.installed = installed
 
     def broadcastState(self):
-        log.info(f"== broadcastState {self.client_id}")
-
-        # get the notify list and send msgs to all subscribers
-        subscribers: List[SubscriptionListener] = self.notifyList["broadcastState"]
-
-        for subscriber in subscribers:
-            msg: Message = Message(subscriber.callbackName, subscriber.callbackMethod)
-            log.info(
-                f"<--------------------------broadcasting state to {subscriber.callbackName}.{subscriber.callbackMethod}"
-            )
-            msg.data = [self.to_dict()]
-            self.send_message(msg.__dict__)
+        # WARNING FIXME - IF YOU LOG.INFO IN A BROADCAST STATE IT WILL LOOP !
+        # log.info(f"== broadcastState {self.client_id}")
+        return self.to_dict()
 
     # I get a broadcastState from the runtime I connected even though I didn't subscribe to it
     def onBroadcastState(self, data: List[any]):
@@ -246,40 +237,16 @@ class Service:
             params = msg.get("data")
             methodName: str = msg.get("method")
 
+            # FIXME - loop needs to be fixed, why are broadcastStates coming back
+            if methodName == "onBroadcastState":
+                # log.warning("why onBroadcastState?")
+                # self.onBroadcastState(*params)
+                return
+
             log.info(
                 f"{msg.get('sender')} --> {msg.get('name')}.{methodName}(data={params})"
             )
-
-            # ROUTE CORE REQUIRED MESSAGING HERE
-            # addListener broadcastState ...
-            if methodName == "addListener":
-                self.addListener(*params)
-                return
-
-            if methodName == "removeListener":
-                self.removeListener(*params)
-                return
-
-            if methodName == "broadcastState":
-                self.broadcastState()
-                return
-
-            if methodName == "onBroadcastState":
-                log.warning("why onBroadcastState?")
-                self.onBroadcastState(*params)
-                return
-
-            method = getattr(self, msg.get("method"))
-
-            if not method:
-                log.info(f"Method {msg.get('method')} not found.")
-                return
-
-            if params:
-                # self.loop.create_task(self.handle_message(data))
-                method(*params)
-            else:
-                method()
+            self.invoke(methodName, *params)
 
         except Exception as e:
             log.info(f"could not execute message: {methodName}")
@@ -319,22 +286,6 @@ class Service:
         # # Stop the service
         self.shutdown()
 
-        # # Close the WebSocket connection gracefully
-        # if self.websocket:
-        #     self.loop.run_until_complete(self.websocket.close())
-        #     print("WebSocket connection closed.")
-
-        # # Cancel all running tasks
-        # tasks = asyncio.all_tasks(self.loop)
-        # for task in tasks:
-        #     task.cancel()
-        # self.loop.run_until_complete(asyncio.gather(*tasks, return_exceptions=True))
-
-        # # Stop the event loop
-        # self.loop.call_soon_threadsafe(self.loop.stop)
-        # self.loop.run_forever()
-        # self.loop.close()
-
     def invoke(self, method_name, *args, **kwargs):
         # return self.invoke_method(self.__class__.__module__, self.service, method_name, *args, **kwargs)
         return self.invoke_method(self, method_name, *args, **kwargs)
@@ -349,6 +300,17 @@ class Service:
 
             # Call the method with the provided arguments and keyword arguments
             result = method(*args, **kwargs)
+
+            # get the notify list and send msgs to all subscribers
+            subscribers: List[SubscriptionListener] = self.notifyList[method_name]
+
+            for subscriber in subscribers:
+                msg: Message = Message(
+                    subscriber.callbackName, subscriber.callbackMethod
+                )
+                log.info(f"<-- {msg.name}.{msg.method} {result}")
+                msg.data = [result]
+                self.send_message(msg.__dict__)
 
             return result
         # except ImportError:
