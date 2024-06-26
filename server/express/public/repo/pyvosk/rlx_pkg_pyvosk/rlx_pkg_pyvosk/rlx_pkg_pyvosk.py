@@ -11,6 +11,7 @@ from rlx_pkg_proxy.service import Service
 from collections import deque
 import requests
 from io import BytesIO
+import queue
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("PyVosk")
@@ -28,46 +29,42 @@ log = logging.getLogger("PyVosk")
 # python -u rlx_pkg_pyvosk.py -i sr1 -c http://localhost:3001
 
 
-# on Linux FIXME
+q = queue.Queue()
+
+
+def callback(indata, frames, time, status):
+    """This is called (from a separate thread) for each audio block."""
+    if status:
+        log.error(status)
+    q.put(bytes(indata))
 
 
 class PyVosk(Service):
     def __init__(self, id=uuid.uuid1()):
         super().__init__(id)
-        self.id: str = str(id)
-        # self.recognizer = sr.Recognizer()
-        # self.microphone = sr.Microphone()
+        self.id = str(id)
         self.listening = False  # the "state" of the listening
         self.thread = None
         self.config = {
             "mic": "",
             "listen": False,  # the "command" to listen on startup
             "paused": False,
-            "backend": "google",
-            "user": None,
-            "key": None,
-            "location": None,
             "saveAudio": True,
             "rate": None,
+            "language": "en-us",  # Default model
         }
-        # list of available microphones
         self.mics = {}
-        # self.audio = pyaudio.PyAudio()
         self.segment_cnt = 0
+        self.rec = None  # Vosk recognizer
 
     def getMicrophones(self):
         log.info("Getting microphones")
         try:
-
-            # Get a list of all available audio input devices
             devices = sd.query_devices()
-
-            # Filter and print only input devices (microphones)
             input_devices = [
                 device for device in devices if device["max_input_channels"] > 0
             ]
 
-            # Clear mics
             self.mics = {}
             print("Available microphones:")
             for idx, device in enumerate(input_devices):
@@ -76,76 +73,59 @@ class PyVosk(Service):
 
             log.info(f"Found {len(input_devices)} mics")
             return self.mics
-            # return mics
         except Exception as e:
             log.error(f"Error getting microphones: {e}")
             return {}
 
     def listen(self):
         try:
-            # with self.microphone as source:
-            #     while self.listening:
-            #         log.info("Listening for speech...")
-            #         # audio = self.recognizer.listen(source)
-            #         log.info("Captured audio, attempting to recognize speech...")
-            #         self.segment_cnt += 1
-            #         # Save the audio to a file
-            #         if self.config.get("saveAudio"):
-            #             pass
-            #             # with open(
-            #             #     "segement_" + str(self.segment_cnt) + ".wav", "wb"
-            #             # ) as f:
-            #             #     f.write(audio.get_wav_data())
-
-            #         try:
-            #             # text = self.recognize_speech(audio)
-            #             log.info(f"Recognized text:")
-            #             # log.info(f"Recognized text: {text}")
-            #             # self.invoke("publishText", text)
-            #         except Exception as e:
-            #             log.error(
-            #                 f"Could not request results from Speech Recognition service; {e}"
-            #             )
-            #             log.error(traceback.format_exc())
-            sleep(0.1)
-
+            model = Model(lang=self.config["language"])
+            self.rec = KaldiRecognizer(model, self.config["rate"])
+            with sd.RawInputStream(
+                samplerate=self.config["rate"],
+                blocksize=8000,
+                device=self.config["mic"],
+                dtype="int16",
+                channels=1,
+                callback=callback,
+            ):
+                while self.listening:
+                    data = q.get()
+                    if self.rec.AcceptWaveform(data):
+                        result = self.rec.Result()
+                        log.info(f"Recognized text: {result}")
+                        self.publishText(result)
+                    else:
+                        log.info(f"Partial result: {self.rec.PartialResult()}")
+                    sleep(0.1)
         except Exception as e:
             log.error(f"Error in listen method: {e}")
 
     def publishText(self, text: str) -> str:
-        """
-        FIXME - make an interface for this
-        Publishes the current text to the service."""
         log.info(f"publishText {text}")
+        # You can implement the actual publishing logic here
         return text
-
-    def setApiUser(self, user):
-        log.info(f"Set API User to {user}")
-        self.config["user"] = user
-        # self.invoke("broadcastState")
-
-    def setApiLocation(self, location):
-        log.info(f"Set API Location to {location}")
-        self.config["location"] = location
-        # self.invoke("broadcastState")
-
-    def setApiKey(self, key):
-        log.info(f"Set API Key to {key}")
-        self.config["key"] = key
-        # self.invoke("broadcastState")
 
     def startListening(self):
         log.info("Start Listening")
-
-        # set sample rate
         device_info = sd.query_devices(self.config["mic"], "input")
-        # soundfile expects an int, sounddevice provides a float:
         self.config["rate"] = int(device_info["default_samplerate"])
 
         if self.thread is None:
+            self.listening = True
             self.thread = threading.Thread(target=self.listen)
             self.thread.start()
-        self.listening = True
+        self.invoke("broadcastState")
+
+    def pauseListening(self):
+        log.info("Pause Listening")
+        # TODO add pause logic small sleep
+        # in while loop, without recognizing
+        self.invoke("broadcastState")
+
+    def resumeListening(self):
+        log.info("Resume Listening")
+        # TODO resume listening
         self.invoke("broadcastState")
 
     def stopListening(self):
@@ -165,7 +145,6 @@ class PyVosk(Service):
         log.info(f"Setting microphone to index {index}")
         self.config["mic"] = index
         log.info(f"Setting microphone to {self.config['mic']}")
-        # self.microphone = sr.Microphone(device_index=int(index))
         self.invoke("broadcastState")
 
     def to_dict(self):
@@ -183,7 +162,6 @@ class PyVosk(Service):
         if self.config.get("listen"):
             self.startListening()
         super().startService()
-        # BE AWARE - this coroutine super.startService() blocks forever
 
 
 def main():
