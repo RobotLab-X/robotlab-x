@@ -1,16 +1,13 @@
-import { Button } from "@mui/material"
+import { Button, CircularProgress } from "@mui/material"
 import React, { useState } from "react"
 import StepWizard from "react-step-wizard"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
 import { useStore } from "../store/store"
 import useServiceSubscription from "../store/useServiceSubscription"
 
-// FIXME Change to PythonProxyWizard !!!
-// FIXME remove fullname with context provider
 export default function PythonWizard({ fullname }) {
   const { sendTo } = useStore()
 
-  // creates subscriptions to topics and returns the broadcastState message reference
   const serviceMsg = useServiceSubscription(fullname)
   const service = useProcessedMessage(serviceMsg)
   const [selection, setSelection] = useState("")
@@ -44,7 +41,6 @@ export default function PythonWizard({ fullname }) {
 
   const installRepoRequirements = () => {
     setIsInstalling(true)
-    // sendTo(fullname, "installClient")
     sendTo(fullname, "installRepoRequirements")
   }
 
@@ -97,12 +93,6 @@ export default function PythonWizard({ fullname }) {
     return (
       <div>
         <h2>Step 3 Virtual Environment</h2>
-        {/* <FormControl component="fieldset">
-          <RadioGroup aria-label=".venv" name=".venv" value={selection} onChange={handleVenvSelection}>
-            <FormControlLabel value="useVenv" control={<Radio />} label="Virtual env (recommended)" />
-            <FormControlLabel value="noVenv" control={<Radio />} label="Do not use .venv" />
-          </RadioGroup>
-        </FormControl> */}
         <div style={{ marginTop: "20px" }}>
           {service?.venvOk && (
             <Button variant="contained" color="primary" onClick={handleNextStep}>
@@ -111,7 +101,7 @@ export default function PythonWizard({ fullname }) {
           )}
           {!service?.venvOk && (
             <Button variant="contained" color="primary" onClick={installVenv} disabled={isInstalling}>
-              {isInstalling ? "Installing..." : "Install Virtual Env"}
+              {isInstalling ? <CircularProgress size={24} /> : "Install Virtual Env"}
             </Button>
           )}
         </div>
@@ -130,7 +120,7 @@ export default function PythonWizard({ fullname }) {
         <h2>Step 4 Install {service?.pkg?.title}</h2>
         {service?.pythonVersionOk && service?.pipVersionOk && !service?.requirementsOk && (
           <Button variant="contained" color="primary" onClick={installPipRequirements} disabled={isInstalling}>
-            {isInstalling ? "Installing..." : "Install"}
+            {isInstalling ? <CircularProgress size={24} /> : "Install"}
           </Button>
         )}
         {service?.requirementsOk && (
@@ -147,7 +137,7 @@ export default function PythonWizard({ fullname }) {
       <h2>Step 5 Install Local Packages and RobotLab-X Client</h2>
       {service?.pythonVersionOk && service?.pipVersionOk && service?.requirementsOk && !service?.clientInstalledOk && (
         <Button variant="contained" color="primary" onClick={installRepoRequirements} disabled={isInstalling}>
-          {isInstalling ? "Installing..." : "Install"}
+          {isInstalling ? <CircularProgress size={24} /> : "Install"}
         </Button>
       )}
       {service?.clientInstalledOk && (
