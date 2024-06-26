@@ -28,7 +28,6 @@ log = logging.getLogger("PyVosk")
 # cd server\express\public\repo\pyvosk\rlx_pkg_pyvosk\rlx_pkg_pyvosk
 # python -u rlx_pkg_pyvosk.py -i sr1 -c http://localhost:3001
 
-
 q = queue.Queue()
 
 
@@ -44,11 +43,11 @@ class PyVosk(Service):
         super().__init__(id)
         self.id = str(id)
         self.listening = False  # the "state" of the listening
+        self.paused = False
         self.thread = None
         self.config = {
             "mic": "",
             "listen": False,  # the "command" to listen on startup
-            "paused": False,
             "saveAudio": True,
             "rate": None,
             "language": "en-us",  # Default model
@@ -90,11 +89,15 @@ class PyVosk(Service):
                 callback=callback,
             ):
                 while self.listening:
+                    if self.paused:
+                        sleep(0.1)
+                        continue
                     data = q.get()
                     if self.rec.AcceptWaveform(data):
                         result = self.rec.Result()
                         log.info(f"Recognized text: {result}")
                         self.publishText(result)
+                        self.invoke("publishText", result)
                     else:
                         log.info(f"Partial result: {self.rec.PartialResult()}")
                     sleep(0.1)
@@ -119,13 +122,12 @@ class PyVosk(Service):
 
     def pauseListening(self):
         log.info("Pause Listening")
-        # TODO add pause logic small sleep
-        # in while loop, without recognizing
+        self.paused = True
         self.invoke("broadcastState")
 
     def resumeListening(self):
         log.info("Resume Listening")
-        # TODO resume listening
+        self.paused = False
         self.invoke("broadcastState")
 
     def stopListening(self):
@@ -152,6 +154,7 @@ class PyVosk(Service):
         derived = {
             "listening": self.listening,
             "mics": self.mics,
+            "paused": self.paused,
         }
         base_dict.update(derived)
         return base_dict
