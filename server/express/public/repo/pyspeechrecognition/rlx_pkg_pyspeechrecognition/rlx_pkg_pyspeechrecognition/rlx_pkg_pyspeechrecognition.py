@@ -79,7 +79,7 @@ class PySpeechRecognition(Service):
 
     def recognize_speech(self, audio):
         backend = self.config["backend"]
-        log.info(f"Using {self.backend} recognizer")
+        log.info(f"Using {backend} recognizer")
         if backend == "google":
             return self.recognizer.recognize_google(audio)
         elif backend == "sphinx":
