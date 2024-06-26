@@ -15,6 +15,9 @@ from io import BytesIO
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("PySpeechRecognition")
 
+# start debug proxy
+# python -u rlx_pkg_pyspeechrecognition.py -i sr1 -c http://localhost:3001
+
 
 class PySpeechRecognition(Service):
     def __init__(self, id=uuid.uuid1()):
@@ -29,7 +32,7 @@ class PySpeechRecognition(Service):
             "recording": False,
             "paused": False,
             "backend": "google",
-            "id": None,
+            "user": None,
             "key": None,
             "location": None,
         }
@@ -113,6 +116,21 @@ class PySpeechRecognition(Service):
             )
         else:
             raise ValueError("Unsupported recognizer backend")
+
+    def setApiUser(self, user):
+        log.info(f"Set API User to {user}")
+        self.config["user"] = user
+        # self.invoke("broadcastState")
+
+    def setApiLocation(self, location):
+        log.info(f"Set API Location to {location}")
+        self.config["location"] = location
+        # self.invoke("broadcastState")
+
+    def setApiKey(self, key):
+        log.info(f"Set API Key to {key}")
+        self.config["key"] = key
+        # self.invoke("broadcastState")
 
     def startListening(self):
         log.info("Start Listening")

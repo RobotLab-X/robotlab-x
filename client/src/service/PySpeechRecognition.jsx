@@ -2,7 +2,7 @@ import MicIcon from "@mui/icons-material/Mic"
 import MicOffIcon from "@mui/icons-material/MicOff"
 import PauseIcon from "@mui/icons-material/Pause"
 import PlayArrowIcon from "@mui/icons-material/PlayArrow"
-import { Box, FormControl, IconButton, InputLabel, MenuItem, Select, Typography } from "@mui/material"
+import { Box, FormControl, IconButton, InputLabel, MenuItem, Select, TextField, Typography } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import PySpeechRecognitionWizard from "wizards/PySpeechRecognitionWizard"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
@@ -14,6 +14,9 @@ export default function PySpeechRecognition({ fullname }) {
   const [selectedBackend, setSelectedBackend] = useState("")
   const [isListening, setIsListening] = useState(false)
   const [isPaused, setIsPaused] = useState(false)
+  const [apiKey, setApiKey] = useState("")
+  const [apiUser, setApiUser] = useState("")
+  const [apiLocation, setApiLocation] = useState("")
 
   const { useMessage, sendTo } = useStore()
 
@@ -36,6 +39,9 @@ export default function PySpeechRecognition({ fullname }) {
     "whisper",
     "whisper_api"
   ]
+
+  const backendsRequiringApiUser = ["ibm", "houndify"]
+  const backendsRequiringApiKey = ["ibm", "houndify", "azure", "google_cloud", "whisper_api"]
 
   useEffect(() => {
     // mic selected state
@@ -88,6 +94,25 @@ export default function PySpeechRecognition({ fullname }) {
     const backend = event.target.value
     console.info(`sending -> setBackend ${backend}`)
     sendTo(fullname, "setBackend", backend)
+    setSelectedBackend(backend)
+  }
+
+  const handleApiKeyChange = (event) => {
+    setApiKey(event.target.value)
+    console.info(`sending -> setApiKey ${event.target.value}`)
+    sendTo(fullname, "setApiKey", event.target.value)
+  }
+
+  const handleApiUserChange = (event) => {
+    setApiKey(event.target.value)
+    console.info(`sending -> setApiUser ${event.target.value}`)
+    sendTo(fullname, "setApiUser", event.target.value)
+  }
+
+  const handleApiLocationChange = (event) => {
+    setApiKey(event.target.value)
+    console.info(`sending -> setApiLocation ${event.target.value}`)
+    sendTo(fullname, "setApiLocation", event.target.value)
   }
 
   if (!service?.installed) {
@@ -131,6 +156,23 @@ export default function PySpeechRecognition({ fullname }) {
             </Select>
           </FormControl>
         </Box>
+        {backendsRequiringApiUser.includes(selectedBackend) && (
+          <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "80%" }, mt: 2 }}>
+            <TextField fullWidth label="User" type="text" value={apiUser} onChange={handleApiUserChange} />
+          </Box>
+        )}
+
+        {selectedBackend === "azure" && (
+          <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "80%" }, mt: 2 }}>
+            <TextField fullWidth label="Location" type="text" value={apiLocation} onChange={handleApiLocationChange} />
+          </Box>
+        )}
+
+        {backendsRequiringApiKey.includes(selectedBackend) && (
+          <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "80%" }, mt: 2 }}>
+            <TextField fullWidth label="API Key" type="password" value={apiKey} onChange={handleApiKeyChange} />
+          </Box>
+        )}
         <Box sx={{ mt: 2, display: "flex", gap: 2, alignItems: "center" }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <IconButton
