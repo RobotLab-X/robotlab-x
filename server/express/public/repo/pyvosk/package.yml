@@ -1,0 +1,18 @@
+typeKey: "PyVosk"
+title: "Vosk Speech Recognition"
+platform: "python"
+platformVersion: "3.10"
+description: "Vosk Speech recognition service"
+version: "0.0.1"
+requirements:
+  vosk: ">=0.3.45"
+  sounddevice: ">=0.4.7"
+repoRequirements:
+  - "Proxy"
+  - "PyVosk"
+visible: true
+args: ["-u","proxy.py", "-i", "{{name}}", "-c", "{{serviceUrl}}"] # -u unbuffered output
+author: "GroG"
+license: "MIT"
+categories: ["audio", "microphone", "sound", "speech"]
+dependencies: null
