@@ -86,25 +86,25 @@ class PySpeechRecognition(Service):
             return self.recognizer.recognize_sphinx(audio)
         elif backend == "ibm":
             return self.recognizer.recognize_ibm(
-                audio, username="YOUR_IBM_USERNAME", password="YOUR_IBM_PASSWORD"
+                audio, username=self.config.get("user"), password=self.config.get("key")
             )
         elif backend == "bing":
             return self.recognizer.recognize_bing(audio, key="YOUR_BING_KEY")
         elif backend == "houndify":
             return self.recognizer.recognize_houndify(
                 audio,
-                client_id="YOUR_HOUNDIFY_CLIENT_ID",
-                client_key="YOUR_HOUNDIFY_CLIENT_KEY",
+                client_id=self.config.get("user"),
+                client_key=self.config.get("key"),
             )
         elif backend == "wit":
-            return self.recognizer.recognize_wit(audio, key="YOUR_WIT_KEY")
+            return self.recognizer.recognize_wit(audio, key=self.config.get("key"))
         elif backend == "azure":
             return self.recognizer.recognize_azure(
-                audio, key="YOUR_AZURE_KEY", location="YOUR_AZURE_LOCATION"
+                audio, key=self.config.get("key"), location=self.config.get("location")
             )
         elif backend == "google_cloud":
             return self.recognizer.recognize_google_cloud(
-                audio, credentials_json="YOUR_GOOGLE_CLOUD_CREDENTIALS_JSON"
+                audio, credentials_json=self.config.get("key")
             )
         elif backend == "vosk":
             return self.recognizer.recognize_vosk(audio)
@@ -112,7 +112,7 @@ class PySpeechRecognition(Service):
             return self.recognizer.recognize_whisper(audio)
         elif backend == "whisper_api":
             return self.recognizer.recognize_whisper_api(
-                audio, api_key="YOUR_OPENAI_API_KEY"
+                audio, api_key=self.config.get("key")
             )
         else:
             raise ValueError("Unsupported recognizer backend")
