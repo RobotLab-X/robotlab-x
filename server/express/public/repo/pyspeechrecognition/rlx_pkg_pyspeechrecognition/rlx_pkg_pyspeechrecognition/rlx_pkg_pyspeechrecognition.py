@@ -46,10 +46,12 @@ class PySpeechRecognition(Service):
             "user": None,
             "key": None,
             "location": None,
+            "saveAudio": True,
         }
         # list of available microphones
         self.mics = {}
         self.audio = pyaudio.PyAudio()
+        self.segment_cnt = 0
 
     def getMicrophones(self):
         log.info("Getting microphones")
@@ -75,9 +77,18 @@ class PySpeechRecognition(Service):
                     log.info("Listening for speech...")
                     audio = self.recognizer.listen(source)
                     log.info("Captured audio, attempting to recognize speech...")
+                    self.segment_cnt += 1
+                    # Save the audio to a file
+                    if self.confg.get("saveAudio"):
+                        with open(
+                            "segement_" + str(self.segment_cnt) + ".wav", "wb"
+                        ) as f:
+                            f.write(audio.get_wav_data())
+
                     try:
                         text = self.recognize_speech(audio)
                         log.info(f"Recognized text: {text}")
+                        self.invoke("publishText", text)
                     except sr.UnknownValueError:
                         log.warning("Speech Recognition could not understand audio")
                     except sr.RequestError as e:
@@ -87,6 +98,13 @@ class PySpeechRecognition(Service):
                     sleep(0.1)
         except Exception as e:
             log.error(f"Error in listen method: {e}")
+
+    def publishText(self, text: str) -> str:
+        """
+        FIXME - make an interface for this
+        Publishes the current text to the service."""
+        log.info(f"publishText {text}")
+        return text
 
     def recognize_speech(self, audio):
         backend = self.config["backend"]
