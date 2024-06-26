@@ -382,7 +382,10 @@ class Service:
             "id": self.id,
             "installed": self.installed,
             "name": self.id,
-            "notifyList": self.notifyList,
+            "notifyList": {
+                key: [listener.to_dict() for listener in listeners]
+                for key, listeners in self.notifyList.items()
+            },
             "ready": self.ready,
             "startTime": self.startTime,
             "typeKey": self.__class__.__name__,

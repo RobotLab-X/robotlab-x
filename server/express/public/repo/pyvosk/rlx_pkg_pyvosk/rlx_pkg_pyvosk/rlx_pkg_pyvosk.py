@@ -96,10 +96,10 @@ class PyVosk(Service):
                     if self.rec.AcceptWaveform(data):
                         result = self.rec.Result()
                         log.info(f"Recognized text: {result}")
-                        self.publishText(result)
                         self.invoke("publishText", result)
                     else:
-                        log.info(f"Partial result: {self.rec.PartialResult()}")
+                        # log.info(f"Partial result: {self.rec.PartialResult()}")
+                        pass
                     sleep(0.1)
         except Exception as e:
             log.error(f"Error in listen method: {e}")

@@ -145,59 +145,58 @@ export default function PyVosk({ fullname }) {
     return <PythonWizard fullname={fullname} />
   } else {
     return (
-      <>
+      <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "80%" }, mt: 2 }}>
         {service?.mics && (
-          <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "80%" }, mt: 2 }}>
-            <FormControl fullWidth>
-              <InputLabel id="microphone-select-label">Microphone</InputLabel>
-              <Select
-                labelId="microphone-select-label"
-                value={selectedMic}
-                label="Microphone"
-                onChange={handleMicChange}
-              >
-                {Object.entries(service.mics).map(([key, value]) => (
-                  <MenuItem key={key} value={key}>
-                    {value}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Box>
-        )}
-        <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "80%" }, mt: 2 }}>
-          <FormControl fullWidth>
-            <InputLabel id="languages-select-label">Languages</InputLabel>
-            <Select
-              labelId="languages-select-label"
-              value={selectedBackend}
-              label="Languages"
-              onChange={handleLanguageChange}
-            >
-              {languages.map((languages) => (
-                <MenuItem key={languages} value={languages}>
-                  {languages}
+          <FormControl fullWidth sx={{ mt: 2 }}>
+            <InputLabel id="microphone-select-label">Microphone</InputLabel>
+            <Select labelId="microphone-select-label" value={selectedMic} label="Microphone" onChange={handleMicChange}>
+              {Object.entries(service.mics).map(([key, value]) => (
+                <MenuItem key={key} value={key}>
+                  {value}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
-        </Box>
+        )}
+        <FormControl fullWidth sx={{ mt: 2 }}>
+          <InputLabel id="languages-select-label">Languages</InputLabel>
+          <Select
+            labelId="languages-select-label"
+            value={selectedBackend}
+            label="Languages"
+            onChange={handleLanguageChange}
+          >
+            {languages.map((language) => (
+              <MenuItem key={language} value={language}>
+                {language}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
         {backendsRequiringApiUser.includes(selectedBackend) && (
-          <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "80%" }, mt: 2 }}>
-            <TextField fullWidth label="User" type="text" value={apiUser} onChange={handleApiUserChange} />
-          </Box>
+          <TextField fullWidth sx={{ mt: 2 }} label="User" type="text" value={apiUser} onChange={handleApiUserChange} />
         )}
 
         {selectedBackend === "azure" && (
-          <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "80%" }, mt: 2 }}>
-            <TextField fullWidth label="Location" type="text" value={apiLocation} onChange={handleApiLocationChange} />
-          </Box>
+          <TextField
+            fullWidth
+            sx={{ mt: 2 }}
+            label="Location"
+            type="text"
+            value={apiLocation}
+            onChange={handleApiLocationChange}
+          />
         )}
 
         {backendsRequiringApiKey.includes(selectedBackend) && (
-          <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "80%" }, mt: 2 }}>
-            <TextField fullWidth label="API Key" type="password" value={apiKey} onChange={handleApiKeyChange} />
-          </Box>
+          <TextField
+            fullWidth
+            sx={{ mt: 2 }}
+            label="API Key"
+            type="password"
+            value={apiKey}
+            onChange={handleApiKeyChange}
+          />
         )}
         <Box sx={{ mt: 2, display: "flex", gap: 2, alignItems: "center" }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -215,11 +214,11 @@ export default function PyVosk({ fullname }) {
             </IconButton>
             <Typography variant="body1">{isPaused ? "Paused" : "Not Paused"}</Typography>
           </Box>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Typography variant="body1">Recognized: {recognizedText}</Typography>
-          </Box>
         </Box>
-      </>
+        <Box sx={{ mt: 2 }}>
+          <Typography variant="body1">Recognized: {recognizedText}</Typography>
+        </Box>
+      </Box>
     )
   }
 }
