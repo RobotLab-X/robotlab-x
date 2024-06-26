@@ -3,6 +3,7 @@ import logging
 import threading
 import uuid
 from time import sleep
+import traceback
 import pyaudio
 
 # from zstandard import backend
@@ -25,11 +26,11 @@ class PySpeechRecognition(Service):
         self.id: str = str(id)
         self.recognizer = sr.Recognizer()
         self.microphone = sr.Microphone()
-        self.listening = False
+        self.listening = False  # the "state" of the listening
         self.thread = None
         self.config = {
             "mic": "",
-            "recording": False,
+            "listen": False,  # the "command" to listen on startup
             "paused": False,
             "backend": "google",
             "user": None,
@@ -80,11 +81,13 @@ class PySpeechRecognition(Service):
                         self.invoke("publishText", text)
                     except sr.UnknownValueError:
                         log.warning("Speech Recognition could not understand audio")
-                    except sr.RequestError as e:
+                    except Exception as e:
                         log.error(
                             f"Could not request results from Speech Recognition service; {e}"
                         )
+                        log.error(traceback.format_exc())
                     sleep(0.1)
+
         except Exception as e:
             log.error(f"Error in listen method: {e}")
 
@@ -152,9 +155,10 @@ class PySpeechRecognition(Service):
 
     def startListening(self):
         log.info("Start Listening")
+        if self.thread is None:
+            self.thread = threading.Thread(target=self.listen)
+            self.thread.start()
         self.listening = True
-        self.thread = threading.Thread(target=self.listen)
-        self.thread.start()
         self.invoke("broadcastState")
 
     def stopListening(self):
@@ -162,6 +166,7 @@ class PySpeechRecognition(Service):
         self.listening = False
         if self.thread is not None:
             self.thread.join()
+            self.thread = None
         self.invoke("broadcastState")
 
     def setBackend(self, backend):
@@ -194,6 +199,8 @@ class PySpeechRecognition(Service):
     def startService(self):
         log.info("Starting PySpeechRecognition service...")
         self.getMicrophones()
+        if self.config.get("listen"):
+            self.startListening()
         super().startService()
         # BE AWARE - this coroutine super.startService() blocks forever
 

@@ -64,9 +64,9 @@ export default function PySpeechRecognition({ fullname }) {
   useEffect(() => {
     // backend update to set listening state
     if (service) {
-      setIsListening(service?.config?.listening)
+      setIsListening(service?.listening) // the state not the command
     }
-  }, [service, service?.config?.listening])
+  }, [service, service?.listening])
 
   const handleStartListening = () => {
     sendTo(fullname, "startListening")
