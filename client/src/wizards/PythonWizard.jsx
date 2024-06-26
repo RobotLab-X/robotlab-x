@@ -33,7 +33,7 @@ export default function PythonWizard({ fullname }) {
     sendTo(fullname, "installVirtualEnv")
   }
 
-  const installPySpeechRecognition = () => {
+  const installPipRequirements = () => {
     setIsInstalling(true)
     sendTo(fullname, "installPipRequirements", service?.pkg?.requirements)
   }
@@ -119,7 +119,7 @@ export default function PythonWizard({ fullname }) {
     )
   }
 
-  const InstallPySpeechRecognition = ({ previousStep, nextStep }) => {
+  const InstallPipRequirements = ({ previousStep, nextStep }) => {
     const handleNextStep = () => {
       setIsInstalling(false)
       nextStep()
@@ -127,9 +127,9 @@ export default function PythonWizard({ fullname }) {
 
     return (
       <div>
-        <h2>Step 4 Install PySpeechRecognition</h2>
+        <h2>Step 4 Install {service?.pkg?.title}</h2>
         {service?.pythonVersionOk && service?.pipVersionOk && !service?.requirementsOk && (
-          <Button variant="contained" color="primary" onClick={installPySpeechRecognition} disabled={isInstalling}>
+          <Button variant="contained" color="primary" onClick={installPipRequirements} disabled={isInstalling}>
             {isInstalling ? "Installing..." : "Install"}
           </Button>
         )}
@@ -177,7 +177,7 @@ export default function PythonWizard({ fullname }) {
   const Finished = ({ previousStep, nextStep, text = "Git Clone the DepthAI SDK" }) => (
     <div>
       <h2>Finished</h2>
-      <p>You should be able to use the PySpeechRecognition service now</p>
+      <p>You should be able to use the {service?.pkg?.title} </p>
       <Button variant="contained" color="primary" onClick={finished}>
         Finish
       </Button>
@@ -186,12 +186,12 @@ export default function PythonWizard({ fullname }) {
 
   return (
     <>
-      <h1>PySpeechRecognition Setup</h1>
+      <h1>{service?.pkg?.title} Setup</h1>
       <StepWizard>
         <CheckPythonVersion />
         <CheckPipVersion />
         <InstallVenv />
-        <InstallPySpeechRecognition />
+        <InstallPipRequirements />
         <InstallRepoRequirements />
         <StartProxy />
         <Finished />

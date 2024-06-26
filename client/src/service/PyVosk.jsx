@@ -2,7 +2,18 @@ import MicIcon from "@mui/icons-material/Mic"
 import MicOffIcon from "@mui/icons-material/MicOff"
 import PauseIcon from "@mui/icons-material/Pause"
 import PlayArrowIcon from "@mui/icons-material/PlayArrow"
-import { Box, FormControl, IconButton, InputLabel, MenuItem, Paper, Select, TextField, Typography } from "@mui/material"
+import {
+  Box,
+  ButtonBase,
+  FormControl,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  Paper,
+  Select,
+  TextField,
+  Typography
+} from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
 import { useStore } from "../store/store"
@@ -124,13 +135,13 @@ export default function PyVosk({ fullname }) {
   }
 
   const handleApiUserChange = (event) => {
-    setApiKey(event.target.value)
+    setApiUser(event.target.value)
     console.info(`sending -> setApiUser ${event.target.value}`)
     sendTo(fullname, "setApiUser", event.target.value)
   }
 
   const handleApiLocationChange = (event) => {
-    setApiKey(event.target.value)
+    setApiLocation(event.target.value)
     console.info(`sending -> setApiLocation ${event.target.value}`)
     sendTo(fullname, "setApiLocation", event.target.value)
   }
@@ -193,7 +204,11 @@ export default function PyVosk({ fullname }) {
           />
         )}
         <Box sx={{ mt: 2, display: "flex", gap: 2, alignItems: "center" }}>
-          <Paper sx={{ display: "flex", alignItems: "center", gap: 1, p: 1 }}>
+          <ButtonBase
+            component={Paper}
+            onClick={isListening ? handleStopListening : handleStartListening}
+            sx={{ display: "flex", alignItems: "center", gap: 1, p: 1, cursor: "pointer" }}
+          >
             <IconButton
               color={isListening ? "secondary" : "default"}
               onClick={isListening ? handleStopListening : handleStartListening}
@@ -201,13 +216,17 @@ export default function PyVosk({ fullname }) {
               {isListening ? <MicIcon /> : <MicOffIcon />}
             </IconButton>
             <Typography variant="body1">{isListening ? "Listening" : "Not Listening"}</Typography>
-          </Paper>
-          <Paper sx={{ display: "flex", alignItems: "center", gap: 1, p: 1 }}>
-            <IconButton color={isPaused ? "default" : "secondary"} onClick={handlePauseResumeListening}>
+          </ButtonBase>
+          <ButtonBase
+            component={Paper}
+            onClick={handlePauseResumeListening}
+            sx={{ display: "flex", alignItems: "center", gap: 1, p: 1, cursor: "pointer" }}
+          >
+            <IconButton color={isPaused ? "default" : "secondary"}>
               {isPaused ? <PlayArrowIcon /> : <PauseIcon />}
             </IconButton>
             <Typography variant="body1">{isPaused ? "Paused" : "Not Paused"}</Typography>
-          </Paper>
+          </ButtonBase>
         </Box>
         <Box sx={{ mt: 2 }}>
           <Typography variant="body1">Recognized: {recognizedText}</Typography>
