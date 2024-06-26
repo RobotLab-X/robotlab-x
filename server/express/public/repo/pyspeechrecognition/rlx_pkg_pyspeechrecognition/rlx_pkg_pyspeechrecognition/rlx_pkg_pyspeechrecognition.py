@@ -3,6 +3,9 @@ import logging
 import threading
 import uuid
 from time import sleep
+import pyaudio
+
+# from zstandard import backend
 import speech_recognition as sr
 from rlx_pkg_proxy.service import Service
 from collections import deque
@@ -21,8 +24,35 @@ class PySpeechRecognition(Service):
         self.microphone = sr.Microphone()
         self.listening = False
         self.thread = None
-        self.recognizer_backend = "google"  # Default recognizer
-        self.mic_index = None  # Added mic_index to select microphone
+        self.config = {
+            "mic": "",
+            "recording": False,
+            "paused": False,
+            "backend": "google",
+            "id": None,
+            "key": None,
+            "location": None,
+        }
+        # list of available microphones
+        self.mics = {}
+        self.audio = pyaudio.PyAudio()
+
+    def getMicrophones(self):
+        log.info("Getting microphones")
+        try:
+            info = self.audio.get_host_api_info_by_index(0)
+            numdevices = info.get("deviceCount")
+            mics = {}
+            for i in range(0, numdevices):
+                device_info = self.audio.get_device_info_by_host_api_device_index(0, i)
+                if device_info.get("maxInputChannels") > 0:
+                    mics[i] = f"{i}: {device_info.get('name')}"
+            self.mics = mics
+            log.info(f"Found {len(self.mics)} mics")
+            return mics
+        except Exception as e:
+            log.error(f"Error getting microphones: {e}")
+            return {}
 
     def listen(self):
         try:
@@ -45,38 +75,39 @@ class PySpeechRecognition(Service):
             log.error(f"Error in listen method: {e}")
 
     def recognize_speech(self, audio):
-        log.info(f"Using {self.recognizer_backend} recognizer")
-        if self.recognizer_backend == "google":
+        backend = self.config["backend"]
+        log.info(f"Using {self.backend} recognizer")
+        if backend == "google":
             return self.recognizer.recognize_google(audio)
-        elif self.recognizer_backend == "sphinx":
+        elif backend == "sphinx":
             return self.recognizer.recognize_sphinx(audio)
-        elif self.recognizer_backend == "ibm":
+        elif backend == "ibm":
             return self.recognizer.recognize_ibm(
                 audio, username="YOUR_IBM_USERNAME", password="YOUR_IBM_PASSWORD"
             )
-        elif self.recognizer_backend == "bing":
+        elif backend == "bing":
             return self.recognizer.recognize_bing(audio, key="YOUR_BING_KEY")
-        elif self.recognizer_backend == "houndify":
+        elif backend == "houndify":
             return self.recognizer.recognize_houndify(
                 audio,
                 client_id="YOUR_HOUNDIFY_CLIENT_ID",
                 client_key="YOUR_HOUNDIFY_CLIENT_KEY",
             )
-        elif self.recognizer_backend == "wit":
+        elif backend == "wit":
             return self.recognizer.recognize_wit(audio, key="YOUR_WIT_KEY")
-        elif self.recognizer_backend == "azure":
+        elif backend == "azure":
             return self.recognizer.recognize_azure(
                 audio, key="YOUR_AZURE_KEY", location="YOUR_AZURE_LOCATION"
             )
-        elif self.recognizer_backend == "google_cloud":
+        elif backend == "google_cloud":
             return self.recognizer.recognize_google_cloud(
                 audio, credentials_json="YOUR_GOOGLE_CLOUD_CREDENTIALS_JSON"
             )
-        elif self.recognizer_backend == "vosk":
+        elif backend == "vosk":
             return self.recognizer.recognize_vosk(audio)
-        elif self.recognizer_backend == "whisper":
+        elif backend == "whisper":
             return self.recognizer.recognize_whisper(audio)
-        elif self.recognizer_backend == "whisper_api":
+        elif backend == "whisper_api":
             return self.recognizer.recognize_whisper_api(
                 audio, api_key="YOUR_OPENAI_API_KEY"
             )
@@ -97,9 +128,9 @@ class PySpeechRecognition(Service):
             self.thread.join()
         self.invoke("broadcastState")
 
-    def setSpeechRecognizer(self, recognizer_backend):
-        log.info(f"Set Speech Recognizer to {recognizer_backend}")
-        self.recognizer_backend = recognizer_backend
+    def setBackend(self, backend):
+        log.info(f"Set Speech Recognizer to {backend}")
+        self.config["backend"] = backend
         self.invoke("broadcastState")
 
     def listMicrophones(self):
@@ -110,40 +141,32 @@ class PySpeechRecognition(Service):
 
     def setMicrophone(self, index):
         log.info(f"Setting microphone to index {index}")
-        self.mic_index = index
-        self.microphone = sr.Microphone(device_index=self.mic_index)
-        mic_list = sr.Microphone.list_microphone_names()
-        if index < len(mic_list):
-            log.info(f"Microphone set to {mic_list[index]}")
-            self.verify_microphone(index)
-        else:
-            log.warning(f"Microphone index {index} is out of range.")
+        self.config["mic"] = index
+        log.info(f"Setting microphone to {self.config['mic']}")
+        self.microphone = sr.Microphone(device_index=int(index))
         self.invoke("broadcastState")
-
-    def verify_microphone(self, index):
-        log.info(f"Verifying microphone at index {index}")
-        mic_list = sr.Microphone.list_microphone_names()
-        if index < len(mic_list):
-            log.info(f"Microphone {index}: {mic_list[index]}")
-        else:
-            log.warning(f"Microphone index {index} is out of range.")
 
     def to_dict(self):
         base_dict = super().to_dict()
         derived = {
             "listening": self.listening,
-            "mic_index": self.mic_index,
+            "mics": self.mics,
         }
         base_dict.update(derived)
         return base_dict
 
     def startService(self):
         log.info("Starting PySpeechRecognition service...")
+        self.getMicrophones()
         super().startService()
         # BE AWARE - this coroutine super.startService() blocks forever
 
 
 def main():
+    # Debug with proxy
+    # cd ~/mrl/robotlab-x/server/express/public/repo/pyspeechrecognition/rlx_pkg_pyspeechrecognition/rlx_pkg_pyspeechrecognition
+    # python -u rlx_pkg_pyspeechrecognition.py -i sr3 -c http://localhost:3001
+
     parser = argparse.ArgumentParser(description="PySpeechRecognition Service")
     parser.add_argument(
         "-c",
@@ -167,9 +190,9 @@ def main():
     log.info(args)
 
     service = PySpeechRecognition(args.id)
-    service.setSpeechRecognizer(args.recognizer)
-    service.setMicrophone(8)
-    service.startListening()
+    # service.setSpeechRecognizer(args.recognizer)
+    # service.setMicrophone(8)
+    # service.startListening()
     service.connect(args.connect)
     service.startService()
     # service.startListening()
