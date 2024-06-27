@@ -1,7 +1,26 @@
+import MaximizeIcon from "@mui/icons-material/CheckBoxOutlineBlank"
 import ClearIcon from "@mui/icons-material/Clear"
+import CloseIcon from "@mui/icons-material/Close"
+import MinimizeIcon from "@mui/icons-material/Minimize"
 import { AppBar, Box, Grid, IconButton, MenuItem, Paper, Select, Toolbar, Typography } from "@mui/material"
 import React, { useEffect, useRef, useState } from "react"
 import { useStore } from "../store/store"
+
+const WindowControls = () => {
+  return (
+    <Box sx={{ display: "flex", alignItems: "center", marginLeft: "auto" }}>
+      <IconButton sx={{ color: "black" }}>
+        <MinimizeIcon />
+      </IconButton>
+      <IconButton sx={{ color: "black" }}>
+        <MaximizeIcon />
+      </IconButton>
+      <IconButton sx={{ color: "black" }}>
+        <CloseIcon />
+      </IconButton>
+    </Box>
+  )
+}
 
 const StatusLog = ({ statusLog, fullname }) => {
   const [filterLevel, setFilterLevel] = useState("all")
@@ -27,29 +46,27 @@ const StatusLog = ({ statusLog, fullname }) => {
 
   return (
     <Paper sx={{ width: "100%", border: "1px solid #ccc", borderRadius: "8px", overflow: "hidden" }}>
-      <AppBar position="static" sx={{ backgroundColor: "#f5f5f5", boxShadow: "none", height: "56px" }}>
-        <Toolbar sx={{ minHeight: "56px", paddingLeft: 2, paddingRight: 2 }}>
+      <AppBar position="static" sx={{ backgroundColor: "#f5f5f5", boxShadow: "none", height: "40px" }}>
+        <Toolbar sx={{ minHeight: "40px", paddingLeft: 2, paddingRight: 2 }}>
           <Typography variant="h6" sx={{ flexGrow: 1, color: "black" }}>
-            Status Log
-          </Typography>
-          <Typography variant="h6" sx={{ marginRight: 3, flexGrow: 1, color: "black" }}>
-            Filter
+            Status LogFilter
           </Typography>
           <Select
             value={filterLevel}
             onChange={handleFilterChange}
             displayEmpty
             inputProps={{ "aria-label": "Filter Log Levels" }}
-            sx={{ marginRight: 2, color: "black", borderColor: "black", minWidth: 120 }}
+            sx={{ color: "black", borderColor: "black", minWidth: 120, height: "32px" }}
           >
             <MenuItem value="all">All</MenuItem>
             <MenuItem value="info">Info</MenuItem>
             <MenuItem value="warn">Warn</MenuItem>
             <MenuItem value="error">Error</MenuItem>
           </Select>
-          <IconButton edge="end" onClick={handleClearLog} sx={{ color: "black" }}>
+          <IconButton edge="end" onClick={handleClearLog} sx={{ color: "black", height: "32px" }}>
             <ClearIcon />
           </IconButton>
+          <WindowControls />
         </Toolbar>
       </AppBar>
       <Box sx={{ padding: 2, maxHeight: "400px", overflowY: "auto" }}>
