@@ -11,7 +11,6 @@ import { tokens } from "../../theme"
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined"
 import HomeIcon from "@mui/icons-material/Home"
 import HubOutlinedIcon from "@mui/icons-material/HubOutlined"
-import TabOutlinedIcon from "@mui/icons-material/TabOutlined"
 
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined"
 import TroubleshootOutlinedIcon from "@mui/icons-material/TroubleshootOutlined"
@@ -109,10 +108,6 @@ const AppSidebar = () => {
 
           <MenuItem component={<Link to="/dashboard" />} icon={<DashboardOutlinedIcon />}>
             Dashboard
-          </MenuItem>
-
-          <MenuItem component={<Link to="/tabs" />} icon={<TabOutlinedIcon />}>
-            Tabs
           </MenuItem>
 
           <MenuItem component={<Link to="/nodes" />} icon={<HubOutlinedIcon />}>

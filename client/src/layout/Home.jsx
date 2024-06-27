@@ -12,7 +12,7 @@ function Home() {
   // registry is "initial" information about the service, not the current state
   const registry = useStore((state) => state.registry)
   const serviceArray = Object.values(registry)
-  const filteredCards = serviceArray.filter((card) => card.name.toLowerCase().includes(filter.toLowerCase()))
+  const filteredServices = serviceArray.filter((card) => card.name.toLowerCase().includes(filter.toLowerCase()))
   const remoteId = useStore((state) => state.defaultRemoteId)
   const debug = useStore((state) => state.debug)
   const getTypeImage = useStore((state) => state.getTypeImage)
@@ -43,7 +43,7 @@ function Home() {
               />
             </Toolbar>
               </AppBar>*/}
-          {filteredCards.map((card, index) => (
+          {filteredServices.map((card, index) => (
             <Card key={index} onClick={() => handleCardClick(card)} sx={{ margin: 1 }}>
               <CardActionArea>
                 <CardContent>
