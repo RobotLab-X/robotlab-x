@@ -26,6 +26,19 @@ import { useProcessedMessage } from "../hooks/useProcessedMessage"
 import { useRegisteredService, useStore } from "../store/store"
 import useServiceSubscription from "../store/useServiceSubscription"
 
+const containerStyle = {
+  position: "relative",
+  minHeight: "100vh", // Ensure the parent takes up the full height of the viewport
+  paddingBottom: "400px" // Space for the StatusLog at the bottom
+}
+
+const statusLogStyle = {
+  position: "absolute",
+  bottom: 0,
+  marginBottom: "16px",
+  width: "100%"
+}
+
 export default function ServicePage({ fullname, name, id }) {
   // registered information - initial "stale" info the service was registered with
   // but "first" description, and given by the user
@@ -107,7 +120,7 @@ export default function ServicePage({ fullname, name, id }) {
   }
 
   return (
-    <div className="service-content-div">
+    <div className="service-content-div" style={containerStyle}>
       <Typography variant="h4" component="div" sx={{ display: "flex", alignItems: "center" }}>
         {resolvedType && resolvedType !== "MyRobotLabProxy" && (
           <img
@@ -163,7 +176,17 @@ export default function ServicePage({ fullname, name, id }) {
         </>
       )}
 
-      {debug && <StatusLog statusLog={statusList} fullname={fullname} />}
+      {/* Other content */}
+
+      {debug && (
+        <>
+          {" "}
+          <br />
+          <Box sx={statusLogStyle}>
+            <StatusLog statusLog={statusList} fullname={fullname} />
+          </Box>
+        </>
+      )}
 
       {/* Confirmation Dialog */}
       <Dialog

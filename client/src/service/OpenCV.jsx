@@ -1,7 +1,6 @@
 import ExpandLessIcon from "@mui/icons-material/ExpandLess"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import { Box } from "@mui/material"
-// import StatusLog from "components/StatusLog"
 import React, { useEffect, useRef, useState } from "react"
 import OpenCVWizard from "wizards/OpenCVWizard"
 import CaptureControl from "../components/opencv/CaptureControl"

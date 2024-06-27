@@ -1,10 +1,11 @@
 import ClearIcon from "@mui/icons-material/Clear"
-import { AppBar, Box, Grid, IconButton, MenuItem, Select, Toolbar, Typography } from "@mui/material"
-import React, { useState } from "react"
+import { AppBar, Box, Grid, IconButton, MenuItem, Paper, Select, Toolbar, Typography } from "@mui/material"
+import React, { useEffect, useRef, useState } from "react"
 import { useStore } from "../store/store"
 
 const StatusLog = ({ statusLog, fullname }) => {
   const [filterLevel, setFilterLevel] = useState("all")
+  const logEndRef = useRef(null)
 
   const handleFilterChange = (event) => {
     setFilterLevel(event.target.value)
@@ -16,12 +17,23 @@ const StatusLog = ({ statusLog, fullname }) => {
 
   const filteredLog = filterLevel === "all" ? statusLog : statusLog.filter((status) => status.level === filterLevel)
 
+  const scrollToBottom = () => {
+    logEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [filteredLog])
+
   return (
-    <Box sx={{ width: "100%" }}>
-      <AppBar position="static" sx={{ backgroundColor: "rgba(255, 255, 255, 0.8)", boxShadow: "none", height: "48px" }}>
-        <Toolbar sx={{ minHeight: "48px" }}>
+    <Paper sx={{ width: "100%", border: "1px solid #ccc", borderRadius: "8px", overflow: "hidden" }}>
+      <AppBar position="static" sx={{ backgroundColor: "#f5f5f5", boxShadow: "none", height: "56px" }}>
+        <Toolbar sx={{ minHeight: "56px", paddingLeft: 2, paddingRight: 2 }}>
           <Typography variant="h6" sx={{ flexGrow: 1, color: "black" }}>
             Status Log
+          </Typography>
+          <Typography variant="h6" sx={{ marginRight: 3, flexGrow: 1, color: "black" }}>
+            Filter
           </Typography>
           <Select
             value={filterLevel}
@@ -40,36 +52,39 @@ const StatusLog = ({ statusLog, fullname }) => {
           </IconButton>
         </Toolbar>
       </AppBar>
-      <Grid container sx={{ marginTop: 2 }}>
-        <Grid item xs={12}>
-          <div style={{ padding: "16px", maxWidth: "100%" }}>
-            {filteredLog.map((status, index) => {
-              let style = {}
-              if (status.level === "info") {
-                style = { color: "green" }
-              } else if (status.level === "warn") {
-                style = { color: "orange" }
-              } else if (status.level === "error") {
-                style = { color: "red" }
-              }
+      <Box sx={{ padding: 2, maxHeight: "400px", overflowY: "auto" }}>
+        <Grid container>
+          <Grid item xs={12}>
+            <div style={{ padding: "16px", maxWidth: "100%" }}>
+              {filteredLog.map((status, index) => {
+                let style = {}
+                if (status.level === "info") {
+                  style = { color: "green" }
+                } else if (status.level === "warn") {
+                  style = { color: "orange" }
+                } else if (status.level === "error") {
+                  style = { color: "red" }
+                }
 
-              return (
-                <div
-                  key={index}
-                  style={{ display: "flex", alignItems: "baseline", fontFamily: "monospace", width: "100%" }}
-                >
-                  <small style={{ ...style, marginRight: "0.5rem" }}>{status.level}</small>
-                  <span
-                    style={{ margin: 0, whiteSpace: "pre-wrap", wordWrap: "break-word", flex: 1 }}
-                    dangerouslySetInnerHTML={{ __html: status.detail }}
-                  />
-                </div>
-              )
-            })}
-          </div>
+                return (
+                  <div
+                    key={index}
+                    style={{ display: "flex", alignItems: "baseline", fontFamily: "monospace", width: "100%" }}
+                  >
+                    <small style={{ ...style, marginRight: "0.5rem" }}>{status.level}</small>
+                    <span
+                      style={{ margin: 0, whiteSpace: "pre-wrap", wordWrap: "break-word", flex: 1 }}
+                      dangerouslySetInnerHTML={{ __html: status.detail }}
+                    />
+                  </div>
+                )
+              })}
+              <div ref={logEndRef} />
+            </div>
+          </Grid>
         </Grid>
-      </Grid>
-    </Box>
+      </Box>
+    </Paper>
   )
 }
 
