@@ -54,11 +54,12 @@ const StatusLog = ({ statusLog, fullname }) => {
             alignItems: "center",
             justifyContent: "space-between",
             paddingLeft: 2,
-            paddingRight: 2
+            paddingRight: 2,
+            paddingBottom: 2
           }}
         >
           <Typography variant="h6" sx={{ color: "black" }}>
-            Status Log &nbsp;
+            Status Log
           </Typography>
           <Box sx={{ display: "flex", alignItems: "center" }}>
             <Select
@@ -67,14 +68,7 @@ const StatusLog = ({ statusLog, fullname }) => {
               label="Filter"
               displayEmpty
               inputProps={{ "aria-label": "Filter Log Levels" }}
-              sx={{
-                color: "black",
-                borderColor: "black",
-                minWidth: 120,
-                height: "32px",
-                alignItems: "center",
-                display: "flex"
-              }}
+              sx={{ color: "black", minWidth: 120, height: "20px" }}
             >
               <MenuItem value="all">All</MenuItem>
               <MenuItem value="info">Info</MenuItem>
@@ -82,11 +76,7 @@ const StatusLog = ({ statusLog, fullname }) => {
               <MenuItem value="error">Error</MenuItem>
             </Select>
             <Tooltip title="Clear Logs">
-              <IconButton
-                edge="end"
-                onClick={handleClearLog}
-                sx={{ color: "black", height: "32px", alignItems: "center", display: "flex" }}
-              >
+              <IconButton edge="end" onClick={handleClearLog} sx={{ color: "black", height: "32px" }}>
                 <CancelIcon />
               </IconButton>
             </Tooltip>
