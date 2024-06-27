@@ -15,6 +15,11 @@ const store = (set, get) => ({
   // id: `ui-rlx`,
   id: null,
 
+  /**
+   * The process/instance which
+   * this UI is directly connected to
+   * @type {string}
+   */
   defaultRemoteId: null,
 
   setDefaultRemoteId: (id) => set({ defaultRemoteId: id }),
@@ -181,38 +186,15 @@ const store = (set, get) => ({
       try {
         let key = msg.name + "." + msg.method
 
-        // handle the initial query of services
-        if (key === `runtime@${get().id}.onServiceNames`) {
-          // first message returned - make it the defaultRemoteId
-          const atIndex = msg.sender.indexOf("@")
-          if (atIndex !== -1) {
-            set({ defaultRemoteId: msg.sender.substring(atIndex + 1) })
-          }
-
-          // ask for each service
-          for (const serviceName of msg.data[0]) {
-            // console.info(serviceName)
-            // FIXME !! change to broadcastState()
-            get().sendTo("runtime", "getService", serviceName)
-          }
-        }
-
-        // populate the registry
-        if (key === `runtime@${get().id}.onService`) {
-          get().registry[msg.data[0].name + "@" + msg.data[0].id] = msg.data[0]
-        }
-
-        if (key === `runtime@${get().id}.onRegistered`) {
-          get().updateRegistryOnRegistered(msg.data[0])
-        }
-
+        // To init all services
         if (key === `runtime@${get().id}.onRegistry`) {
           set({ registry: msg.data[0] })
         }
 
-        // if (key === `runtime@${get().id}.onRepo`) {
-        //   set({ repo: msg.data[0] })
-        // }
+        // to subscribe to new services
+        if (key === `runtime@${get().id}.onRegistered`) {
+          get().updateRegistryOnRegistered(msg.data[0])
+        }
 
         let remoteKey = `${msg.sender}.${msg.method}`
 
