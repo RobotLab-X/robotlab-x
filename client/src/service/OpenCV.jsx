@@ -2,7 +2,8 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import { Box } from "@mui/material"
 import React, { useEffect, useRef, useState } from "react"
-import OpenCVWizard from "wizards/OpenCVWizard"
+// import OpenCVWizard from "wizards/OpenCVWizard"
+import PythonWizard from "wizards/PythonWizard"
 import CaptureControl from "../components/opencv/CaptureControl"
 import Configuration from "../components/opencv/Configuration"
 import FilterDialog from "../components/opencv/FilterDialog"
@@ -73,7 +74,7 @@ export default function OpenCV({ fullname }) {
   }
 
   if (!service?.installed) {
-    return <OpenCVWizard fullname={fullname} />
+    return <PythonWizard fullname={fullname} />
   } else
     return (
       <>

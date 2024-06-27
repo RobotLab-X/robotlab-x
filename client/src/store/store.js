@@ -92,6 +92,11 @@ const store = (set, get) => ({
    */
   messages: {},
 
+  /**
+   * @type {object} statusLists - A dictionary to store status messages, keyed by service name with suffix "onStatusList".
+   */
+  statusLists: {},
+
   updateRegistryOnRegistered: (data) =>
     set((state) => {
       const key = data.name + "@" + data.id
@@ -210,12 +215,18 @@ const store = (set, get) => ({
           }
         }))
 
+        // Handle onStatus method
+        if (msg.method === "onStatus") {
+          get().addToStatusList(msg.sender, msg.data)
+        }
+
         let test = get().messages[key]
       } catch (error) {
         console.error(error)
       }
     }
   },
+
   getMsg: (name, method) => {
     let key = name + "." + method
     const messages = get().messages
@@ -226,6 +237,7 @@ const store = (set, get) => ({
       return null
     }
   },
+
   sendJsonMessage: (json) => {
     const socket = get().socket
     if (socket) {
@@ -321,6 +333,30 @@ const store = (set, get) => ({
     } else {
       return `${get().getRepoUrl()}/${imgType.toLowerCase()}/image.png`
     }
+  },
+
+  clearStatusList: (service) => {
+    const key = `${service}.onStatusList`
+    set((state) => ({
+      statusLists: {
+        ...state.statusLists,
+        [key]: []
+      }
+    }))
+  },
+
+  addToStatusList: (service, status) => {
+    const key = `${service}.onStatusList`
+    set((state) => {
+      const currentList = state.statusLists[key] || []
+      const newList = [...currentList, ...status].slice(-300) // Append and keep last 300 messages
+      return {
+        statusLists: {
+          ...state.statusLists,
+          [key]: newList
+        }
+      }
+    })
   }
 })
 

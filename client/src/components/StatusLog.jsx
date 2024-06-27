@@ -1,6 +1,7 @@
 import CancelIcon from "@mui/icons-material/Cancel"
 import MaximizeIcon from "@mui/icons-material/CheckBoxOutlineBlank"
 import CloseIcon from "@mui/icons-material/Close"
+import FilterListIcon from "@mui/icons-material/FilterList"
 import MinimizeIcon from "@mui/icons-material/Minimize"
 import { AppBar, Box, Grid, IconButton, MenuItem, Paper, Select, Toolbar, Tooltip, Typography } from "@mui/material"
 import React, { useEffect, useRef, useState } from "react"
@@ -34,10 +35,14 @@ const StatusLog = ({ statusLog, fullname }) => {
     useStore.getState().clearStatusList(fullname)
   }
 
-  const filteredLog = filterLevel === "all" ? statusLog : statusLog.filter((status) => status.level === filterLevel)
+  const logLevels = ["all", "info", "warn", "error"]
+  const filteredLog =
+    filterLevel === "all"
+      ? statusLog
+      : statusLog.filter((status) => logLevels.indexOf(status.level) >= logLevels.indexOf(filterLevel))
 
   const scrollToBottom = () => {
-    logEndRef.current?.scrollIntoView({ behavior: "smooth" })
+    logEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" })
   }
 
   useEffect(() => {
@@ -55,20 +60,24 @@ const StatusLog = ({ statusLog, fullname }) => {
             justifyContent: "space-between",
             paddingLeft: 2,
             paddingRight: 2,
-            paddingBottom: 2
+            paddingBottom: 3
           }}
         >
           <Typography variant="h6" sx={{ color: "black" }}>
             Status Log
           </Typography>
-          <Box sx={{ display: "flex", alignItems: "center" }}>
+          <Box sx={{ display: "flex", alignItems: "center", marginLeft: 2 }}>
             <Select
               value={filterLevel}
               onChange={handleFilterChange}
-              label="Filter"
               displayEmpty
               inputProps={{ "aria-label": "Filter Log Levels" }}
-              sx={{ color: "black", minWidth: 120, height: "20px" }}
+              IconComponent={FilterListIcon}
+              sx={{
+                color: "black",
+                minWidth: 120,
+                height: "32px"
+              }}
             >
               <MenuItem value="all">All</MenuItem>
               <MenuItem value="info">Info</MenuItem>
@@ -84,10 +93,10 @@ const StatusLog = ({ statusLog, fullname }) => {
           <WindowControls />
         </Toolbar>
       </AppBar>
-      <Box sx={{ padding: 2, maxHeight: "400px", overflowY: "auto" }}>
+      <Box sx={{ padding: 2, maxHeight: "400px", overflowY: "auto", overflowX: "auto" }}>
         <Grid container>
           <Grid item xs={12}>
-            <div style={{ padding: "16px", maxWidth: "100%" }}>
+            <Box sx={{ minWidth: "600px" }}>
               {filteredLog.map((status, index) => {
                 let style = {}
                 if (status.level === "info") {
@@ -104,15 +113,17 @@ const StatusLog = ({ statusLog, fullname }) => {
                     style={{ display: "flex", alignItems: "baseline", fontFamily: "monospace", width: "100%" }}
                   >
                     <small style={{ ...style, marginRight: "0.5rem" }}>{status.level}</small>
-                    <span
-                      style={{ margin: 0, whiteSpace: "pre-wrap", wordWrap: "break-word", flex: 1 }}
-                      dangerouslySetInnerHTML={{ __html: status.detail }}
-                    />
+                    <small style={{ marginRight: "0.3rem" }}>
+                      <span
+                        style={{ margin: 0, whiteSpace: "pre-wrap", wordWrap: "break-word", flex: 1 }}
+                        dangerouslySetInnerHTML={{ __html: status.detail }}
+                      />
+                    </small>
                   </div>
                 )
               })}
               <div ref={logEndRef} />
-            </div>
+            </Box>
           </Grid>
         </Grid>
       </Box>

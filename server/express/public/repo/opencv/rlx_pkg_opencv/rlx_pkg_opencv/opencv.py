@@ -67,7 +67,7 @@ class OpenCV(Service):
                 for filter in self.filters:
                     frame = filter.apply(frame)
 
-                cv2.imshow("Webcam Stream", frame)
+                cv2.imshow(self.fullname, frame)
 
                 if cv2.waitKey(1) & 0xFF == ord("q"):
                     self.stop_capture()

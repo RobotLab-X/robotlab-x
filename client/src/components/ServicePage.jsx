@@ -34,7 +34,7 @@ const containerStyle = {
 
 const statusLogStyle = {
   position: "absolute",
-  bottom: 0,
+  bottom: 160,
   marginBottom: "16px",
   width: "100%"
 }
