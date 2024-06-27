@@ -1,12 +1,17 @@
 import ClearIcon from "@mui/icons-material/Clear"
 import { AppBar, Box, Grid, IconButton, MenuItem, Select, Toolbar, Typography } from "@mui/material"
 import React, { useState } from "react"
+import { useStore } from "../store/store"
 
-const StatusLog = ({ statusLog, handleClearLog }) => {
+const StatusLog = ({ statusLog, fullname }) => {
   const [filterLevel, setFilterLevel] = useState("all")
 
   const handleFilterChange = (event) => {
     setFilterLevel(event.target.value)
+  }
+
+  const handleClearLog = () => {
+    useStore.getState().clearStatusList(fullname)
   }
 
   const filteredLog = filterLevel === "all" ? statusLog : statusLog.filter((status) => status.level === filterLevel)

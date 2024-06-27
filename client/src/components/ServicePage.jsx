@@ -39,15 +39,14 @@ export default function ServicePage({ fullname, name, id }) {
 
   let resolvedType = registered.typeKey === "Proxy" ? registered.proxyTypeKey : registered.typeKey
   resolvedType = resolvedType?.includes(".") ? "MyRobotLabProxy" : resolvedType
-  const { useMessage, sendTo } = useStore()
+  const { sendTo } = useStore()
   const getRepoUrl = useStore((state) => state.getRepoUrl)
   const [showJson, setShowJson] = useState(false)
   const [openDelete, setOpenDelete] = useState(false)
   const navigate = useNavigate()
   const [AsyncPage, setAsyncPage] = useState(null)
-  const statusMsg = useMessage(fullname, "publishStatus")
-  const [statusLog, setStatusLog] = useState([])
   const debug = useStore((state) => state.debug)
+  const statusList = useStore((state) => state.statusLists[`${fullname}.onStatusList`] || [])
 
   useEffect(() => {
     // Dynamically import the service page component
@@ -64,19 +63,6 @@ export default function ServicePage({ fullname, name, id }) {
       loadAsyncPage()
     }
   }, [resolvedType])
-
-  useEffect(() => {
-    if (statusMsg) {
-      console.log("new status msg:", statusMsg)
-      setStatusLog((log) => [...log, statusMsg.data[0]])
-    } else {
-      console.error("no status message")
-    }
-  }, [service?.fullname, statusMsg])
-
-  const handleClearLog = (event) => {
-    setStatusLog([])
-  }
 
   const handleDeleteClick = () => {
     setOpenDelete(true)
@@ -177,7 +163,7 @@ export default function ServicePage({ fullname, name, id }) {
         </>
       )}
 
-      {debug && <StatusLog statusLog={statusLog} handleClearLog={handleClearLog} />}
+      {debug && <StatusLog statusLog={statusList} fullname={fullname} />}
 
       {/* Confirmation Dialog */}
       <Dialog
