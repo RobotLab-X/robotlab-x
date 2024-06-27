@@ -3,6 +3,7 @@ import fs from "fs"
 import { ChatRequest, ChatResponse, Ollama as OllamaClient } from "ollama"
 import path from "path"
 import yaml from "yaml"
+import Main from "../../electron/ElectronStarter"
 import { getLogger } from "../framework/Log"
 import Service from "../framework/Service"
 
@@ -284,7 +285,7 @@ export default class Ollama extends Service {
   loadPrompts(): void {
     log.info("loadPrompts")
 
-    const promptsDir = path.join(this.dataPath, "prompts")
+    const promptsDir = path.join(Main.expressRoot, "repo", this.typeKey.toLowerCase(), "prompts")
     if (!fs.existsSync(promptsDir)) {
       log.error(`Prompts directory not found: ${promptsDir}`)
       return
