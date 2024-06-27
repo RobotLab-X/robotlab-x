@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
 import SwaggerUI from "swagger-ui-react"
 import "swagger-ui-react/swagger-ui.css"
-import yaml from "yaml"
+// import yaml from "yaml"
+import YAML from "yaml"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
 import useServiceSubscription from "../store/useServiceSubscription"
 
@@ -30,7 +31,7 @@ const SwaggerUIComponent = () => {
         // FIXME - need store urls not hardcoded
         const response = await fetch(`http://localhost:3001/swagger/${service?.typeKey}.yml`)
         const yamlText = await response.clone().text() // Clone the response before reading it
-        let swaggerDoc = yaml.load(yamlText)
+        let swaggerDoc = YAML.parse(yamlText)
 
         // Add servers entry to the Swagger doc
         swaggerDoc.servers = [{ url: apiBaseUrl }]
