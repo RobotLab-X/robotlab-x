@@ -32,6 +32,8 @@ const containerStyle = {
   paddingBottom: "400px" // Space for the StatusLog at the bottom
 }
 
+const containerStyle2 = {}
+
 const statusLogStyle = {
   position: "absolute",
   bottom: 160,
@@ -120,7 +122,7 @@ export default function ServicePage({ fullname, name, id }) {
   }
 
   return (
-    <div className="service-content-div" style={containerStyle}>
+    <div className="service-content-div" style={containerStyle2}>
       <Typography variant="h4" component="div" sx={{ display: "flex", alignItems: "center" }}>
         {resolvedType && resolvedType !== "MyRobotLabProxy" && (
           <img

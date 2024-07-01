@@ -93,7 +93,7 @@ export default function Servo({ name, fullname, id }) {
   }
 
   return (
-    <Box sx={{ width: { xs: "100%", sm: "100%", md: "30%" } }}>
+    <Box>
       <Box display="flex" justifyContent="space-between" alignItems="center">
         <FormControl fullWidth sx={{ mt: 2, mr: 1 }}>
           <InputLabel id="controller-select-label">Controller</InputLabel>

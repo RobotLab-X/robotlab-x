@@ -10,7 +10,6 @@ import Dashboard from "./layout/Dashboard"
 import Home from "./layout/Home"
 import Network from "./layout/Network"
 import Nodes from "./layout/Nodes"
-import TabLayout from "./layout/TabLayout"
 import WebXR from "./layout/WebXR"
 import AppSidebar from "./layout/global/AppSidebar"
 import Topbar from "./layout/global/Topbar"
@@ -118,9 +117,9 @@ function App() {
             <Routes>
               {/** TODO splash screen with examples */}
               <Route path="/" element={<Home />} />
+              {/** Add /:fullname for url access to services */}
+
               <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/tabs" element={<TabLayout tabName="" />} />
-              <Route path="/tabs/:tabName" element={<TabLayout />} />
               <Route path="/nodes" element={<Nodes nodeName="" />} />
               <Route path="/nodes/:nodeId" element={<Nodes />} />
               <Route path="/swagger/:fullname" element={<SwaggerUIComponent fullname="" />} />

@@ -110,7 +110,7 @@ export default function Arduino({ id, fullname, name }) {
         </Box>
       ) : null}
 
-      <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "80%" } }}>
+      <Box>
         <Paper elevation={3} sx={{ p: 2, m: 2 }}>
           <SerialPortSelector
             portInfo={{
