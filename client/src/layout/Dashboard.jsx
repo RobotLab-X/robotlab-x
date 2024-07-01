@@ -47,12 +47,13 @@ const WindowTitleBar = ({ title, onMinimize, onMaximize, onClose, isMaximized })
 
 const Dashboard = () => {
   const registry = useStore((state) => state.registry)
+  const savedLayout = useStore((state) => state.layout)
+  const setLayout = useStore((state) => state.setLayout)
   const [filter, setFilter] = useState("")
   const [closedServices, setClosedServices] = useState([])
   const [openServices, setOpenServices] = useState(Object.values(registry))
   const [maximizedService, setMaximizedService] = useState(null)
-  const savedLayout = useStore((state) => state.layout)
-  const setLayout = useStore((state) => state.setLayout)
+
   const serviceArray = Object.values(registry)
   const filteredServices = openServices.filter((srvc) => srvc.name.toLowerCase().includes(filter.toLowerCase()))
 
@@ -73,7 +74,7 @@ const Dashboard = () => {
       }))
       setOpenServices(updatedServices)
     }
-  }, [savedLayout, setOpenServices])
+  }, [savedLayout])
 
   const layout = filteredServices.map((srvc, index) => ({
     i: srvc.fullname,
