@@ -1,13 +1,13 @@
-import { Close, CropSquare, DragIndicator, Minimize } from "@mui/icons-material"
-import { AppBar, Box, IconButton, MenuItem, Select, Toolbar, Typography } from "@mui/material"
+import { Close, CropSquare, DragIndicator, FullscreenExit, Minimize, Save } from "@mui/icons-material"
+import { AppBar, Box, Button, IconButton, MenuItem, Select, Toolbar, Typography } from "@mui/material"
 import ServicePage from "components/ServicePage"
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import GridLayout from "react-grid-layout"
 import "react-grid-layout/css/styles.css"
 import "react-resizable/css/styles.css"
 import { useStore } from "store/store"
 
-const WindowTitleBar = ({ title, onMinimize, onMaximize, onClose }) => {
+const WindowTitleBar = ({ title, onMinimize, onMaximize, onClose, isMaximized }) => {
   return (
     <Box
       className="title-bar"
@@ -35,7 +35,7 @@ const WindowTitleBar = ({ title, onMinimize, onMaximize, onClose }) => {
           <Minimize />
         </IconButton>
         <IconButton onClick={onMaximize} size="small">
-          <CropSquare />
+          {isMaximized ? <FullscreenExit /> : <CropSquare />}
         </IconButton>
         <IconButton onClick={onClose} size="small">
           <Close />
@@ -51,9 +51,21 @@ const Dashboard = () => {
   const [closedServices, setClosedServices] = useState([])
   const [openServices, setOpenServices] = useState(Object.values(registry))
   const [maximizedService, setMaximizedService] = useState(null)
+  const savedLayout = useStore((state) => state.layout)
+  const setLayout = useStore((state) => state.setLayout)
   const serviceArray = Object.values(registry)
   const filteredServices = openServices.filter((srvc) => srvc.name.toLowerCase().includes(filter.toLowerCase()))
-  const getTypeImage = useStore((state) => state.getTypeImage)
+
+  useEffect(() => {
+    if (Object.keys(savedLayout).length > 0) {
+      setOpenServices(
+        openServices.map((srvc) => ({
+          ...srvc,
+          layout: savedLayout[srvc.fullname] || srvc.layout
+        }))
+      )
+    }
+  }, [savedLayout])
 
   const layout = filteredServices.map((srvc, index) => ({
     i: srvc.fullname,
@@ -64,7 +76,8 @@ const Dashboard = () => {
     minW: 2,
     minH: 2,
     maxW: 12,
-    maxH: 12
+    maxH: 12,
+    ...savedLayout[srvc.fullname]
   }))
 
   const handleClose = (fullname) => {
@@ -84,6 +97,14 @@ const Dashboard = () => {
 
   const handleRestore = () => {
     setMaximizedService(null)
+  }
+
+  const handleSaveLayout = () => {
+    const currentLayout = layout.reduce((acc, item) => {
+      acc[item.i] = item
+      return acc
+    }, {})
+    setLayout(currentLayout)
   }
 
   return (
@@ -108,6 +129,10 @@ const Dashboard = () => {
               </MenuItem>
             ))}
           </Select>
+          <Button color="inherit" onClick={handleSaveLayout}>
+            <Save sx={{ mr: 1 }} />
+            Save
+          </Button>
         </Toolbar>
       </AppBar>
       <Box sx={{ width: "100%", overflow: "auto" }} className="dashboard-container">
@@ -125,8 +150,9 @@ const Dashboard = () => {
             <WindowTitleBar
               title={maximizedService}
               onMinimize={() => console.log("Minimize")}
-              onMaximize={() => handleRestore()}
-              onClose={() => handleRestore()}
+              onMaximize={handleRestore}
+              onClose={handleRestore}
+              isMaximized={true}
             />
             <Box sx={{ flexGrow: 1, overflow: "auto", padding: "16px" }}>
               <ServicePage
@@ -170,6 +196,7 @@ const Dashboard = () => {
                     onMinimize={() => console.log("Minimize")}
                     onMaximize={() => handleMaximize(srvc.fullname)}
                     onClose={() => handleClose(srvc.fullname)}
+                    isMaximized={false}
                   />
                   <Box sx={{ flexGrow: 1, overflow: "auto", padding: "16px" }}>
                     <ServicePage fullname={`${srvc.name}@${srvc.id}`} name={srvc.name} id={srvc.id} />
