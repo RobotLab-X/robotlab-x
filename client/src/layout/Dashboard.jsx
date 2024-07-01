@@ -58,26 +58,33 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (Object.keys(savedLayout).length > 0) {
-      setOpenServices(
-        openServices.map((srvc) => ({
-          ...srvc,
-          layout: savedLayout[srvc.fullname] || srvc.layout
-        }))
-      )
+      const updatedServices = openServices.map((srvc) => ({
+        ...srvc,
+        layout: savedLayout[srvc.fullname] || {
+          x: (openServices.indexOf(srvc) % 4) * 3,
+          y: Math.floor(openServices.indexOf(srvc) / 4) * 3,
+          w: 4,
+          h: 3,
+          minW: 2,
+          minH: 2,
+          maxW: 12,
+          maxH: 12
+        }
+      }))
+      setOpenServices(updatedServices)
     }
-  }, [savedLayout])
+  }, [savedLayout, setOpenServices])
 
   const layout = filteredServices.map((srvc, index) => ({
     i: srvc.fullname,
-    x: (index % 4) * 3,
-    y: Math.floor(index / 4) * 3,
-    w: 4,
-    h: 3,
+    x: savedLayout[srvc.fullname]?.x || (index % 4) * 3,
+    y: savedLayout[srvc.fullname]?.y || Math.floor(index / 4) * 3,
+    w: savedLayout[srvc.fullname]?.w || 4,
+    h: savedLayout[srvc.fullname]?.h || 3,
     minW: 2,
     minH: 2,
     maxW: 12,
-    maxH: 12,
-    ...savedLayout[srvc.fullname]
+    maxH: 12
   }))
 
   const handleClose = (fullname) => {
@@ -99,7 +106,7 @@ const Dashboard = () => {
     setMaximizedService(null)
   }
 
-  const handleSaveLayout = () => {
+  const handleSaveLayout = (layout) => {
     const currentLayout = layout.reduce((acc, item) => {
       acc[item.i] = item
       return acc
@@ -129,7 +136,7 @@ const Dashboard = () => {
               </MenuItem>
             ))}
           </Select>
-          <Button color="inherit" onClick={handleSaveLayout}>
+          <Button color="inherit" onClick={() => handleSaveLayout(layout)}>
             <Save sx={{ mr: 1 }} />
             Save
           </Button>
@@ -171,6 +178,7 @@ const Dashboard = () => {
             width={2400}
             draggableHandle=".move-handle" // Set the draggable handle to the move icon
             compactType={null}
+            onLayoutChange={(newLayout) => handleSaveLayout(newLayout)}
           >
             {filteredServices.map((srvc, index) => (
               <div key={srvc.fullname} data-grid={layout[index]}>
