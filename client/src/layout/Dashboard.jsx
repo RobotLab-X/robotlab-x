@@ -1,5 +1,5 @@
 import { Close, CropSquare, DragIndicator, FullscreenExit, Minimize, Save } from "@mui/icons-material"
-import { AppBar, Box, Button, IconButton, MenuItem, Select, Toolbar, Typography } from "@mui/material"
+import { AppBar, Box, Button, IconButton, MenuItem, Select, Toolbar, Tooltip, Typography } from "@mui/material"
 import ServicePage from "components/ServicePage"
 import React, { useEffect, useState } from "react"
 import GridLayout from "react-grid-layout"
@@ -46,12 +46,14 @@ const WindowTitleBar = ({ title, onMinimize, onMaximize, onClose, isMaximized })
 }
 
 const Dashboard = () => {
+  const getTypeImage = useStore((state) => state.getTypeImage)
   const registry = useStore((state) => state.registry)
   const savedLayout = useStore((state) => state.layout)
   const setLayout = useStore((state) => state.setLayout)
   const [filter, setFilter] = useState("")
   const [closedServices, setClosedServices] = useState([])
   const [openServices, setOpenServices] = useState(Object.values(registry))
+  const [minimizedServices, setMinimizedServices] = useState([])
   const [maximizedService, setMaximizedService] = useState(null)
 
   const serviceArray = Object.values(registry)
@@ -93,10 +95,15 @@ const Dashboard = () => {
     setClosedServices([...closedServices, fullname])
   }
 
+  const handleMinimize = (fullname) => {
+    setOpenServices(openServices.filter((srvc) => srvc.fullname !== fullname))
+    setMinimizedServices([...minimizedServices, fullname])
+  }
+
   const handleReopen = (fullname) => {
     const reopenedService = serviceArray.find((srvc) => srvc.fullname === fullname)
     setOpenServices([...openServices, reopenedService])
-    setClosedServices(closedServices.filter((name) => name !== fullname))
+    setMinimizedServices(minimizedServices.filter((name) => name !== fullname))
   }
 
   const handleMaximize = (fullname) => {
@@ -122,6 +129,18 @@ const Dashboard = () => {
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             Dashboard
           </Typography>
+          {minimizedServices.map((fullname) => {
+            const service = serviceArray.find((srvc) => srvc.fullname === fullname)
+            return (
+              <Tooltip key={fullname} title={service.name} arrow>
+                <Button variant="contained" onClick={() => handleReopen(fullname)} sx={{ mx: 1 }}>
+                  <img src={getTypeImage(service.fullname)} alt="" width="32" style={{ verticalAlign: "top" }} />
+
+                  {service.name}
+                </Button>
+              </Tooltip>
+            )
+          })}
           <Select
             value=""
             displayEmpty
@@ -202,7 +221,7 @@ const Dashboard = () => {
                 >
                   <WindowTitleBar
                     title={srvc.name}
-                    onMinimize={() => console.log("Minimize")}
+                    onMinimize={() => handleMinimize(srvc.fullname)}
                     onMaximize={() => handleMaximize(srvc.fullname)}
                     onClose={() => handleClose(srvc.fullname)}
                     isMaximized={false}
