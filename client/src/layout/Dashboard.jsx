@@ -7,7 +7,7 @@ import "react-grid-layout/css/styles.css"
 import "react-resizable/css/styles.css"
 import { useStore } from "store/store"
 
-const WindowTitleBar = ({ title, onMinimize, onRestore, onClose }) => {
+const WindowTitleBar = ({ title, onMinimize, onMaximize, onClose }) => {
   return (
     <Box
       className="title-bar"
@@ -34,7 +34,7 @@ const WindowTitleBar = ({ title, onMinimize, onRestore, onClose }) => {
         <IconButton onClick={onMinimize} size="small">
           <Minimize />
         </IconButton>
-        <IconButton onClick={onRestore} size="small">
+        <IconButton onClick={onMaximize} size="small">
           <CropSquare />
         </IconButton>
         <IconButton onClick={onClose} size="small">
@@ -50,6 +50,7 @@ const Dashboard = () => {
   const [filter, setFilter] = useState("")
   const [closedServices, setClosedServices] = useState([])
   const [openServices, setOpenServices] = useState(Object.values(registry))
+  const [maximizedService, setMaximizedService] = useState(null)
   const serviceArray = Object.values(registry)
   const filteredServices = openServices.filter((srvc) => srvc.name.toLowerCase().includes(filter.toLowerCase()))
   const getTypeImage = useStore((state) => state.getTypeImage)
@@ -77,6 +78,14 @@ const Dashboard = () => {
     setClosedServices(closedServices.filter((name) => name !== fullname))
   }
 
+  const handleMaximize = (fullname) => {
+    setMaximizedService(fullname)
+  }
+
+  const handleRestore = () => {
+    setMaximizedService(null)
+  }
+
   return (
     <>
       <AppBar position="static">
@@ -102,47 +111,74 @@ const Dashboard = () => {
         </Toolbar>
       </AppBar>
       <Box sx={{ width: "100%", overflow: "auto" }} className="dashboard-container">
-        <GridLayout
-          className="layout"
-          layout={layout}
-          cols={24}
-          rowHeight={100}
-          width={2400}
-          draggableHandle=".move-handle" // Set the draggable handle to the move icon
-          compactType={null}
-        >
-          {filteredServices.map((srvc, index) => (
-            <div key={srvc.fullname} data-grid={layout[index]}>
-              <Box
-                sx={{
-                  border: "1px solid #ccc",
-                  borderRadius: "8px",
-                  maxWidth: "100%",
-                  maxHeight: "100%",
-                  overflow: "auto",
-                  boxSizing: "border-box",
-                  display: "flex",
-                  flexDirection: "column",
-                  height: "100%",
-                  userSelect: "none",
-                  WebkitUserSelect: "none",
-                  MozUserSelect: "none",
-                  msUserSelect: "none"
-                }}
-              >
-                <WindowTitleBar
-                  title={srvc.name}
-                  onMinimize={() => console.log("Minimize")}
-                  onRestore={() => console.log("Restore")}
-                  onClose={() => handleClose(srvc.fullname)}
-                />
-                <Box sx={{ flexGrow: 1, overflow: "auto", padding: "16px" }}>
-                  <ServicePage fullname={`${srvc.name}@${srvc.id}`} name={srvc.name} id={srvc.id} />
+        {maximizedService ? (
+          <Box
+            sx={{
+              position: "relative",
+              height: "calc(100vh - 64px)",
+              width: "100%",
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "column"
+            }}
+          >
+            <WindowTitleBar
+              title={maximizedService}
+              onMinimize={() => console.log("Minimize")}
+              onMaximize={() => handleRestore()}
+              onClose={() => handleRestore()}
+            />
+            <Box sx={{ flexGrow: 1, overflow: "auto", padding: "16px" }}>
+              <ServicePage
+                fullname={maximizedService}
+                name={maximizedService.split("@")[0]}
+                id={maximizedService.split("@")[1]}
+              />
+            </Box>
+          </Box>
+        ) : (
+          <GridLayout
+            className="layout"
+            layout={layout}
+            cols={24}
+            rowHeight={100}
+            width={2400}
+            draggableHandle=".move-handle" // Set the draggable handle to the move icon
+            compactType={null}
+          >
+            {filteredServices.map((srvc, index) => (
+              <div key={srvc.fullname} data-grid={layout[index]}>
+                <Box
+                  sx={{
+                    border: "1px solid #ccc",
+                    borderRadius: "8px",
+                    maxWidth: "100%",
+                    maxHeight: "100%",
+                    overflow: "auto",
+                    boxSizing: "border-box",
+                    display: "flex",
+                    flexDirection: "column",
+                    height: "100%",
+                    userSelect: "none",
+                    WebkitUserSelect: "none",
+                    MozUserSelect: "none",
+                    msUserSelect: "none"
+                  }}
+                >
+                  <WindowTitleBar
+                    title={srvc.name}
+                    onMinimize={() => console.log("Minimize")}
+                    onMaximize={() => handleMaximize(srvc.fullname)}
+                    onClose={() => handleClose(srvc.fullname)}
+                  />
+                  <Box sx={{ flexGrow: 1, overflow: "auto", padding: "16px" }}>
+                    <ServicePage fullname={`${srvc.name}@${srvc.id}`} name={srvc.name} id={srvc.id} />
+                  </Box>
                 </Box>
-              </Box>
-            </div>
-          ))}
-        </GridLayout>
+              </div>
+            ))}
+          </GridLayout>
+        )}
       </Box>
     </>
   )
