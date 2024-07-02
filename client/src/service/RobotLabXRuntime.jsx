@@ -2,7 +2,9 @@ import EastIcon from "@mui/icons-material/East"
 import ExpandLessIcon from "@mui/icons-material/ExpandLess"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import InputOutlinedIcon from "@mui/icons-material/InputOutlined"
+import OpenInBrowserIcon from "@mui/icons-material/OpenInBrowser"
 import PlaylistAddIcon from "@mui/icons-material/PlaylistAddOutlined"
+import SaveIcon from "@mui/icons-material/Save"
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined"
 import WestIcon from "@mui/icons-material/West"
 import {
@@ -80,6 +82,16 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
 
   const handleStartNewService = () => {
     console.info("Starting new node...")
+    setOpen(true) // Open the modal dialog
+  }
+
+  const handleStartLaunchFile = () => {
+    console.info("handleStartLaunchFile...")
+    setOpen(true) // Open the modal dialog
+  }
+
+  const handleSaveLaunchFile = () => {
+    console.info("handleSaveLaunchFile...")
     setOpen(true) // Open the modal dialog
   }
 
@@ -230,7 +242,6 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
       ) : (
         <></>
       )}
-
       <Tabs value={activeTab} onChange={handleChange} aria-label="stats tabs">
         <Tab label={`Services ${Object.keys(registry).length}`} />
         <Tab label={`Processes ${processArray.length}`} />
@@ -318,37 +329,55 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
       <TabPanel value={activeTab} index={0}>
         <Grid container justifyContent="flex-start">
           <Grid item xs={12} sm={8} md={6} lg={4}>
-            <Box display="flex" flexDirection="column" alignItems="left">
-              {/* Row for the first icon and text */}
+            <Box>
+              {/* First icon and text */}
               <Grid container alignItems="center" spacing={2}>
                 <Grid item>
-                  <IconButton type="button" onClick={handleStartNewService} sx={{ marginRight: 1 }}>
+                  <IconButton type="button" onClick={handleStartNewService}>
                     <PlaylistAddIcon sx={{ fontSize: iconSize }} />
                   </IconButton>
                 </Grid>
                 <Grid item xs>
-                  <Typography component="div" variant="body1">
-                    Add a new service
-                  </Typography>
+                  <Typography variant="body1">Add a new service</Typography>
                 </Grid>
               </Grid>
-              {/* Row for the second icon and text */}
-              <Grid container alignItems="center" spacing={2}>
+              {/* Second icon and text */}
+              <Grid container alignItems="center" spacing={2} mt={2}>
                 <Grid item>
                   <IconButton type="button" onClick={() => setConnectDialogOpen(true)}>
                     <InputOutlinedIcon sx={{ fontSize: iconSize }} />
                   </IconButton>
                 </Grid>
                 <Grid item xs>
-                  <Typography component="div" variant="body1">
-                    Connect to a running service
-                  </Typography>
+                  <Typography variant="body1">Connect to a running service</Typography>
+                </Grid>
+              </Grid>
+              {/* Third icon and text */}
+              <Grid container alignItems="center" spacing={2} mt={2}>
+                <Grid item>
+                  <IconButton type="button" onClick={handleSaveLaunchFile}>
+                    <SaveIcon sx={{ fontSize: iconSize }} />
+                  </IconButton>
+                </Grid>
+                <Grid item xs>
+                  <Typography variant="body1">Save a launch file</Typography>
+                </Grid>
+              </Grid>
+              {/* Fourth icon and text */}
+              <Grid container alignItems="center" spacing={2} mt={2}>
+                <Grid item>
+                  <IconButton type="button" onClick={handleStartLaunchFile}>
+                    <OpenInBrowserIcon sx={{ fontSize: iconSize }} />
+                  </IconButton>
+                </Grid>
+                <Grid item xs>
+                  <Typography variant="body1">Start a launch file</Typography>
                 </Grid>
               </Grid>
             </Box>
           </Grid>
         </Grid>
-      </TabPanel>
+      </TabPanel>{" "}
       <TabPanel value={activeTab} index={3}>
         <Grid container justifyContent="flex-start">
           <Grid item>
@@ -464,7 +493,6 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
       {service && <ReactJson src={service} name="service" />}
 
        */}
-
       <br />
       {/** message ? <pre>{JSON.stringify(message, null, 2)}</pre> : <p>No message yet</p> */}
       {/**
