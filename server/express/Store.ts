@@ -257,6 +257,12 @@ export default class Store {
       }
 
       let service: Service = this.getService(fullName)
+
+      if (!service) {
+        RobotLabXRuntime.getInstance().error(`service ${fullName} not found`)
+        return null
+      }
+
       let ret: Object = service.invokeMsg(msg)
 
       return ret

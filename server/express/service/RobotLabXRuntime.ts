@@ -485,12 +485,25 @@ export default class RobotLabXRuntime extends Service {
     try {
       log.info(`cwd ${process.cwd()}`)
       // Dynamically import the configuration based on the launcher name
-      const modulePath = `../../config/default/${launcher}` // Construct the module path dynamically
-      const configModule = await import(modulePath)
+      const configSetName = "default"
+      const configPath = path.join(process.cwd(), "config", configSetName, launcher)
+      log.info(`configPath ${configPath}`)
+
+      // delete cache
+      if (require.cache[require.resolve(configPath)]) {
+        delete require.cache[require.resolve(configPath)]
+        log.info("deleted cache")
+      }
+
+      delete require.cache[require.resolve(configPath)]
+
+      // const configModule = await import(configPath)
+      const configModule = require(configPath)
       const generateLaunchDescription = configModule.generateLaunchDescription
 
       // Create an instance of the dynamically loaded configuration
       const launchDescription = generateLaunchDescription()
+      log.info("generated launchDescription")
 
       // Process the configuration - this example just logs the loaded configuration
       log.info(`Loaded configuration with ${launchDescription.getLaunchActions().length} actions.`)

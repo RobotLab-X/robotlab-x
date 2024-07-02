@@ -1,6 +1,6 @@
 import ExpandLessIcon from "@mui/icons-material/ExpandLess"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
-import { Box, Button, Paper, TextField, Typography } from "@mui/material"
+import { Box, Button, TextField, Typography } from "@mui/material"
 import React, { useState } from "react"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
 import { useStore } from "../store/store"
@@ -85,28 +85,23 @@ export default function Clock({ fullname }) {
       ) : null}
 
       <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "80%" } }}>
-        <Paper elevation={3} sx={{ p: 2, m: 2 }}>
-          <Box sx={{ m: 2 }}>
-            <Typography variant="h4" sx={{ mb: 2 }}>
-              Interval (ms) <br /> {service?.config.intervalMs}&nbsp;
-            </Typography>
-            <Typography variant="h4" sx={{ mb: 2 }}>
-              Timestamp (ms) <br /> {timestamp}&nbsp;
-            </Typography>
-            <Typography variant="h4" sx={{ mb: 2 }}>
-              Formatted Date/Time
-              <br /> {dateStr}&nbsp;
-            </Typography>
-            <Box>
-              <Button variant="contained" color="primary" onClick={handleStart}>
-                Start
-              </Button>
-              <Button variant="contained" color="secondary" onClick={handleStop} sx={{ ml: 2 }}>
-                Stop
-              </Button>
-            </Box>
+        <Box sx={{ m: 2 }}>
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            <span style={{ fontFamily: "Orbitron, Arial, sans-serif" }}> {dateStr}</span>
+            <br />
+            <span style={{ fontFamily: "Orbitron, Arial, sans-serif" }}>{timestamp}</span>
+            <br />
+            Interval {service?.config.intervalMs}&nbsp; (ms)
+          </Typography>
+          <Box>
+            <Button variant="contained" color="primary" onClick={handleStart}>
+              Start
+            </Button>
+            <Button variant="contained" color="secondary" onClick={handleStop} sx={{ ml: 2 }}>
+              Stop
+            </Button>
           </Box>
-        </Paper>
+        </Box>
       </Box>
     </>
   )
