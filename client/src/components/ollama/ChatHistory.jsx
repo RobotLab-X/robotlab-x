@@ -18,7 +18,6 @@ const ChatHistory = ({ chatHistory }) => {
 
   return (
     <Box sx={{ p: 2 }}>
-      {chatHistory.length}
       {chatHistory.map((chat, index) => {
         let type = null
         let content = null

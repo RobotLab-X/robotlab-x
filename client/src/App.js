@@ -88,6 +88,8 @@ function App() {
       let prossessData = new ProcessData(id, "browser", "browser", browser.name.toLowerCase(), browser.version)
       sendTo("runtime", "registerProcess", prossessData)
 
+      // broadcast my state
+
       // TODO make these "service" calls ??? or at least one shot calls
       // that future callbacks are not needed
       // setup server runtime subscriptions, register this runtime, get repo

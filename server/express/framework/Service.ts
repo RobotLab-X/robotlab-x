@@ -75,11 +75,11 @@ export default class Service implements Gateway {
     const listeners = this.notifyList[method] || []
     for (const listener of listeners) {
       if (listener.callbackName === remoteName && listener.callbackMethod === remoteMethod) {
-        log.info(`listener on ${method} for -> ${remoteName}.${remoteMethod} already exists`)
+        // log.info(`listener on ${method} for -> ${remoteName}.${remoteMethod} already exists`)
         return listener
       }
     }
-    // this.notifyList.get(method).push(new SubscriptionListener(method, remoteName, remoteMethod))
+
     const listener = new SubscriptionListener(method, remoteName, remoteMethod)
     this.notifyList[method].push(listener)
     return listener

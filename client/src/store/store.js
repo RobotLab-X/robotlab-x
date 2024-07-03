@@ -26,7 +26,10 @@ const store = (set, get) => ({
 
   setId: (newId) => set({ id: newId }),
 
-  debug: true,
+  debug: false,
+
+  // dashboard layout
+  layout: {},
 
   setDebug: (newDebug) => set({ debug: newDebug }),
 
@@ -331,7 +334,11 @@ const store = (set, get) => ({
     if (type === "MyRobotLabProxy") {
       return `${get().getRepoUrl()}/myrobotlabconnector/images/${registered.proxyTypeKey}.png`
     } else {
-      return `${get().getRepoUrl()}/${imgType.toLowerCase()}/image.png`
+      if (imgType) {
+        return `${get().getRepoUrl()}/${imgType.toLowerCase()}/image.png`
+      } else {
+        return `${get().getRepoUrl()}/unknown/image.png`
+      }
     }
   },
 
@@ -344,6 +351,8 @@ const store = (set, get) => ({
       }
     }))
   },
+  setLayout: (newLayout) => set({ layout: newLayout }),
+  saveLayout: (newLayout) => set({ layout: newLayout }),
 
   addToStatusList: (service, status) => {
     const key = `${service}.onStatusList`
