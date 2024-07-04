@@ -3,6 +3,7 @@ import path from "path"
 import yaml from "yaml"
 import Main from "../../electron/ElectronStarter"
 import Service from "../framework/Service"
+import Package from "../models/Package"
 import { getLogger } from "./Log"
 
 const log = getLogger("Repo")
@@ -125,6 +126,18 @@ export class Repo {
     // especially with different process ids are necessary for routing
     log.info(`constructing ${serviceType}`)
     return new ServiceClass(id, name, serviceType, version, hostname)
+  }
+
+  // Probably preferred - vs saving from external source
+  // setInstalled(pkg: Package) {
+  //   pkg.setInstalled(true)
+  //   fs.writeFileSync(pkg.getPath(), yaml.dump(pkg))
+
+  // }
+
+  savePackage(pkg: Package) {
+    const packagePath = path.join(Main.expressRoot, "repo", pkg.typeKey.toLowerCase(), "package.yml")
+    fs.writeFileSync(packagePath, yaml.stringify(pkg))
   }
 
   processRepoDirectory(basePath: string): Map<string, any> {

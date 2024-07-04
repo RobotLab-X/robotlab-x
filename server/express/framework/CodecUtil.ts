@@ -63,6 +63,7 @@ class CodecUtil {
   static getNpmPackageName(type: string): string {
     if (!type) {
       log.error("Type is null")
+      return null
     }
     return `rlx-pkg-${type.toLowerCase()}`
   }
@@ -70,6 +71,7 @@ class CodecUtil {
   static getPipPackageName(type: string): string {
     if (!type) {
       log.error("Type is null")
+      return null
     }
     return `rlx_pkg_${type.toLowerCase()}`
   }

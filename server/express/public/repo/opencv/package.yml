@@ -1,29 +1,31 @@
-typeKey: "OpenCV"
-title: "OpenCV Service"
-platform: "python"
-platformVersion: null # minimum version ?
-description: "OpenCV pipeline"
-version: "0.0.1"
-visible: true
-cmd: "python"
-args: ["-u","proxy.py", "-i", "{{name}}", "-c", "{{serviceUrl}}"] # -u unbuffered output
-cwd: null
-interfaces:
-  restAPI:
-    - endpoint: "/api/v1/resource"
-      method: "GET"
-      description: "Retrieves list of resources."
+args:
+  - -u
+  - proxy.py
+  - -i
+  - "{{name}}"
+  - -c
+  - "{{serviceUrl}}"
+author: GroG
+categories:
+  - web
+  - testing
+  - ui
+cmd: python
+cwd: /home/gperry/mrl/robotlab-x/server/express/public/repo/opencv
+dependencies: null
+description: OpenCV pipeline
+installed: true
+license: MIT
+platform: python
+platformVersion: null
+repoRequirements:
+  - Proxy
+  - OpenCV
 requirements:
+  joblib: ">=1.4.2"
   opencv-python: ">=4.10.0"
   scikit-learn: ""
-  joblib: ">=1.4.2"
-repoRequirements:
-  - "Proxy"
-  - "OpenCV"
-author: "GroG"
-license: "MIT"
-categories:
-- "web"
-- "testing"
-- "ui"
-dependencies: null
+title: OpenCV Service
+typeKey: OpenCV
+version: 0.0.1
+visible: true

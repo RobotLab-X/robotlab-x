@@ -73,7 +73,8 @@ export default function OpenCV({ fullname }) {
     sendTo(fullname, "broadcastState")
   }
 
-  if (!service?.installed) {
+  // NOT service but pkg is installed
+  if (!service?.pkg?.installed) {
     return <PythonWizard fullname={fullname} />
   } else
     return (

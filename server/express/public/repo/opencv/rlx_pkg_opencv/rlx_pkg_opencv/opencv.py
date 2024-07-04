@@ -38,6 +38,18 @@ class OpenCV(Service):
             "camera_index": "0",
         }
 
+        self.pkg = {
+            "typeKey": "OpenCV",
+            "title": "OpenCV",
+            "platform": "python",
+            "platformVersion": "3.10",
+            "description": "Python OpenCV service",
+            "version": "0.0.1",
+            "requirements": "pip install -r requirements.txt",
+            "cmd": "python",
+            "installed": True,
+        }
+
         print(f"OpenCV version: {self.version}")
 
     def set_camera(self, camera_index):
@@ -162,18 +174,15 @@ class OpenCV(Service):
 
     # FIXME - REFACTOR WITH SERVICE
     def to_dict(self):
-        return {
-            "id": self.id,
-            "fullname": f"{self.id}@{self.id}",
-            "name": self.id,
-            "typeKey": "OpenCV",
-            "version": self.version,
-            "config": self.config,
+        base_dict = super().to_dict()
+        derived = {
             "capturing": self.capturing,
             "installed": self.installed,
             "filters": [filter.to_dict() for filter in self.filters],
             "ready": self.ready,
         }
+        base_dict.update(derived)
+        return base_dict
 
 
 def main():

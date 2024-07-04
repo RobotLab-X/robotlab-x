@@ -20,6 +20,7 @@ const apiPrefix = "/api/v1/services"
 const log = getLogger("Store")
 
 type RegistryType = { [key: string]: Service }
+type MessageType = { [key: string]: Message }
 
 /**
  * The Store class is a singleton class that acts as a central store for the
@@ -36,6 +37,8 @@ export default class Store {
   private static instance: Store
 
   private registry: RegistryType = {}
+
+  private messages: MessageType = {}
 
   private express: express.Application
 
@@ -239,6 +242,10 @@ export default class Store {
       let fullName = CodecUtil.getFullName(msg.name)
       const msgId = CodecUtil.getId(fullName)
 
+      // Experimental - add messages to the store (similar to retained messages)
+      let remoteKey = `${msg.sender}.${msg.method}`
+      this.messages[remoteKey] = msg
+
       // MESSAGE FROM REMOTE NEEDS TO BE SENT OUT REMOTE
       // POTENTIALLY NO SERVICE DEFINED FOR THIS MESSAGE
       if (msgId !== this.runtime.getId()) {
@@ -302,6 +309,10 @@ export default class Store {
     this.express.use("/swagger", express.static(path.join(Main.expressRoot, "swagger")))
     this.express.use(bodyParser.json())
     this.express.use(bodyParser.urlencoded({ extended: false }))
+  }
+
+  public getMessages(): { [key: string]: Message } {
+    return this.messages
   }
 
   // Configure API endpoints.

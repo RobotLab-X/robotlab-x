@@ -1,4 +1,5 @@
 import { spawn } from "child_process"
+
 import fs from "fs"
 import path from "path"
 import { PythonShell } from "python-shell"
@@ -6,6 +7,7 @@ import semver from "semver"
 import Main from "../../electron/ElectronStarter"
 import { CodecUtil } from "../framework/CodecUtil"
 import { getLogger } from "../framework/Log"
+import { Repo } from "../framework/Repo"
 import Service from "../framework/Service"
 import Message from "../models/Message"
 import RobotLabXRuntime from "./RobotLabXRuntime"
@@ -69,6 +71,7 @@ export default class Proxy extends Service {
 
   startService(): void {
     super.startService()
+    log.info(`proxy starting service ${this.name} ${this.typeKey} ${this.version}`)
     this.ready = false // not ready until connected
     const runtime: RobotLabXRuntime = RobotLabXRuntime.getInstance()
 
@@ -79,6 +82,13 @@ export default class Proxy extends Service {
       "inbound",
       null /* ws not ready yet - client not attached */
     )
+
+    // if this proxy is installed,
+    // then we should be able to start the client
+    if (this.pkg.installed) {
+      log.info(`proxy starting client ${this.name} ${this.typeKey} ${this.version}`)
+      this.startProxy()
+    }
   }
 
   /**
@@ -187,7 +197,7 @@ export default class Proxy extends Service {
     // FIXME - check if blocking or non-blocking
     // is this the service to invoke the method on ?
     // if (fullName === msgFullName) {
-    log.info(`(invoke) ${msgFullName}.${msg.method} from ${msg.sender}.${msg.method}`)
+    log.info(`proxy (invoke) ${msgFullName}.${msg.method} from ${msg.sender}.${msg.method}`)
     let obj: any = this // cast away typescript
 
     if (!msg.method) {
@@ -571,6 +581,16 @@ print(result.stderr.decode(), file=sys.stderr)
     }
 
     this.info(`All packages installed successfully: ${results.join(", ")}`)
+
+    // FIXME - Repo should be a singleton, and "installing"
+    // should be a method on the repo - add timestamp, version, etc
+    // Repo.getInstance().savePackage(this.pkg)
+    this.error(`saving package ${this.pkg.typeKey}`)
+    this.pkg.installed = true
+    const repo = new Repo()
+    repo.savePackage(this.pkg)
+    this.error(`saved package ${this.pkg.typeKey}`)
+
     return results
   }
 }

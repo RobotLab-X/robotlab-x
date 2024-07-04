@@ -1,18 +1,12 @@
-typeKey: "Ollama"
-title: "Ollama"
+author: "GroG"
+categories: ["ai", "llm"]
+dependencies: null
+description: "Ollama installer and interface"
+installed: true
+license: "MIT"
 platform: "node"
 platformVersion: "v20.9.0"
-description: "Ollama installer and interface"
+title: "Ollama"
+typeKey: "Ollama"
 version: "0.0.1"
 visible: true
-interfaces:
-  restAPI:
-    - endpoint: "/api/v1/resource"
-      method: "GET"
-      description: "Retrieves list of resources."
-author: "GroG"
-license: "MIT"
-categories:
-- "ai"
-- "llm"
-dependencies: null

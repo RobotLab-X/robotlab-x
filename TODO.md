@@ -13,6 +13,7 @@
 
 
 ### Framework
+* Repo.getinstance() <- should be a singleton
 * Unified logging (non indexed per service)
 * Python Wizard - green check mark when completed
 * For Proxy, there should be an option to stream stdio "OR NOT" - ie saving huge amount of bandwidth

@@ -70,10 +70,19 @@ class Service:
         self.remote_id = None
         self.loop = asyncio.get_event_loop()
         # integration point for service
-        self.service = None
         self.notifyList = {}
         self.ready = True
         self.confg = None
+        self.pkg = {
+            "typeKey": "PythonService",
+            "title": "Python Service",
+            "platform": "python",
+            "platformVersion": "3.10",
+            "description": "Proxy service",
+            "version": "0.0.1",
+            "requirements": "pip install -r requirements.txt",
+            "cmd": "python",
+        }
         # needed when json definition of proxy switches to this service
         self.installed: bool = True
         self.config: any = None
@@ -351,6 +360,7 @@ class Service:
             "ready": self.ready,
             "startTime": self.startTime,
             "typeKey": self.__class__.__name__,
+            "pkg": self.pkg,
         }
 
 

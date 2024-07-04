@@ -726,7 +726,24 @@ export default class RobotLabXRuntime extends Service {
    */
   getService(name: string): Service | null {
     const fullName = CodecUtil.getFullName(name)
+    // all "functional" local services are in the registry
     return Store.getInstance().getService(fullName)
+  }
+
+  getLatestServiceData(name: string): any {
+    const fullName = CodecUtil.getFullName(name)
+    // the latest stae of the service
+    // This will destroy method calling - since invoke calls getService
+    const broadcastKey = `${fullName}.onBroadcastState`
+    if (Store.getInstance().getMessages()[broadcastKey]) {
+      return Store.getInstance().getMessages()[broadcastKey].data[0]
+    }
+    // else the service from the registry
+    return Store.getInstance().getService(fullName)
+  }
+
+  getMessages(): { [key: string]: Message } {
+    return Store.getInstance().getMessages()
   }
 
   registerHost(host: HostData) {
@@ -1092,27 +1109,46 @@ export default class RobotLabXRuntime extends Service {
   saveAll(
     filename: string = "testLaunch",
     format: string = "js",
-    description: string = "Saved from RobotLabXRuntime"
+    description: string = "Saved from RobotLabXRuntime",
+    configName: string = "default"
   ): string {
     log.info(`saveAll ${filename} ${format} ${description}`)
     const ld: LaunchDescription = new LaunchDescription()
     ld.description = description
     ld.version = "0.0.1" // FIXME - version of release
 
+    // this.getServiceNames().forEach((serviceName: string) => {
+    //   const service: Service = this.getService(serviceName)
+    //   ld.addNode({
+    //     package: service.typeKey.toLowerCase(),
+    //     name: service.name
+    //   })
+    // })
+
     // add all services
-    for (const [key, s] of Object.entries(Store.getInstance().getRegistry())) {
-      const service: Service = s as Service
+    // for (const [key, s] of Object.entries(Store.getInstance().getRegistry())) {
+    const serviceNames = this.getServiceNames()
+
+    for (let i = 0; i < serviceNames.length; i++) {
+      const serviceName = serviceNames[i]
+      const service: Service = this.getLatestServiceData(serviceName)
+
       if (service.name === "runtime") {
         continue
       }
 
-      if (service.pkg === null) {
-        log.warn(`skipping service ${service.name} has no package not responsible for serializing`)
-        continue
-      }
+      // FIXME - responsible for local proxies, but not remote proxies,
+      // nor connected services - how to distinguish ?
 
-      log.info(`adding service ${key} ${service.name} ${service.typeKey}`)
+      // if (service.pkg === null) {
+      //   log.warn(`skipping service ${service.name} has no package not responsible for serializing`)
+      //   continue
+      // }
 
+      log.info(`adding service ${service.fullname} ${service.name} ${service.typeKey}`)
+
+      // FIXME - when a service is a local proxy,
+      // and has not yet been installed, it will not have a pkg
       let originalPkgName: string = null
       if (this.isPkgProxy(service.pkg)) {
         // when saving a proxy, we need the original package name
@@ -1123,10 +1159,8 @@ export default class RobotLabXRuntime extends Service {
       }
 
       ld.addNode({
-        // package: service.typeKey.toLowerCase(),
         package: originalPkgName,
         name: service.name,
-        // typeKey: service.typeKey,
         config: service.config
       })
     }
@@ -1139,7 +1173,7 @@ export default class RobotLabXRuntime extends Service {
     const ldjs = ld.serialize(format)
 
     // write to file
-    fs.writeFileSync(filename + "." + format, ldjs)
+    fs.writeFileSync(path.join("config", configName, filename + "." + format), ldjs)
     return ldjs
   }
 }
