@@ -1,5 +1,5 @@
 const { config } = require("process")
-const LaunchDescription = require("../../express/framework/LaunchDescription")
+const LaunchDescription = require("@express/framework/LaunchDescription")
 const { type } = require("os")
 const path = require("path")
 

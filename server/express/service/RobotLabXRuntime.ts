@@ -482,8 +482,11 @@ export default class RobotLabXRuntime extends Service {
     try {
       log.info(`cwd ${process.cwd()}`)
       // Dynamically import the configuration based on the launcher name
-      const configSetName = "default"
-      const configPath = path.join(process.cwd(), "config", configSetName, launcher)
+      // const configSetName = "default"
+      // const configPath = path.join(process.cwd(), "config", configSetName, launcher)
+
+      const configPath = path.join(process.cwd(), "launch", `${launcher}.js`)
+
       log.info(`configPath ${configPath}`)
 
       // delete cache
@@ -914,6 +917,18 @@ export default class RobotLabXRuntime extends Service {
     return conn
   }
 
+  getLaunchFiles(): string[] {
+    const launchDir = `${process.cwd()}/launch`
+    log.info(`publishLaunchFiles scanning directory ${launchDir}`)
+    const launchFiles: string[] = []
+    fs.readdirSync(launchDir).forEach((file) => {
+      if (file.endsWith(".js")) {
+        launchFiles.push(file.substring(0, file.length - 3))
+      }
+    })
+    return launchFiles
+  }
+
   setDebug(debug: boolean) {
     log.info(`setting debug: ${debug}`)
     this.debug = debug
@@ -1170,7 +1185,8 @@ export default class RobotLabXRuntime extends Service {
     const ldjs = ld.serialize(format)
 
     // write to file
-    fs.writeFileSync(path.join("config", configName, filename + "." + format), ldjs)
+    // fs.writeFileSync(path.join("config", configName, filename + "." + format), ldjs)
+    fs.writeFileSync(path.join("launch", filename + "." + format), ldjs)
     return ldjs
   }
 }

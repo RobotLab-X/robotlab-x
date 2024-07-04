@@ -9,7 +9,9 @@ import ConnectionsPanel from "components/robotlabxruntime/ConnectionsPanel"
 import HostsPanel from "components/robotlabxruntime/HostsPanel"
 import MessageLog from "components/robotlabxruntime/MessageLog"
 import ProcessesPanel from "components/robotlabxruntime/ProcessesPanel"
+import SaveLaunchFileDialog from "components/robotlabxruntime/SaveLaunchFileDialog"
 import ServicesPanel from "components/robotlabxruntime/ServicesPanel"
+import StartLaunchFileDialog from "components/robotlabxruntime/StartLaunchFileDialog"
 import { TabPanel } from "components/robotlabxruntime/TabPanel"
 import { useProcessedMessage } from "hooks/useProcessedMessage"
 import React, { useEffect, useState } from "react"
@@ -24,23 +26,25 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
   const getBaseUrl = useStore((state) => state.getBaseUrl)
   const [messageLog, setMessageLog] = useState([])
 
-  // Use messages
   const newServiceMsg = useMessage(fullname, "registered")
   const repoMsg = useMessage(fullname, "getRepo")
+  const launchFilesMsg = useMessage(fullname, "getLaunchFiles")
 
-  const serviceMsg = useServiceSubscription(fullname, ["getRepo"])
+  const serviceMsg = useServiceSubscription(fullname, ["getRepo", "getLaunchFiles"])
   const service = useProcessedMessage(serviceMsg)
   const repo = useProcessedMessage(repoMsg)
+  const launchFiles = useProcessedMessage(launchFilesMsg)
 
   const imagesUrl = `${getBaseUrl()}/images`
 
   const [open, setOpen] = useState(false)
   const debug = useStore((state) => state.debug)
 
-  // UI states
   const [activeTab, setActiveTab] = useState(0)
   const [connectDialogOpen, setConnectDialogOpen] = useState(false)
   const [configurationDialogOpen, setConfigurationDialogOpen] = useState(false)
+  const [startLaunchFileDialogOpen, setStartLaunchFileDialogOpen] = useState(false)
+  const [saveLaunchFileDialogOpen, setSaveLaunchFileDialogOpen] = useState(false)
   const [editMode, setEditMode] = useState(false)
   let addresses = []
 
@@ -53,7 +57,6 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
   const displayFreeMemory = host?.freeMemory != null ? Math.round(host.freeMemory / 1073741824) : "N/A"
 
   const handleHostClick = (card) => {
-    // setSelectedCard(card)
     console.info("Card clicked", card)
   }
 
@@ -67,23 +70,36 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
 
   const handleStartNewService = () => {
     console.info("Starting new node...")
-    setOpen(true) // Open the modal dialog
+    setOpen(true)
   }
 
   const handleStartLaunchFile = () => {
     console.info("handleStartLaunchFile...")
-    setOpen(true) // Open the modal dialog
+    sendTo(fullname, "getLaunchFiles")
+    setStartLaunchFileDialogOpen(true)
   }
 
   const handleSaveLaunchFile = () => {
     console.info("handleSaveLaunchFile...")
-    setOpen(true) // Open the modal dialog
+    setSaveLaunchFileDialogOpen(true)
+  }
+
+  const handleLaunchFileSelect = (launchName) => {
+    console.info(`Selected launch file: ${launchName}`)
+    setStartLaunchFileDialogOpen(false)
+    sendTo(fullname, "start", launchName)
+  }
+
+  const handleSave = (filename) => {
+    console.info(`Saving launch file as: ${filename}`)
+    setSaveLaunchFileDialogOpen(false)
+    sendTo(fullname, "saveAll", filename)
   }
 
   useEffect(() => {
-    // IMPORTANT !!! - subscribeTo must add fullname if not supplied
     subscribeTo(fullname, "registered")
     sendTo(fullname, "getRepo")
+    sendTo(fullname, "getLaunchFiles")
 
     return () => {
       unsubscribeFrom(fullname, "registered")
@@ -216,6 +232,17 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
         fullname={fullname}
         open={configurationDialogOpen}
         onClose={() => setConfigurationDialogOpen(false)}
+      />
+      <StartLaunchFileDialog
+        open={startLaunchFileDialogOpen}
+        onClose={() => setStartLaunchFileDialogOpen(false)}
+        launchFiles={launchFiles}
+        onLaunchFileSelect={handleLaunchFileSelect}
+      />
+      <SaveLaunchFileDialog
+        open={saveLaunchFileDialogOpen}
+        onClose={() => setSaveLaunchFileDialogOpen(false)}
+        onSave={handleSave}
       />
       <MessageLog messageLog={messageLog} />
     </>

@@ -13,6 +13,7 @@
 
 
 ### Framework
+* You cannot delete a proxy service
 * Repo.getinstance() <- should be a singleton
 * Unified logging (non indexed per service)
 * Python Wizard - green check mark when completed
