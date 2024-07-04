@@ -29,6 +29,7 @@
   "[javascriptreact]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
+  "python.terminal.activateEnvironment": false,
   "pylint.args": ["--disable=W1203,W0718", "--max-line-length=120"],
   "python.analysis.extraPaths":
     ["/usr/local/lib/python3.10/dist-packages","/usr/lib/python3/dist-packages","/usr/lib/python3.10/dist-packages"]

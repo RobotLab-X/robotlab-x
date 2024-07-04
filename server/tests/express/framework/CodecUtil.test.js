@@ -1,6 +1,7 @@
-// server/tests/express/framework/CodecUtil.test.ts
+// server/tests/express/framework/CodecUtil.test.js
 
-import { CodecUtil } from "../../../express/framework/CodecUtil"
+const { CodecUtil } = require("../../../express/framework/CodecUtil")
+const RobotLabXRuntime = require("../../../express/service/RobotLabXRuntime")
 
 // Mocking RobotLabXRuntime
 jest.mock("../../../express/service/RobotLabXRuntime", () => {

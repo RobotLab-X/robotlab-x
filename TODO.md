@@ -1,7 +1,22 @@
 ## TODO
-* Whisper
+
+### Logging
+* each service should have its own statusList, and batch updates in publishStatusList
+* must have a "flush" button to flush logs
+
+### Vosk
+* import noisereduce as nr or import webrtcvad "activity detection"
+* confidence score per word not phrase - not built for that
+
+### Whisper
   - https://github.com/openai/whisper https://github.com/ahmetoner/whisper-asr-webservice  docker run -d -p 9000:9000 -e ASR_MODEL=base -e ASR_ENGINE=openai_whisper onerahmet/openai-whisper-asr-webservice:latest
 
+
+### Framework
+* Unified logging (non indexed per service)
+* Python Wizard - green check mark when completed
+* For Proxy, there should be an option to stream stdio "OR NOT" - ie saving huge amount of bandwidth
+* Core NodeJS has registry, but not messages index - retain all initially ?  selective retain
 * Fix message name promotion .. e.g. "name":"p1" should resolve if unique, p1@p1 should not be required
 * PYTHON {package_name}.py - SHOULD ALWAYS FOLLOW camelCase Interfaces !!!! And they should be enforced by python interfaces
 * Try Server using Client models ! (attempt to normalize)
@@ -56,7 +71,14 @@
 * Robust disconnect, reconnect - grey/disable gui of gatewayId and all routes through client id
 * add defaultId onto any raw "runtime" reference sent by the ui
 * every incoming connection should identify a remote process, connecting with no additional info would mean the process definition should be generated
-* remove current "mac" terminal - replace with - https://www.npmjs.com/package/xterm-for-react - check Dashboard.jsx for details
+* remove current "mac" terminal - replace with - https://www.npmjs.com/package/xterm-for-react -         const xtermRef = React.useRef(null)
+
+        React.useEffect(() => {
+            // You can call any method in XTerm.js by using 'xterm xtermRef.current.terminal.[What you want to call]
+            xtermRef.current.terminal.writeln("Hello, World!")
+            xtermRef.current.terminal.writeln("Hello, World!")
+
+
 * REALIZED "runtime" is really the same a Process which is really the same as id which is the same as "the whole process" - connections in and out belong to "the whole process"
 * WebRTC IS NOT activating .venv when int does a pip install -r requirements
 * WebRTC next .. need "minimal" actual "register" which locks with service description started by RobotLabXRuntime.ts

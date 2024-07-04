@@ -13,6 +13,22 @@
         "console": "integratedTerminal",
         "internalConsoleOptions": "neverOpen",
         "args": ["--config", "default"]
+      },
+      {
+        "type": "node",
+        "request": "launch",
+        "name": "Debug Server Jest Tests",
+        "program": "${workspaceFolder}/server/node_modules/jest/bin/jest",
+        "args": [
+          "--runInBand",
+          "--config",
+          "server/jest.config.js"
+        ],
+        "console": "integratedTerminal",
+        "internalConsoleOptions": "neverOpen",
+        "env": {
+          "NODE_ENV": "test"
+        }
       }
     ]
   }
