@@ -1,12 +1,15 @@
 // server/jest.config.js
 
 module.exports = {
-  preset: "ts-jest",
+  preset: "ts-jest/presets/js-with-ts",
   testEnvironment: "node",
-  testMatch: ["<rootDir>/tests/**/*.test.(ts|js)"],
+  testMatch: ["<rootDir>/tests/**/*.test.js"],
   moduleFileExtensions: ["ts", "js"],
   rootDir: ".",
   moduleNameMapper: {
-    "^@/(.*)$": "<rootDir>/express/$1" // Adjust this to match your directory structure
+    "^@/(.*)$": "<rootDir>/express/$1"
+  },
+  transform: {
+    "^.+\\.ts$": "ts-jest"
   }
 }
