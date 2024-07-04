@@ -1,6 +1,4 @@
-// server/tests/express/framework/NameGenerator.test.js
-
-const NameGenerator = require("../../../express/framework/NameGenerator").default
+const NameGenerator = require("@express/framework/NameGenerator").default
 
 describe("NameGenerator", () => {
   test('should generate a name in the format "adjective-noun"', () => {

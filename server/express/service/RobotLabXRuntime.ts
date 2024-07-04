@@ -1,10 +1,22 @@
-// import Service from "express/framework/Service"
-// FIXME - aliases don't appear to be work, neither does root reference path
+import LaunchAction from "@express/framework/LaunchAction"
+import LaunchDescription from "@express/framework/LaunchDescription"
 
-import LaunchAction from "../framework/LaunchAction"
-import LaunchDescription from "../framework/LaunchDescription"
-
-import Gateway from "express/interfaces/Gateway"
+import Main from "@electron/ElectronStarter"
+import Store from "@express/Store"
+import { CodecUtil } from "@express/framework/CodecUtil"
+import { getLogger } from "@express/framework/Log"
+import NameGenerator from "@express/framework/NameGenerator"
+import { Repo } from "@express/framework/Repo"
+import Service from "@express/framework/Service"
+import Gateway from "@express/interfaces/Gateway"
+import { HostData } from "@express/models/HostData"
+import Message from "@express/models/Message"
+import Package from "@express/models/Package"
+import { ProcessData } from "@express/models/ProcessData"
+import RouteEntry from "@express/models/RouteEntry"
+import { ServiceTypeData } from "@express/models/ServiceTypeData"
+import Proxy from "@express/service/Proxy"
+import Unknown from "@express/service/Unknown"
 import fs from "fs"
 import http from "http"
 import https from "https"
@@ -13,21 +25,6 @@ import path from "path"
 import { v4 as uuidv4 } from "uuid"
 import { WebSocket } from "ws"
 import YAML from "yaml"
-import Main from "../../electron/ElectronStarter"
-import Store from "../../express/Store"
-import { CodecUtil } from "../framework/CodecUtil"
-import { getLogger } from "../framework/Log"
-import NameGenerator from "../framework/NameGenerator"
-import { Repo } from "../framework/Repo"
-import Service from "../framework/Service"
-import { HostData } from "../models/HostData"
-import Message from "../models/Message"
-import Package from "../models/Package"
-import { ProcessData } from "../models/ProcessData"
-import RouteEntry from "../models/RouteEntry"
-import { ServiceTypeData } from "../models/ServiceTypeData"
-import Proxy from "../service/Proxy"
-import Unknown from "../service/Unknown"
 
 const log = getLogger("RobotLabXRuntime")
 
@@ -1149,17 +1146,17 @@ export default class RobotLabXRuntime extends Service {
 
       // FIXME - when a service is a local proxy,
       // and has not yet been installed, it will not have a pkg
-      let originalPkgName: string = null
-      if (this.isPkgProxy(service.pkg)) {
-        // when saving a proxy, we need the original package name
-        const proxy: Proxy = service as Proxy
-        originalPkgName = proxy.proxyTypeKey.toLowerCase()
-      } else {
-        originalPkgName = service.typeKey.toLowerCase()
-      }
+      // let originalPkgName: string = null
+      // if (this.isPkgProxy(service.pkg)) {
+      //   // when saving a proxy, we need the original package name
+      //   const proxy: Proxy = service as Proxy
+      //   originalPkgName = proxy.proxyTypeKey.toLowerCase()
+      // } else {
+      //   originalPkgName = service.typeKey.toLowerCase()
+      // }
 
       ld.addNode({
-        package: originalPkgName,
+        package: service.typeKey.toLowerCase(),
         name: service.name,
         config: service.config
       })

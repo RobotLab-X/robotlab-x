@@ -1,28 +1,29 @@
-// server/tests/express/framework/CodecUtil.test.js
+jest.mock("electron", () => require("@mocks/electron"))
+jest.mock("@electron/ElectronStarter", () => ({
+  expressRoot: "/mocked/express/root",
+  app: {
+    on: jest.fn()
+  },
+  mainWindow: null,
+  onReady: jest.fn(),
+  tray: {}
+}))
+jest.mock("@express/framework/Log", () => ({
+  getLogger: jest.fn().mockReturnValue({
+    error: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn()
+  })
+}))
+jest.mock("@express/service/RobotLabXRuntime", () => ({
+  getInstance: jest.fn().mockReturnValue({
+    getId: jest.fn().mockReturnValue("mockedRuntimeId")
+  })
+}))
 
-const { CodecUtil } = require("../../../express/framework/CodecUtil")
-const RobotLabXRuntime = require("../../../express/service/RobotLabXRuntime")
-
-// Mocking RobotLabXRuntime
-jest.mock("../../../express/service/RobotLabXRuntime", () => {
-  return {
-    getInstance: jest.fn().mockReturnValue({
-      getId: jest.fn().mockReturnValue("mockedRuntimeId")
-    })
-  }
-})
-
-// Mocking the logger
-jest.mock("../../../express/framework/Log", () => {
-  return {
-    getLogger: jest.fn().mockReturnValue({
-      error: jest.fn(),
-      info: jest.fn(),
-      warn: jest.fn(),
-      debug: jest.fn()
-    })
-  }
-})
+const { CodecUtil } = require("@express/framework/CodecUtil")
+const RobotLabXRuntime = require("@express/service/RobotLabXRuntime")
 
 describe("CodecUtil", () => {
   describe("getFullName", () => {
@@ -84,7 +85,7 @@ describe("CodecUtil", () => {
 
     it("should log an error if type is null", () => {
       CodecUtil.getNpmPackageName(null)
-      const log = require("../../../express/framework/Log").getLogger()
+      const log = require("@express/framework/Log").getLogger()
       expect(log.error).toHaveBeenCalledWith("Type is null")
     })
   })
@@ -96,7 +97,7 @@ describe("CodecUtil", () => {
 
     it("should log an error if type is null", () => {
       CodecUtil.getPipPackageName(null)
-      const log = require("../../../express/framework/Log").getLogger()
+      const log = require("@express/framework/Log").getLogger()
       expect(log.error).toHaveBeenCalledWith("Type is null")
     })
   })

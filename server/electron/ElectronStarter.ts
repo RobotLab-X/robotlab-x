@@ -1,3 +1,4 @@
+require("module-alias/register")
 import debug from "debug"
 import Electron, { Tray } from "electron"
 import "module-alias/register"

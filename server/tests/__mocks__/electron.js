@@ -1,16 +1,14 @@
-// server/tests/__mocks__/electron.js
-
-module.exports = {
-  app: {
-    on: jest.fn(),
-    whenReady: jest.fn().mockResolvedValue(true)
-  },
-  BrowserWindow: jest.fn().mockImplementation(() => ({
-    loadURL: jest.fn(),
-    on: jest.fn(),
-    webContents: {
-      on: jest.fn()
-    }
-  })),
-  Tray: jest.fn()
+const app = {
+  getPath: jest.fn().mockReturnValue("/mocked/path")
+  // Add other functions if needed
 }
+
+const BrowserWindow = jest.fn()
+
+const electron = {
+  app,
+  BrowserWindow
+  // Add other parts of electron if needed
+}
+
+module.exports = electron

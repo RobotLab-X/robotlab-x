@@ -15,13 +15,13 @@
     "rootDir": "./",
     "baseUrl": ".",
     "paths": {
-      "*": ["./*"]
+      "@express/*": ["express/*"],
+      "@electron/*": ["electron/*"],
+      "@config/*": ["config/*"],
+      "@tests/*": ["tests/*"],
+      "@mocks/*": ["tests/__mocks__/*"],
     }
   },
-  "include": [
-    "**/*.ts"
-, "config/default/Default.js", "express/framework/LaunchDescription.js", "tests/**/*.js"],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["**/*.ts", "config/default/Default.js", "express/framework/LaunchDescription.js", "tests/**/*.js"],
+  "exclude": ["node_modules"]
 }
