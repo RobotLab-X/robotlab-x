@@ -137,33 +137,14 @@ const Nodes = () => {
         }
         .pane {
           display: flex;
-          align-items: center;
-          justify-content: center;
+          flex-direction: column;
+          align-items: flex-start;
+          justify-content: flex-start;
           height: 100%;
         }
       `}</style>
       <SplitPane split="vertical" minSize={200} defaultSize="70%">
         <div className="pane">
-          {/* Radio buttons to select display mode */}
-          <div>
-            <label>
-              <input
-                type="radio"
-                value="services"
-                checked={mode === "services"}
-                onChange={(e) => setMode(e.target.value)}
-              />
-              Services
-            </label>
-            <label>
-              <input type="radio" value="ids" checked={mode === "ids"} onChange={(e) => setMode(e.target.value)} />
-              IDs
-            </label>
-            <label>
-              <input type="radio" value="hosts" checked={mode === "hosts"} onChange={(e) => setMode(e.target.value)} />
-              Hosts
-            </label>
-          </div>
           {/* Force-directed graph to display nodes and links */}
           <div>
             <ForceGraph2D
@@ -261,7 +242,7 @@ const Nodes = () => {
           </div>
         </div>
         <div className="pane">
-          <ServicePane service={selectedService} />
+          <ServicePane service={selectedService} mode={mode} setMode={setMode} />
         </div>
       </SplitPane>
     </>

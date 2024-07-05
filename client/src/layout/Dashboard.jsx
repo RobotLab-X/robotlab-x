@@ -18,10 +18,7 @@ const WindowTitleBar = ({ title, onMinimize, onMaximize, onClose, isMaximized })
         justifyContent: "space-between",
         alignItems: "center",
         borderBottom: "1px solid #ccc",
-        userSelect: "none",
-        WebkitUserSelect: "none",
-        MozUserSelect: "none",
-        msUserSelect: "none"
+        userSelect: "none"
       }}
     >
       <Box className="move-handle" sx={{ cursor: "move", mr: 2 }}>
@@ -55,6 +52,7 @@ const Dashboard = () => {
   const [openServices, setOpenServices] = useState(Object.values(registry))
   const [minimizedServices, setMinimizedServices] = useState([])
   const [maximizedService, setMaximizedService] = useState(null)
+  const [compactType, setCompactType] = useState(null) // State for compact type
 
   const serviceArray = Object.values(registry)
   const filteredServices = openServices.filter((srvc) => srvc.name.toLowerCase().includes(filter.toLowerCase()))
@@ -122,6 +120,10 @@ const Dashboard = () => {
     setLayout(currentLayout)
   }
 
+  const handleToggleCompact = () => {
+    setCompactType((prevCompactType) => (prevCompactType === "vertical" ? null : "vertical"))
+  }
+
   return (
     <>
       <AppBar position="static">
@@ -160,6 +162,13 @@ const Dashboard = () => {
             <Save sx={{ mr: 1 }} />
             Save
           </Button>
+          <Button
+            color="inherit"
+            onClick={handleToggleCompact}
+            sx={{ backgroundColor: compactType ? "lightblue" : "inherit" }} // Add conditional styling
+          >
+            Compact
+          </Button>
         </Toolbar>
       </AppBar>
       <Box sx={{ width: "100%", overflow: "auto" }} className="dashboard-container">
@@ -197,8 +206,7 @@ const Dashboard = () => {
             rowHeight={100}
             width={2400}
             draggableHandle=".move-handle" // Set the draggable handle to the move icon
-            // compactType={null}
-            compactType="vertical"
+            compactType={compactType}
             onLayoutChange={(newLayout) => handleSaveLayout(newLayout)}
           >
             {filteredServices.map((srvc, index) => (
@@ -214,10 +222,7 @@ const Dashboard = () => {
                     display: "flex",
                     flexDirection: "column",
                     height: "100%",
-                    userSelect: "none",
-                    WebkitUserSelect: "none",
-                    MozUserSelect: "none",
-                    msUserSelect: "none"
+                    userSelect: "none"
                   }}
                 >
                   <WindowTitleBar
