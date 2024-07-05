@@ -19,10 +19,12 @@ export default class Arduino extends Service {
   config = {
     intervalMs: 1000,
     // port string
-    port: ""
+    port: "",
+    connect: false // if true, connect to the port on start
   }
 
   protected board: Board = null
+
   protected boardInfo: any = null
 
   /**
@@ -119,10 +121,12 @@ export default class Arduino extends Service {
     } catch (error) {
       log.error(`Error connecting to board: ${error}`)
     }
+    this.config.connect = true
   }
 
   disconnect(): void {
     try {
+      this.config.connect = false
       if (this.serialPort && this.serialPort.isOpen) {
         log.error("Closing serial port !!!!!!!!!!")
         this.serialPort.close()
