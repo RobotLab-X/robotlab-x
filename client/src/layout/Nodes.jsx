@@ -12,6 +12,7 @@ const Nodes = () => {
   const [links, setLinks] = useState([]) // State to store links between nodes
   const [mode, setMode] = useState("services") // State to determine display mode (services, ids, hosts)
   const [selectedService, setSelectedService] = useState(null) // State for selected service
+  const [showGrid, setShowGrid] = useState(true) // State for grid visibility
   const [imageCache, setImageCache] = useState({}) // State to cache images
   const navigate = useNavigate()
   const { nodeId } = useParams()
@@ -135,6 +136,7 @@ const Nodes = () => {
           height: 100%;
           margin: 0;
           padding: 0;
+          background-color: lightgrey;
         }
         .pane {
           display: flex;
@@ -143,9 +145,14 @@ const Nodes = () => {
           justify-content: flex-start;
           height: 100%;
         }
+        .grid {
+          background-image: linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px),
+                            linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+          background-size: 20px 20px;
+        }
       `}</style>
       <SplitPane split="vertical" minSize={200} defaultSize="70%">
-        <div className="pane">
+        <div className={`pane ${showGrid ? "grid" : ""}`}>
           {/* Force-directed graph to display nodes and links */}
           <div>
             <ForceGraph2D
@@ -237,7 +244,13 @@ const Nodes = () => {
           </div>
         </div>
         <div className="pane">
-          <ServicePane service={selectedService} mode={mode} setMode={setMode} />
+          <ServicePane
+            service={selectedService}
+            mode={mode}
+            setMode={setMode}
+            showGrid={showGrid}
+            setShowGrid={setShowGrid}
+          />
         </div>
       </SplitPane>
     </>
