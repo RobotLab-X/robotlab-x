@@ -43,27 +43,37 @@ const WindowTitleBar = ({ title, onMinimize, onMaximize, onClose, isMaximized })
 }
 
 const Dashboard = () => {
+  const { useMessage, sendTo } = useStore()
+
   const getTypeImage = useStore((state) => state.getTypeImage)
   const registry = useStore((state) => state.registry)
+  const id = useStore((state) => state.id)
   const savedLayout = useStore((state) => state.layout)
   const setLayout = useStore((state) => state.setLayout)
   const [filter, setFilter] = useState("")
   const [closedServices, setClosedServices] = useState([])
-  const [openServices, setOpenServices] = useState(Object.values(registry))
+  const [openServices, setOpenServices] = useState([])
   const [minimizedServices, setMinimizedServices] = useState([])
   const [maximizedService, setMaximizedService] = useState(null)
   const [compactType, setCompactType] = useState(null) // State for compact type
 
   const serviceArray = Object.values(registry)
-  const filteredServices = openServices.filter((srvc) => srvc.name.toLowerCase().includes(filter.toLowerCase()))
+
+  // Filter services based on filter text and excluding minimized services
+  const filteredServices = openServices.filter(
+    (srvc) => srvc.name.toLowerCase().includes(filter.toLowerCase()) && !minimizedServices.includes(srvc.fullname)
+  )
 
   useEffect(() => {
     if (Object.keys(savedLayout).length > 0) {
-      const updatedServices = openServices.map((srvc) => ({
+      const minimized = savedLayout.minimized || []
+      setMinimizedServices(minimized)
+
+      const updatedServices = serviceArray.map((srvc) => ({
         ...srvc,
-        layout: savedLayout[srvc.fullname] || {
-          x: (openServices.indexOf(srvc) % 4) * 3,
-          y: Math.floor(openServices.indexOf(srvc) / 4) * 3,
+        layout: savedLayout[srvc.fullname]?.layout || {
+          x: (serviceArray.indexOf(srvc) % 4) * 3,
+          y: Math.floor(serviceArray.indexOf(srvc) / 4) * 3,
           w: 4,
           h: 3,
           minW: 2,
@@ -72,16 +82,19 @@ const Dashboard = () => {
           maxH: 12
         }
       }))
-      setOpenServices(updatedServices)
+
+      setOpenServices(updatedServices.filter((srvc) => !minimized.includes(srvc.fullname)))
+    } else {
+      setOpenServices(serviceArray)
     }
-  }, [savedLayout])
+  }, [savedLayout, serviceArray])
 
   const layout = filteredServices.map((srvc, index) => ({
     i: srvc.fullname,
-    x: savedLayout[srvc.fullname]?.x || (index % 4) * 3,
-    y: savedLayout[srvc.fullname]?.y || Math.floor(index / 4) * 3,
-    w: savedLayout[srvc.fullname]?.w || 4,
-    h: savedLayout[srvc.fullname]?.h || 3,
+    x: savedLayout[srvc.fullname]?.layout?.x || (index % 4) * 3,
+    y: savedLayout[srvc.fullname]?.layout?.y || Math.floor(index / 4) * 3,
+    w: savedLayout[srvc.fullname]?.layout?.w || 4,
+    h: savedLayout[srvc.fullname]?.layout?.h || 3,
     minW: 2,
     minH: 2,
     maxW: 12,
@@ -114,10 +127,11 @@ const Dashboard = () => {
 
   const handleSaveLayout = (layout) => {
     const currentLayout = layout.reduce((acc, item) => {
-      acc[item.i] = item
+      acc[item.i] = { layout: item }
       return acc
     }, {})
-    setLayout(currentLayout)
+    setLayout({ ...currentLayout, minimized: minimizedServices })
+    sendTo(`runtime@${id}`, "saveLayout", currentLayout)
   }
 
   const handleToggleCompact = () => {
@@ -137,7 +151,6 @@ const Dashboard = () => {
               <Tooltip key={fullname} title={service.name} arrow>
                 <Button variant="contained" onClick={() => handleReopen(fullname)} sx={{ mx: 1 }}>
                   <img src={getTypeImage(service.fullname)} alt="" width="32" style={{ verticalAlign: "top" }} />
-
                   {service.name}
                 </Button>
               </Tooltip>
@@ -165,7 +178,7 @@ const Dashboard = () => {
           <Button
             color="inherit"
             onClick={handleToggleCompact}
-            sx={{ backgroundColor: compactType ? "lightblue" : "inherit" }} // Add conditional styling
+            sx={{ backgroundColor: compactType ? "lightblue" : "inherit" }}
           >
             Compact
           </Button>
@@ -205,7 +218,7 @@ const Dashboard = () => {
             cols={24}
             rowHeight={100}
             width={2400}
-            draggableHandle=".move-handle" // Set the draggable handle to the move icon
+            draggableHandle=".move-handle"
             compactType={compactType}
             onLayoutChange={(newLayout) => handleSaveLayout(newLayout)}
           >
