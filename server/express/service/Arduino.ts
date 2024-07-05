@@ -74,9 +74,9 @@ export default class Arduino extends Service {
     try {
       log.info(`Connecting to port: ${port}`)
 
-      if (this.serialPort) {
-        log.info("Already connected to a port. Disconnecting first.")
-        return
+      if (this.serialPort && port !== this.config.port) {
+        log.info("Already connected to a port. Disconnecting.")
+        this.disconnect()
       }
 
       this.config.port = port

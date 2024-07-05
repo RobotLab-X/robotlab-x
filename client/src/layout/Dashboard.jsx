@@ -197,7 +197,8 @@ const Dashboard = () => {
             rowHeight={100}
             width={2400}
             draggableHandle=".move-handle" // Set the draggable handle to the move icon
-            compactType={null}
+            // compactType={null}
+            compactType="vertical"
             onLayoutChange={(newLayout) => handleSaveLayout(newLayout)}
           >
             {filteredServices.map((srvc, index) => (
