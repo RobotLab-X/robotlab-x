@@ -1,7 +1,7 @@
 import { Close, CropSquare, DragIndicator, FullscreenExit, Minimize, Save } from "@mui/icons-material"
 import { AppBar, Box, Button, IconButton, MenuItem, Select, Toolbar, Tooltip, Typography } from "@mui/material"
 import ServicePage from "components/ServicePage"
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import GridLayout from "react-grid-layout"
 import "react-grid-layout/css/styles.css"
 import "react-resizable/css/styles.css"
@@ -57,11 +57,15 @@ const Dashboard = () => {
   const [maximizedService, setMaximizedService] = useState(null)
   const [compactType, setCompactType] = useState(null) // State for compact type
 
-  const serviceArray = Object.values(registry)
+  const serviceArray = useMemo(() => Object.values(registry), [registry])
 
   // Filter services based on filter text and excluding minimized services
-  const filteredServices = openServices.filter(
-    (srvc) => srvc.name.toLowerCase().includes(filter.toLowerCase()) && !minimizedServices.includes(srvc.fullname)
+  const filteredServices = useMemo(
+    () =>
+      openServices.filter(
+        (srvc) => srvc.name.toLowerCase().includes(filter.toLowerCase()) && !minimizedServices.includes(srvc.fullname)
+      ),
+    [openServices, filter, minimizedServices]
   )
 
   useEffect(() => {
@@ -89,54 +93,64 @@ const Dashboard = () => {
     }
   }, [savedLayout, serviceArray])
 
-  const layout = filteredServices.map((srvc, index) => ({
-    i: srvc.fullname,
-    x: savedLayout[srvc.fullname]?.layout?.x || (index % 4) * 3,
-    y: savedLayout[srvc.fullname]?.layout?.y || Math.floor(index / 4) * 3,
-    w: savedLayout[srvc.fullname]?.layout?.w || 4,
-    h: savedLayout[srvc.fullname]?.layout?.h || 3,
-    minW: 2,
-    minH: 2,
-    maxW: 12,
-    maxH: 12
-  }))
+  const layout = useMemo(
+    () =>
+      filteredServices.map((srvc, index) => ({
+        i: srvc.fullname,
+        x: savedLayout[srvc.fullname]?.layout?.x || (index % 4) * 3,
+        y: savedLayout[srvc.fullname]?.layout?.y || Math.floor(index / 4) * 3,
+        w: savedLayout[srvc.fullname]?.layout?.w || 4,
+        h: savedLayout[srvc.fullname]?.layout?.h || 3,
+        minW: 2,
+        minH: 2,
+        maxW: 12,
+        maxH: 12
+      })),
+    [filteredServices, savedLayout]
+  )
 
-  const handleClose = (fullname) => {
-    setOpenServices(openServices.filter((srvc) => srvc.fullname !== fullname))
-    setClosedServices([...closedServices, fullname])
-  }
+  const handleClose = useCallback((fullname) => {
+    setOpenServices((prev) => prev.filter((srvc) => srvc.fullname !== fullname))
+    setClosedServices((prev) => [...prev, fullname])
+  }, [])
 
-  const handleMinimize = (fullname) => {
-    setOpenServices(openServices.filter((srvc) => srvc.fullname !== fullname))
-    setMinimizedServices([...minimizedServices, fullname])
-  }
+  const handleMinimize = useCallback((fullname) => {
+    setOpenServices((prev) => prev.filter((srvc) => srvc.fullname !== fullname))
+    setMinimizedServices((prev) => [...prev, fullname])
+  }, [])
 
-  const handleReopen = (fullname) => {
-    const reopenedService = serviceArray.find((srvc) => srvc.fullname === fullname)
-    setOpenServices([...openServices, reopenedService])
-    setMinimizedServices(minimizedServices.filter((name) => name !== fullname))
-  }
+  const handleReopen = useCallback(
+    (fullname) => {
+      const reopenedService = serviceArray.find((srvc) => srvc.fullname === fullname)
+      setOpenServices((prev) => [...prev, reopenedService])
+      setMinimizedServices((prev) => prev.filter((name) => name !== fullname))
+    },
+    [serviceArray]
+  )
 
-  const handleMaximize = (fullname) => {
+  const handleMaximize = useCallback((fullname) => {
     setMaximizedService(fullname)
-  }
+  }, [])
 
-  const handleRestore = () => {
+  const handleRestore = useCallback(() => {
     setMaximizedService(null)
-  }
+  }, [])
 
-  const handleSaveLayout = (layout) => {
-    const currentLayout = layout.reduce((acc, item) => {
-      acc[item.i] = { layout: item }
-      return acc
-    }, {})
-    setLayout({ ...currentLayout, minimized: minimizedServices })
-    sendTo(`runtime@${id}`, "saveLayout", currentLayout)
-  }
+  const handleSaveLayout = useCallback(
+    (layout) => {
+      const currentLayout = layout.reduce((acc, item) => {
+        acc[item.i] = { layout: item }
+        return acc
+      }, {})
+      setLayout({ ...currentLayout, minimized: minimizedServices })
+      sendTo(`runtime@${id}`, "saveLayout", currentLayout)
+    },
+    [minimizedServices, sendTo, setLayout, id]
+  )
 
-  const handleToggleCompact = () => {
+  const handleToggleCompact = useCallback(() => {
     setCompactType((prevCompactType) => (prevCompactType === "vertical" ? null : "vertical"))
-  }
+  }, [])
 
   return (
     <>
