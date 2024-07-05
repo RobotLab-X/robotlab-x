@@ -12,6 +12,7 @@ const Nodes = () => {
   const [links, setLinks] = useState([]) // State to store links between nodes
   const [mode, setMode] = useState("services") // State to determine display mode (services, ids, hosts)
   const [selectedService, setSelectedService] = useState(null) // State for selected service
+  const [imageCache, setImageCache] = useState({}) // State to cache images
   const navigate = useNavigate()
   const { nodeId } = useParams()
   const getRepoUrl = useStore((state) => state.getRepoUrl)
@@ -203,39 +204,33 @@ const Nodes = () => {
               linkDirectionalParticleSpeed={0.01}
               linkDirectionalParticleWidth={2}
               nodeCanvasObject={(node, ctx, globalScale) => {
-                const img = new Image()
-                img.src = getTypeImage(node.id)
-                const nameLabel = node.name
-                const fontSize = 12 / globalScale
-                const size = 12
-
-                // Draw the node image and label
-                img.onload = () => {
+                const drawImage = (img, node) => {
+                  const size = 12
                   ctx.save()
                   ctx.clearRect(node.x - size / 2, node.y - size / 2, size, size)
                   // Draw rounded edge outline
                   ctx.beginPath()
                   ctx.drawImage(img, node.x - size / 2, node.y - size / 2, size, size)
-
-                  ctx.font = `${fontSize}px Sans-Serif`
+                  ctx.font = `${12 / globalScale}px Sans-Serif`
                   ctx.fillStyle = "black"
                   ctx.textAlign = "center"
                   ctx.textBaseline = "middle"
-                  ctx.fillText(nameLabel, node.x, node.y + 18)
+                  ctx.fillText(node.name, node.x, node.y + 18)
+                  ctx.restore()
                 }
 
-                if (img.complete) {
-                  ctx.save()
-                  ctx.clearRect(node.x - size / 2, node.y - size / 2, size, size)
-                  // Draw rounded edge outline
-                  ctx.beginPath()
-                  ctx.drawImage(img, node.x - size / 2, node.y - size / 2, size, size)
-
-                  ctx.font = `${fontSize}px Sans-Serif`
-                  ctx.fillStyle = "black"
-                  ctx.textAlign = "center"
-                  ctx.textBaseline = "middle"
-                  ctx.fillText(nameLabel, node.x, node.y + 18)
+                if (!imageCache[node.id]) {
+                  const img = new Image()
+                  img.src = getTypeImage(node.id)
+                  img.onload = () => {
+                    setImageCache((prevCache) => ({
+                      ...prevCache,
+                      [node.id]: img
+                    }))
+                    drawImage(img, node)
+                  }
+                } else {
+                  drawImage(imageCache[node.id], node)
                 }
               }}
             />
