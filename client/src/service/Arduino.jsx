@@ -8,7 +8,7 @@ import { useStore } from "../store/store"
 import useServiceSubscription from "../store/useServiceSubscription"
 
 export default function Arduino({ id, fullname, name }) {
-  console.info(`Arduino ${fullname}`)
+  console.debug(`Arduino ${fullname}`)
 
   const [editMode, setEditMode] = useState(false)
   const [pwmValue, setPwmValue] = useState({})

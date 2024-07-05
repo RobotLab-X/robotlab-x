@@ -24,7 +24,7 @@ import useServiceSubscription from "../store/useServiceSubscription"
 
 // FIXME remove fullname with context provider
 export default function Docker({ fullname }) {
-  console.info(`Docker ${fullname}`)
+  console.debug(`Docker ${fullname}`)
 
   const { useMessage, sendTo } = useStore()
 

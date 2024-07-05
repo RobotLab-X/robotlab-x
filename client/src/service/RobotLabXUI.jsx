@@ -3,7 +3,7 @@ import React from "react"
 
 // FIXME remove fullname with context provider
 export default function RobotLabXUI({ fullname }) {
-  console.info(`RobotLabXUI ${fullname}`)
+  console.debug(`RobotLabXUI ${fullname}`)
 
   return (
     <>

@@ -11,7 +11,7 @@ import useServiceSubscription from "../store/useServiceSubscription"
 // to make a layout that has the appropriat "typed" component and injected prop name
 
 export default function TestPythonService({ name, fullname, id }) {
-  console.info(`TestNodeService ${fullname}`)
+  console.debug(`TestNodeService ${fullname}`)
   const { useMessage, sendTo } = useStore()
   const [stdOutLog, setStdOutLog] = useState([])
 

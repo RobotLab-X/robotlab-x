@@ -8,7 +8,7 @@ import { useRegisteredService, useStore } from "../store/store"
 // to make a layout that has the appropriat "typed" component and injected prop name
 
 export default function Unknown({ name, fullname, id }) {
-  console.info(`Unknown ${fullname}`)
+  console.debug(`Unknown ${fullname}`)
 
   let registry = useStore((state) => state.registry)
   let service = registry[fullname]

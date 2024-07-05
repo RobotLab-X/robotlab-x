@@ -22,7 +22,7 @@ import { useStore } from "../store/store"
 import useServiceSubscription from "../store/useServiceSubscription"
 
 export default function PyAudio({ fullname }) {
-  console.info(`PyAudio ${fullname}`)
+  console.debug(`PyAudio ${fullname}`)
 
   const [editMode, setEditMode] = useState(false)
   const [selectedMic, setSelectedMic] = useState({})

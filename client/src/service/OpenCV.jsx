@@ -14,7 +14,7 @@ import { useStore } from "../store/store"
 import useServiceSubscription from "../store/useServiceSubscription"
 
 export default function OpenCV({ fullname }) {
-  console.info(`OpenCV ${fullname}`)
+  console.debug(`OpenCV ${fullname}`)
 
   const [editMode, setEditMode] = useState(false)
   const { sendTo } = useStore()

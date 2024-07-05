@@ -10,7 +10,7 @@ import ChatInput from "../components/ollama/ChatInput"
 import ConfigurationSection from "../components/ollama/ConfigurationSection"
 
 export default function Ollama({ name, fullname, id }) {
-  console.info(`Ollama ${fullname}`)
+  console.debug(`Ollama ${fullname}`)
 
   const { useMessage, sendTo } = useStore()
   const getBaseUrl = useStore((state) => state.getBaseUrl)

@@ -10,7 +10,7 @@ import { useStore } from "../store/store"
 import useServiceSubscription from "../store/useServiceSubscription"
 
 export default function PySpeechRecognition({ fullname }) {
-  console.info(`PySpeechRecognition ${fullname}`)
+  console.debug(`PySpeechRecognition ${fullname}`)
 
   const [selectedMic, setSelectedMic] = useState({})
   const [selectedBackend, setSelectedBackend] = useState("")

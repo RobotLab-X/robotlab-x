@@ -6,6 +6,6 @@ import * as React from "react"
 // to make a layout that has the appropriat "typed" component and injected prop name
 
 export default function TestNodeService({ name, fullname, id }) {
-  console.info(`TestNodeService ${fullname}`)
+  console.debug(`TestNodeService ${fullname}`)
   return <>TestNodeService - this is for all your testing needs</>
 }

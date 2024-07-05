@@ -21,7 +21,7 @@ import { useStore } from "../store/store"
 import useServiceSubscription from "../store/useServiceSubscription"
 
 export default function Microphone({ fullname }) {
-  console.info(`Microphone ${fullname}`)
+  console.debug(`Microphone ${fullname}`)
 
   const [editMode, setEditMode] = useState(false)
   const [selectedMic, setSelectedMic] = useState("")

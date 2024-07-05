@@ -19,7 +19,7 @@ import { useStore } from "../store/store"
 import useServiceSubscription from "../store/useServiceSubscription"
 
 export default function RobotLabXRuntime({ name, fullname, id }) {
-  console.info(`RobotLabXRuntime ${fullname}`)
+  console.debug(`RobotLabXRuntime ${fullname}`)
 
   const { subscribeTo, unsubscribeFrom, useMessage, sendTo } = useStore()
   const iconSize = 32

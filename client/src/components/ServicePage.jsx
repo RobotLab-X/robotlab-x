@@ -4,8 +4,6 @@ import DescriptionIcon from "@mui/icons-material/Description"
 import FileOpenIcon from "@mui/icons-material/FileOpen"
 import RefreshIcon from "@mui/icons-material/Refresh"
 import SaveIcon from "@mui/icons-material/Save"
-import StatusLog from "components/StatusLog"
-
 import SettingsIcon from "@mui/icons-material/Settings"
 import {
   Box,
@@ -19,7 +17,8 @@ import {
   Tooltip,
   Typography
 } from "@mui/material"
-import React, { useEffect, useState } from "react"
+import StatusLog from "components/StatusLog"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import ReactJson from "react-json-view"
 import { useNavigate } from "react-router-dom"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
@@ -41,15 +40,9 @@ const statusLogStyle = {
   width: "100%"
 }
 
-export default function ServicePage({ fullname, name, id }) {
-  // registered information - initial "stale" info the service was registered with
-  // but "first" description, and given by the user
+const ServicePage = ({ fullname, name, id }) => {
   const registered = useRegisteredService(fullname)
   const serviceMsg = useServiceSubscription(fullname)
-
-  // latest representational state of service
-  // provided by addListener/broadcastState
-  // if the service does not respond, then ready will be false
   const service = useProcessedMessage(serviceMsg)
 
   let resolvedType = registered.typeKey === "Proxy" ? registered.proxyTypeKey : registered.typeKey
@@ -64,7 +57,6 @@ export default function ServicePage({ fullname, name, id }) {
   const statusList = useStore((state) => state.statusLists[`${fullname}.onStatusList`] || [])
 
   useEffect(() => {
-    // Dynamically import the service page component
     if (resolvedType) {
       const loadAsyncPage = async () => {
         try {
@@ -79,47 +71,59 @@ export default function ServicePage({ fullname, name, id }) {
     }
   }, [resolvedType])
 
-  const handleDeleteClick = () => {
+  const handleDeleteClick = useCallback(() => {
     setOpenDelete(true)
-  }
+  }, [])
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setOpenDelete(false)
-  }
+  }, [])
 
-  const handleConfirmDelete = () => {
-    // Perform delete action here
+  const handleConfirmDelete = useCallback(() => {
     console.log("Service deleted")
     setOpenDelete(false)
     sendTo(fullname, "releaseService")
-  }
+  }, [fullname, sendTo])
 
-  const handleSettingsClick = () => {
-    setShowJson(!showJson)
-  }
+  const handleSettingsClick = useCallback(() => {
+    setShowJson((prev) => !prev)
+  }, [])
 
-  const handleSwaggerClick = () => {
+  const handleSwaggerClick = useCallback(() => {
     console.error(`Navigating to /swagger/${fullname}`)
     navigate(`/swagger/${fullname}`)
-  }
+  }, [fullname, navigate])
 
-  const handleRefreshClick = () => {
-    // Perform refresh action here
+  const handleRefreshClick = useCallback(() => {
     console.log("Service refreshed")
     sendTo(fullname, "broadcastState")
-  }
+  }, [fullname, sendTo])
 
-  const handleSaveClick = () => {
-    // Perform refresh action here
+  const handleSaveClick = useCallback(() => {
     console.log(`Saving ${fullname}`)
     sendTo(fullname, "save")
-  }
+  }, [fullname, sendTo])
 
-  const handleOpenClick = () => {
-    // Perform refresh action here
+  const handleOpenClick = useCallback(() => {
     console.log(`loading config file for ${fullname}`)
     sendTo(fullname, "applyFileConfig")
-  }
+  }, [fullname, sendTo])
+
+  const asyncPageMemo = useMemo(
+    () => AsyncPage && <AsyncPage page={resolvedType} name={name} id={id} fullname={fullname} />,
+    [AsyncPage, resolvedType, name, id, fullname]
+  )
+
+  const jsonDisplayMemo = useMemo(
+    () =>
+      showJson && (
+        <>
+          <ReactJson src={registered} name="registered" displayDataTypes={false} displayObjectSize={false} />
+          <ReactJson src={service} name="service" displayDataTypes={false} displayObjectSize={false} />
+        </>
+      ),
+    [showJson, registered, service]
+  )
 
   return (
     <div className="service-content-div" style={containerStyle2}>
@@ -170,15 +174,8 @@ export default function ServicePage({ fullname, name, id }) {
         </Tooltip>
       </Typography>
 
-      {AsyncPage && <AsyncPage page={resolvedType} name={name} id={id} fullname={fullname} />}
-      {showJson && (
-        <>
-          <ReactJson src={registered} name="registered" displayDataTypes={false} displayObjectSize={false} />
-          <ReactJson src={service} name="service" displayDataTypes={false} displayObjectSize={false} />
-        </>
-      )}
-
-      {/* Other content */}
+      {asyncPageMemo}
+      {jsonDisplayMemo}
 
       {debug && (
         <>
@@ -190,7 +187,6 @@ export default function ServicePage({ fullname, name, id }) {
         </>
       )}
 
-      {/* Confirmation Dialog */}
       <Dialog
         open={openDelete}
         onClose={handleClose}
@@ -215,3 +211,5 @@ export default function ServicePage({ fullname, name, id }) {
     </div>
   )
 }
+
+export default React.memo(ServicePage)
