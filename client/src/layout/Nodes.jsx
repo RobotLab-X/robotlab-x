@@ -17,7 +17,7 @@ const Nodes = () => {
   const getRepoUrl = useStore((state) => state.getRepoUrl)
   const getTypeImage = useStore((state) => state.getTypeImage)
 
-  const registry = useStore((state) => state.registry)
+  const registry = useStore((state) => state.services)
   const serviceArray = Object.values(registry)
   const fgRef = useRef()
 

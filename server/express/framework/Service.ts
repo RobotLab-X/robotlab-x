@@ -63,6 +63,11 @@ export default class Service implements Gateway {
   }
 
   addListener(method: string, remoteName: string, remoteMethod: string) {
+    // ensure remoteName is a fullname
+    if (!remoteName.includes("@")) {
+      remoteName = CodecUtil.getFullName(remoteName)
+    }
+
     if (remoteMethod === null || remoteMethod === "" || remoteMethod === undefined) {
       remoteMethod = CodecUtil.getCallbackTopicName(method)
     }
