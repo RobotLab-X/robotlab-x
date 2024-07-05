@@ -9,6 +9,8 @@ import useServiceSubscription from "../store/useServiceSubscription"
 
 // FIXME remove fullname with context provider
 export default function MyRobotLabProxy({ name, fullname, id }) {
+  console.info(`MyRobotLabProxy ${fullname}`)
+
   const { useMessage, sendTo } = useStore()
   const getBaseUrl = useStore((state) => state.getBaseUrl)
   const getRepoUrl = useStore((state) => state.getRepoUrl)

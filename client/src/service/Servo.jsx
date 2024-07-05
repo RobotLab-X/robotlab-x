@@ -6,6 +6,8 @@ import { useStore } from "../store/store"
 import useServiceSubscription from "../store/useServiceSubscription"
 
 export default function Servo({ name, fullname, id }) {
+  console.info(`Servo ${fullname}`)
+
   const [value, setValue] = useState([20, 80])
   const [mainSliderValue, setMainSliderValue] = useState(70)
   const [speedValue, setSpeedValue] = useState(50)

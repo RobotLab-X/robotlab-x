@@ -8,6 +8,8 @@ import useServiceSubscription from "../store/useServiceSubscription"
 
 // FIXME remove fullname with context provider
 export default function Proxy({ fullname }) {
+  console.info(`Proxy ${fullname}`)
+
   const [editMode, setEditMode] = useState(false)
 
   const { useMessage, sendTo } = useStore()

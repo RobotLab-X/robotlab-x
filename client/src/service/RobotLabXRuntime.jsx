@@ -19,8 +19,9 @@ import { useStore } from "../store/store"
 import useServiceSubscription from "../store/useServiceSubscription"
 
 export default function RobotLabXRuntime({ name, fullname, id }) {
-  const { subscribeTo, unsubscribeFrom, useMessage, sendTo } = useStore()
   console.info(`RobotLabXRuntime ${fullname}`)
+
+  const { subscribeTo, unsubscribeFrom, useMessage, sendTo } = useStore()
   const iconSize = 32
   const registry = useStore((state) => state.registry)
   const getBaseUrl = useStore((state) => state.getBaseUrl)

@@ -21,6 +21,8 @@ import useServiceSubscription from "../store/useServiceSubscription"
 import PythonWizard from "../wizards/PythonWizard"
 
 export default function PyVosk({ fullname }) {
+  console.info(`PyVosk ${fullname}`)
+
   const [selectedMic, setSelectedMic] = useState({})
   const [selectedBackend, setSelectedBackend] = useState("")
   const [isListening, setIsListening] = useState(false)

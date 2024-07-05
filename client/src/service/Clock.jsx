@@ -8,16 +8,14 @@ import useServiceSubscription from "../store/useServiceSubscription"
 
 // FIXME remove fullname with context provider
 export default function Clock({ fullname }) {
+  console.info(`Clock ${fullname}`)
+
   const [editMode, setEditMode] = useState(false)
-
   const { useMessage, sendTo } = useStore()
-
   // makes reference to the message object in store
   const epochMsg = useMessage(fullname, "publishEpoch")
-
   // creates subscriptions to topics and returns the broadcastState message reference
   const serviceMsg = useServiceSubscription(fullname, ["publishEpoch"])
-
   // processes the msg.data[0] and returns the data
   const service = useProcessedMessage(serviceMsg)
   const timestamp = useProcessedMessage(epochMsg)
