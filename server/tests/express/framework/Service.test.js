@@ -71,7 +71,7 @@ describe("Service", () => {
 
   it("should add a listener correctly", () => {
     const listener = service.addListener("testMethod", "remoteName", "remoteMethod")
-    expect(listener.callbackName).toBe("remoteName")
+    expect(listener.callbackName).toBe("remoteName@mockedId")
     expect(listener.callbackMethod).toBe("remoteMethod")
 
     const addedListener = service.notifyList["testMethod"][0]
@@ -80,8 +80,8 @@ describe("Service", () => {
   })
 
   it("should remove a listener correctly", () => {
-    service.addListener("testMethod", "remoteName", "remoteMethod")
-    service.removeListener("testMethod", "remoteName", "remoteMethod")
+    service.addListener("testMethod", "remoteName@mockedId", "remoteMethod")
+    service.removeListener("testMethod", "remoteName@mockedId", "remoteMethod")
     expect(service.notifyList["testMethod"].length).toBe(0)
   })
 
