@@ -62,9 +62,14 @@ const store = (set, get) => ({
   getRepoUrl: () => `${get().getBaseUrl()}/repo`,
 
   /**
-   * dictionary of services with last known state
+   * dictionary of services with initial registered state
    */
   registry: {},
+
+  /**
+   * dictionary of services with latest state
+   */
+  services: {},
 
   /**
    * @type {Service} repo - The service repository of types
@@ -106,6 +111,17 @@ const store = (set, get) => ({
       return {
         registry: {
           ...state.registry,
+          [key]: data
+        }
+      }
+    }),
+
+  updateServicesOnBroadcastState: (data) =>
+    set((state) => {
+      const key = data.name + "@" + data.id
+      return {
+        services: {
+          ...state.services,
           [key]: data
         }
       }
@@ -202,6 +218,11 @@ const store = (set, get) => ({
         // to subscribe to new services
         if (key === `runtime@${get().id}.onRegistered`) {
           get().updateRegistryOnRegistered(msg.data[0])
+        }
+
+        // latest update to a service
+        if (key === `runtime@${get().id}.onBroadcastState`) {
+          get().updateServicesOnBroadcastState(msg.data[0])
         }
 
         let remoteKey = `${msg.sender}.${msg.method}`

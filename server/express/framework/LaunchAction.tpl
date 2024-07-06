@@ -1,6 +1,6 @@
-    const {{name}} = {
+    const {{safeName}} = {
       package: "{{package}}",
-      name: "{{name}}",
+      fullname: "{{fullname}}",
       config: {{config}},
       // listeners: {
       //  {{listeners}}

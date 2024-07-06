@@ -40,6 +40,13 @@ export default class RobotLabXUI extends Service {
     this.installed = true
   }
 
+  // THIS IS A PROXY - it is not a realservice
+  public startService(): void {
+    super.startService()
+    // subscribe to runtime of ui
+    this.subscribeTo(this.fullname, "broadcastState")
+  }
+
   /**
    * Serializes the RobotLabXUI instance to JSON.
    * Excludes intervalId from serialization.

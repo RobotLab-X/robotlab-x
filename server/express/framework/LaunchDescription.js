@@ -66,9 +66,10 @@ class LaunchDescription {
     // ld.description = this.description
     // ld.version = this.version
     for (const [key, launchAction] of Object.entries(this.actions)) {
+      const safeName = launchAction.fullname.replaceAll(".", "_").replaceAll("@", "_").replaceAll("-", "_")
       console.log(`key ${key} s ${launchAction}`)
       let lsdAction = fs.readFileSync(path.join(__dirname, "LaunchAction.tpl"), "utf8")
-      lsdAction = lsdAction.replaceAll("{{name}}", launchAction.name)
+      lsdAction = lsdAction.replaceAll("{{fullname}}", launchAction.fullname).replaceAll("{{safeName}}", safeName)
       // lsdAction = lsdAction.replace("{{config}}", JSON.stringify(s.config))  Maybe Future?
       lsdAction = lsdAction.replaceAll("{{package}}", launchAction.package)
       if (launchAction.config) {
@@ -79,7 +80,7 @@ class LaunchDescription {
 
       launchActions += lsdAction
 
-      addNodesData += "\tld.addNode(" + launchAction.name + ")\n"
+      addNodesData += "\tld.addNode(" + safeName + ")\n"
 
       // const lsdAction = lsdActionTpl.replace("{{name}}", s.name)
       // const lsdActionConfig = lsdActionTpl.replace("{{config}}", JSON.stringify(s.config))

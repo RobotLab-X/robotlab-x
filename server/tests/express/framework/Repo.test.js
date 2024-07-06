@@ -1,11 +1,11 @@
 jest.mock("electron", () => require("@mocks/electron"))
-jest.mock("@electron/ElectronStarter", () => ({
+jest.mock("../../../electron/ElectronStarter", () => ({
   expressRoot: "/mocked/express/root"
 }))
 jest.mock("fs")
 jest.mock("path")
 jest.mock("yaml")
-jest.mock("@express/framework/Log", () => ({
+jest.mock("../../../express/framework/Log", () => ({
   getLogger: jest.fn().mockReturnValue({
     info: jest.fn(),
     error: jest.fn()
@@ -15,7 +15,7 @@ jest.mock("@express/framework/Log", () => ({
 const fs = require("fs")
 const path = require("path")
 const yaml = require("yaml")
-const { Repo } = require("@express/framework/Repo")
+const { Repo } = require("../../../express/framework/Repo")
 
 // Mock Service as a class
 class MockService {
@@ -66,11 +66,11 @@ class MockService {
 }
 
 // Mocking Service import
-jest.mock("@express/framework/Service", () => {
+jest.mock("../../../express/framework/Service", () => {
   return MockService
 })
 
-const Service = require("@express/framework/Service")
+const Service = require("../../../express/framework/Service")
 
 describe("Repo", () => {
   let repo

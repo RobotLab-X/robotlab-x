@@ -14,7 +14,7 @@ cmd: python
 cwd: /home/gperry/mrl/robotlab-x/server/express/public/repo/opencv
 dependencies: null
 description: OpenCV pipeline
-installed: true
+installed: false
 license: MIT
 platform: python
 platformVersion: null

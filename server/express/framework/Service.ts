@@ -1,9 +1,10 @@
-import InstallStatus from "express/models/InstallStatus"
-import Package from "express/models/Package"
 import path from "path"
+import { send } from "process"
 import Main from "../../electron/ElectronStarter"
 import Gateway from "../interfaces/Gateway"
+import InstallStatus from "../models/InstallStatus"
 import Message from "../models/Message"
+import Package from "../models/Package"
 import Status from "../models/Status"
 import { SubscriptionListener } from "../models/SubscriptionListener"
 import RobotLabXRuntime from "../service/RobotLabXRuntime"
@@ -60,6 +61,44 @@ export default class Service implements Gateway {
     }
     log.error(`getSubscribersForMethod ${method} ${ret}`)
     return []
+  }
+
+  createMessage(inName: string, inMethod: string, inParams: any[]) {
+    // ...inParams: any[]) {
+    // TODO: consider a different way to pass inParams for a no arg method.
+    // rather than an array with a single null element.
+    const id = this.getId()
+
+    // var msg = {
+    //   msgId: new Date().getTime(),
+    //   name: get().getFullName(inName),
+    //   method: inMethod,
+    //   sender: "runtime@" + id,
+    //   sendingMethod: null
+    // }
+    let msg = new Message(inName, inMethod, inParams)
+    msg.sender = `runtime@${id}`
+
+    // msg.name = get().getFullName(inName)
+    // msg.method = inMethod
+    // msg.sender = "runtime@" + id
+
+    // if (inParams || (inParams.length === 1 && inParams[0])) {
+    //   msg["data"] = inParams
+    // }
+    return msg
+  }
+
+  subscribeTo(name: string, method: string) {
+    // ensure remoteName is a fullname
+    if (!name.includes("@")) {
+      name = CodecUtil.getFullName(name)
+    }
+
+    // FIXME- merge more args
+    var args = Array.prototype.slice.call(arguments, 1)
+    const msg = this.createMessage(name, "addListener", [method, name])
+    send(msg)
   }
 
   addListener(method: string, remoteName: string, remoteMethod: string) {

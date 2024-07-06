@@ -1,12 +1,12 @@
 class LaunchAction {
-  constructor(name, pkg, config = null) {
-    this.name = name
+  constructor(fullname, pkg, config = null) {
+    this.fullname = fullname
     this.package = pkg
     this.config = config
   }
 
   static fromService(service) {
-    return new LaunchAction(service.name, service.pkg.typeKey.toLowerCase(), service.config)
+    return new LaunchAction(service.fullname, service.pkg.typeKey.toLowerCase(), service.config)
   }
 }
 

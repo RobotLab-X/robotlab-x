@@ -12,15 +12,7 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true,
-    "rootDir": "./",
-    "baseUrl": ".",
-    "paths": {
-      "@express/*": ["express/*"],
-      "@electron/*": ["electron/*"],
-      "@config/*": ["config/*"],
-      "@tests/*": ["tests/*"],
-      "@mocks/*": ["tests/__mocks__/*"],
-    }
+    "rootDir": "./"
   },
   "include": ["**/*.ts", "config/default/Default.js", "express/framework/LaunchDescription.js", "tests/**/*.js"],
   "exclude": ["node_modules"]

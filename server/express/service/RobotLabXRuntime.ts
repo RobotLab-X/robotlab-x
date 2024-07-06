@@ -1,30 +1,31 @@
-import LaunchAction from "@express/framework/LaunchAction"
-import LaunchDescription from "@express/framework/LaunchDescription"
+import LaunchAction from "../framework/LaunchAction"
+import LaunchDescription from "../framework/LaunchDescription"
 
-import Main from "@electron/ElectronStarter"
-import Store from "@express/Store"
-import { CodecUtil } from "@express/framework/CodecUtil"
-import { getLogger } from "@express/framework/Log"
-import NameGenerator from "@express/framework/NameGenerator"
-import { Repo } from "@express/framework/Repo"
-import Service from "@express/framework/Service"
-import Gateway from "@express/interfaces/Gateway"
-import { HostData } from "@express/models/HostData"
-import Message from "@express/models/Message"
-import Package from "@express/models/Package"
-import { ProcessData } from "@express/models/ProcessData"
-import RouteEntry from "@express/models/RouteEntry"
-import { ServiceTypeData } from "@express/models/ServiceTypeData"
-import Proxy from "@express/service/Proxy"
-import Unknown from "@express/service/Unknown"
 import fs from "fs"
 import http from "http"
 import https from "https"
 import os from "os"
 import path from "path"
+import { send } from "process"
 import { v4 as uuidv4 } from "uuid"
 import { WebSocket } from "ws"
 import YAML from "yaml"
+import Main from "../../electron/ElectronStarter"
+import Store from "../Store"
+import { CodecUtil } from "../framework/CodecUtil"
+import { getLogger } from "../framework/Log"
+import NameGenerator from "../framework/NameGenerator"
+import { Repo } from "../framework/Repo"
+import Service from "../framework/Service"
+import Gateway from "../interfaces/Gateway"
+import { HostData } from "../models/HostData"
+import Message from "../models/Message"
+import Package from "../models/Package"
+import { ProcessData } from "../models/ProcessData"
+import RouteEntry from "../models/RouteEntry"
+import { ServiceTypeData } from "../models/ServiceTypeData"
+import Proxy from "../service/Proxy"
+import Unknown from "../service/Unknown"
 
 const log = getLogger("RobotLabXRuntime")
 
@@ -174,7 +175,7 @@ export default class RobotLabXRuntime extends Service {
     for (const entry of this.config.registry) {
       ld.addNode({
         package: entry.package,
-        name: entry.name
+        fullname: entry.fullname
         // config: entry.config // FIXME - read config yml
       })
     }
@@ -208,32 +209,6 @@ export default class RobotLabXRuntime extends Service {
       return
     }
     service.apply(cfg)
-  }
-
-  createMessage(inName: string, inMethod: string, inParams: any[]) {
-    // ...inParams: any[]) {
-    // TODO: consider a different way to pass inParams for a no arg method.
-    // rather than an array with a single null element.
-    const id = this.getId()
-
-    // var msg = {
-    //   msgId: new Date().getTime(),
-    //   name: get().getFullName(inName),
-    //   method: inMethod,
-    //   sender: "runtime@" + id,
-    //   sendingMethod: null
-    // }
-    let msg = new Message(inName, inMethod, inParams)
-    msg.sender = `runtime@${id}`
-
-    // msg.name = get().getFullName(inName)
-    // msg.method = inMethod
-    // msg.sender = "runtime@" + id
-
-    // if (inParams || (inParams.length === 1 && inParams[0])) {
-    //   msg["data"] = inParams
-    // }
-    return msg
   }
 
   /**
@@ -387,6 +362,24 @@ export default class RobotLabXRuntime extends Service {
     } catch (error) {
       this.error(`Failed to load config: ${error}`)
       return defaultConfig
+    }
+  }
+
+  applyServiceConfig(serviceName: string, config: any) {
+    log.info(`applyServiceConfig ${serviceName} ${JSON.stringify(config)}`)
+    try {
+      serviceName = CodecUtil.getFullName(serviceName)
+      // if local this works
+      if (CodecUtil.isLocal(serviceName)) {
+        this.getService(serviceName).apply(config)
+        return
+      } else {
+        // if remote, we need to send the config to the remote
+        // and then apply it
+        send(serviceName, "applyConfig", config)
+      }
+    } catch (error) {
+      this.error(`Failed to save config: ${error}`)
     }
   }
 
@@ -568,15 +561,15 @@ export default class RobotLabXRuntime extends Service {
     const services: Service[] = []
 
     launch.getLaunchActions().forEach((action: LaunchAction) => {
-      log.info(`launching package:${action.package} name:${action.name}`)
+      log.info(`launching package:${action.package} fullname:${action.fullname}`)
 
       const targetDir = path.join(Main.expressRoot, `repo/${action.package}`)
 
       const pkg: Package = this.getPackage(action.package)
       const serviceType = pkg.typeKey
-      const serviceName = action.name
+      const fullname = action.fullname
 
-      log.info(`Starting ${action.package}/${pkg.typeKey} named ${action.name}`)
+      log.info(`Starting ${action.package}/${pkg.typeKey} named ${action.fullname}`)
 
       // validating and preprocessing package.yml
       if (pkg.cwd == null) {
@@ -592,24 +585,28 @@ export default class RobotLabXRuntime extends Service {
       log.info(`starting process ${targetDir}/${pkg.cmd} ${pkg.args}`)
       let service: Service = null
 
-      this.info(`node process ${serviceName} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
+      this.info(`node process ${fullname} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
       try {
-        if (serviceName === "runtime" && serviceType === "RobotLabXRuntime") {
+        if (fullname === RobotLabXRuntime.getInstance().fullname && serviceType === "RobotLabXRuntime") {
           log.info("system starting - local runtime already created")
           service = RobotLabXRuntime.instance
         } else {
           if (!this.isPkgProxy(pkg)) {
+            const name = CodecUtil.getName(fullname)
             // a native (in process) Node service, no Proxy needed
-            service = this.repo.getNewService(this.getId(), serviceName, serviceType, pkg.version, this.getHostname())
-            this.info(`node process ${serviceName} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
+            service = this.repo.getNewService(this.getId(), name, serviceType, pkg.version, this.getHostname())
+            this.info(`node process ${fullname} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
           } else {
             // Important, if the service is a python service, the id will be the same as the service name
             // because it really "is" a remote service - hopefully proxied and using the robotlabx py client
             // library
-            service = this.repo.getNewService(serviceName, serviceName, "Proxy", pkg.version, this.getHostname())
+            const id = CodecUtil.getId(fullname)
+            const name = CodecUtil.getName(fullname)
+
+            service = this.repo.getNewService(id, name, "Proxy", pkg.version, this.getHostname())
             let cast = service as Proxy
             cast.proxyTypeKey = serviceType
-            this.info(`python process ${serviceName} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
+            this.info(`python process ${fullname} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
           }
           service.pkg = pkg
           // check for config to be merged from action
@@ -622,7 +619,8 @@ export default class RobotLabXRuntime extends Service {
 
         let errStr = `error: ${error} ${error.stack}`
         log.error(errStr)
-        service = this.repo.getNewService(this.getId(), serviceName, "Unknown", pkg.version, this.getHostname())
+        const name = CodecUtil.getName(fullname)
+        service = this.repo.getNewService(this.getId(), name, "Unknown", pkg.version, this.getHostname())
         if (service instanceof Unknown) {
           service.requestTypeKey = serviceType
         }
@@ -641,25 +639,40 @@ export default class RobotLabXRuntime extends Service {
     return services
   }
 
-  startServiceType(serviceName: string, pkg: string): Service {
-    log.info(`startServiceType: ${serviceName}, type: ${pkg}`)
+  startServiceType(name: string, pkg: string): Service {
+    log.info(`startServiceType: ${name}, type: ${pkg}`)
     try {
-      const check = this.getService(serviceName)
+      // see if we can start a service with the provided package type
+      const repopkg = this.getPackage(pkg)
+      if (repopkg == null) {
+        log.error(`package ${pkg} not found`)
+        return null
+      }
+
+      let fullname = name
+
+      if (this.isPkgProxy(repopkg) && !CodecUtil.getId(name)) {
+        fullname = `${name}@${name}`
+      } else {
+        fullname = CodecUtil.getFullName(fullname)
+      }
+
+      const check = this.getService(fullname)
       if (check != null) {
-        log.info(`service ${check.getName()}@${check.getId()} already exists`)
+        log.info(`service ${fullname} already exists`)
         return check
       }
 
-      log.info(`starting service: ${serviceName}, package: ${pkg.toLowerCase()} in ${process.cwd()}`)
+      log.info(`starting service: ${fullname}, package: ${pkg.toLowerCase()}`)
 
       // create generic LaunchDescription
       const ld = new LaunchDescription()
-      ld.description = `Generated ${serviceName} ${pkg}`
+      ld.description = `Generated ${fullname} ${pkg}`
       ld.version = "0.0.1"
 
       ld.addNode({
         package: pkg.toLowerCase(),
-        name: serviceName
+        fullname: fullname
       })
 
       const services = this.launch(ld)
@@ -1145,9 +1158,9 @@ export default class RobotLabXRuntime extends Service {
       const serviceName = serviceNames[i]
       const service: Service = this.getLatestServiceData(serviceName)
 
-      if (service.name === "runtime") {
-        continue
-      }
+      // if (service.name === "runtime") {
+      //   continue
+      // }
 
       // FIXME - responsible for local proxies, but not remote proxies,
       // nor connected services - how to distinguish ?
@@ -1172,7 +1185,7 @@ export default class RobotLabXRuntime extends Service {
 
       ld.addNode({
         package: service.typeKey.toLowerCase(),
-        name: service.name,
+        fullname: service.fullname,
         config: service.config
       })
     }

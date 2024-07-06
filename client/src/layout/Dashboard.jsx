@@ -6,8 +6,10 @@ import GridLayout from "react-grid-layout"
 import "react-grid-layout/css/styles.css"
 import "react-resizable/css/styles.css"
 import { useStore } from "store/store"
+import { useProcessedMessage } from "../hooks/useProcessedMessage"
+import useServiceSubscription from "../store/useServiceSubscription"
 
-const WindowTitleBar = ({ title, onMinimize, onMaximize, onClose, isMaximized }) => {
+const WindowTitleBar = React.memo(({ title, onMinimize, onMaximize, onClose, isMaximized }) => {
   return (
     <Box
       className="title-bar"
@@ -40,7 +42,7 @@ const WindowTitleBar = ({ title, onMinimize, onMaximize, onClose, isMaximized })
       </Box>
     </Box>
   )
-}
+})
 
 const Dashboard = () => {
   const { useMessage, sendTo } = useStore()
@@ -57,9 +59,11 @@ const Dashboard = () => {
   const [maximizedService, setMaximizedService] = useState(null)
   const [compactType, setCompactType] = useState(null) // State for compact type
 
+  const serviceMsg = useServiceSubscription("runtime@" + id)
+  const service = useProcessedMessage(serviceMsg)
+
   const serviceArray = useMemo(() => Object.values(registry), [registry])
 
-  // Filter services based on filter text and excluding minimized services
   const filteredServices = useMemo(
     () =>
       openServices.filter(
@@ -91,7 +95,31 @@ const Dashboard = () => {
     } else {
       setOpenServices(serviceArray)
     }
-  }, [savedLayout, serviceArray])
+  }, [service?.config?.layout, savedLayout, serviceArray])
+
+  // useEffect(() => {
+  //   if (service?.config?.layout) {
+  //     const layoutConfig = service.config.layout
+  //     const minimized = layoutConfig.minimized || []
+  //     setMinimizedServices(minimized)
+
+  //     const updatedServices = serviceArray.map((srvc) => ({
+  //       ...srvc,
+  //       layout: layoutConfig[srvc.fullname]?.layout || {
+  //         x: (serviceArray.indexOf(srvc) % 4) * 3,
+  //         y: Math.floor(serviceArray.indexOf(srvc) / 4) * 3,
+  //         w: 4,
+  //         h: 3,
+  //         minW: 2,
+  //         minH: 2,
+  //         maxW: 12,
+  //         maxH: 12
+  //       }
+  //     }))
+
+  //     setOpenServices(updatedServices.filter((srvc) => !minimized.includes(srvc.fullname)))
+  //   }
+  // }, [service?.config?.layout, serviceArray])
 
   const layout = useMemo(
     () =>
@@ -143,7 +171,15 @@ const Dashboard = () => {
         return acc
       }, {})
       setLayout({ ...currentLayout, minimized: minimizedServices })
-      sendTo(`runtime@${id}`, "saveLayout", currentLayout)
+      sendTo("runtime@ui-rlx7", "onBroadcastState", {
+        name: "runtime",
+        fullname: "runtime@ui-rlx7",
+        id: "ui-rlx7",
+        typeKey: "RobotLabXUI",
+        version: "0.0.1",
+        hostname: "electron",
+        config: { layout: currentLayout }
+      })
     },
     [minimizedServices, sendTo, setLayout, id]
   )
@@ -159,6 +195,7 @@ const Dashboard = () => {
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             Dashboard
           </Typography>
+
           {minimizedServices.map((fullname) => {
             const service = serviceArray.find((srvc) => srvc.fullname === fullname)
             return (

@@ -1,4 +1,3 @@
-import ServoMove from "express/models/ServoMove"
 import { readdir } from "fs"
 import { Board, Pin, Servo } from "johnny-five"
 import { platform } from "os"
@@ -6,6 +5,7 @@ import { SerialPort } from "serialport"
 import { promisify } from "util"
 import { getLogger } from "../framework/Log"
 import Service from "../framework/Service"
+import ServoMove from "../models/ServoMove"
 
 const readdirAsync = promisify(readdir)
 const log = getLogger("Arduino")

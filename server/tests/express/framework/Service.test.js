@@ -1,5 +1,5 @@
 jest.mock("electron", () => require("@mocks/electron"))
-jest.mock("@electron/ElectronStarter", () => ({
+jest.mock("../../../electron/ElectronStarter", () => ({
   expressRoot: "/mocked/express/root",
   app: {
     on: jest.fn()
@@ -9,7 +9,7 @@ jest.mock("@electron/ElectronStarter", () => ({
   tray: {}
 }))
 jest.mock("path")
-jest.mock("@express/framework/Log", () => ({
+jest.mock("../../../express/framework/Log", () => ({
   getLogger: jest.fn().mockReturnValue({
     info: jest.fn(),
     error: jest.fn(),
@@ -17,7 +17,7 @@ jest.mock("@express/framework/Log", () => ({
     debug: jest.fn()
   })
 }))
-jest.mock("@express/service/RobotLabXRuntime", () => ({
+jest.mock("../../../express/service/RobotLabXRuntime", () => ({
   getInstance: jest.fn().mockReturnValue({
     applyServiceFileConfig: jest.fn(),
     saveServiceConfig: jest.fn(),
@@ -31,15 +31,15 @@ jest.mock("@express/service/RobotLabXRuntime", () => ({
 }))
 
 const path = require("path")
-const Main = require("@electron/ElectronStarter")
-const { getLogger } = require("@express/framework/Log")
-const RobotLabXRuntime = require("@express/service/RobotLabXRuntime")
-const { CodecUtil } = require("@express/framework/CodecUtil")
-const Message = require("@express/models/Message")
-const Status = require("@express/models/Status").default
-const { SubscriptionListener } = require("@express/models/SubscriptionListener")
-const InstallStatus = require("@express/models/InstallStatus").default
-const Service = require("@express/framework/Service").default
+const Main = require("../../../electron/ElectronStarter")
+const { getLogger } = require("../../../express/framework/Log")
+const RobotLabXRuntime = require("../../../express/service/RobotLabXRuntime")
+const { CodecUtil } = require("../../../express/framework/CodecUtil")
+const Message = require("../../../express/models/Message")
+const Status = require("../../../express/models/Status").default
+const { SubscriptionListener } = require("../../../express/models/SubscriptionListener")
+const InstallStatus = require("../../../express/models/InstallStatus").default
+const Service = require("../../../express/framework/Service").default
 
 describe("Service", () => {
   let service

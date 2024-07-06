@@ -124,7 +124,7 @@ export class Repo {
     }
     // FIXME - pretty sure this makes zombie objects - but those zombies
     // especially with different process ids are necessary for routing
-    log.info(`constructing ${serviceType}`)
+    log.info(`constructing ${name}@${id}  ${serviceType}`)
     return new ServiceClass(id, name, serviceType, version, hostname)
   }
 

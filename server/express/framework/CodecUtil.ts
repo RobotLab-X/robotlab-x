@@ -23,6 +23,18 @@ class CodecUtil {
     }
   }
 
+  public static getName(name: string | null): string | null {
+    if (!name) {
+      return null
+    }
+    const atIndex = name.lastIndexOf("@")
+    if (atIndex !== -1) {
+      return name.substring(0, atIndex)
+    } else {
+      return name
+    }
+  }
+
   /**
    * Extracts an ID from the provided name string, assuming the ID follows an "@" symbol.
    *
@@ -66,6 +78,14 @@ class CodecUtil {
       return null
     }
     return `rlx-pkg-${type.toLowerCase()}`
+  }
+
+  static isLocal(name: string): boolean {
+    const id = CodecUtil.getId(name)
+    if (RobotLabXRuntime.getInstance().getId() === id) {
+      return true
+    }
+    return false
   }
 
   static getPipPackageName(type: string): string {
