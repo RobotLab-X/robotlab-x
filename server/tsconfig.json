@@ -14,6 +14,6 @@
     "forceConsistentCasingInFileNames": true,
     "rootDir": "./"
   },
-  "include": ["**/*.ts", "config/default/Default.js", "express/framework/LaunchDescription.js", "tests/**/*.js"],
+  "include": ["**/*.ts", "config/default/Default.js", "express/framework/LaunchDescription.js"],
   "exclude": ["node_modules"]
 }
