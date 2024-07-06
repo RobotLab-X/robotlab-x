@@ -1,7 +1,5 @@
-require("module-alias/register")
 import debug from "debug"
 import Electron, { Tray } from "electron"
-import "module-alias/register"
 import os from "os"
 import path from "path"
 import "source-map-support/register"
