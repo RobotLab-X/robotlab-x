@@ -1,8 +1,0 @@
-id: rlx7
-logLevel: info
-port: 3001
-registry:
-  - name: cv9
-    package: opencv
-    config: {}
-connect: []
