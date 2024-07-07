@@ -11,9 +11,22 @@
 ### Whisper
   - https://github.com/openai/whisper https://github.com/ahmetoner/whisper-asr-webservice  docker run -d -p 9000:9000 -e ASR_MODEL=base -e ASR_ENGINE=openai_whisper onerahmet/openai-whisper-asr-webservice:latest
 
+### MVP
+* Arduino
+* TTS
+* STT
+* Ollama
+* Config save and restart
+* Servo with speed control
+* Arduino
+* NodeJS shell or Python shell
+
+### Services
+* Chron - cron job scheduler
 
 ### Framework
 * You cannot delete a proxy service
+* StatusLog refactor
 * Repo.getinstance() <- should be a singleton
 * Unified logging (non indexed per service)
 * Python Wizard - green check mark when completed
@@ -24,6 +37,7 @@
 * Try Server using Client models ! (attempt to normalize)
 * config part that affects Runtime ? chicken egg issue - since its the thing that starts nodes
 * WebRTC https://github.com/node-webrtc/node-webrtc https://github.com/WonderInventions/node-webrtc https://github.com/aiortc/aiortc
+* Python Shell, Node Shell
 * HATEOS ----------------------------------
 * cool idea - http://host:port/api/discovery/services
 * cool idea - http://host:port/api/discovery/services/type
@@ -44,6 +58,7 @@
 * change the repo/service/{serviceName}/ -- all filenames same --- including config.yml
 * DETERMINISTIC UNIT TESTS !!!
 * add Ollama OpenAI Grok
+* mDns
 * https://www.npmjs.com/package/rclnodejs ROS2 Node would be nice, but explodes in build
 * Faster-Whisper -> https://www.youtube.com/watch?v=mdV8lETtGY4 (interesting demo)
 * click on left card on Home.jsx and it collapses to only the services that are in that Node
