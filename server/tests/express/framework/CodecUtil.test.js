@@ -1,7 +1,7 @@
 jest.mock("electron", () => require("@mocks/electron"))
 
 jest.mock("../../../electron/ElectronStarter", () => ({
-  expressRoot: "/mocked/express/root",
+  publicRoot: "/mocked/express/root",
   app: {
     on: jest.fn()
   },

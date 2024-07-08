@@ -47,8 +47,8 @@ export default class Service implements Gateway {
     this.version = version
     this.hostname = hostname
     this.fullname = `${this.name}@${this.id}`
-    // FIXME should be expressRoot/data
-    this.dataPath = path.join(Main.expressRoot, `service/${this.name}`)
+    // FIXME should be publicRoot/data
+    this.dataPath = path.join(Main.publicRoot, `service/${this.name}`)
   }
 
   getSubscribersForMethod(method: string): SubscriptionListener[] {

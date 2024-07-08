@@ -26,7 +26,7 @@ export default class Main {
   // The root directory of the app in both development and production
   public static distRoot: string = null
   // The root directory of the express server in both development and production
-  public static expressRoot: string = null
+  public static publicRoot: string = null
   // The root of the extracted asar file if it exists
   public static extractPath: string
 
@@ -62,11 +62,11 @@ export default class Main {
   }
 
   private static onReady() {
-    log.info(`onReady: Main.expressRoot ${Main.expressRoot}`)
+    log.info(`onReady: Main.publicRoot ${Main.publicRoot}`)
     Main.mainWindow = new Main.BrowserWindow({
       width: 800,
       height: 600,
-      icon: path.join(Main.expressRoot, "repo", "robotlab-x-48.png"),
+      icon: path.join(Main.publicRoot, "repo", "robotlab-x-48.png"),
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
@@ -85,7 +85,7 @@ export default class Main {
     Main.mainWindow.on("closed", Main.onClose)
 
     // Create the Tray instance and set the tooltip
-    Main.tray = new Tray(path.join(Main.expressRoot, "repo", "robotlab-x-48.png"))
+    Main.tray = new Tray(path.join(Main.publicRoot, "repo", "robotlab-x-48.png"))
     Main.tray.setToolTip("RobotLab-X")
   }
 
@@ -131,8 +131,8 @@ export default class Main {
     }
 
     log.info(`bootServer: Main.distRoot ==== ${Main.distRoot} ====`)
-    Main.expressRoot = path.join(Main.distRoot, "express/public")
-    log.info(`bootServer: Main.expressRoot == ${Main.expressRoot}`)
+    Main.publicRoot = path.join(Main.distRoot, "express/public")
+    log.info(`bootServer: Main.publicRoot == ${Main.publicRoot}`)
 
     const argv = minimist(process.argv.slice(2))
     log.info(`bootServer: argv: ${JSON.stringify(argv)}`)
@@ -171,7 +171,7 @@ export default class Main {
       startUrl: Main.startUrl,
       isPackaged: Main.isPackaged,
       distRoot: Main.distRoot,
-      expressRoot: Main.expressRoot,
+      publicRoot: Main.publicRoot,
       extractPath: Main.extractPath
     }
   }

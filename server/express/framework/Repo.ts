@@ -39,7 +39,7 @@ export class Repo {
     // FIXME - needs to be {dist}/espress/public /repo
     // FIXME - express root is {dist}/express/public /service
     // FIXME - express root is {dist}/express/public /images
-    this.processRepoDirectory(path.join(Main.expressRoot, "repo"))
+    this.processRepoDirectory(path.join(Main.publicRoot, "repo"))
     this.loadServices()
   }
 
@@ -136,7 +136,7 @@ export class Repo {
   // }
 
   savePackage(pkg: Package) {
-    const packagePath = path.join(Main.expressRoot, "repo", pkg.typeKey.toLowerCase(), "package.yml")
+    const packagePath = path.join(Main.publicRoot, "repo", pkg.typeKey.toLowerCase(), "package.yml")
     fs.writeFileSync(packagePath, yaml.stringify(pkg))
   }
 
@@ -170,8 +170,8 @@ export class Repo {
   }
 
   public copyPackage(name: string, typeKey: string) {
-    const source = path.join(Main.expressRoot, `repo/${typeKey.toLowerCase()}/`)
-    const target = path.join(Main.expressRoot, `/service/${name}`)
+    const source = path.join(Main.publicRoot, `repo/${typeKey.toLowerCase()}/`)
+    const target = path.join(Main.publicRoot, `/service/${name}`)
     this.copyRecursiveSync(source, target)
     log.info("copy operation completed successfully")
   }

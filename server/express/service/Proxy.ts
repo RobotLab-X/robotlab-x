@@ -517,7 +517,7 @@ print(result.stderr.decode(), file=sys.stderr)
     const rlx_pkg = CodecUtil.getPipPackageName(typeKey)
 
     const fullPath = path.join(envPath, envName)
-    const clientPath = path.join(`${Main.expressRoot}`, "repo", typeKey.toLowerCase(), rlx_pkg)
+    const clientPath = path.join(`${Main.publicRoot}`, "repo", typeKey.toLowerCase(), rlx_pkg)
     this.info(`Installing client ${clientPath} to ${fullPath}`)
 
     return new Promise<string>((resolve, reject) => {

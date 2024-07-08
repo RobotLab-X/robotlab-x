@@ -504,7 +504,7 @@ export default class RobotLabXRuntime extends Service {
 
       // You might want to do more here, such as applying the configuration or starting nodes
       // launchDescription.getLaunchActions().forEach((action: LaunchAction) => {
-      //   const targetDir = path.join(Main.expressRoot, `repo/${action.package}`)
+      //   const targetDir = path.join(Main.publicRoot, `repo/${action.package}`)
       //   const pkgYmlFile = `${targetDir}/package.yml`
 
       //   log.info(`loading type data from ${pkgYmlFile}`)
@@ -539,7 +539,7 @@ export default class RobotLabXRuntime extends Service {
       }
       pkgName = pkgName.toLowerCase()
       log.info(`${pkgName} getting package`)
-      const targetDir = path.join(Main.expressRoot, `repo/${pkgName}`)
+      const targetDir = path.join(Main.publicRoot, `repo/${pkgName}`)
       log.info(`successful ${targetDir}`)
       const pkgYmlFile = `${targetDir}/package.yml`
 
@@ -564,7 +564,7 @@ export default class RobotLabXRuntime extends Service {
     launch.getLaunchActions().forEach((action: LaunchAction) => {
       log.info(`launching package:${action.package} fullname:${action.fullname}`)
 
-      const targetDir = path.join(Main.expressRoot, `repo/${action.package}`)
+      const targetDir = path.join(Main.publicRoot, `repo/${action.package}`)
 
       const pkg: Package = this.getPackage(action.package)
       const serviceType = pkg.typeKey

@@ -1,6 +1,6 @@
 jest.mock("electron", () => require("@mocks/electron"))
 jest.mock("../../../electron/ElectronStarter", () => ({
-  expressRoot: "/mocked/express/root",
+  publicRoot: "/mocked/express/root",
   app: {
     on: jest.fn()
   },
@@ -61,7 +61,7 @@ describe("Service", () => {
     expect(service.version).toBe("1.0.0")
     expect(service.hostname).toBe("localhost")
     expect(service.fullname).toBe("clock01@1")
-    expect(service.dataPath).toBe(path.join(Main.expressRoot, "service/clock01"))
+    expect(service.dataPath).toBe(path.join(Main.publicRoot, "service/clock01"))
   })
 
   it("should return the correct notify list for a method", () => {

@@ -285,7 +285,7 @@ export default class Ollama extends Service {
   loadPrompts(): void {
     log.info("loadPrompts")
 
-    const promptsDir = path.join(Main.expressRoot, "repo", this.typeKey.toLowerCase(), "prompts")
+    const promptsDir = path.join(Main.publicRoot, "repo", this.typeKey.toLowerCase(), "prompts")
     if (!fs.existsSync(promptsDir)) {
       log.error(`Prompts directory not found: ${promptsDir}`)
       return

@@ -5,20 +5,13 @@ import "swagger-ui-react/swagger-ui.css"
 // import yaml from "yaml"
 import YAML from "yaml"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
+import { useStore } from "../store/store"
 import useServiceSubscription from "../store/useServiceSubscription"
 
-// Function to determine the API base URL based on the environment
-const getApiBaseUrl = (fullname) => {
-  if (process.env.NODE_ENV === "production") {
-    // FIXME - need store urls not hardcoded
-    return `https://localhost:3000/api/v1/services/${fullname}`
-  } else {
-    // FIXME - need store urls not hardcoded
-    return `http://localhost:3001/api/v1/services/${fullname}`
-  }
-}
-
 const SwaggerUIComponent = () => {
+  const getSwaggerUrl = useStore((state) => state.getSwaggerUrl)
+  const getApiUrl = useStore((state) => state.getApiUrl)
+
   const { fullname } = useParams()
   const serviceMsg = useServiceSubscription(fullname)
   const service = useProcessedMessage(serviceMsg)
@@ -27,9 +20,9 @@ const SwaggerUIComponent = () => {
   useEffect(() => {
     const fetchAndModifySwagger = async () => {
       if (service) {
-        const apiBaseUrl = getApiBaseUrl(fullname)
+        const apiBaseUrl = `${getApiUrl()}/${fullname}` // getApiBaseUrl(fullname)
         // FIXME - need store urls not hardcoded
-        const response = await fetch(`http://localhost:3001/swagger/${service?.typeKey}.yml`)
+        const response = await fetch(`${getSwaggerUrl()}/${service?.typeKey}.yml`)
         const yamlText = await response.clone().text() // Clone the response before reading it
         let swaggerDoc = YAML.parse(yamlText)
 
