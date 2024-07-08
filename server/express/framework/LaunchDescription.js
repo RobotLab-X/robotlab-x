@@ -1,3 +1,11 @@
+// FIXME - remove all Node serverside code
+// serialize must return strings
+
+const fs = require("fs")
+const path = require("path")
+const yaml = require("yaml")
+const { add } = require("winston")
+
 /**
  * Represents a launch action with optional parameters and output settings.
  * @typedef {Object} LaunchAction
@@ -41,15 +49,18 @@ class LaunchDescription {
   }
 
   toLDJS() {
-    const ldtpl = `// Your template content here`
+    const ldtpl = fs.readFileSync(path.join(__dirname, "LaunchDescription.tpl"), "utf8")
 
     let launchActions = ""
     let addNodesData = ""
-
-    for (const launchAction of this.actions) {
+    // let addNodes = ""
+    // const ld = new LaunchDescription()
+    // ld.description = this.description
+    // ld.version = this.version
+    for (const [key, launchAction] of Object.entries(this.actions)) {
       const safeName = launchAction.fullname.replaceAll(".", "_").replaceAll("@", "_").replaceAll("-", "_")
-      console.log(`s ${launchAction}`)
-      let lsdAction = `// Your action template content here`
+      console.log(`key ${key} s ${launchAction}`)
+      let lsdAction = fs.readFileSync(path.join(__dirname, "LaunchAction.tpl"), "utf8")
       lsdAction = lsdAction.replaceAll("{{fullname}}", launchAction.fullname).replaceAll("{{safeName}}", safeName)
       // lsdAction = lsdAction.replace("{{config}}", JSON.stringify(s.config))  Maybe Future?
       lsdAction = lsdAction.replaceAll("{{package}}", launchAction.package)
@@ -85,7 +96,7 @@ class LaunchDescription {
     if (format === "json") {
       return JSON.stringify(this)
     } else if (format === "yaml") {
-      return YAML.stringify(this)
+      return yaml.stringify(this)
     } else if (format === "js") {
       return this.toLDJS()
     }

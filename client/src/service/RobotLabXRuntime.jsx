@@ -85,15 +85,18 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
     setSaveLaunchFileDialogOpen(true)
   }
 
-  const handleLaunchFileSelect = (launchName) => {
+  const handleLaunchFileSelect = (launchName, autolaunch) => {
     console.info(`Selected launch file: ${launchName}`)
     setStartLaunchFileDialogOpen(false)
     sendTo(fullname, "start", launchName)
   }
 
-  const handleSave = (filename) => {
+  const handleSave = (filename, autolaunch) => {
     console.info(`Saving launch file as: ${filename}`)
     setSaveLaunchFileDialogOpen(false)
+    if (autolaunch) {
+      sendTo(fullname, "applyConfigValue", "autoLaunch", filename)
+    }
     sendTo(fullname, "saveAll", filename)
   }
 
@@ -235,6 +238,7 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
         onClose={() => setConfigurationDialogOpen(false)}
       />
       <StartLaunchFileDialog
+        fullname={fullname}
         open={startLaunchFileDialogOpen}
         onClose={() => setStartLaunchFileDialogOpen(false)}
         launchFiles={launchFiles}

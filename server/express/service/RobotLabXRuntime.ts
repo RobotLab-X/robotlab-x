@@ -98,6 +98,7 @@ export default class RobotLabXRuntime extends Service {
 
   // OVERRIDES Service.ts
   config = {
+    autoLaunch: null as string,
     id: null as string,
     logLevel: "info",
     port: 3001,

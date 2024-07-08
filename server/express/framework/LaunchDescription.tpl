@@ -4,7 +4,7 @@ const path = require("path")
 function generateLaunchDescription() {
   // const ld = new LaunchDescription()
   const ld = {
-    description: "Generated {{safeName}}",
+    description: "Generated launch description",
     version: "0.0.1",
     actions: []
   }

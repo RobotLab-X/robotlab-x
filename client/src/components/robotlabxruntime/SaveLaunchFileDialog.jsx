@@ -1,12 +1,23 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material"
+import {
+  Button,
+  Checkbox,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControlLabel,
+  TextField,
+  Tooltip
+} from "@mui/material"
 import React, { useState } from "react"
 
 export default function SaveLaunchFileDialog({ open, onClose, onSave }) {
   const [filename, setFilename] = useState("")
+  const [autolaunch, setAutolaunch] = useState(false)
 
   const handleSave = () => {
     if (filename) {
-      onSave(filename)
+      onSave(filename, autolaunch)
     }
   }
 
@@ -22,6 +33,12 @@ export default function SaveLaunchFileDialog({ open, onClose, onSave }) {
           value={filename}
           onChange={(e) => setFilename(e.target.value)}
         />
+        <Tooltip title="Autolaunch this file when RobotLab-X starts">
+          <FormControlLabel
+            control={<Checkbox checked={autolaunch} onChange={(e) => setAutolaunch(e.target.checked)} />}
+            label="Autolaunch"
+          />
+        </Tooltip>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
