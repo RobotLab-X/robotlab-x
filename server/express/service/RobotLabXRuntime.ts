@@ -1190,16 +1190,18 @@ export default class RobotLabXRuntime extends Service {
       })
     }
 
-    // json yml and/or js representation of LaunchDescription
+    // make launch directory if it doesn't exist
+    const launchDir = 'launch';
+    if (!fs.existsSync(launchDir)) {
+      fs.mkdirSync(launchDir, { recursive: true });
+    }
 
-    // to js
+    // Use templates to serialize to js
+    const ldjs = ld.serialize(format);
 
-    // load template
-    const ldjs = ld.serialize(format)
-
-    // write to file
-    // fs.writeFileSync(path.join("config", configName, filename + "." + format), ldjs)
-    fs.writeFileSync(path.join("launch", filename + "." + format), ldjs)
-    return ldjs
+    // Write to file
+    fs.writeFileSync(path.join(launchDir, filename + '.' + format), ldjs);
+    return ldjs;
   }
+
 }

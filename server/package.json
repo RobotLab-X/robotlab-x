@@ -13,7 +13,7 @@
     ],
     "directories": {
       "buildResources": "../assets",
-      "output": "./dist/packages"
+      "output": "../dist/packages"
     },
     "linux": {
       "category": "Development",
@@ -33,17 +33,11 @@
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig-build.json",
-    "copy-static": "cpx 'src/public/**/*' dist/public",
-    "watch-build": "tsc -p tsconfig-build.json --watch",
-    "watch-static": "cpx 'src/public/**/*' dist/public --watch",
-    "remove-package-folder": "shx rm -rf dist/packages",
-    "move-packages": "shx mkdir ../dist && shx mv dist/packages/* ../dist",
-    "move-build": "yarn run remove-package-folder && shx cp -r dist/* ../build && shx rm -rf dist/* dist/.[0-z]* && shx rm -rf dist",
-    "electron-build-all": "yarn run electron-build-mac && yarn run electron-build-win && yarn run electron-build-linux && yarn run move-build",
-    "electron-build-mac": "electron-builder -m && yarn run move-packages",
-    "electron-build-win": "electron-builder -w && yarn run move-packages",
-    "electron-build-linux": "electron-builder -l && yarn run move-packages",
+    "build": "tsc -p tsconfig-build.json && cp -rv ./express/framework/*.js ./dist/express/framework && cp -rv ./express/framework/*.tpl ./dist/express/framework",
+    "copy-public": "shx cp -rf express/public dist/express",
+    "electron-build-mac": "yarn build && yarn copy-public && electron-builder -m",
+    "electron-build-win": "yarn build && yarn copy-public && electron-builder -w",
+    "electron-build-linux": "yarn build && yarn copy-public && electron-builder -l",
     "electron-dev": "nodemon --exec \"yarn run build && cross-env ELECTRON_START_URL=http://localhost:3000 electron --inspect ./dist/electron/ElectronStarter.js\"",
     "watch": "npm-run-all --parallel watch-build watch-static",
     "test": "jest",
@@ -60,7 +54,6 @@
     "@types/semver": "^7.5.8",
     "@types/uuid": "^9.0.8",
     "@types/ws": "^8.5.10",
-    "cpx": "^1.5.0",
     "cross-env": "^7.0.3",
     "electron": "^29.1.4",
     "electron-builder": "^24.13.3",

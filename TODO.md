@@ -25,6 +25,7 @@
 * Chron - cron job scheduler
 
 ### Framework
+* install yarn as the "ivy" package manager - create repos
 * You cannot delete a proxy service
 * StatusLog refactor
 * Repo.getinstance() <- should be a singleton
