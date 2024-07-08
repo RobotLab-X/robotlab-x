@@ -478,20 +478,20 @@ export default class RobotLabXRuntime extends Service {
       // const configSetName = "default"
       // const configPath = path.join(process.cwd(), "config", configSetName, launcher)
 
-      const configPath = path.join(process.cwd(), "launch", `${launcher}.js`)
+      const launchPath = path.join(process.cwd(), "launch", `${launcher}.js`)
 
-      log.info(`configPath ${configPath}`)
+      log.info(`launchPath ${launchPath}`)
 
       // delete cache
-      if (require.cache[require.resolve(configPath)]) {
-        delete require.cache[require.resolve(configPath)]
+      if (require.cache[require.resolve(launchPath)]) {
+        delete require.cache[require.resolve(launchPath)]
         log.info("deleted cache")
       }
 
-      delete require.cache[require.resolve(configPath)]
+      delete require.cache[require.resolve(launchPath)]
 
-      // const configModule = await import(configPath)
-      const configModule = require(configPath)
+      // const configModule = await import(launchPath)
+      const configModule = require(launchPath)
       const generateLaunchDescription = configModule.generateLaunchDescription
 
       // Create an instance of the dynamically loaded configuration
@@ -499,6 +499,7 @@ export default class RobotLabXRuntime extends Service {
       log.info("generated launchDescription")
 
       // Process the configuration - this example just logs the loaded configuration
+      // xxx this will need to be fixed
       log.info(`Loaded configuration with ${launchDescription.getLaunchActions().length} actions.`)
 
       // You might want to do more here, such as applying the configuration or starting nodes
@@ -1191,17 +1192,16 @@ export default class RobotLabXRuntime extends Service {
     }
 
     // make launch directory if it doesn't exist
-    const launchDir = 'launch';
+    const launchDir = "launch"
     if (!fs.existsSync(launchDir)) {
-      fs.mkdirSync(launchDir, { recursive: true });
+      fs.mkdirSync(launchDir, { recursive: true })
     }
 
     // Use templates to serialize to js
-    const ldjs = ld.serialize(format);
+    const ldjs = ld.serialize(format)
 
     // Write to file
-    fs.writeFileSync(path.join(launchDir, filename + '.' + format), ldjs);
-    return ldjs;
+    fs.writeFileSync(path.join(launchDir, filename + "." + format), ldjs)
+    return ldjs
   }
-
 }
