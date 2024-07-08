@@ -25,6 +25,7 @@
 * Chron - cron job scheduler
 
 ### Framework
+* remove all LaunchDescription class info from start scripts
 * install yarn as the "ivy" package manager - create repos
 * You cannot delete a proxy service
 * StatusLog refactor

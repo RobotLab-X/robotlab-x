@@ -1,11 +1,3 @@
-// FIXME - remove all Node serverside code
-// serialize must return strings
-
-const fs = require("fs")
-const path = require("path")
-const yaml = require("yaml")
-const { add } = require("winston")
-
 /**
  * Represents a launch action with optional parameters and output settings.
  * @typedef {Object} LaunchAction
@@ -36,14 +28,6 @@ class LaunchDescription {
   }
 
   /**
-   * Gets the launch actions.
-   * @returns {LaunchAction[]} The list of actions.
-   */
-  getLaunchActions() {
-    return this.actions
-  }
-
-  /**
    * This method would be used to send the launch description to a ROS2 capable server.
    * @param {string} url - The URL to send the launch description to.
    */
@@ -57,18 +41,15 @@ class LaunchDescription {
   }
 
   toLDJS() {
-    const ldtpl = fs.readFileSync(path.join(__dirname, "LaunchDescription.tpl"), "utf8")
+    const ldtpl = `// Your template content here`
 
     let launchActions = ""
     let addNodesData = ""
-    // let addNodes = ""
-    // const ld = new LaunchDescription()
-    // ld.description = this.description
-    // ld.version = this.version
-    for (const [key, launchAction] of Object.entries(this.actions)) {
+
+    for (const launchAction of this.actions) {
       const safeName = launchAction.fullname.replaceAll(".", "_").replaceAll("@", "_").replaceAll("-", "_")
-      console.log(`key ${key} s ${launchAction}`)
-      let lsdAction = fs.readFileSync(path.join(__dirname, "LaunchAction.tpl"), "utf8")
+      console.log(`s ${launchAction}`)
+      let lsdAction = `// Your action template content here`
       lsdAction = lsdAction.replaceAll("{{fullname}}", launchAction.fullname).replaceAll("{{safeName}}", safeName)
       // lsdAction = lsdAction.replace("{{config}}", JSON.stringify(s.config))  Maybe Future?
       lsdAction = lsdAction.replaceAll("{{package}}", launchAction.package)
@@ -80,7 +61,7 @@ class LaunchDescription {
 
       launchActions += lsdAction
 
-      addNodesData += "\tld.addNode(" + safeName + ")\n"
+      addNodesData += "\tld.actions.push(" + safeName + ")\n"
 
       // const lsdAction = lsdActionTpl.replace("{{name}}", s.name)
       // const lsdActionConfig = lsdActionTpl.replace("{{config}}", JSON.stringify(s.config))
@@ -104,7 +85,7 @@ class LaunchDescription {
     if (format === "json") {
       return JSON.stringify(this)
     } else if (format === "yaml") {
-      return yaml.dump(this)
+      return YAML.stringify(this)
     } else if (format === "js") {
       return this.toLDJS()
     }

@@ -500,21 +500,7 @@ export default class RobotLabXRuntime extends Service {
 
       // Process the configuration - this example just logs the loaded configuration
       // xxx this will need to be fixed
-      log.info(`Loaded configuration with ${launchDescription.getLaunchActions().length} actions.`)
-
-      // You might want to do more here, such as applying the configuration or starting nodes
-      // launchDescription.getLaunchActions().forEach((action: LaunchAction) => {
-      //   const targetDir = path.join(Main.publicRoot, `repo/${action.package}`)
-      //   const pkgYmlFile = `${targetDir}/package.yml`
-
-      //   log.info(`loading type data from ${pkgYmlFile}`)
-      //   const file = fs.readFileSync(pkgYmlFile, "utf8")
-      //   const pkg: Package = YAML.parse(file)
-
-      //   log.info(`Starting ${action.package}/${pkg.typeKey} named ${action.name}`)
-      //   this.startServiceType(action.name, pkg.typeKey)
-      // })
-
+      log.info(`Loaded configuration with ${launchDescription?.actions?.length} actions.`)
       this.launch(launchDescription)
     } catch (error) {
       if (error instanceof Error) {
@@ -556,12 +542,12 @@ export default class RobotLabXRuntime extends Service {
   }
 
   launch(launch: LaunchDescription) {
-    log.info(`launching ${launch.getLaunchActions().length} actions`)
+    log.info(`launching ${launch?.actions?.length} actions`)
 
     // list of started services returned from LaunchDescription
     const services: Service[] = []
 
-    launch.getLaunchActions().forEach((action: LaunchAction) => {
+    launch?.actions?.forEach((action: LaunchAction) => {
       log.info(`launching package:${action.package} fullname:${action.fullname}`)
 
       const targetDir = path.join(Main.publicRoot, `repo/${action.package}`)

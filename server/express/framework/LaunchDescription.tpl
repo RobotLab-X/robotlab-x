@@ -1,10 +1,13 @@
-const { config } = require("process")
-const LaunchDescription = require("../express/framework/LaunchDescription")
 const { type } = require("os")
 const path = require("path")
 
 function generateLaunchDescription() {
-  const ld = new LaunchDescription()
+  // const ld = new LaunchDescription()
+  const ld = {
+    description: "Generated {{safeName}}",
+    version: "0.0.1",
+    actions: []
+  }
 
   // Create a node with parameters and remappings
 {{launchActions}}
