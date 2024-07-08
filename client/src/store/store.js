@@ -59,7 +59,10 @@ const store = (set, get) => ({
   getApiUrl: () => `${get().getBaseUrl()}/api/v1/services`,
 
   // Use a getter function for repoUrl
-  getRepoUrl: () => `${get().getBaseUrl()}/repo`,
+  getRepoUrl: () => `${get().getBaseUrl()}/public/repo`,
+
+  // Use a getter function for repoUrl
+  getSwaggerUrl: () => `${get().getBaseUrl()}/public/swagger`,
 
   /**
    * dictionary of services with initial registered state
