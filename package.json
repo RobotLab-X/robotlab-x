@@ -9,7 +9,7 @@
     "clean": "shx rm -rf dist build client/dist client/build server/dist",
     "clean-modules": "shx rm -rf node_modules && shx rm -rf client/node_modules && shx rm -rf server/node_modules",
     "build-client": "cd client && yarn build",
-    "install-client": "shx mkdir server/dist/ && shx mv client/build server/dist/client",
+    "install-client": "shx mkdir -p server/dist/ && shx mv client/build server/dist/client",
     "build-win": "yarn build-client && yarn install-client && cd server && yarn run electron-build-win",
     "build-linux": "yarn build-client && yarn install-client && cd server && yarn run electron-build-linux",
     "build-mac": "yarn build-client && yarn install-client && cd server && yarn run electron-build-mac",

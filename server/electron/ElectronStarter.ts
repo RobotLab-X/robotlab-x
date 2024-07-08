@@ -126,12 +126,17 @@ export default class Main {
         asar.extractAll(asarPath, Main.extractPath)
       }
       Main.distRoot = path.join(Main.extractPath, "dist")
+      Main.publicRoot = path.join(Main.distRoot, "express/public")
     } else {
-      Main.distRoot = path.join(process.cwd())
+      //
+      Main.distRoot = path.join(process.cwd(), "dist")
+      // not in dist - because we want "live" files in git
+      Main.publicRoot = "express/public"
     }
 
+    // probably absolute file path asap
+
     log.info(`bootServer: Main.distRoot ==== ${Main.distRoot} ====`)
-    Main.publicRoot = path.join(Main.distRoot, "express/public")
     log.info(`bootServer: Main.publicRoot == ${Main.publicRoot}`)
 
     const argv = minimist(process.argv.slice(2))
