@@ -50,7 +50,7 @@ function App() {
   const UAParser = require("ua-parser-js")
   const parser = new UAParser()
   const browser = parser.getBrowser()
-  const name = "runtime"
+  const name = "ui"
   const version = "0.0.1"
   const typeKey = "RobotLabXUI"
   const [theme, colorMode] = useMode()

@@ -90,7 +90,7 @@ const ServicePage = ({ fullname, name, id }) => {
   }, [])
 
   const handleSwaggerClick = useCallback(() => {
-    console.error(`Navigating to /swagger/${fullname}`)
+    console.info(`Navigating to /swagger/${fullname}`)
     navigate(`/swagger/${fullname}`)
   }, [fullname, navigate])
 

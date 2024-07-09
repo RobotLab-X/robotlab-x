@@ -9,7 +9,7 @@ import { useStore } from "../store/store"
 import useServiceSubscription from "../store/useServiceSubscription"
 
 const SwaggerUIComponent = () => {
-  const getSwaggerUrl = useStore((state) => state.getSwaggerUrl)
+  const getPublicUrl = useStore((state) => state.getPublicUrl)
   const getApiUrl = useStore((state) => state.getApiUrl)
 
   const { fullname } = useParams()
@@ -20,9 +20,8 @@ const SwaggerUIComponent = () => {
   useEffect(() => {
     const fetchAndModifySwagger = async () => {
       if (service) {
-        const apiBaseUrl = `${getApiUrl()}/${fullname}` // getApiBaseUrl(fullname)
-        // FIXME - need store urls not hardcoded
-        const response = await fetch(`${getSwaggerUrl()}/${service?.typeKey}.yml`)
+        const apiBaseUrl = `${getApiUrl()}/${fullname}`
+        const response = await fetch(`${getPublicUrl()}/swagger/${service?.typeKey}.yml`)
         const yamlText = await response.clone().text() // Clone the response before reading it
         let swaggerDoc = YAML.parse(yamlText)
 
