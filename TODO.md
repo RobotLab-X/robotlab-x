@@ -1,5 +1,10 @@
 ## TODO
 
+* fix Vosk - proxy problem, may be related to package.json cwd
+* fix it and unit test it !!!
+* unit tests
+* Guard against illegal characters in service names - unit test
+
 ### Logging
 * each service should have its own statusList, and batch updates in publishStatusList
 * must have a "flush" button to flush logs

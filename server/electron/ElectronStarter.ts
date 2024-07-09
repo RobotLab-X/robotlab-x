@@ -146,9 +146,9 @@ export default class Main {
       debug.enable("server")
     }
 
-    let configName = argv.config ? argv.config : "default"
+    let launchFile = argv.config ? argv.config : "default"
     // must create instance before startServiceType to fix chicken egg problem
-    let runtime: RobotLabXRuntime = RobotLabXRuntime.createInstance("./config", configName)
+    let runtime: RobotLabXRuntime = RobotLabXRuntime.createInstance(launchFile)
 
     // Store needs getId/id to be set
 

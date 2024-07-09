@@ -44,7 +44,6 @@ export default class RobotLabXRuntime extends Service {
   private connectionImpl: Map<string, WebSocket> = new Map()
 
   protected dataDir = "./data"
-  protected configDir = "./config"
   protected configName: string
   protected repo = new Repo()
 
@@ -83,7 +82,6 @@ export default class RobotLabXRuntime extends Service {
   toJSON() {
     return {
       ...super.toJSON(),
-      configDir: this.configDir,
       configName: this.configName,
       dataDir: this.dataDir,
       processes: this.processes,
@@ -103,7 +101,7 @@ export default class RobotLabXRuntime extends Service {
     logLevel: "info",
     port: 3001,
     // FIXME - should be registry:LaunchAction[]
-    registry: [] as any[],
+    // registry: [] as any[],
     // list of processes to connect to
     connect: [] as string[]
   }
@@ -130,20 +128,21 @@ export default class RobotLabXRuntime extends Service {
    * We overload because RobotLabXRuntime.ts requires more information
    * to be saved besides just config - e.g. registry
    */
+  // FIXME - save a specific service config in a launch file ???
   save() {
     log.info(`runtime overloaded save() ${this.name} ${this.typeKey} ${this.config}`)
-    const filePath = path.join(this.configDir, this.configName, "runtime.yml")
-    try {
-      // FIXME !!! - getConfig() vs config !!! config should be updated when new service is
-      // added to the registry
-      const yamlStr = YAML.stringify(this.config)
-      // const yamlStr = YAML.stringify(this.getConfig())
-      fs.mkdirSync(path.dirname(filePath), { recursive: true })
-      fs.writeFileSync(filePath, yamlStr, "utf8")
-      log.info("Runtime config saved to", filePath)
-    } catch (error) {
-      this.error(`Runtime failed to save config: ${error}`)
-    }
+    // const filePath = path.join(this.configDir, this.configName, "runtime.yml")
+    // try {
+    //   // FIXME !!! - getConfig() vs config !!! config should be updated when new service is
+    //   // added to the registry
+    //   const yamlStr = YAML.stringify(this.config)
+    //   // const yamlStr = YAML.stringify(this.getConfig())
+    //   fs.mkdirSync(path.dirname(filePath), { recursive: true })
+    //   fs.writeFileSync(filePath, yamlStr, "utf8")
+    //   log.info("Runtime config saved to", filePath)
+    // } catch (error) {
+    //   this.error(`Runtime failed to save config: ${error}`)
+    // }
   }
 
   // FIXME - define route
@@ -169,19 +168,19 @@ export default class RobotLabXRuntime extends Service {
   apply(config: any) {
     this.config = config
 
-    let ld: LaunchDescription = new LaunchDescription()
-    ld.description = "Generated from applying config"
-    ld.version = "0.0.1"
+    // let ld: LaunchDescription = new LaunchDescription()
+    // ld.description = "Generated from applying config"
+    // ld.version = "0.0.1"
 
-    for (const entry of this.config.registry) {
-      ld.addNode({
-        package: entry.package,
-        fullname: entry.fullname
-        // config: entry.config // FIXME - read config yml
-      })
-    }
+    // for (const entry of this.config.registry) {
+    //   ld.addNode({
+    //     package: entry.package,
+    //     fullname: entry.fullname
+    //     // config: entry.config // FIXME - read config yml
+    //   })
+    // }
 
-    this.launch(ld)
+    // this.launch(ld)
 
     // FIXME - should this always be seperate from the config ?
     // this.save()
@@ -195,21 +194,23 @@ export default class RobotLabXRuntime extends Service {
    * @param filename
    * @returns
    */
+  // FIXME - save a specific service config in a launch file ???
   applyServiceFileConfig(serviceName: string) {
-    let cfg: any = this.readConfig(serviceName, this.configName)
-    // let cfg: any = this.getServiceFileConfig(serviceName, filename)
-    if (cfg === null) {
-      log.error(`Failed to load config for ${serviceName}`)
-      return
-    }
+    log.info(`applyServiceFileConfig ${serviceName}`)
+    // let cfg: any = this.readConfig(serviceName, this.configName)
+    // // let cfg: any = this.getServiceFileConfig(serviceName, filename)
+    // if (cfg === null) {
+    //   log.error(`Failed to load config for ${serviceName}`)
+    //   return
+    // }
 
-    // this.invokeMsg("apply", cfg) should I route this as a message ?
-    const service: Service = this.getService(serviceName)
-    if (service === null) {
-      log.error(`Failed to load service ${serviceName}`)
-      return
-    }
-    service.apply(cfg)
+    // // this.invokeMsg("apply", cfg) should I route this as a message ?
+    // const service: Service = this.getService(serviceName)
+    // if (service === null) {
+    //   log.error(`Failed to load service ${serviceName}`)
+    //   return
+    // }
+    // service.apply(cfg)
   }
 
   /**
@@ -354,17 +355,17 @@ export default class RobotLabXRuntime extends Service {
       })
   }
 
-  readConfig(serviceName: string, defaultConfig: any) {
-    const filePath = path.join(this.configDir, this.configName, `${serviceName}.yml`)
-    try {
-      const file = fs.readFileSync(filePath, "utf8")
-      const config = YAML.parse(file)
-      return config
-    } catch (error) {
-      this.error(`Failed to load config: ${error}`)
-      return defaultConfig
-    }
-  }
+  // readConfig(serviceName: string, defaultConfig: any) {
+  //   const filePath = path.join(this.configDir, this.configName, `${serviceName}.yml`)
+  //   try {
+  //     const file = fs.readFileSync(filePath, "utf8")
+  //     const config = YAML.parse(file)
+  //     return config
+  //   } catch (error) {
+  //     this.error(`Failed to load config: ${error}`)
+  //     return defaultConfig
+  //   }
+  // }
 
   applyServiceConfig(serviceName: string, config: any) {
     log.info(`applyServiceConfig ${serviceName} ${JSON.stringify(config)}`)
@@ -384,40 +385,118 @@ export default class RobotLabXRuntime extends Service {
     }
   }
 
+  // FIXME - save a specific service config in a launch file ???
   saveServiceConfig(serviceName: string, config: any) {
-    const filePath = path.join(this.configDir, this.configName, `${serviceName}.yml`)
-    log.info(`saveServiceConfig ${filePath}`)
+    log.info(`saveServiceConfig ${serviceName}`)
+    // const filePath = path.join(this.configDir, this.configName, `${serviceName}.yml`)
+    // log.info(`saveServiceConfig ${filePath}`)
+    // try {
+    //   const yamlStr = YAML.stringify(config)
+    //   fs.mkdirSync(path.dirname(filePath), { recursive: true })
+    //   fs.writeFileSync(filePath, yamlStr, "utf8")
+    //   log.info(`Config saved to ${filePath}`)
+    // } catch (error) {
+    //   this.error(`Failed to save config: ${error}`)
+    // }
+  }
+
+  static getLaunchDescription(launchFile: string): LaunchDescription {
+    log.info(`Starting launch file: ${launchFile}`)
+
     try {
-      const yamlStr = YAML.stringify(config)
-      fs.mkdirSync(path.dirname(filePath), { recursive: true })
-      fs.writeFileSync(filePath, yamlStr, "utf8")
-      log.info(`Config saved to ${filePath}`)
+      log.info(`cwd ${process.cwd()}`)
+      // Dynamically import the configuration based on the launcher name
+      // const configSetName = "default"
+      // const configPath = path.join(process.cwd(), "config", configSetName, launcher)
+
+      const launchPath = path.join(process.cwd(), "launch", `${launchFile}.js`)
+
+      log.info(`launchPath ${launchPath}`)
+
+      // delete cache
+      if (require.cache[require.resolve(launchPath)]) {
+        delete require.cache[require.resolve(launchPath)]
+        log.info("deleted cache")
+      }
+
+      delete require.cache[require.resolve(launchPath)]
+
+      // const configModule = await import(launchPath)
+      const configModule = require(launchPath)
+      const generateLaunchDescription = configModule.generateLaunchDescription
+
+      // Create an instance of the dynamically loaded configuration
+      const launchDescription = generateLaunchDescription()
+      log.info("generated launchDescription")
+
+      // Process the configuration - this example just logs the loaded configuration
+      // xxx this will need to be fixed
+      log.info(`Loaded configuration with ${launchDescription?.actions?.length} actions.`)
+      return launchDescription
     } catch (error) {
-      this.error(`Failed to save config: ${error}`)
+      if (error instanceof Error) {
+        log.error(`Error loading configuration for ${launchFile}: ${error.message}`)
+      } else {
+        log.error(`An unknown error occurred while loading configuration for ${launchFile}`)
+      }
+      return null
     }
   }
 
-  static createInstance(configDir: string, configName: string): RobotLabXRuntime {
-    let id: string = null
-    let readConfig = null
-
-    const filePath = path.join(configDir, configName, `runtime.yml`)
-    try {
-      const file = fs.readFileSync(filePath, "utf8")
-      readConfig = YAML.parse(file)
-    } catch (error) {
-      log.info(`Failed to load runtime.yml  will use default config`)
+  static createInstance(launchFile: string): RobotLabXRuntime {
+    if (!launchFile) {
+      log.error("launchFile is null")
+      throw new Error("launchFile is null")
     }
 
-    id = readConfig?.id ?? NameGenerator.getName()
+    const filePath = path.join("launch", `${launchFile}.js`)
+
+    let ld: LaunchDescription = null
+    let runtimeAction = null
+
+    if (!fs.existsSync(filePath)) {
+      log.info(`launch file ${filePath} not found, creating default launch file`)
+      const action = new LaunchAction("runtime", "robotlabxruntime", {
+        autoLaunch: "s1",
+        id: NameGenerator.getName(),
+        logLevel: "info",
+        port: 3001,
+        connect: []
+      })
+      ld = new LaunchDescription()
+      ld.description = "Generated default launch description"
+      ld.version = "0.0.1"
+      ld.actions.push(action)
+      fs.writeFileSync(filePath, ld.serialize("js"))
+    }
+
+    ld = RobotLabXRuntime.getLaunchDescription(launchFile)
+
+    if (!ld) {
+      log.error(`invalid launch description ${filePath} cannot start`)
+      throw new Error(`invalid launch description ${filePath} cannot start`)
+    }
+
+    // find the runtime action
+    runtimeAction = ld.actions.find((action) => action.package === "robotlabxruntime")
+
+    if (!runtimeAction) {
+      log.error(`runtime action not found in ${filePath}`)
+      throw new Error(`runtime action not found in ${filePath}`)
+    }
 
     let instance: RobotLabXRuntime = null
 
     if (!RobotLabXRuntime.instance) {
-      RobotLabXRuntime.instance = new RobotLabXRuntime(id, "runtime", "RobotLabXRuntime", "0.0.1", os.hostname())
+      RobotLabXRuntime.instance = new RobotLabXRuntime(
+        runtimeAction.config.id,
+        "runtime",
+        "RobotLabXRuntime",
+        "0.0.1",
+        os.hostname()
+      )
       instance = RobotLabXRuntime.instance
       Store.createInstance(RobotLabXRuntime.instance)
-      instance.configName = configName
     } else {
       log.error("RobotLabXRuntime instance already exists")
     }
@@ -431,16 +510,6 @@ export default class RobotLabXRuntime extends Service {
         log.error(`Error creating data directory: ${err}`)
       }
     })
-    fs.mkdir(path.join(instance.configDir, instance.configName), { recursive: true }, (err) => {
-      if (err) {
-        log.error(`Error creating data directory: ${err}`)
-      }
-    })
-
-    // HANDLED BY createInstance
-    // this.config = this.readConfig("runtime", this.config)
-    // log.info(`Runtime config loaded ${JSON.stringify(this.config)}`)
-    // this.id = this.config.id
 
     return RobotLabXRuntime.instance
   }
@@ -472,44 +541,8 @@ export default class RobotLabXRuntime extends Service {
 
   async start(launcher: string) {
     log.info(`Starting launcher: ${launcher}`)
-
-    try {
-      log.info(`cwd ${process.cwd()}`)
-      // Dynamically import the configuration based on the launcher name
-      // const configSetName = "default"
-      // const configPath = path.join(process.cwd(), "config", configSetName, launcher)
-
-      const launchPath = path.join(process.cwd(), "launch", `${launcher}.js`)
-
-      log.info(`launchPath ${launchPath}`)
-
-      // delete cache
-      if (require.cache[require.resolve(launchPath)]) {
-        delete require.cache[require.resolve(launchPath)]
-        log.info("deleted cache")
-      }
-
-      delete require.cache[require.resolve(launchPath)]
-
-      // const configModule = await import(launchPath)
-      const configModule = require(launchPath)
-      const generateLaunchDescription = configModule.generateLaunchDescription
-
-      // Create an instance of the dynamically loaded configuration
-      const launchDescription = generateLaunchDescription()
-      log.info("generated launchDescription")
-
-      // Process the configuration - this example just logs the loaded configuration
-      // xxx this will need to be fixed
-      log.info(`Loaded configuration with ${launchDescription?.actions?.length} actions.`)
-      this.launch(launchDescription)
-    } catch (error) {
-      if (error instanceof Error) {
-        log.error(`Error loading configuration for ${launcher}: ${error.message}`)
-      } else {
-        log.error(`An unknown error occurred while loading configuration for ${launcher}`)
-      }
-    }
+    const launchDescription = RobotLabXRuntime.getLaunchDescription(launcher)
+    this.launch(launchDescription)
   }
 
   isPkgProxy(pkg: Package): boolean {
@@ -549,15 +582,15 @@ export default class RobotLabXRuntime extends Service {
     const services: Service[] = []
 
     launch?.actions?.forEach((action: LaunchAction) => {
-      log.info(`launching package:${action.package} fullname:${action.fullname}`)
+      log.info(`launching package:${action.package} fullname:${action.name}`)
 
       const targetDir = path.join(Main.publicRoot, `repo/${action.package}`)
 
       const pkg: Package = this.getPackage(action.package)
       const serviceType = pkg.typeKey
-      const fullname = action.fullname
+      const name = action.name
 
-      log.info(`Starting ${action.package}/${pkg.typeKey} named ${action.fullname}`)
+      log.info(`Starting ${action.package}/${pkg.typeKey} named ${action.name}`)
 
       // validating and preprocessing package.yml
       if (pkg.cwd == null) {
@@ -573,28 +606,25 @@ export default class RobotLabXRuntime extends Service {
       log.info(`starting process ${targetDir}/${pkg.cmd} ${pkg.args}`)
       let service: Service = null
 
-      this.info(`node process ${fullname} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
+      this.info(`node process ${name} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
       try {
-        if (fullname === RobotLabXRuntime.getInstance().fullname && serviceType === "RobotLabXRuntime") {
+        if (name === RobotLabXRuntime.getInstance().name && serviceType === "RobotLabXRuntime") {
           log.info("system starting - local runtime already created")
           service = RobotLabXRuntime.instance
         } else {
           if (!this.isPkgProxy(pkg)) {
-            const name = CodecUtil.getName(fullname)
             // a native (in process) Node service, no Proxy needed
             service = this.repo.getNewService(this.getId(), name, serviceType, pkg.version, this.getHostname())
-            this.info(`node process ${fullname} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
+            this.info(`node process ${name} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
           } else {
             // Important, if the service is a python service, the id will be the same as the service name
             // because it really "is" a remote service - hopefully proxied and using the robotlabx py client
             // library
-            const id = CodecUtil.getId(fullname)
-            const name = CodecUtil.getName(fullname)
 
-            service = this.repo.getNewService(id, name, "Proxy", pkg.version, this.getHostname())
+            service = this.repo.getNewService(name, name, "Proxy", pkg.version, this.getHostname())
             let cast = service as Proxy
             cast.proxyTypeKey = serviceType
-            this.info(`python process ${fullname} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
+            this.info(`python process ${name} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
           }
           service.pkg = pkg
           // check for config to be merged from action
@@ -607,7 +637,6 @@ export default class RobotLabXRuntime extends Service {
 
         let errStr = `error: ${error} ${error.stack}`
         log.error(errStr)
-        const name = CodecUtil.getName(fullname)
         service = this.repo.getNewService(this.getId(), name, "Unknown", pkg.version, this.getHostname())
         if (service instanceof Unknown) {
           service.requestTypeKey = serviceType
@@ -637,30 +666,28 @@ export default class RobotLabXRuntime extends Service {
         return null
       }
 
-      let fullname = name
+      // if (this.isPkgProxy(repopkg) && !CodecUtil.getId(name)) {
+      //   fullname = `${name}@${name}`
+      // } else {
+      //   fullname = CodecUtil.getFullName(fullname)
+      // }
 
-      if (this.isPkgProxy(repopkg) && !CodecUtil.getId(name)) {
-        fullname = `${name}@${name}`
-      } else {
-        fullname = CodecUtil.getFullName(fullname)
-      }
-
-      const check = this.getService(fullname)
+      const check = this.getService(name)
       if (check != null) {
-        log.info(`service ${fullname} already exists`)
+        log.info(`service ${name} already exists`)
         return check
       }
 
-      log.info(`starting service: ${fullname}, package: ${pkg.toLowerCase()}`)
+      log.info(`starting service: ${name}, package: ${pkg.toLowerCase()}`)
 
       // create generic LaunchDescription
       const ld = new LaunchDescription()
-      ld.description = `Generated ${fullname} ${pkg}`
+      ld.description = `Generated ${name} ${pkg}`
       ld.version = "0.0.1"
 
       ld.addNode({
         package: pkg.toLowerCase(),
-        fullname: fullname
+        name: name
       })
 
       const services = this.launch(ld)
@@ -806,16 +833,16 @@ export default class RobotLabXRuntime extends Service {
 
     // add to config.registry launch action if appropriate
     // FIXME - there still needs to be an "originating id" for a Proxy service !
-    if (
-      service.name !== "runtime" &&
-      (service.id === this.id || (service.id !== this.id && service.typeKey !== "Proxy"))
-    ) {
-      this.config.registry.push({
-        name: service.name,
-        package: service?.pkg?.typeKey.toLowerCase(),
-        config: service.config
-      })
-    }
+    // if (
+    //   service.name !== "runtime" &&
+    //   (service.id === this.id || (service.id !== this.id && service.typeKey !== "Proxy"))
+    // ) {
+    //   this.config.registry.push({
+    //     name: service.name,
+    //     package: service?.pkg?.typeKey.toLowerCase(),
+    //     config: service.config
+    //   })
+    // }
 
     this.invoke("registered", service)
 
@@ -1173,7 +1200,7 @@ export default class RobotLabXRuntime extends Service {
 
       ld.addNode({
         package: service.typeKey.toLowerCase(),
-        fullname: service.fullname,
+        name: service.name,
         config: service.config
       })
     }

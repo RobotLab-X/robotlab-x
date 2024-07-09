@@ -58,10 +58,10 @@ class LaunchDescription {
     // ld.description = this.description
     // ld.version = this.version
     for (const [key, launchAction] of Object.entries(this.actions)) {
-      const safeName = launchAction.fullname.replaceAll(".", "_").replaceAll("@", "_").replaceAll("-", "_")
+      const safeName = launchAction.name.replaceAll(".", "_").replaceAll("@", "_").replaceAll("-", "_")
       console.log(`key ${key} s ${launchAction}`)
       let lsdAction = fs.readFileSync(path.join(__dirname, "LaunchAction.tpl"), "utf8")
-      lsdAction = lsdAction.replaceAll("{{fullname}}", launchAction.fullname).replaceAll("{{safeName}}", safeName)
+      lsdAction = lsdAction.replaceAll("{{name}}", launchAction.name).replaceAll("{{safeName}}", safeName)
       // lsdAction = lsdAction.replace("{{config}}", JSON.stringify(s.config))  Maybe Future?
       lsdAction = lsdAction.replaceAll("{{package}}", launchAction.package)
       if (launchAction.config) {

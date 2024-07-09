@@ -70,7 +70,7 @@ function App() {
       try {
         const remoteId = await fetchGetJson(getApiUrl(), "/runtime/getId")
         setDefaultRemoteId(remoteId)
-        setId(`ui-${remoteId}`)
+        setId(`${remoteId}.${name}`)
         connect()
       } catch (error) {
         console.error("Error fetching id ! :", error)
