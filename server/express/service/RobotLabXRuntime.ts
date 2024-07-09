@@ -9,7 +9,6 @@ import path from "path"
 import { send } from "process"
 import { v4 as uuidv4 } from "uuid"
 import { WebSocket } from "ws"
-import YAML from "yaml"
 import Main from "../../electron/ElectronStarter"
 import Store from "../Store"
 import { CodecUtil } from "../framework/CodecUtil"
@@ -552,27 +551,7 @@ export default class RobotLabXRuntime extends Service {
   }
 
   getPackage(pkgName: string): Package {
-    try {
-      if (pkgName === null || pkgName === "" || pkgName === undefined) {
-        log.error(`getPackage ${pkgName} not found`)
-        return null
-      }
-      pkgName = pkgName.toLowerCase()
-      log.info(`${pkgName} getting package`)
-      const targetDir = path.join(Main.publicRoot, `repo/${pkgName}`)
-      log.info(`successful ${targetDir}`)
-      const pkgYmlFile = `${targetDir}/package.yml`
-
-      // loading type info
-      log.info(`loading type data from ${pkgYmlFile}`)
-      const file = fs.readFileSync(pkgYmlFile, "utf8")
-      const pkg: Package = YAML.parse(file)
-      log.info(`package ${pkgName} loaded`)
-      return pkg
-    } catch (e) {
-      log.error(`failed to load package ${e}`)
-    }
-    return null
+    return this.repo.getPackage(pkgName)
   }
 
   launch(launch: LaunchDescription) {

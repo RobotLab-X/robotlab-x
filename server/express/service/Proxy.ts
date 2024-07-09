@@ -31,6 +31,10 @@ export default class Proxy extends Service {
    */
   public proxyTypeKey: string = null
 
+  protected envName = ".venv"
+
+  protected envPath = null as string
+
   /**
    * Many "most?" proxies will be proxies for python services
    * This is the version of python available on the host system
@@ -67,6 +71,7 @@ export default class Proxy extends Service {
     public hostname: string
   ) {
     super(id, name, typeKey, version, hostname)
+    this.envPath = path.join(Main.publicRoot, "repo", this.typeKey.toLowerCase())
   }
 
   startService(): void {
@@ -342,11 +347,11 @@ export default class Proxy extends Service {
     }
   }
 
-  installVirtualEnv(envName = ".venv", envPath = this.pkg.cwd) {
+  installVirtualEnv() {
     return new Promise((resolve, reject) => {
       // Full path to the virtual environment
-      this.info(`envPath '${envPath}`)
-      const fullPath = path.join(envPath, envName)
+      this.info(`envPath '${this.envPath}`)
+      const fullPath = path.join(this.envPath, this.envName)
       this.info(`Creating virtual environment in '${fullPath}`)
 
       // Python script to create the virtual environment
@@ -365,8 +370,8 @@ print(result.stderr.decode(), file=sys.stderr)
           const activateScript = path.join(fullPath, process.platform === "win32" ? "Scripts" : "bin", "activate") // On Windows: 'Scripts' instead of 'bin'
           if (fs.existsSync(activateScript)) {
             this.venvOk = true
-            this.info(`Virtual environment '${envName}' created successfully at ${fullPath}`)
-            resolve(`Virtual environment '${envName}' created successfully at ${fullPath}`)
+            this.info(`Virtual environment '${this.envName}' created successfully at ${fullPath}`)
+            resolve(`Virtual environment '${this.envName}' created successfully at ${fullPath}`)
 
             // So do not rely on the UI send order ...
             // the asyncio of express will switch on a long running task
@@ -376,9 +381,9 @@ print(result.stderr.decode(), file=sys.stderr)
             this.invoke("broadcastState")
           } else {
             this.venvOk = false
-            this.error(`Virtual environment '${envName}' creation failed`)
+            this.error(`Virtual environment '${this.envName}' creation failed`)
             this.invoke("broadcastState")
-            reject(`Virtual environment '${envName}' creation failed`)
+            reject(`Virtual environment '${this.envName}' creation failed`)
           }
         })
         .catch((err) => {
@@ -390,12 +395,12 @@ print(result.stderr.decode(), file=sys.stderr)
     })
   }
 
-  installPipRequirements(packages = {}, envName = ".venv", envPath = this.pkg.cwd): Promise<string> {
+  installPipRequirements(packages = {}): Promise<string> {
     return new Promise((resolve, reject) => {
       const packageList = ["install"]
       Object.entries(packages).map(([pkg, version]) => packageList.push(`${pkg}${version}`))
 
-      const fullPath = path.join(envPath, envName)
+      const fullPath = path.join(this.envPath, this.envName)
       const pipPath = path.join(fullPath, process.platform === "win32" ? "Scripts" : "bin", "pip")
 
       const command = pipPath
@@ -442,7 +447,7 @@ print(result.stderr.decode(), file=sys.stderr)
     })
   }
   // FIXME - startProxy
-  startProxy(packages = {}, envName = ".venv", envPath = this.pkg.cwd): Promise<string> {
+  startProxy(packages = {}): Promise<string> {
     return new Promise((resolve, reject) => {
       // python has specific path to the executable resolved by this Proxy service - with full path
       // but pkg cmd should be generalized .. how to reconcile ?
@@ -468,7 +473,7 @@ print(result.stderr.decode(), file=sys.stderr)
         args.push(arg)
       }
 
-      const fullPath = path.join(envPath, envName)
+      const fullPath = path.join(this.envPath, this.envName)
       const pipPath = path.join(fullPath, process.platform === "win32" ? "Scripts" : "bin", "python")
       const command = pipPath
 
@@ -512,11 +517,11 @@ print(result.stderr.decode(), file=sys.stderr)
     })
   }
 
-  async installRepoRequirement(typeKey: string, envName = ".venv", envPath = this.pkg.cwd): Promise<string> {
+  async installRepoRequirement(typeKey: string): Promise<string> {
     this.info(`Installing repo package ${typeKey}`)
     const rlx_pkg = CodecUtil.getPipPackageName(typeKey)
 
-    const fullPath = path.join(envPath, envName)
+    const fullPath = path.join(this.envPath, this.envName)
     const clientPath = path.join(`${Main.publicRoot}`, "repo", typeKey.toLowerCase(), rlx_pkg)
     this.info(`Installing client ${clientPath} to ${fullPath}`)
 
@@ -572,7 +577,7 @@ print(result.stderr.decode(), file=sys.stderr)
     const results: string[] = []
     for (const typeKey of this.pkg.repoRequirements) {
       try {
-        const result = await this.installRepoRequirement(typeKey, envName, envPath)
+        const result = await this.installRepoRequirement(typeKey)
         results.push(result)
       } catch (error) {
         this.error(`One or more packages failed to install: ${error}`)
@@ -585,11 +590,11 @@ print(result.stderr.decode(), file=sys.stderr)
     // FIXME - Repo should be a singleton, and "installing"
     // should be a method on the repo - add timestamp, version, etc
     // Repo.getInstance().savePackage(this.pkg)
-    this.error(`saving package ${this.pkg.typeKey}`)
+    this.info(`saving package ${this.pkg.typeKey}`)
     this.pkg.installed = true
     const repo = new Repo()
-    repo.savePackage(this.pkg)
-    this.error(`saved package ${this.pkg.typeKey}`)
+    repo.installPackage(this.pkg.typeKey)
+    this.info(`saved package ${this.pkg.typeKey}`)
 
     return results
   }

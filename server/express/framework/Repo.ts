@@ -1,6 +1,6 @@
 import fs from "fs"
 import path from "path"
-import yaml from "yaml"
+import { default as yaml, default as YAML } from "yaml"
 import Main from "../../electron/ElectronStarter"
 import Service from "../framework/Service"
 import Package from "../models/Package"
@@ -45,6 +45,37 @@ export class Repo {
 
   getRepo() {
     return this.repoMap
+  }
+
+  getPackage(pkgName: string): Package {
+    try {
+      if (pkgName === null || pkgName === "" || pkgName === undefined) {
+        log.error(`getPackage ${pkgName} not found`)
+        return null
+      }
+      pkgName = pkgName.toLowerCase()
+      log.info(`${pkgName} getting package`)
+      const targetDir = path.join(Main.publicRoot, `repo/${pkgName}`)
+      log.info(`successful ${targetDir}`)
+      const pkgYmlFile = `${targetDir}/package.yml`
+
+      // loading type info
+      log.info(`loading type data from ${pkgYmlFile}`)
+      const file = fs.readFileSync(pkgYmlFile, "utf8")
+      const pkg: Package = YAML.parse(file)
+      log.info(`package ${pkgName} loaded`)
+
+      // if not a native node package
+      if (!pkg.installed) {
+        // check if installed
+        pkg.installed = this.isInstalled(pkgName)
+      }
+
+      return pkg
+    } catch (e) {
+      log.error(`failed to load package ${e}`)
+    }
+    return null
   }
 
   loadServices() {
@@ -96,16 +127,21 @@ export class Repo {
     return new ServiceClass(id, name, serviceType, version, hostname)
   }
 
-  // Probably preferred - vs saving from external source
-  // setInstalled(pkg: Package) {
-  //   pkg.setInstalled(true)
-  //   fs.writeFileSync(pkg.getPath(), yaml.dump(pkg))
+  installPackage(pkgTypeKey: string) {
+    const installFile = path.join(Main.publicRoot, "repo", pkgTypeKey.toLowerCase(), "installed.txt")
+    fs.writeFileSync(installFile, new Date().toLocaleString())
+    log.info(`package ${pkgTypeKey} installed`)
+  }
 
-  // }
-
-  savePackage(pkg: Package) {
-    const packagePath = path.join(Main.publicRoot, "repo", pkg.typeKey.toLowerCase(), "package.yml")
-    fs.writeFileSync(packagePath, yaml.stringify(pkg))
+  isInstalled(pkgTypeKey: string): boolean {
+    const installFile = path.join(Main.publicRoot, "repo", pkgTypeKey.toLowerCase(), "installed.txt")
+    const exists = fs.existsSync(installFile)
+    if (exists) {
+      log.info(`package ${pkgTypeKey} installed`)
+      return true
+    }
+    log.info(`package ${pkgTypeKey} not installed`)
+    return
   }
 
   processRepoDirectory(basePath: string): Map<string, any> {
@@ -135,40 +171,5 @@ export class Repo {
       log.error(`Error processing repository directory: ${err}`)
     }
     return this.repoMap
-  }
-
-  public copyPackage(name: string, typeKey: string) {
-    const source = path.join(Main.publicRoot, `repo/${typeKey.toLowerCase()}/`)
-    const target = path.join(Main.publicRoot, `/service/${name}`)
-    this.copyRecursiveSync(source, target)
-    log.info("copy operation completed successfully")
-  }
-
-  private copyRecursiveSync(src: string, dest: string) {
-    log.info(`copying ${src} to ${dest}`)
-
-    // Check if the source exists
-    if (!fs.existsSync(src)) {
-      throw new Error("source does not exist")
-    }
-
-    const stats = fs.statSync(src)
-    const isDirectory = stats.isDirectory()
-
-    if (isDirectory) {
-      // Ensure the directory exists or create it
-      if (!fs.existsSync(dest)) {
-        fs.mkdirSync(dest, { recursive: true })
-      }
-      const children = fs.readdirSync(src)
-      for (const child of children) {
-        const srcPath = path.join(src, child)
-        const destPath = path.join(dest, child)
-        this.copyRecursiveSync(srcPath, destPath) // Recurse for nested directories
-      }
-    } else {
-      // copy file
-      fs.copyFileSync(src, dest)
-    }
   }
 }

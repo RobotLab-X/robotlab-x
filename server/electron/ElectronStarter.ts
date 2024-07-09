@@ -131,7 +131,8 @@ export default class Main {
       //
       Main.distRoot = path.join(process.cwd(), "dist")
       // not in dist - because we want "live" files in git
-      Main.publicRoot = "express/public"
+      Main.publicRoot = path.join(process.cwd(), "express/public")
+      // Main.publicRoot = path.join(Main.distRoot, "express/public")
     }
 
     // probably absolute file path asap

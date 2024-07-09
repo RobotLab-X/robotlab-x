@@ -16,10 +16,11 @@
 
 # Remove all .egg files
 find . -type f -name "*.egg" -exec rm -f {} +
+find . -type f -name "installed.txt" -exec rm -rf {} +
 
 # Remove all __pycache__ directories
 find . -type d -name "__pycache__" -exec rm -rf {} +
 find . -type d -name ".venv" -exec rm -rf {} +
 find . -type d -name "*.egg-info" -exec rm -rf {} +
 
-echo "All *.egg files and __pycache__ .venv directories have been removed."
+echo "All *.egg, installed.txt files and __pycache__ .venv directories have been removed."
