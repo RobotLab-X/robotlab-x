@@ -6,16 +6,10 @@ description: "Python service for testing!"
 version: "0.0.1"
 cmd: "python"
 args: ["-u","start.py"] # -u unbuffered output
-cwd: null
-interfaces:
-  restAPI:
-    - endpoint: "/api/v1/resource"
-      method: "GET"
-      description: "Retrieves list of resources."
 author: "GroG"
 license: "MIT"
 categories:
-- "web"
-- "testing"
-- "ui"
+  - "web"
+  - "testing"
+  - "ui"
 dependencies: null

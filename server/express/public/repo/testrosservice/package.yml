@@ -4,18 +4,7 @@ platform: "ros"
 platformVersion: null
 description: "Ros test service for testing!"
 version: "0.0.1"
-cmd:
-args:
-cwd: null
-interfaces:
-  restAPI:
-    - endpoint: "/api/v1/resource"
-      method: "GET"
-      description: "Retrieves list of resources."
-author: "GroG"
+cmd: args: author: "GroG"
 license: "MIT"
-categories:
-- "web"
-- "testing"
-- "ui"
+categories: -"web" - "ros" - "testing" - "ui"
 dependencies: null

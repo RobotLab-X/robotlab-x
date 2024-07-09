@@ -7,15 +7,7 @@ version: "0.0.1"
 requirements: "pip install -r requirements.txt"
 cmd: "python"
 args: ["start.py"]
-cwd: null
-interfaces:
-  restAPI:
-    - endpoint: "/api/v1/resource"
-      method: "GET"
-      description: "Retrieves list of resources."
 author: "GroG"
 license: "MIT"
-categories:
-- "web"
-- "ui"
+categories: ["web", "ui"]
 dependencies: null

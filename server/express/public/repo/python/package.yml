@@ -6,7 +6,6 @@ description: "Python programming interface."
 version: "0.0.1"
 cmd: "python"
 args: ["-u","start.py"] # -u unbuffered output
-cwd: null
 interfaces:
   restAPI:
     - endpoint: "/api/v1/resource"
@@ -15,7 +14,7 @@ interfaces:
 author: "GroG"
 license: "MIT"
 categories:
-- "web"
-- "testing"
-- "ui"
+  - "web"
+  - "testing"
+  - "ui"
 dependencies: null
