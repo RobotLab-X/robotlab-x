@@ -36,7 +36,7 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
   const repo = useProcessedMessage(repoMsg)
   const launchFiles = useProcessedMessage(launchFilesMsg)
 
-  const imagesUrl = `${getBaseUrl()}/images`
+  const imagesUrl = `${getBaseUrl()}/public/images`
 
   const [open, setOpen] = useState(false)
   const debug = useStore((state) => state.debug)
