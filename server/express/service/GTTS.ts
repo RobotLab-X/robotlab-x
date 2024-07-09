@@ -5,7 +5,7 @@ import Main from "../../electron/ElectronStarter"
 import { getLogger } from "../framework/Log"
 import Service from "../framework/Service"
 const gTTS = require("gtts")
-const sound = require("sound-play")
+const player = require("play-sound")()
 
 const log = getLogger("GTTS")
 
@@ -21,8 +21,6 @@ export default class GTTS extends Service {
   config = {
     lang: "en"
   }
-
-  protected hash = crypto.createHash("md5")
 
   /**
    * Creates an instance of GTTS.
@@ -51,26 +49,43 @@ export default class GTTS extends Service {
   speak(text: string): void {
     log.info(`GTTS.speak: ${text}`)
 
-    const filename = path.join(Main.publicRoot, "repo", "gtts", "cache", `${this.hash.update(text).digest("hex")}.mp3`)
+    // Trim the text and generate a hash
+    const trimmedText = text.trim()
+    const hash = crypto.createHash("md5").update(trimmedText).digest("hex")
+    const filename = path.join(Main.publicRoot, "repo", "gtts", "cache", `${hash}.mp3`)
+
+    // Ensure the cache directory exists
+    const cacheDir = path.dirname(filename)
+    if (!fs.existsSync(cacheDir)) {
+      fs.mkdirSync(cacheDir, { recursive: true })
+    }
 
     if (fs.existsSync(filename)) {
-      log.info(`file exists ${filename}`)
-      sound.play(filename)
+      log.info(`File exists: ${filename}`)
+      player.play(filename, function (err: any) {
+        if (err) {
+          log.error(`Error playing sound: ${err}`)
+        }
+      })
       return
     }
 
-    const gtts = new gTTS(text, this.config.lang)
+    const gtts = new gTTS(trimmedText, this.config.lang)
 
-    gtts.save(filename, function (err: any, result: any) {
+    gtts.save(filename, (err: any, result: any) => {
       if (err) {
-        // throw new Error(err)
-        log.error(`error ${err}`)
+        log.error(`Error: ${err}`)
         return
       }
-      log.info(`caching ${filename}`)
+      log.info(`Caching file: ${filename}`)
+      player.play(filename, function (err: any) {
+        if (err) {
+          log.error(`Error playing sound: ${err}`)
+        }
+      })
     })
 
-    this.invoke("publishSpeaking", text)
+    this.invoke("publishSpeaking", trimmedText)
   }
 
   /**

@@ -1,0 +1,12 @@
+author: "GroG"
+categories: ["speech", "tts"]
+dependencies: null
+description: "A timer for scheduled events"
+installed: true
+license: "MIT"
+platform: "node"
+platformVersion: "v20.9.0"
+title: "Google Translate Text-to-Speech"
+typeKey: "GTTS"
+version: "0.0.1"
+visible: true
