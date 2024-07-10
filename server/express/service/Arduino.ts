@@ -17,7 +17,6 @@ const log = getLogger("Arduino")
  */
 export default class Arduino extends Service {
   config = {
-    intervalMs: 1000,
     // port string
     port: "",
     connect: false // if true, connect to the port on start
@@ -72,6 +71,14 @@ export default class Arduino extends Service {
     super.stopService()
   }
 
+  apply(config: any) {
+    console.log("apply", config)
+    super.apply(config)
+    if (this.config.connect) {
+      this.connect(config.port)
+    }
+  }
+
   connect(port: string): void {
     try {
       log.info(`Connecting to port: ${port}`)
@@ -79,6 +86,11 @@ export default class Arduino extends Service {
       if (this.serialPort && port !== this.config.port) {
         log.info("Already connected to a port. Disconnecting.")
         this.disconnect()
+      }
+
+      if (!port) {
+        log.warn("No port specified.")
+        return
       }
 
       this.config.port = port

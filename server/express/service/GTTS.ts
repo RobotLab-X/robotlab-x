@@ -46,6 +46,11 @@ export default class GTTS extends Service {
     return epoch
   }
 
+  onPublishText(text: string): void {
+    log.info(`GTTS.onPublishText: ${text}`)
+    this.speak(text)
+  }
+
   speak(text: string): void {
     log.info(`GTTS.speak: ${text}`)
 

@@ -1,5 +1,5 @@
 import path from "path"
-import { send } from "process"
+// import { send } from "process"
 import Main from "../../electron/ElectronStarter"
 import Gateway from "../interfaces/Gateway"
 import InstallStatus from "../models/InstallStatus"
@@ -90,6 +90,7 @@ export default class Service implements Gateway {
   }
 
   subscribeTo(name: string, method: string) {
+    log.info(`subscribeTo ${name} ${method}`)
     // ensure remoteName is a fullname
     if (!name.includes("@")) {
       name = CodecUtil.getFullName(name)
@@ -98,7 +99,9 @@ export default class Service implements Gateway {
     // FIXME- merge more args
     var args = Array.prototype.slice.call(arguments, 1)
     const msg = this.createMessage(name, "addListener", [method, name])
-    send(msg)
+    this.invokeMsg(msg)
+    // this.sendRemote(msg)
+    // send(msg)
   }
 
   addListener(method: string, remoteName: string, remoteMethod: string) {

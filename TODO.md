@@ -1,5 +1,14 @@
 ## TODO
 
+* UI initialization should be
+  * add listeners to runtime
+  * ask for all service names
+  * broadcastState on each
+  * for each new service name, broadcastState
+
+* performance refactor - leave the subscriptions in place don't remove them
+* filter out fullnames from saved subscriptions
+
 * fix Vosk - proxy problem, may be related to package.json cwd
 * fix it and unit test it !!!
 * unit tests

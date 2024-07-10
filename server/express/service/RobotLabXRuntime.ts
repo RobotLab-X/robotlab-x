@@ -166,23 +166,6 @@ export default class RobotLabXRuntime extends Service {
    */
   apply(config: any) {
     this.config = config
-
-    // let ld: LaunchDescription = new LaunchDescription()
-    // ld.description = "Generated from applying config"
-    // ld.version = "0.0.1"
-
-    // for (const entry of this.config.registry) {
-    //   ld.addNode({
-    //     package: entry.package,
-    //     fullname: entry.fullname
-    //     // config: entry.config // FIXME - read config yml
-    //   })
-    // }
-
-    // this.launch(ld)
-
-    // FIXME - should this always be seperate from the config ?
-    // this.save()
     return this.config
   }
 
@@ -561,15 +544,67 @@ export default class RobotLabXRuntime extends Service {
     const services: Service[] = []
 
     launch?.actions?.forEach((action: LaunchAction) => {
-      log.info(`launching package:${action.package} fullname:${action.name}`)
+      log.info(`Launching package ${action.package} named ${action.name}`)
 
       const targetDir = path.join(Main.publicRoot, `repo/${action.package}`)
-
       const pkg: Package = this.getPackage(action.package)
       const serviceType = pkg.typeKey
-      const name = action.name
+      let name = null
+      let id = null
 
-      log.info(`Starting ${action.package}/${pkg.typeKey} named ${action.name}`)
+      if (!pkg) {
+        log.error(`package ${action.package} not found`)
+        return
+      }
+
+      if (action.name.includes("@")) {
+        name = action.name.split("@")[0]
+      } else {
+        name = action.name
+      }
+
+      if (action.name.includes("@")) {
+        // explicit is highest priority
+        id = action.name.split("@")[1]
+      } else {
+        // derived id
+        if (!this.isPkgProxy(pkg)) {
+          id = this.getId()
+        } else {
+          if (pkg.typeKey === "RobotLabXUI") {
+            id = this.getId() + "." + name
+          } else {
+            id = name
+          }
+        }
+      }
+
+      let listeners: any = null
+
+      if (action.listeners) {
+        // clone listeners
+        listeners = JSON.parse(JSON.stringify(action.listeners))
+
+        Object.keys(listeners).forEach((key) => {
+          // re constitute fullname to all short names
+
+          // use short names for saved callbacks
+          listeners[key] = listeners[key].filter((l: any) => {
+            // short name all the ones in this process
+            if (!l.callbackName.includes("@")) {
+              l.callbackName = l.callbackName + "@" + this.getId()
+              return l
+            }
+          })
+        })
+      }
+
+      const fullname = `${name}@${id}`
+
+      if (this.getService(fullname)) {
+        log.warn(`service ${fullname} already exists`)
+        return
+      }
 
       // validating and preprocessing package.yml
       if (pkg.cwd == null) {
@@ -600,15 +635,32 @@ export default class RobotLabXRuntime extends Service {
             // because it really "is" a remote service - hopefully proxied and using the robotlabx py client
             // library
 
-            service = this.repo.getNewService(name, name, "Proxy", pkg.version, this.getHostname())
-            let cast = service as Proxy
-            cast.proxyTypeKey = serviceType
-            this.info(`python process ${name} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
+            if (pkg.typeKey === "RobotLabXUI") {
+              service = this.repo.getNewService(
+                this.getId() + "." + name,
+                name,
+                "RobotLabXUI",
+                pkg.version,
+                this.getHostname()
+              )
+            } else {
+              service = this.repo.getNewService(name, name, "Proxy", pkg.version, this.getHostname())
+              let cast = service as Proxy
+              cast.proxyTypeKey = serviceType
+              this.info(`python process ${name} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
+            }
           }
           service.pkg = pkg
           // check for config to be merged from action
           if (action.config) {
-            service.config = { ...service.config, ...action.config }
+            // Do not merge - replace
+            // service.config = { ...service.config, ...action.config }
+            // service.config = action.config
+            service.apply(action.config)
+          }
+
+          if (action.listeners) {
+            service.notifyList = listeners
           }
         }
       } catch (e: unknown) {
@@ -1174,6 +1226,7 @@ export default class RobotLabXRuntime extends Service {
       if (service.notifyList) {
         listeners = JSON.parse(JSON.stringify(service.notifyList))
         Object.keys(listeners).forEach((key) => {
+          // remove listeners for all UIs - they are dynamically added during runtime
           for (let i = 0; i < listeners[key].length; i++) {
             const target = this.getService(listeners[key][i].callbackName)
             if (target?.typeKey === "RobotLabXUI") {
@@ -1186,6 +1239,17 @@ export default class RobotLabXRuntime extends Service {
         Object.keys(listeners).forEach((key) => {
           if (listeners[key].length === 0) {
             delete listeners[key]
+          } else {
+            // use short names for saved callbacks
+            listeners[key] = listeners[key].filter((l: any) => {
+              // short name all the ones in this process
+              if (l.callbackName.endsWith("@" + this.getId())) {
+                l.callbackName = l.callbackName.split("@")[0]
+                return l
+              } else {
+                return l
+              }
+            })
           }
         })
       } else {
