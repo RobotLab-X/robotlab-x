@@ -1,4 +1,4 @@
-import { Box, FormControl, InputLabel, MenuItem, Select, Slider, Typography } from "@mui/material"
+import { Box, Button, FormControl, InputLabel, MenuItem, Select, Slider, Typography } from "@mui/material"
 import CodecUtil from "framework/CodecUtil"
 import React, { useEffect, useState } from "react"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
@@ -16,14 +16,11 @@ export default function Servo({ name, fullname, id }) {
 
   const { useMessage, sendTo } = useStore()
 
-  // makes reference to the message object in store
   const publishServoMoveToMsg = useMessage(fullname, "publishServoMoveTo")
   const getServoControllersMsg = useMessage(fullname, "getServoControllers")
 
-  // creates subscriptions to topics and returns the broadcastState message reference
   const serviceMsg = useServiceSubscription(fullname, ["publishServoMoveTo", "getServoControllers"])
 
-  // processes the msg.data[0] and returns the data
   const service = useProcessedMessage(serviceMsg)
   const publishServoMoveTo = useProcessedMessage(publishServoMoveToMsg)
   const getServoControllers = useProcessedMessage(getServoControllersMsg)
@@ -47,17 +44,14 @@ export default function Servo({ name, fullname, id }) {
   }, [service?.config?.min, service?.config?.max])
 
   const handleControllerOpen = () => {
-    // Fetch the currently available controllers
     sendTo(fullname, "getServoControllers")
   }
 
   useEffect(() => {
-    // Fetch the currently available controllers when the component mounts
     handleControllerOpen()
   }, [])
 
   const handleMoveTo = (event, newValue) => {
-    // Ensure the upper slider handle does not move between the min/max positions of the lower slider
     if (newValue < value[0]) {
       newValue = value[0]
     } else if (newValue > value[1]) {
@@ -79,15 +73,22 @@ export default function Servo({ name, fullname, id }) {
 
   const handleControllerChange = (event) => {
     setSelectedController(event.target.value)
-    // This must simply addListener of the appropriate name etc
     sendTo(fullname, "setController", event.target.value)
     sendTo(fullname, "broadcastState")
   }
 
   const handlePinChange = (event) => {
     setSelectedPin(event.target.value)
-    // This must simply removeListener of the appropriate name etc
     sendTo(fullname, "setPin", event.target.value)
+    sendTo(fullname, "broadcastState")
+  }
+
+  const handleToggleEnable = () => {
+    if (service?.config?.enabled) {
+      sendTo(fullname, "enable")
+    } else {
+      sendTo(fullname, "disable")
+    }
     sendTo(fullname, "broadcastState")
   }
 
@@ -178,6 +179,11 @@ export default function Servo({ name, fullname, id }) {
         max={180}
         sx={sliderStyles}
       />
+      {service?.config && (
+        <Button variant="contained" color="primary" onClick={handleToggleEnable}>
+          {service?.config?.enabled ? "Disable" : "Enable"}
+        </Button>
+      )}
     </Box>
   )
 }

@@ -9,6 +9,7 @@ export default class Servo extends Service {
   config = {
     autoDisable: true,
     controller: "",
+    enabled: true,
     rest: 90,
     idleTimeout: 3000,
     speed: 50.0,
@@ -16,6 +17,8 @@ export default class Servo extends Service {
     min: 0,
     max: 180
   }
+
+  lastActivityTs: number = null
 
   constructor(
     public id: string,
@@ -37,6 +40,10 @@ export default class Servo extends Service {
       this.config.speed = speed
     }
     log.info(`Servo.moveTo: Moving to ${degrees} degrees at speed ${this.config.speed}`)
+    if (!this.config.enabled) {
+      log.info(`Servo.moveTo: Disabled - not moving`)
+      return
+    }
     this.invoke("publishServoMoveTo", degrees, this.config.speed)
   }
 
@@ -60,9 +67,15 @@ export default class Servo extends Service {
    */
   publishServoMoveTo(degrees: number, speed?: number): ServoMove {
     log.info(`Servo.publishServoMoveTo: Moving to ${degrees} degrees at speed ${speed}`)
+    this.lastActivityTs = new Date().getTime()
     return new ServoMove(this.id, this.name, this.config.pin, degrees, speed, null)
   }
 
+  /**
+   * Min and max of input range
+   * @param min
+   * @param max
+   */
   setMinMax(min: number, max: number) {
     this.config.min = min
     this.config.max = max
@@ -120,5 +133,21 @@ export default class Servo extends Service {
    */
   rest(): void {
     this.moveTo(this.config.rest)
+  }
+
+  enable() {
+    this.config.enabled = true
+  }
+
+  disable() {
+    this.config.enabled = false
+  }
+
+  isEnabled() {
+    return this.config.enabled
+  }
+
+  setEnabled(enabled: boolean) {
+    this.config.enabled = enabled
   }
 }
