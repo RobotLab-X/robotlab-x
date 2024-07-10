@@ -4,6 +4,7 @@ platform: "browser"
 platformVersion: null
 description: "Web front end for RobotLab-X"
 version: "0.0.1"
+installed: true
 interfaces:
   restAPI:
     - endpoint: "/api/v1/resource"
