@@ -8,8 +8,8 @@ import useServiceSubscription from "../store/useServiceSubscription"
 export default function Servo({ name, fullname, id }) {
   console.debug(`Servo ${fullname}`)
 
-  const [value, setValue] = useState([20, 80])
-  const [mainSliderValue, setMainSliderValue] = useState(70)
+  const [value, setRange] = useState([0, 180])
+  const [mainSliderValue, setMainSliderValue] = useState(90)
   const [speedValue, setSpeedValue] = useState(50)
   const [selectedController, setSelectedController] = useState("")
   const [selectedPin, setSelectedPin] = useState("")
@@ -40,6 +40,12 @@ export default function Servo({ name, fullname, id }) {
     }
   }, [service?.config?.pin])
 
+  useEffect(() => {
+    if (service?.config?.min && service?.config?.max) {
+      setRange([service.config.min, service.config.max])
+    }
+  }, [service?.config?.min, service?.config?.max])
+
   const handleControllerOpen = () => {
     // Fetch the currently available controllers
     sendTo(fullname, "getServoControllers")
@@ -62,7 +68,9 @@ export default function Servo({ name, fullname, id }) {
   }
 
   const handleRangeChange = (event, newValue) => {
-    setValue(newValue)
+    console.info(`handleRangeChange ${newValue}`)
+    setRange(newValue)
+    sendTo(fullname, "setMinMax", newValue[0], newValue[1])
   }
 
   const handleSpeedChange = (event, newValue) => {
@@ -158,7 +166,7 @@ export default function Servo({ name, fullname, id }) {
         valueLabelDisplay="auto"
         track={false}
         min={0}
-        max={100}
+        max={180}
         sx={sliderStyles}
       />
       <Slider
@@ -167,7 +175,7 @@ export default function Servo({ name, fullname, id }) {
         valueLabelDisplay="auto"
         aria-labelledby="range-slider"
         min={0}
-        max={100}
+        max={180}
         sx={sliderStyles}
       />
     </Box>

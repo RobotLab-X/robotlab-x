@@ -12,7 +12,9 @@ export default class Servo extends Service {
     rest: 90,
     idleTimeout: 3000,
     speed: 50.0,
-    pin: ""
+    pin: "",
+    min: 0,
+    max: 180
   }
 
   constructor(
@@ -59,6 +61,11 @@ export default class Servo extends Service {
   publishServoMoveTo(degrees: number, speed?: number): ServoMove {
     log.info(`Servo.publishServoMoveTo: Moving to ${degrees} degrees at speed ${speed}`)
     return new ServoMove(this.id, this.name, this.config.pin, degrees, speed, null)
+  }
+
+  setMinMax(min: number, max: number) {
+    this.config.min = min
+    this.config.max = max
   }
 
   /**
