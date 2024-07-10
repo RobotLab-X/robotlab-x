@@ -85,11 +85,19 @@ export default function Servo({ name, fullname, id }) {
 
   const handleToggleEnable = () => {
     if (service?.config?.enabled) {
-      sendTo(fullname, "enable")
-    } else {
       sendTo(fullname, "disable")
+    } else {
+      sendTo(fullname, "enable")
     }
     sendTo(fullname, "broadcastState")
+  }
+
+  const handleRest = () => {
+    sendTo(fullname, "rest")
+  }
+
+  const handleStop = () => {
+    sendTo(fullname, "stop")
   }
 
   const sliderStyles = {
@@ -180,9 +188,17 @@ export default function Servo({ name, fullname, id }) {
         sx={sliderStyles}
       />
       {service?.config && (
-        <Button variant="contained" color="primary" onClick={handleToggleEnable}>
-          {service?.config?.enabled ? "Disable" : "Enable"}
-        </Button>
+        <Box display="flex" justifyContent="flex-start" alignItems="center" mt={2}>
+          <Button variant="contained" color="primary" onClick={handleToggleEnable}>
+            {service?.config?.enabled ? "Disable" : "Enable"}
+          </Button>
+          <Button variant="contained" color="secondary" onClick={handleRest} sx={{ ml: 2 }}>
+            Rest
+          </Button>
+          <Button variant="contained" color="error" onClick={handleStop} sx={{ ml: 2 }}>
+            Stop
+          </Button>
+        </Box>
       )}
     </Box>
   )

@@ -17,8 +17,6 @@ import React, { useEffect, useState } from "react"
 import { useStore } from "store/store"
 
 const ServiceDialog = ({ packages, open, fullname, setOpen }) => {
-  // console.info("ServiceDialog", packages)
-
   const sendTo = useStore((state) => state.sendTo)
   const [filterText, setFilterText] = useState("")
   const [filteredPackages, setFilteredPackages] = useState([])
@@ -52,20 +50,15 @@ const ServiceDialog = ({ packages, open, fullname, setOpen }) => {
 
   const handleStartNewService = () => {
     console.info("starting new service...")
-    // error check ${newServiceName} ${selectedServiceType}
-    // valid characters not empty etc
-
     sendTo(fullname, "startServiceType", newServiceName, selectedServiceType, selectedVersion)
-
-    handleClose() // Close the dialog
+    handleClose()
   }
 
   const handleClose = () => {
-    setOpen(false) // Close the dialog
-    setNewServiceName("") // Reset the new service name
-    setFilterText("") // Assuming you want to reset this as well
-    // Reset any other state variables you have that should be cleared when the dialog closes
-    setIsStartingService(false) // Reset the starting service state
+    setOpen(false)
+    setNewServiceName("")
+    setFilterText("")
+    setIsStartingService(false)
   }
 
   const handleKeyDown = (e) => {
@@ -118,30 +111,28 @@ const ServiceDialog = ({ packages, open, fullname, setOpen }) => {
                     <TableRow>
                       <TableCell></TableCell>
                       <TableCell>Title</TableCell>
-                      <TableCell>Platform</TableCell>
                       <TableCell>Description</TableCell>
-                      <TableCell></TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {filteredPackages.map(
                       (pkg) =>
                         pkg.visible && (
-                          <TableRow key={pkg.typeKey}>
+                          <TableRow
+                            key={pkg.typeKey}
+                            hover
+                            onClick={() => handleSelectServiceType(pkg.typeKey, pkg.version)}
+                            style={{ cursor: "pointer" }}
+                          >
                             <TableCell>
-                              <img src={`${getRepoUrl()}/${pkg.typeKey.toLowerCase()}/image.png`} alt={pkg.typeKey} />
+                              <img
+                                src={`${getRepoUrl()}/${pkg.typeKey.toLowerCase()}/image.png`}
+                                alt={pkg.typeKey}
+                                style={{ cursor: "pointer" }}
+                              />
                             </TableCell>
                             <TableCell>{pkg.title}</TableCell>
-                            <TableCell>{`${pkg.platform} ${pkg.platformVersion}`}</TableCell>
                             <TableCell>{pkg.description}</TableCell>
-                            <TableCell>
-                              <Button
-                                onClick={() => handleSelectServiceType(pkg.typeKey, pkg.version)}
-                                variant="contained"
-                              >
-                                Select
-                              </Button>
-                            </TableCell>
                           </TableRow>
                         )
                     )}
