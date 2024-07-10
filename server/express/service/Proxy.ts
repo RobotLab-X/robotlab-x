@@ -1,6 +1,7 @@
 import { spawn } from "child_process"
 
 import fs from "fs"
+import os from "os"
 import path from "path"
 import { PythonShell } from "python-shell"
 import semver from "semver"
@@ -315,8 +316,9 @@ export default class Proxy extends Service {
       // Python command to get the pip version
       const pythonCommand = "import pip; print(pip.__version__)"
 
+      const pythonPath = os.platform() === 'win32' ? 'python.bat' : 'python';
       // Run the Python command to get pip version
-      PythonShell.runString(pythonCommand, null)
+      PythonShell.runString(pythonCommand, {"pythonPath":pythonPath})
         .then((results) => {
           const versionString = results[0]
           this.info(`Raw pip Version: ${versionString}`)
@@ -363,8 +365,10 @@ print(result.stdout.decode())
 print(result.stderr.decode(), file=sys.stderr)
     `
 
+
+      const pythonPath = os.platform() === 'win32' ? 'python.bat' : 'python';
       // Run the Python script to create the virtual environment
-      PythonShell.runString(pythonScript, null)
+      PythonShell.runString(pythonScript, {"pythonPath":pythonPath})
         .then(() => {
           // Check if the virtual environment was created successfully
           const activateScript = path.join(fullPath, process.platform === "win32" ? "Scripts" : "bin", "activate") // On Windows: 'Scripts' instead of 'bin'
