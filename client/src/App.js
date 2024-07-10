@@ -39,18 +39,22 @@ window.addEventListener("unhandledrejection", (event) => {
  */
 function App() {
   // use approriate store selectors
+  const setName = useStore((state) => state.setName)
+  const name = useStore((state) => state.name)
+
+  const setId = useStore((state) => state.setId)
+  const setFullname = useStore((state) => state.setFullname)
   const connect = useStore((state) => state.connect)
   const sendTo = useStore((state) => state.sendTo)
+  const fullname = useStore((state) => state.fullname)
   const connected = useStore((state) => state.connected)
   const subscribeTo = useStore((state) => state.subscribeTo)
   const id = useStore((state) => state.id)
   const setDefaultRemoteId = useStore((state) => state.setDefaultRemoteId)
-  const setId = useStore((state) => state.setId)
 
   const UAParser = require("ua-parser-js")
   const parser = new UAParser()
   const browser = parser.getBrowser()
-  const name = "ui"
   const version = "0.0.1"
   const typeKey = "RobotLabXUI"
   const [theme, colorMode] = useMode()
@@ -66,18 +70,42 @@ function App() {
     })
 
   useEffect(() => {
-    const fetchId = async () => {
-      try {
-        const remoteId = await fetchGetJson(getApiUrl(), "/runtime/getId")
-        setDefaultRemoteId(remoteId)
-        setId(`${remoteId}.${name}`)
-        connect()
-      } catch (error) {
-        console.error("Error fetching id ! :", error)
+    console.info(`name ${name}`)
+    setName("ui")
+  }, [name, setName])
+
+  useEffect(() => {
+    if (name) {
+      const fetchId = async () => {
+        try {
+          // important initalization
+          const remoteId = await fetchGetJson(getApiUrl(), "/runtime/getId")
+          // setName("ui")
+          console.info(`name ${name} id ${remoteId}`)
+          setDefaultRemoteId(remoteId)
+          setId(`${remoteId}.ui`) // ui@12345
+          setFullname(`ui@${remoteId}.ui`)
+          console.info(`fullname ${fullname}`)
+          console.info(`id ${id}`)
+        } catch (error) {
+          console.error("Error fetching id ! :", error)
+        }
       }
+      fetchId()
     }
-    fetchId()
-  }, [connect, setDefaultRemoteId, setId, getApiUrl])
+  }, [name, connect, setDefaultRemoteId, setId, getApiUrl])
+
+  useEffect(() => {
+    console.info(`useEffect 3`)
+    console.info(`name ${name}`)
+    console.info(`fullname ${fullname}`)
+    console.info(`id ${id}`)
+    if (name && fullname && id) {
+      connect()
+    } else {
+      console.info("waiting for name, fullname, id to be set ...")
+    }
+  }, [name, fullname, id])
 
   useEffect(() => {
     // send initial listeners when connected and id set

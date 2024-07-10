@@ -3,6 +3,7 @@ class LaunchAction {
     this.name = name
     this.package = pkg
     this.config = config
+    this.listeners = listeners
   }
 
   static fromService(service) {

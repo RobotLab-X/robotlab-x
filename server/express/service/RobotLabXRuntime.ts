@@ -1166,21 +1166,37 @@ export default class RobotLabXRuntime extends Service {
 
       log.info(`adding service ${service.fullname} ${service.name} ${service.typeKey}`)
 
-      // FIXME - when a service is a local proxy,
-      // and has not yet been installed, it will not have a pkg
-      // let originalPkgName: string = null
-      // if (this.isPkgProxy(service.pkg)) {
-      //   // when saving a proxy, we need the original package name
-      //   const proxy: Proxy = service as Proxy
-      //   originalPkgName = proxy.proxyTypeKey.toLowerCase()
-      // } else {
-      //   originalPkgName = service.typeKey.toLowerCase()
-      // }
+      // TODO copy the notifyList to listeners
+      // strip all listeners for RobotLabXUI out
+      // filter local to short names
+      let listeners: any = null
+
+      if (service.notifyList) {
+        listeners = JSON.parse(JSON.stringify(service.notifyList))
+        Object.keys(listeners).forEach((key) => {
+          for (let i = 0; i < listeners[key].length; i++) {
+            const target = this.getService(listeners[key][i].callbackName)
+            if (target?.typeKey === "RobotLabXUI") {
+              listeners[key].splice(i, 1)
+            }
+          }
+        })
+
+        // remove empty listeners
+        Object.keys(listeners).forEach((key) => {
+          if (listeners[key].length === 0) {
+            delete listeners[key]
+          }
+        })
+      } else {
+        listeners = {}
+      }
 
       ld.addNode({
         package: service.typeKey.toLowerCase(),
         name: service.name,
-        config: service.config
+        config: service.config,
+        listeners: listeners
       })
     }
 

@@ -2,7 +2,5 @@
       package: "{{package}}",
       name: "{{name}}",
       config: {{config}},
-      // listeners: {
-      //  {{listeners}}
-      //}
+      listeners: {{listeners}}
     }

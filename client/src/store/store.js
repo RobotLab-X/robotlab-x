@@ -22,6 +22,17 @@ const store = (set, get) => ({
    */
   defaultRemoteId: null,
 
+  name: null,
+
+  fullname: null,
+
+  setName: (newName) => {
+    console.log("Setting name:", newName)
+    set({ name: newName })
+  },
+
+  setFullname: (newFullname) => set({ fullname: newFullname }),
+
   setDefaultRemoteId: (id) => set({ defaultRemoteId: id }),
 
   setId: (newId) => set({ id: newId }),
@@ -214,17 +225,17 @@ const store = (set, get) => ({
         let key = msg.name + "." + msg.method
 
         // To init all services
-        if (key === `runtime@${get().id}.onRegistry`) {
+        if (key === `${get().fullname}.onRegistry`) {
           set({ registry: msg.data[0] })
         }
 
         // to subscribe to new services
-        if (key === `runtime@${get().id}.onRegistered`) {
+        if (key === `${get().fullname}.onRegistered`) {
           get().updateRegistryOnRegistered(msg.data[0])
         }
 
         // latest update to a service
-        if (key === `runtime@${get().id}.onBroadcastState`) {
+        if (key === `${get().fullname}.onBroadcastState`) {
           get().updateServicesOnBroadcastState(msg.data[0])
         }
 
@@ -300,7 +311,7 @@ const store = (set, get) => ({
   subscribeTo: function (name, method) {
     // FIXME- merge more args
     var args = Array.prototype.slice.call(arguments, 1)
-    var msg = get().createMessage(name, "addListener", [method, "runtime@" + get().id])
+    var msg = get().createMessage(name, "addListener", [method, get().fullname])
     get().sendMessage(msg)
   },
 
@@ -308,7 +319,7 @@ const store = (set, get) => ({
     // FIXME- merge more args
     var args = Array.prototype.slice.call(arguments, 1)
     console.info(`unsubscribing from ${name} ${method}`)
-    var msg = get().createMessage(name, "removeListener", [method, "runtime@" + get().id])
+    var msg = get().createMessage(name, "removeListener", [method, get().fullname])
     get().sendMessage(msg)
   },
 
@@ -332,7 +343,7 @@ const store = (set, get) => ({
 
     msg.name = get().getFullName(inName)
     msg.method = inMethod
-    msg.sender = "runtime@" + id
+    msg.sender = get().fullname //"runtime@" + id
 
     if (inParams || (inParams.length === 1 && inParams[0])) {
       msg["data"] = inParams

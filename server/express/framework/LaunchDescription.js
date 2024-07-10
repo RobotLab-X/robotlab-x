@@ -70,6 +70,8 @@ class LaunchDescription {
         lsdAction = lsdAction.replaceAll("{{config}}", "")
       }
 
+      lsdAction = lsdAction.replaceAll("{{listeners}}", JSON.stringify(launchAction.listeners))
+
       launchActions += lsdAction
 
       addNodesData += "\tld.actions.push(" + safeName + ")\n"
