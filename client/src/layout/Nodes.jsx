@@ -109,12 +109,13 @@ const Nodes = () => {
   }, [registry, nodeId, service, mode])
 
   // Function to handle node click event and navigate to node details
-  const handleNodeClick = (node) => {
+  const handleNodeClick = (node, event) => {
+    console.info(`Node clicked: ${node.name} ${event}`)
     setSelectedService(serviceArray.find((service) => service.fullname === node.id))
     navigate(`/nodes/${node.id}`)
   }
 
-  const handleNodeRightClick = (node) => {
+  const handleNodeRightClick = (node, event) => {
     console.log(`Node right clicked for node: ${node.name}`)
     // Add additional logic for handling the node right click here
   }

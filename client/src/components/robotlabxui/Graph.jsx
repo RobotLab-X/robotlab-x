@@ -26,8 +26,12 @@ const Graph = ({ nodes, links, onNodeClick, onNodeRightClick, imageCache, setIma
     node.fy = null
   }
 
-  const handleClick = (node, event) => {
-    onNodeClick(node)
+  const handleNodeClick = (node, event) => {
+    // const rect = canvas.getBoundingClientRect()
+    // const clickX = clientX - rect.left
+    // let nodex = 0.35 * clickX - 130
+
+    onNodeClick(node, event)
   }
 
   return (
@@ -37,8 +41,8 @@ const Graph = ({ nodes, links, onNodeClick, onNodeRightClick, imageCache, setIma
       nodeAutoColorBy="group"
       linkWidth={2}
       nodeLabel="name"
-      onNodeClick={(node, event) => handleClick(node, event)}
-      onNodeRightClick={onNodeRightClick}
+      onNodeClick={(node, event) => handleNodeClick(node, event)}
+      onNodeRightClick={(node, event) => onNodeRightClick(node, event)} //{onNodeRightClick}
       onNodeDrag={handleNodeDrag}
       onNodeDragEnd={handleNodeDragEnd}
       linkDirectionalArrowLength={6}
@@ -61,24 +65,24 @@ const Graph = ({ nodes, links, onNodeClick, onNodeRightClick, imageCache, setIma
           ctx.textBaseline = "middle"
           ctx.fillText(node.name, node.x, node.y + 9)
           // // Draw small circle
-          ctx.beginPath()
-          ctx.arc(node.x + size / 2 + 2, node.y, 1, 0, 2 * Math.PI, false)
-          ctx.fillStyle = "grey"
-          ctx.fill()
-          ctx.strokeStyle = "grey"
-          ctx.lineWidth = 1
-          ctx.stroke()
-          ctx.restore()
+          // ctx.beginPath()
+          // ctx.arc(node.x + size / 2 + 2, node.y, 1, 0, 2 * Math.PI, false)
+          // ctx.fillStyle = "grey"
+          // ctx.fill()
+          // ctx.strokeStyle = "grey"
+          // ctx.lineWidth = 1
+          // ctx.stroke()
+          // ctx.restore()
 
-          ctx.save()
-          ctx.beginPath()
-          ctx.arc(node.x - size / 2 - 2, node.y, 1, 0, 2 * Math.PI, false)
-          ctx.fillStyle = "grey"
-          ctx.fill()
-          ctx.strokeStyle = "grey"
-          ctx.lineWidth = 1
-          ctx.stroke()
-          ctx.restore()
+          // ctx.save()
+          // ctx.beginPath()
+          // ctx.arc(node.x - size / 2 - 2, node.y, 1, 0, 2 * Math.PI, false)
+          // ctx.fillStyle = "grey"
+          // ctx.fill()
+          // ctx.strokeStyle = "grey"
+          // ctx.lineWidth = 1
+          // ctx.stroke()
+          // ctx.restore()
         }
 
         if (!imageCache[node.id]) {
