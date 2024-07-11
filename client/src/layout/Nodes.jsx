@@ -1,5 +1,6 @@
 import Graph from "components/robotlabxui/Graph"
 import ServicePaneWrapper from "components/robotlabxui/ServicePaneWrapper"
+import useNodeMethods from "hooks/useNodeMethods"
 import { useProcessedMessage } from "hooks/useProcessedMessage"
 import React, { useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
@@ -16,16 +17,16 @@ const Nodes = () => {
   const [imageCache, setImageCache] = useState({}) // State to cache images
   const [rightClickPosition, setRightClickPosition] = useState(null) // State for right-click position
   const [isContextMenuVisible, setIsContextMenuVisible] = useState(false) // State for context menu visibility
+  const [currentNodeId, setCurrentNodeId] = useState(null) // State for the current node ID
   const navigate = useNavigate()
   const { nodeId } = useParams()
   const registry = useStore((state) => state.services)
+  const { useMessage, sendTo } = useStore()
   const serviceArray = Object.values(registry)
   const defaultRemoteId = useStore((state) => state.defaultRemoteId)
   const serviceMsg = useServiceSubscription(`runtime@${defaultRemoteId}`, [])
   const service = useProcessedMessage(serviceMsg)
-
-  let publishMethods = null
-  let inputMethods = null
+  const publishMethods = useNodeMethods(currentNodeId)
 
   // Function to handle node click event and navigate to node details
   const handleNodeClick = (node, event) => {
@@ -37,9 +38,9 @@ const Nodes = () => {
   const handleNodeRightClick = (node, event) => {
     event.preventDefault()
     console.log(`Node right clicked for node: ${node.name} ${node.fullname} ${node.id}`)
+    sendTo(node.id, "getMethods", "publish")
     setRightClickPosition({ x: event.clientX, y: event.clientY - 84 })
-    // useServiceSubscription(node.id, "getMethods")
-    // publishMethods = useMessage(fullname, "getMethods")
+    setCurrentNodeId(node.id)
     setIsContextMenuVisible(true)
   }
 
@@ -194,15 +195,16 @@ const Nodes = () => {
           />
           {isContextMenuVisible && rightClickPosition && (
             <div className="context-menu active" style={{ top: rightClickPosition.y, left: rightClickPosition.x }}>
-              <div className="menu-item" onClick={() => handleMenuItemClick("Option 1")}>
-                Option 1
-              </div>
-              <div className="menu-item" onClick={() => handleMenuItemClick("Option 2")}>
-                Option 2
-              </div>
-              <div className="menu-item" onClick={() => handleMenuItemClick("Option 3")}>
-                Option 3
-              </div>
+              {publishMethods ? (
+                publishMethods.map((method) => (
+                  <div key={method} className="menu-item" onClick={() => handleMenuItemClick(method)}>
+                    {method}
+                  </div>
+                ))
+              ) : (
+                <div className="menu-item">Loading...</div>
+              )}
+              {/* JSON.stringify(publishMethods) */}
             </div>
           )}
         </div>

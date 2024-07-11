@@ -179,6 +179,20 @@ export default class Service implements Gateway {
     return this.id
   }
 
+  /**
+   * Reflectively returns the names of methods in the class.
+   * @param filter Optional filter criteria to return methods that start with the filter. If null, returns all methods.
+   * @returns Array of method names.
+   */
+  public getMethods(filter: string | null = null): string[] {
+    const prototype = Object.getPrototypeOf(this)
+    const methodNames = Object.getOwnPropertyNames(prototype)
+      .filter((name) => typeof (this as any)[name] === "function" && name !== "constructor")
+      .filter((name) => (filter ? name.startsWith(filter) : true))
+      .sort()
+    return methodNames
+  }
+
   getName() {
     return this.name
   }
