@@ -1,7 +1,7 @@
 import Graph from "components/robotlabxui/Graph"
 import ServicePaneWrapper from "components/robotlabxui/ServicePaneWrapper"
-import useNodeMethods from "hooks/useNodeMethods"
 import { useProcessedMessage } from "hooks/useProcessedMessage"
+import useServiceMethods from "hooks/useServiceMethods"
 import React, { useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import SplitPane from "react-split-pane"
@@ -26,7 +26,7 @@ const Nodes = () => {
   const defaultRemoteId = useStore((state) => state.defaultRemoteId)
   const serviceMsg = useServiceSubscription(`runtime@${defaultRemoteId}`, [])
   const service = useProcessedMessage(serviceMsg)
-  const publishMethods = useNodeMethods(currentNodeId)
+  const publishMethods = useServiceMethods(currentNodeId)
 
   // Function to handle node click event and navigate to node details
   const handleNodeClick = (node, event) => {
@@ -176,7 +176,7 @@ const Nodes = () => {
           display: block;
         }
         .menu-item {
-          padding: 10px;
+          padding: 3px;
           cursor: pointer;
         }
         .menu-item:hover {
