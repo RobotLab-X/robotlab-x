@@ -14,6 +14,8 @@ const Nodes = () => {
   const [selectedService, setSelectedService] = useState(null) // State for selected service
   const [showGrid, setShowGrid] = useState(true) // State for grid visibility
   const [imageCache, setImageCache] = useState({}) // State to cache images
+  const [rightClickPosition, setRightClickPosition] = useState(null) // State for right-click position
+  const [isContextMenuVisible, setIsContextMenuVisible] = useState(false) // State for context menu visibility
   const navigate = useNavigate()
   const { nodeId } = useParams()
   const registry = useStore((state) => state.services)
@@ -21,6 +23,51 @@ const Nodes = () => {
   const defaultRemoteId = useStore((state) => state.defaultRemoteId)
   const serviceMsg = useServiceSubscription(`runtime@${defaultRemoteId}`, [])
   const service = useProcessedMessage(serviceMsg)
+
+  let publishMethods = null
+  let inputMethods = null
+
+  // Function to handle node click event and navigate to node details
+  const handleNodeClick = (node, event) => {
+    console.info(`Node clicked: ${node.name} ${event}`)
+    setSelectedService(serviceArray.find((service) => service.fullname === node.id))
+    navigate(`/nodes/${node.id}`)
+  }
+
+  const handleNodeRightClick = (node, event) => {
+    event.preventDefault()
+    console.log(`Node right clicked for node: ${node.name} ${node.fullname} ${node.id}`)
+    setRightClickPosition({ x: event.clientX, y: event.clientY - 84 })
+    // useServiceSubscription(node.id, "getMethods")
+    // publishMethods = useMessage(fullname, "getMethods")
+    setIsContextMenuVisible(true)
+  }
+
+  const handleClickOutside = (event) => {
+    if (isContextMenuVisible && event.target.closest(".context-menu") === null) {
+      setIsContextMenuVisible(false)
+    }
+  }
+
+  const handleKeyDown = (event) => {
+    if (isContextMenuVisible && event.key === "Escape") {
+      setIsContextMenuVisible(false)
+    }
+  }
+
+  useEffect(() => {
+    document.addEventListener("click", handleClickOutside)
+    document.addEventListener("keydown", handleKeyDown)
+    return () => {
+      document.removeEventListener("click", handleClickOutside)
+      document.removeEventListener("keydown", handleKeyDown)
+    }
+  }, [isContextMenuVisible])
+
+  const handleMenuItemClick = (item) => {
+    console.log(`Menu item clicked: ${item}`)
+    setIsContextMenuVisible(false)
+  }
 
   // Function to initialize node positions in a circular layout
   const initializeNodePositions = (nodes) => {
@@ -108,38 +155,31 @@ const Nodes = () => {
     }
   }, [registry, nodeId, service, mode])
 
-  // Function to handle node click event and navigate to node details
-  const handleNodeClick = (node, event) => {
-    console.info(`Node clicked: ${node.name} ${event}`)
-    setSelectedService(serviceArray.find((service) => service.fullname === node.id))
-    navigate(`/nodes/${node.id}`)
-  }
-
-  const handleNodeRightClick = (node, event) => {
-    console.log(`Node right clicked for node: ${node.name}`)
-    // Add additional logic for handling the node right click here
-  }
-
   return (
     <>
       <style>{`
-        // html, body, #root, .SplitPane {
-        //   height: 100%;
-        //   margin: 0;
-        //   padding: 0;
-        //   background-color: lightgrey;
-        // }
-        // .pane {
-        //   display: flex;
-        //   flex-direction: column;
-        //   align-items: flex-start;
-        //   justify-content: flex-start;
-        //   height: 100%;
-        // }
         .grid {
           background-image: linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px),
                             linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
           background-size: 20px 20px;
+        }
+        .context-menu {
+          position: absolute;
+          background: white;
+          border: 1px solid black;
+          padding: 0;
+          display: none;
+          z-index: 1000;
+        }
+        .context-menu.active {
+          display: block;
+        }
+        .menu-item {
+          padding: 10px;
+          cursor: pointer;
+        }
+        .menu-item:hover {
+          background-color: #e0e0e0;
         }
       `}</style>
       <SplitPane split="vertical" minSize={200} defaultSize="70%">
@@ -152,6 +192,19 @@ const Nodes = () => {
             imageCache={imageCache}
             setImageCache={setImageCache}
           />
+          {isContextMenuVisible && rightClickPosition && (
+            <div className="context-menu active" style={{ top: rightClickPosition.y, left: rightClickPosition.x }}>
+              <div className="menu-item" onClick={() => handleMenuItemClick("Option 1")}>
+                Option 1
+              </div>
+              <div className="menu-item" onClick={() => handleMenuItemClick("Option 2")}>
+                Option 2
+              </div>
+              <div className="menu-item" onClick={() => handleMenuItemClick("Option 3")}>
+                Option 3
+              </div>
+            </div>
+          )}
         </div>
         <ServicePaneWrapper
           selectedService={selectedService}
