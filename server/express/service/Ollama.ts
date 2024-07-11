@@ -115,6 +115,16 @@ export default class Ollama extends Service {
   }
 
   /**
+   * Simple text publishing
+   * @param text
+   * @returns
+   */
+  publishText(text: string): string {
+    log.info(`publishText ${text}`)
+    return text
+  }
+
+  /**
    * Publishes the chat response from Ollama service.
    * @param text - The chat response text.
    * @returns The chat response text.
@@ -209,6 +219,9 @@ export default class Ollama extends Service {
 
         this.invoke("publishResponse", response)
         this.invoke("publishChat", response.message.content)
+
+        // TODO - need to handle json format if selected
+        this.invoke("publishText", response.message.content)
       } else {
         log.error("No tools prompt")
       }
@@ -237,6 +250,7 @@ export default class Ollama extends Service {
         this.history.push(response.message)
         this.invoke("publishResponse", response)
         this.invoke("publishChat", response.message.content)
+        this.invoke("publishText", response.message.content)
       } else {
         log.error("No default prompt")
       }

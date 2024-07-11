@@ -114,6 +114,11 @@ const Nodes = () => {
     navigate(`/nodes/${node.id}`)
   }
 
+  const handleNodeRightClick = (node) => {
+    console.log(`Node right clicked for node: ${node.name}`)
+    // Add additional logic for handling the node right click here
+  }
+
   return (
     <>
       <style>{`
@@ -142,6 +147,7 @@ const Nodes = () => {
             nodes={nodes}
             links={links}
             onNodeClick={handleNodeClick}
+            onNodeRightClick={handleNodeRightClick}
             imageCache={imageCache}
             setImageCache={setImageCache}
           />
