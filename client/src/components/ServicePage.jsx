@@ -17,7 +17,6 @@ import {
   Tooltip,
   Typography
 } from "@mui/material"
-import StatusLog from "components/StatusLog"
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 import ReactJson from "react-json-view"
 import { useNavigate } from "react-router-dom"
@@ -28,17 +27,10 @@ import useServiceSubscription from "../store/useServiceSubscription"
 const containerStyle = {
   position: "relative",
   minHeight: "100vh", // Ensure the parent takes up the full height of the viewport
-  paddingBottom: "400px" // Space for the StatusLog at the bottom
+  paddingBottom: "400px" // Space for the StatusList at the bottom
 }
 
 const containerStyle2 = {}
-
-const statusLogStyle = {
-  position: "absolute",
-  bottom: 160,
-  marginBottom: "16px",
-  width: "100%"
-}
 
 const ServicePage = ({ fullname, name, id }) => {
   const registered = useRegisteredService(fullname)
@@ -53,8 +45,6 @@ const ServicePage = ({ fullname, name, id }) => {
   const [openDelete, setOpenDelete] = useState(false)
   const navigate = useNavigate()
   const [AsyncPage, setAsyncPage] = useState(null)
-  const debug = useStore((state) => state.debug)
-  const statusList = useStore((state) => state.statusLists[`${fullname}.onStatusList`] || [])
 
   useEffect(() => {
     if (resolvedType) {
@@ -176,16 +166,6 @@ const ServicePage = ({ fullname, name, id }) => {
 
       {asyncPageMemo}
       {jsonDisplayMemo}
-
-      {debug && (
-        <>
-          {" "}
-          <br />
-          <Box sx={statusLogStyle}>
-            <StatusLog statusLog={statusList} fullname={fullname} />
-          </Box>
-        </>
-      )}
 
       <Dialog
         open={openDelete}

@@ -1,8 +1,6 @@
 import { Box, useTheme } from "@mui/material"
-import { DataGrid } from "@mui/x-data-grid"
 import React, { useEffect, useState } from "react"
 import Header from "../components/Header"
-import { mockDataTeam } from "../data/mockData"
 import { useStore } from "../store/store"
 import { tokens } from "../theme"
 
@@ -84,9 +82,7 @@ const Network = () => {
               color: `${colors.greenAccent[200]} !important`
             }
           }}
-        >
-          <DataGrid checkboxSelection rows={mockDataTeam} columns={columns} />
-        </Box>
+        ></Box>
       </Box>
     </>
   )

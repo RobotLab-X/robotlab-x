@@ -2,6 +2,8 @@ import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined"
 import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined"
 import NotificationsOutlinedIcon from "@mui/icons-material/NotificationsOutlined"
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined"
+import StatusList from "../../components/StatusList"
+
 import SearchIcon from "@mui/icons-material/Search"
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined"
 import {
@@ -34,6 +36,13 @@ const Topbar = () => {
   const sendTo = useStore((state) => state.sendTo)
 
   const [dialogOpen, setDialogOpen] = useState(false)
+
+  const statusListStyle = {
+    position: "absolute",
+    bottom: 160,
+    marginBottom: "16px",
+    width: "100%"
+  }
 
   const handleDialogOpen = () => {
     setDialogOpen(true)
@@ -100,6 +109,16 @@ const Topbar = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {debug && (
+        <>
+          {" "}
+          <br />
+          <Box sx={statusListStyle}>
+            <StatusList />
+          </Box>
+        </>
+      )}
     </Box>
   )
 }

@@ -115,9 +115,9 @@ const store = (set, get) => ({
   messages: {},
 
   /**
-   * @type {object} statusLists - A dictionary to store status messages, keyed by service name with suffix "onStatusList".
+   * @type {object} statusList - A dictionary to store status messages, keyed by service name with suffix "onStatusList".
    */
-  statusLists: {},
+  statusList: [],
 
   updateRegistryOnRegistered: (data) =>
     set((state) => {
@@ -255,7 +255,10 @@ const store = (set, get) => ({
 
         // Handle onStatus method
         if (msg.method === "onStatus") {
-          get().addToStatusList(msg.sender, msg.data)
+          msg.data[0].id = CodecUtil.getId(msg.sender)
+          msg.data[0].name = CodecUtil.getShortName(msg.sender)
+          // TODO add ts ?
+          get().addToStatusList(msg.data[0])
         }
 
         let test = get().messages[key]
@@ -377,29 +380,21 @@ const store = (set, get) => ({
     }
   },
 
-  clearStatusList: (service) => {
-    const key = `${service}.onStatusList`
+  clearStatusList: () => {
     set((state) => ({
-      statusLists: {
-        ...state.statusLists,
-        [key]: []
-      }
+      statusList: []
     }))
   },
   setLayout: (newLayout) => set({ layout: newLayout }),
   saveLayout: (newLayout) => set({ layout: newLayout }),
 
-  addToStatusList: (service, status) => {
-    const key = `${service}.onStatusList`
+  addToStatusList: (status) => {
     set((state) => {
-      const currentList = state.statusLists[key] || []
-      const newList = [...currentList, ...status].slice(-300) // Append and keep last 300 messages
-      return {
-        statusLists: {
-          ...state.statusLists,
-          [key]: newList
-        }
+      const newStatusList = [...state.statusList, status]
+      if (newStatusList.length > 300) {
+        newStatusList.shift() // Remove the oldest record
       }
+      return { statusList: newStatusList }
     })
   }
 })
