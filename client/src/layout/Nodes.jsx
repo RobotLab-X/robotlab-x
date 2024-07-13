@@ -1,5 +1,8 @@
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward"
+import { Box, Button, Grid, Typography } from "@mui/material"
 import Graph from "components/robotlabxui/Graph"
-import ServicePaneWrapper from "components/robotlabxui/ServicePaneWrapper"
+import ServicePage from "components/ServicePage"
+import ServicePane from "components/ServicePane"
 import { useProcessedMessage } from "hooks/useProcessedMessage"
 import useServiceMethods from "hooks/useServiceMethods"
 import React, { useEffect, useState } from "react"
@@ -18,6 +21,10 @@ const Nodes = () => {
   const [rightClickPosition, setRightClickPosition] = useState(null) // State for right-click position
   const [isContextMenuVisible, setIsContextMenuVisible] = useState(false) // State for context menu visibility
   const [currentNodeId, setCurrentNodeId] = useState(null) // State for the current node ID
+  const [method1, setMethod1] = useState(null)
+  const [service1, setService1] = useState(null)
+  const [method2, setMethod2] = useState(null)
+  const [service2, setService2] = useState(null)
   const navigate = useNavigate()
   const { nodeId } = useParams()
   const registry = useStore((state) => state.services)
@@ -38,7 +45,14 @@ const Nodes = () => {
   const handleNodeRightClick = (node, event) => {
     event.preventDefault()
     console.info(`Node right clicked for node: ${node.name} ${node.fullname} ${node.id}`)
-    sendTo(node.id, "getMethods", "publish")
+
+    if (!method1) {
+      setService1(node.id)
+    } else {
+      setService2(node.id)
+    }
+
+    sendTo(node.id, "getMethods")
     setRightClickPosition({ x: event.clientX, y: event.clientY - 84 })
     setCurrentNodeId(node.id)
     setIsContextMenuVisible(true)
@@ -65,8 +79,13 @@ const Nodes = () => {
     }
   }, [isContextMenuVisible])
 
-  const handleMenuItemClick = (item) => {
+  const handleServiceMethodClick = (item) => {
     console.log(`Menu item clicked: ${item}`)
+    if (!method1) {
+      setMethod1(item)
+    } else {
+      setMethod2(item)
+    }
     setIsContextMenuVisible(false)
   }
 
@@ -168,27 +187,68 @@ const Nodes = () => {
             imageCache={imageCache}
             setImageCache={setImageCache}
           />
+
           {isContextMenuVisible && rightClickPosition && (
             <div className="context-menu active" style={{ top: rightClickPosition.y, left: rightClickPosition.x }}>
               {publishMethods ? (
-                publishMethods.map((method) => (
-                  <div key={method} className="menu-item" onClick={() => handleMenuItemClick(method)}>
-                    {method}
-                  </div>
-                ))
+                publishMethods
+                  .filter(
+                    (method) => method.startsWith("get") || method.startsWith("publish") || method.startsWith("on")
+                  )
+                  .map((method) => (
+                    <div key={method} className="menu-item" onClick={() => handleServiceMethodClick(method)}>
+                      {method}
+                    </div>
+                  ))
               ) : (
                 <div className="menu-item">Loading...</div>
               )}
             </div>
           )}
         </div>
-        <ServicePaneWrapper
-          selectedService={selectedService}
-          mode={mode}
-          setMode={setMode}
-          showGrid={showGrid}
-          setShowGrid={setShowGrid}
-        />
+        <div style={{ paddingLeft: "20px" }}>
+          <ServicePane
+            service={selectedService}
+            mode={mode}
+            setMode={setMode}
+            showGrid={showGrid}
+            setShowGrid={setShowGrid}
+          />
+          <Box border={1} borderRadius={4} padding={2}>
+            <Typography variant="h6" gutterBottom>
+              Routes
+            </Typography>
+            <Grid
+              container
+              spacing={2}
+              alignItems="center"
+              style={{ marginTop: "10px", marginBottom: "10px", marginLeft: "10px", marginRight: "10px" }}
+            >
+              {method1 && (
+                <>
+                  <Grid item xs={12}>
+                    &nbsp;
+                    {service1}.{method1} <ArrowForwardIcon />
+                    {service2}.{method2}
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Button variant="contained">Add Route</Button>
+                    <Button variant="contained" style={{ marginLeft: "10px" }}>
+                      Clear
+                    </Button>
+                  </Grid>
+                </>
+              )}
+            </Grid>
+          </Box>
+          <br />
+          <br />
+          {selectedService ? (
+            <ServicePage fullname={selectedService.fullname} name={selectedService.name} id={selectedService.id} />
+          ) : (
+            <div>No service selected</div>
+          )}
+        </div>{" "}
       </SplitPane>
     </>
   )
