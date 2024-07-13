@@ -192,9 +192,13 @@ const Nodes = () => {
             <div className="context-menu active" style={{ top: rightClickPosition.y, left: rightClickPosition.x }}>
               {publishMethods ? (
                 publishMethods
-                  .filter(
-                    (method) => method.startsWith("get") || method.startsWith("publish") || method.startsWith("on")
-                  )
+                  .filter((method) => {
+                    if (method1) {
+                      return method.startsWith("on")
+                    } else {
+                      return method.startsWith("get") || method.startsWith("publish")
+                    }
+                  })
                   .map((method) => (
                     <div key={method} className="menu-item" onClick={() => handleServiceMethodClick(method)}>
                       {method}
