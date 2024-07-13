@@ -12,6 +12,7 @@ class OpenCVFilterYolo3(OpenCVFilter):
         print("OpenCVFilterYolo3")
         self.conf_threshold = conf_threshold
         self.nms_threshold = nms_threshold
+        self.last_invoke_time = 0  # for debounce
         paths = self.download_yolo_files("yolo")
         self.net = cv2.dnn.readNetFromDarknet(
             paths.get("cfg_path"), paths.get("weights_path")
@@ -78,6 +79,8 @@ class OpenCVFilterYolo3(OpenCVFilter):
         confidences = []
         boxes = []
 
+        detections = []
+
         height, width = frame.shape[:2]
         for out in outs:
             for detection in out:
@@ -94,20 +97,20 @@ class OpenCVFilterYolo3(OpenCVFilter):
                     boxes.append([x, y, w, h])
                     confidences.append(float(confidence))
                     class_ids.append(class_id)
-                    if self.service:
-                        self.service.invoke(
-                            "publishDetection",
-                            {
-                                "class_id": class_id,
-                                "confidence": confidence,
-                                "label": str(self.classes[class_id]),
-                                "x": x,
-                                "y": y,
-                                "w": w,
-                                "h": h,
-                                "ts": int(time.time()),
-                            },
-                        )
+                    current_time = time.time()
+
+                    detection = {
+                        "class_id": int(class_id),
+                        "confidence": float(confidence),
+                        "label": str(self.classes[class_id]),
+                        "x": x,
+                        "y": y,
+                        "w": w,
+                        "h": h,
+                        "ts": int(time.time()),
+                    }
+
+                    detections.append(detection)
 
         indices = cv2.dnn.NMSBoxes(
             boxes, confidences, self.conf_threshold, self.nms_threshold
@@ -130,6 +133,15 @@ class OpenCVFilterYolo3(OpenCVFilter):
                 )
 
                 # TODO publish_classified_objects(label, confidence, x, y, w, h)
+
+        if (
+            self.service
+            and len(detections) > 0
+            and (current_time - self.last_invoke_time)
+            > self.service.config.get("debounce")
+        ):
+            self.service.invoke("publishDetection", detections)
+            self.last_invoke_time = current_time  # Update last invoke time
 
         return frame
 

@@ -6,12 +6,15 @@ import uuid
 import numpy as np
 import urllib.request
 import time
+import base64
 import asyncio
 import logging
 from time import sleep
 from concurrent.futures import ThreadPoolExecutor
 from rlx_pkg_proxy.service import Service
 from typing import List
+from typing import Dict
+from typing import Any
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("OpenCV")
@@ -27,6 +30,7 @@ class OpenCV(Service):
         self.version: str = cv2.__version__
         self.cap = None
         self.frame_count = 0
+        self.last_invoke_time = 0  # for debounce
 
         # FIXME - this is serving dual purpose, both write and read
         # the command to start capturing and the status of capturing
@@ -36,6 +40,8 @@ class OpenCV(Service):
         self.filters: List[any] = []
         self.config = {
             "camera_index": "0",
+            # 1 second debounce
+            "debounce": 1,
         }
 
         self.pkg = {
@@ -69,6 +75,7 @@ class OpenCV(Service):
             self.cap = cv2.VideoCapture(int(self.config.get("camera_index")))
             while self.capturing:
                 start_time = time.perf_counter()
+                current_time = time.time()
 
                 ret, frame = self.cap.read()
 
@@ -76,8 +83,14 @@ class OpenCV(Service):
                     print("Error: Failed to capture image.")
                     break
 
-                for filter in self.filters:
-                    frame = filter.apply(frame)
+                if (current_time - self.last_invoke_time) > self.config.get("debounce"):
+                    _, buffer = cv2.imencode(".jpg", frame)
+                    encoded64 = base64.b64encode(buffer).decode("utf-8")
+                    self.invoke("publishInputBase64", encoded64)
+                    self.last_invoke_time = current_time
+
+                for cvfilter in self.filters:
+                    frame = cvfilter.apply(frame)
 
                 cv2.imshow(self.fullname, frame)
 
@@ -92,24 +105,28 @@ class OpenCV(Service):
                 self.frame_count = self.frame_count + 1
                 if self.frame_count % 100 == 0:
                     fps = 1.0 / (frame_time + sleep_time)
-                    self.invoke("publish_fps", fps)
+                    self.invoke("publishFps", int(fps))
 
         except Exception as e:
             print(f"Error: {e}")
         finally:
             self.stop_capture()
 
-    def publish_fps(self, fps):
-        log.info(f"publish_fps: {fps}")
+    def publishFps(self, fps):
+        # log.info(f"publishFps: {fps}")
         return fps
 
-    def publishDetection(self, detection):
-        log.info(f"publishDetection: {detection}")
-        return detection
+    def publishDetection(self, detections: List[Dict[str, Any]]):
+        # log.info(f"publishDetection: {detection}")
+        return detections
 
     def publishRecognition(self, recognition):
-        log.info(f"publishRecognition: {recognition}")
+        # log.info(f"publishRecognition: {recognition}")
         return recognition
+
+    def publishInputBase64(self, input_base64):
+        # log.info(f"publishInputBase64: {input_base64}")
+        return input_base64
 
     def setInstalled(self, installed):
         log.info("setInstalled")
@@ -144,6 +161,8 @@ class OpenCV(Service):
             print(f"Module {module_name} not found.")
         except AttributeError:
             print(f"Filter class {filter_class_name} not found in {module_name}.")
+        except Exception as e:
+            print(f"Error adding filter: {e}")
 
     def remove_filter(self, name_of_filter):
         self.filters = [

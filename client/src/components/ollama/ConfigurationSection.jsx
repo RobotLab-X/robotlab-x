@@ -1,8 +1,20 @@
 import { ArrowBack, ArrowForward } from "@mui/icons-material"
 import ExpandLessIcon from "@mui/icons-material/ExpandLess"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
-import { Box, Button, FormControl, IconButton, InputLabel, MenuItem, Select, TextField } from "@mui/material"
-import React from "react"
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  FormControl,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+  Typography
+} from "@mui/material"
+import React, { useEffect, useState } from "react"
 import PromptCard from "./PromptCard"
 
 const ConfigurationSection = ({
@@ -17,9 +29,17 @@ const ConfigurationSection = ({
   editMode,
   setEditMode,
   getBaseUrl,
-  name
+  name,
+  availableModels
 }) => {
+  const [selectedModelDescription, setSelectedModelDescription] = useState("")
+
   const toggleEditMode = () => setEditMode(!editMode)
+
+  useEffect(() => {
+    const selectedModel = availableModels.find((library) => library.name === config?.model)
+    setSelectedModelDescription(selectedModel?.description || "")
+  }, [config?.model, availableModels])
 
   return (
     <>
@@ -30,7 +50,7 @@ const ConfigurationSection = ({
       {editMode ? (
         <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "80%" } }}>
           <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-            <FormControl variant="outlined" sx={{ minWidth: 200 }}>
+            <FormControl variant="outlined" sx={{ minWidth: 200, flex: 1 }}>
               <InputLabel id="model-select-label">Model</InputLabel>
               <Select
                 labelId="model-select-label"
@@ -40,11 +60,20 @@ const ConfigurationSection = ({
                 onChange={handleConfigChange}
                 label="Model"
               >
-                <MenuItem value="llama3">llama3</MenuItem>
-                <MenuItem value="llama2">llama2</MenuItem>
-                <MenuItem value="phi-beta">phi-beta</MenuItem>
+                {availableModels.map((library) => (
+                  <MenuItem key={library.name} value={library.name}>
+                    {library.name}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
+            {selectedModelDescription && (
+              <Card sx={{ ml: 2, flex: 2 }}>
+                <CardContent>
+                  <Typography variant="body1">{selectedModelDescription}</Typography>
+                </CardContent>
+              </Card>
+            )}
           </Box>
           <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
             <TextField
@@ -55,7 +84,7 @@ const ConfigurationSection = ({
               margin="normal"
               value={config?.url ?? ""}
               onChange={handleConfigChange}
-              sx={{ flex: 1 }} // Ensure consistent width
+              sx={{ flex: 1 }}
             />
             <TextField
               label="Max History"
@@ -66,7 +95,7 @@ const ConfigurationSection = ({
               type="number"
               value={config?.maxHistory ?? 0}
               onChange={handleConfigChange}
-              sx={{ flex: 1 }} // Ensure consistent width
+              sx={{ flex: 1 }}
             />
           </Box>
           <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", mt: 5 }}>

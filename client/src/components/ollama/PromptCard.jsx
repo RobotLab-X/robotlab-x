@@ -6,7 +6,7 @@ const PromptCard = ({ currentPromptKey, currentPrompt, getBaseUrl, name }) => (
   <Card sx={{ minWidth: 275, mx: 2 }}>
     <CardContent>
       <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-        <img src={`${getBaseUrl()}/public/repo/${name}/prompts/${currentPromptKey}.png`} width="64" alt="robot pict" />
+        <img src={`${getBaseUrl()}/public/repo/ollama/prompts/${currentPromptKey}.png`} width="64" alt="robot pict" />
         <Typography variant="h2" component="div">
           {currentPromptKey}
         </Typography>

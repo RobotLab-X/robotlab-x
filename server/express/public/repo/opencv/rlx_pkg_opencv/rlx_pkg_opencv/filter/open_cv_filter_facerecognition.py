@@ -16,18 +16,26 @@ MODEL_PATH = os.path.join(BASE_DIR, "face_recognizer.joblib")
 class OpenCVFilterFaceRecognition(OpenCVFilter):
     """
     Face recognition filter.
+
+    Modes:
+    * learn - learn a new model
+    * recognize - recognize faces in an image
+    * train - train a new model
+
     """
 
-    def __init__(self, name, service, mode="recognize", num_images=10):
+    def __init__(self, name, service, mode="idle", num_images=10):
         super().__init__(name, service)
         self.config = {
             "mode": mode,
-            "name": "unknown",
+            "name": "idle",
             "num_images": num_images,
         }
 
         self.image_counts: Dict[str, int] = {}
+        self.last_invoke_time = 0  # for debounce
         print(f"Face Recognition initialized in {mode} mode.")
+        os.makedirs(BASE_DIR, exist_ok=True)
         self.get_model_image_counts()
 
     def list_models(self):
@@ -60,41 +68,54 @@ class OpenCVFilterFaceRecognition(OpenCVFilter):
             self.train_model()
         elif mode == "recognize":
             return self.recognize_faces(frame)
+        elif mode == "idle":
+            return frame
         else:
             raise ValueError("Invalid mode specified in config")
         return frame
 
     def capture_faces(self, frame, name, num_images=10):
+        # print(f"Capturing faces for {name}")
         person_dir = os.path.join(BASE_DIR, name)
         if not os.path.exists(person_dir):
             os.makedirs(person_dir)
+
+        self.get_model_image_counts()
 
         face_cascade = cv2.CascadeClassifier(
             cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
         )
 
-        count = 0
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        faces = face_cascade.detectMultiScale(
-            gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30)
-        )
+        if self.image_counts[name] < self.config["num_images"]:
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            faces = face_cascade.detectMultiScale(
+                gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30)
+            )
 
-        for x, y, w, h in faces:
-            if count >= num_images:
-                break
-            face = gray[y : y + h, x : x + w]
-            face_resized = cv2.resize(face, (100, 100))  # Resize to 100x100 pixels
-            face_path = os.path.join(person_dir, f"{count}.jpg")
-            cv2.imwrite(face_path, face_resized)
-            count += 1
+            if len(faces) > 1 or len(faces) == 0:
+                print("No faces detected or multiple faces detected in the image.")
+                return
 
-            # Draw a rectangle around the face
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
+            # not really good for training to have multiple people in the same image
+            for x, y, w, h in faces:
+                # if count >= num_images:
+                #     break
+                face = gray[y : y + h, x : x + w]
+                face_resized = cv2.resize(face, (100, 100))  # Resize to 100x100 pixels
+                face_path = os.path.join(person_dir, f"{self.image_counts[name]}.jpg")
+                print(f"Saving face to {face_path}")
+                cv2.imwrite(face_path, face_resized)
+
+                # Draw a rectangle around the face
+                cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
+
+            self.image_counts[name] = self.image_counts[name] + 1
 
         # cv2.imshow("Learning Mode - Press q to quit", frame)
         # cv2.waitKey(1)
 
     def train_model(self):
+        # print("Training model...")
         face_cascade = cv2.CascadeClassifier(
             cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
         )
@@ -127,6 +148,7 @@ class OpenCVFilterFaceRecognition(OpenCVFilter):
         dump((model, label_encoder), MODEL_PATH)
 
     def recognize_faces(self, frame):
+        # print("Recognizing faces...")
         model, label_encoder = load(MODEL_PATH)
         face_cascade = cv2.CascadeClassifier(
             cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
@@ -136,6 +158,10 @@ class OpenCVFilterFaceRecognition(OpenCVFilter):
         faces = face_cascade.detectMultiScale(
             gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30)
         )
+
+        recognitions = []
+
+        current_time = time.time()
 
         for x, y, w, h in faces:
             face_resized = cv2.resize(
@@ -157,19 +183,32 @@ class OpenCVFilterFaceRecognition(OpenCVFilter):
                 2,
             )
 
+            recognitions.append(
+                {
+                    # confidence is not serializable,
+                    # would need to be converted
+                    # to an array of floats
+                    # "confidence": proba,
+                    "label": str(name[0]),
+                    "x": int(x),
+                    "y": int(y),
+                    "w": int(w),
+                    "h": int(h),
+                    "ts": int(current_time),
+                }
+            )
+
+        if (
+            self.service
+            and len(recognitions) > 0
+            and (current_time - self.last_invoke_time)
+            > self.service.config.get("debounce")
+        ):
+            self.service.invoke("publishRecognition", recognitions)
+            self.last_invoke_time = current_time  # Update last invoke time
+
             if self.service:
-                self.service.invoke(
-                    "publishRecognition",
-                    {
-                        "confidence": proba,
-                        "label": str(name[0]),
-                        "x": x,
-                        "y": y,
-                        "w": w,
-                        "h": h,
-                        "ts": int(time.time()),
-                    },
-                )
+                self.service.invoke("publishRecognition", recognitions)
 
         return frame
 
@@ -185,7 +224,7 @@ class OpenCVFilterFaceRecognition(OpenCVFilter):
 def main():
     # Initialize the filter
     canny_filter = OpenCVFilterFaceRecognition(
-        name="face recognition", mode="learn", num_images=10
+        name="face recognition", service=None, mode="idle", num_images=10
     )
 
     # Capture video from the default camera

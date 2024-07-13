@@ -1024,9 +1024,15 @@ export default class RobotLabXRuntime extends Service {
       type: "websocket",
       encoding: "json",
       gateway: gateway,
+      state: "connected",
       direction: inboundOutbound
     }
     this.connections[`${gatewayId}`] = connection
+  }
+
+  updateConnection(gatewayId: string, state: string) {
+    log.info(`updating connection ${gatewayId} state ${state}`)
+    this.connections[`${gatewayId}`].state = state
   }
 
   removeConnection(gatewayId: string) {

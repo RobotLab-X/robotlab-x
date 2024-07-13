@@ -17,9 +17,26 @@ export default function OpenCV({ fullname }) {
   console.debug(`OpenCV ${fullname}`)
 
   const [editMode, setEditMode] = useState(false)
-  const { sendTo } = useStore()
-  const serviceMsg = useServiceSubscription(fullname)
+  const { useMessage, sendTo } = useStore()
+
+  const publishFpsMsg = useMessage(fullname, "publishFps")
+  const publishDetectionMsg = useMessage(fullname, "publishDetection")
+  const publishRecognitionMsg = useMessage(fullname, "publishRecognition")
+  const publishInputBase64Msg = useMessage(fullname, "publishInputBase64")
+
+  const serviceMsg = useServiceSubscription(fullname, [
+    "publishFps",
+    "publishDetection",
+    "publishRecognition",
+    "publishInputBase64"
+  ])
+
   const service = useProcessedMessage(serviceMsg)
+  const publishFps = useProcessedMessage(publishFpsMsg)
+  const publishDetection = useProcessedMessage(publishDetectionMsg)
+  const publishRecognition = useProcessedMessage(publishRecognitionMsg)
+  const publishInputBase64 = useProcessedMessage(publishInputBase64Msg)
+
   const [possibleFilters] = useState(["Canny", "Yolo3", "FaceDetect", "FaceRecognition"])
   const [selectedFilterType, setSelectedFilterType] = useState(null)
   const [selectedFilter, setSelectedFilter] = useState(null)
@@ -92,6 +109,9 @@ export default function OpenCV({ fullname }) {
             handleSaveConfig={handleSaveConfig}
           />
         )}
+        Fps {publishFps} Detection {JSON.stringify(publishDetection)} Recognition {JSON.stringify(publishRecognition)}
+        <br />
+        {publishInputBase64 && <img src={`data:image/jpg;base64,${publishInputBase64}`} alt="input" />}
         <Box sx={{ display: "flex", justifyContent: "space-between", maxWidth: { xs: "100%", sm: "80%", md: "80%" } }}>
           <Filters
             service={service}

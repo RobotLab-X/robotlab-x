@@ -1,4 +1,5 @@
 import axios from "axios"
+import cheerio from "cheerio"
 import fs from "fs"
 import { ChatRequest, ChatResponse, Ollama as OllamaClient } from "ollama"
 import path from "path"
@@ -10,9 +11,15 @@ import Service from "../framework/Service"
 // FIXME - should be an instance logger not a Type logger
 const log = getLogger("Ollama")
 
+interface Model {
+  name: string
+  description: string
+}
+
 export default class Ollama extends Service {
   // Class properties
   private intervalId: NodeJS.Timeout | null = null
+  protected availableModels: Model[] = []
 
   config = {
     installed: false,
@@ -39,6 +46,7 @@ export default class Ollama extends Service {
    */
   constructor(id: string, name: string, typeKey: string, version: string, hostname: string) {
     super(id, name, typeKey, version, hostname)
+    this.scrapeLibrary()
   }
 
   /**
@@ -341,13 +349,41 @@ export default class Ollama extends Service {
     this.prompts[prompt][key] = value
   }
 
+  async scrapeLibrary() {
+    try {
+      const url = "https://ollama.com/library"
+      const { data } = await axios.get(url)
+      const $ = cheerio.load(data)
+
+      const models: Model[] = []
+
+      $("#repo li").each((index, element) => {
+        const modelName = $(element).find("h2").text().trim()
+        let modelDescription = $(element).find("div.flex.flex-col.space-y-2").text().trim()
+
+        // Filter out multiple newline characters
+        modelDescription = modelDescription.replace(/\n+/g, " ")
+
+        models.push({ name: modelName, description: modelDescription })
+      })
+
+      // Sort models by name
+      models.sort((a, b) => a.name.localeCompare(b.name))
+
+      this.availableModels = models
+      console.log(this.availableModels)
+    } catch (error) {
+      console.error(`Error fetching the URL: ${error}`)
+    }
+  }
   // FIXME .. just find a list of all Service properties  e.g. ObjectKeys(this)
 
   toJSON() {
     return {
       ...super.toJSON(),
       prompts: this.prompts,
-      history: this.history
+      history: this.history,
+      availableModels: this.availableModels
     }
   }
 }

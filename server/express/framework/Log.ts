@@ -1,3 +1,5 @@
+import fs from "fs"
+import path from "path"
 import winston from "winston"
 
 // Define custom levels and their corresponding colors
@@ -33,6 +35,12 @@ const logFormat = winston.format.printf(({ level, message, module }) => {
   return `${level}[${formattedModule}]: ${message}`
 })
 
+// Path to the log file
+const logFilePath = path.join(__dirname, "robotlab-x.log")
+
+// Ensure the log file is truncated on start
+fs.writeFileSync(logFilePath, "")
+
 // Create a logger instance
 const log = winston.createLogger({
   levels: logLevels.levels,
@@ -42,13 +50,13 @@ const log = winston.createLogger({
         winston.format.combine(winston.format.colorize(), winston.format.simple()),
         logFormat
       ),
-      // format: winston.format.combine(winston.format.colorize(), winston.format.simple()),
       level: "info" // default level for the console transport
+    }),
+    new winston.transports.File({
+      filename: logFilePath,
+      format: winston.format.combine(winston.format.timestamp(), winston.format.json(), logFormat),
+      level: "info" // default level for the file transport
     })
-    // new winston.transports.File({
-    //   filename: "app.log",
-    //   level: "info" // default level for the file transport
-    // })
   ]
 })
 

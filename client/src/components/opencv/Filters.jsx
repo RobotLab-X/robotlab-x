@@ -153,10 +153,10 @@ export default function Filters({ service, selectedFilter, setSelectedFilter, se
 
           {selectedFilterDetails.typeKey === "OpenCVFilterFaceRecognition" && (
             <>
+              <Typography variant="body1" sx={{ mr: 2 }}>
+                Mode
+              </Typography>
               <Box sx={{ display: "flex", alignItems: "center", mt: 2 }}>
-                <Typography variant="body1" sx={{ mr: 2 }}>
-                  Mode
-                </Typography>
                 <Button
                   variant="contained"
                   sx={{
@@ -215,6 +215,26 @@ export default function Filters({ service, selectedFilter, setSelectedFilter, se
                 >
                   Recognize
                 </Button>
+
+                <Button
+                  variant="contained"
+                  sx={{
+                    ml: 1,
+                    bgcolor: filter?.config?.mode === "idle" ? "grey.700" : "grey.300",
+                    color: filter?.config?.mode === "idle" ? "white" : "black"
+                  }}
+                  onClick={() =>
+                    setFilter((prev) => ({
+                      ...prev,
+                      config: {
+                        ...prev.config,
+                        mode: "idle"
+                      }
+                    }))
+                  }
+                >
+                  Idle
+                </Button>
               </Box>
 
               {filter?.config?.mode === "learn" && (
@@ -247,9 +267,10 @@ export default function Filters({ service, selectedFilter, setSelectedFilter, se
                         alt={name}
                         style={{ width: 50, height: 50, marginRight: 16 }}
                       />
-                      <Typography variant="body1">Name: {name}</Typography>
-                      <br />
-                      <Typography variant="body1">Images: {count}</Typography>
+                      <div>
+                        <Typography variant="body1">Name: {name}</Typography>
+                        <Typography variant="body1">Images: {count}</Typography>
+                      </div>
                     </CardContent>
                   </Card>
                 ))}

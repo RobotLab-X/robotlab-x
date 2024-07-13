@@ -1,5 +1,5 @@
 import { East, West } from "@mui/icons-material"
-import { Box, Card, CardActionArea, CardContent, Grid, Typography } from "@mui/material"
+import { Box, Card, CardActionArea, CardContent, Grid, Tooltip, Typography } from "@mui/material"
 import RouteTable from "components/RouteTable"
 import React from "react"
 import ReactJson from "react-json-view"
@@ -16,6 +16,16 @@ const ConnectionsPanel = ({ connectionArray, service, handleHostClick, routeTabl
                 <CardContent>
                   <Box display="flex" alignItems="center" sx={{ marginBottom: 1 }}>
                     <Typography variant="h5" component="div">
+                      <Tooltip title={service?.ready ? "Ready" : "Not Ready"}>
+                        <Box
+                          width={10}
+                          height={10}
+                          borderRadius="50%"
+                          bgcolor={connection?.state === "connected" ? "green" : "red"}
+                          mr={1}
+                        />
+                      </Tooltip>
+
                       {connection.gatewayId}
                     </Typography>
                     {connection.direction === "inbound" ? (

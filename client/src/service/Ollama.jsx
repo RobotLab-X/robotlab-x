@@ -153,6 +153,7 @@ export default function Ollama({ name, fullname, id }) {
             setEditMode={setEditMode}
             getBaseUrl={getBaseUrl}
             name={name}
+            availableModels={service?.availableModels}
           />
           <Box sx={{ width: "66%", mx: "auto", mt: 2 }}>
             <ChatHistory chatHistory={requestResponseHistory} />

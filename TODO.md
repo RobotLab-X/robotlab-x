@@ -42,7 +42,7 @@
 * remove all LaunchDescription class info from start scripts
 * install yarn as the "ivy" package manager - create repos
 * You cannot delete a proxy service
-* StatusLog refactor
+* StatusList refactor
 * Repo.getinstance() <- should be a singleton
 * Unified logging (non indexed per service)
 * Python Wizard - green check mark when completed

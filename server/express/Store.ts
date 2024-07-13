@@ -158,6 +158,7 @@ export default class Store {
    * Accept "inbound" WebSocket connections
    */
   private initWebSocketServer() {
+    const runtime = RobotLabXRuntime.getInstance()
     this.wss.on("connection", (ws, request) => {
       log.info("client connected")
 
@@ -179,19 +180,22 @@ export default class Store {
 
       // FIXME - MAKE CONNECTION CLASS
       // ---> someone has connected to me (inbound connection)
-      this.runtime.registerConnection(`runtime@${this.runtime.getId()}`, gatewayId, url, "inbound", ws)
+      runtime.registerConnection(`runtime@${runtime.getId()}`, gatewayId, url, "inbound", ws)
       RobotLabXRuntime.getInstance().invoke("broadcastState")
       // onmessage - server
       ws.on("message", this.handleWsMessage(ws, gatewayId))
 
       ws.on("close", () => {
+        runtime.warn(`connection ${gatewayId} closed`)
         // NOT REMOVING CONNECTION TO TEST FROM PYTHON SIDE
-        //        this.runtime.removeConnection(gatewayId)
-        RobotLabXRuntime.getInstance().invoke("broadcastState")
+        // runtime.removeConnection(gatewayId)
+        runtime.updateConnection(gatewayId, "disconnected")
+        runtime.invoke("broadcastState")
       })
 
       ws.on("error", (error) => {
-        console.error("WebSocket error:", error)
+        log.error("WebSocket error:", error)
+        runtime.error(`connection ${gatewayId} error`)
       })
     })
   }
@@ -218,6 +222,7 @@ export default class Store {
         }
 
         // log.info(`--> ws ${JSON.stringify(msg)}`)
+        log.info(`--> ws ${msg.name} ${msg.method}`)
         this.handleMessage(msg)
       } catch (e) {
         // ui error - user should be informed
