@@ -2,7 +2,7 @@ import ServicePane from "components/ServicePane"
 import React from "react"
 
 const ServicePaneWrapper = ({ selectedService, mode, setMode, showGrid, setShowGrid }) => (
-  <div className="pane">
+  <div className="pane" style={{ paddingLeft: "20px" }}>
     <ServicePane
       service={selectedService}
       mode={mode}

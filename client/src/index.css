@@ -47,7 +47,7 @@ body,
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url(yMJRMIlzdpvBhQQL_Qq7dy0.woff2) format('woff2');
+  src: url(Orbitron.woff2) format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 /* latin */
@@ -56,6 +56,105 @@ body,
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: url(yMJRMIlzdpvBhQQL_Qq7dy0.woff2) format('woff2');
+  src: url(Orbitron.woff2) format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
+
+/* begin Nodes.jsx ---------------------------------------------------------------------------------------- */
+
+.grid {
+  background-image: linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+.context-menu {
+  position: absolute;
+  background: white;
+  border: 1px solid black;
+  padding: 0;
+  display: none;
+  z-index: 1000;
+}
+.context-menu.active {
+  display: block;
+}
+.menu-item {
+  padding: 3px;
+  cursor: pointer;
+}
+.menu-item:hover {
+  background-color: #e0e0e0;
+}
+.divider-handle {
+  background-color: #ccc;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  cursor: grab;
+  z-index: 10;
+}
+.split-pane-resizer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+.Resizer {
+  background: #000;
+  opacity: 0.2;
+  z-index: 1;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  -moz-background-clip: padding;
+  -webkit-background-clip: padding;
+  background-clip: padding-box;
+}
+
+.Resizer:hover {
+  -webkit-transition: all 2s ease;
+  transition: all 2s ease;
+}
+
+.Resizer.horizontal {
+  height: 11px;
+  margin: -5px 0;
+  border-top: 5px solid rgba(255, 255, 255, 0);
+  border-bottom: 5px solid rgba(255, 255, 255, 0);
+  cursor: row-resize;
+  width: 100%;
+}
+
+.Resizer.horizontal:hover {
+  border-top: 5px solid rgba(0, 0, 0, 0.5);
+  border-bottom: 5px solid rgba(0, 0, 0, 0.5);
+}
+
+.Resizer.vertical {
+  width: 11px;
+  margin: 0 -5px;
+  border-left: 5px solid rgba(255, 255, 255, 0);
+  border-right: 5px solid rgba(255, 255, 255, 0);
+  cursor: col-resize;
+}
+
+.Resizer.vertical:hover {
+  border-left: 5px solid rgba(0, 0, 0, 0.5);
+  border-right: 5px solid rgba(0, 0, 0, 0.5);
+}
+.Resizer.disabled {
+  cursor: not-allowed;
+}
+.Resizer.disabled:hover {
+  border-color: transparent;
+}
+
+/* end Nodes.jsx ---------------------------------------------------------------------------------------- */

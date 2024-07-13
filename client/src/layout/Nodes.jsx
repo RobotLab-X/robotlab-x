@@ -37,7 +37,7 @@ const Nodes = () => {
 
   const handleNodeRightClick = (node, event) => {
     event.preventDefault()
-    console.log(`Node right clicked for node: ${node.name} ${node.fullname} ${node.id}`)
+    console.info(`Node right clicked for node: ${node.name} ${node.fullname} ${node.id}`)
     sendTo(node.id, "getMethods", "publish")
     setRightClickPosition({ x: event.clientX, y: event.clientY - 84 })
     setCurrentNodeId(node.id)
@@ -158,31 +158,6 @@ const Nodes = () => {
 
   return (
     <>
-      <style>{`
-        .grid {
-          background-image: linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px),
-                            linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
-          background-size: 20px 20px;
-        }
-        .context-menu {
-          position: absolute;
-          background: white;
-          border: 1px solid black;
-          padding: 0;
-          display: none;
-          z-index: 1000;
-        }
-        .context-menu.active {
-          display: block;
-        }
-        .menu-item {
-          padding: 3px;
-          cursor: pointer;
-        }
-        .menu-item:hover {
-          background-color: #e0e0e0;
-        }
-      `}</style>
       <SplitPane split="vertical" minSize={200} defaultSize="70%">
         <div className={`pane ${showGrid ? "grid" : ""}`}>
           <Graph
@@ -204,7 +179,6 @@ const Nodes = () => {
               ) : (
                 <div className="menu-item">Loading...</div>
               )}
-              {/* JSON.stringify(publishMethods) */}
             </div>
           )}
         </div>
