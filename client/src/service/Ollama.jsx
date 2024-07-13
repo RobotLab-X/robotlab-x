@@ -140,6 +140,7 @@ export default function Ollama({ name, fullname, id }) {
       </div>
       {service?.config?.installed && service && (
         <>
+          {/* this is dumb - too much stuff being passed as props */}
           <ConfigurationSection
             config={config}
             handleConfigChange={handleConfigChange}
@@ -153,15 +154,18 @@ export default function Ollama({ name, fullname, id }) {
             setEditMode={setEditMode}
             getBaseUrl={getBaseUrl}
             name={name}
+            fullname={fullname}
+            localModels={service?.localModels}
             availableModels={service?.availableModels}
           />
+          <ChatInput
+            chatInput={chatInput}
+            handleChatInputChange={handleChatInputChange}
+            handleSendChat={handleSendChat}
+          />
+
           <Box sx={{ width: "66%", mx: "auto", mt: 2 }}>
             <ChatHistory chatHistory={requestResponseHistory} />
-            <ChatInput
-              chatInput={chatInput}
-              handleChatInputChange={handleChatInputChange}
-              handleSendChat={handleSendChat}
-            />
           </Box>
         </>
       )}

@@ -18,64 +18,63 @@ const ChatHistory = ({ chatHistory }) => {
 
   return (
     <Box sx={{ p: 2 }}>
-      {chatHistory.map((chat, index) => {
-        let type = null
-        let content = null
-        if (chat?.messages) {
-          type = "request"
-          // not [0] system content but [1] user content
-          content = chat.messages.filter((message) => message.role === "user").slice(-1)[0].content
-        }
-        if (chat?.message) {
-          type = "response"
-          content = chat.message.content
-        }
-        // let role = chat?.messages[1].role
-        // if (!role) {
-        //   role = chat?.message.role
-        // }
-        return (
-          <Box key={index} sx={{ mb: 2 }}>
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: type === "request" ? "flex-end" : "flex-start",
-                alignItems: "center"
-              }}
-            >
+      {chatHistory
+        .slice()
+        .reverse()
+        .map((chat, index) => {
+          let type = null
+          let content = null
+          if (chat?.messages) {
+            type = "request"
+            // not [0] system content but [1] user content
+            content = chat.messages.filter((message) => message.role === "user").slice(-1)[0].content
+          }
+          if (chat?.message) {
+            type = "response"
+            content = chat.message.content
+          }
+          return (
+            <Box key={index} sx={{ mb: 2 }}>
               <Box
                 sx={{
-                  backgroundColor: type === "request" ? "lightblue" : "#d4edda", // Muted green color
-                  color: "black",
-                  borderRadius: 2,
-                  maxWidth: "75%",
-                  wordBreak: "break-word",
-                  padding: 1,
-                  display: "inline-block"
+                  display: "flex",
+                  justifyContent: type === "request" ? "flex-end" : "flex-start",
+                  alignItems: "center"
                 }}
               >
-                {content}
+                <Box
+                  sx={{
+                    backgroundColor: type === "request" ? "lightblue" : "#d4edda", // Muted green color
+                    color: "black",
+                    borderRadius: 2,
+                    maxWidth: "75%",
+                    wordBreak: "break-word",
+                    padding: 1,
+                    display: "inline-block"
+                  }}
+                >
+                  {content}
+                </Box>
+                {debug && (
+                  <IconButton onClick={() => toggleExpand(index)} size="small">
+                    {expandedChats[index] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                  </IconButton>
+                )}
               </Box>
-              {debug && (
-                <IconButton onClick={() => toggleExpand(index)} size="small">
-                  {expandedChats[index] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                </IconButton>
+              {expandedChats[index] && (
+                <Box sx={{ mt: 1, ml: 4 }}>
+                  <ReactJson
+                    src={chat}
+                    name={null}
+                    displayDataTypes={false}
+                    displayObjectSize={false}
+                    style={{ fontSize: "12px" }}
+                  />
+                </Box>
               )}
             </Box>
-            {expandedChats[index] && (
-              <Box sx={{ mt: 1, ml: 4 }}>
-                <ReactJson
-                  src={chat}
-                  name={null}
-                  displayDataTypes={false}
-                  displayObjectSize={false}
-                  style={{ fontSize: "12px" }}
-                />
-              </Box>
-            )}
-          </Box>
-        )
-      })}
+          )
+        })}
     </Box>
   )
 }

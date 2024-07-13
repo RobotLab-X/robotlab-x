@@ -30,16 +30,26 @@ const ConfigurationSection = ({
   setEditMode,
   getBaseUrl,
   name,
+  localModels,
   availableModels
 }) => {
-  const [selectedModelDescription, setSelectedModelDescription] = useState("")
+  const [selectedModelDetails, setSelectedModelDetails] = useState({ name: "", description: "" })
 
   const toggleEditMode = () => setEditMode(!editMode)
 
   useEffect(() => {
-    const selectedModel = availableModels.find((library) => library.name === config?.model)
-    setSelectedModelDescription(selectedModel?.description || "")
-  }, [config?.model, availableModels])
+    const selectedModel =
+      availableModels.find((model) => model.name === config?.model) ||
+      localModels.find((model) => model.name === config?.model)
+    if (selectedModel) {
+      setSelectedModelDetails({
+        name: selectedModel.name,
+        description: selectedModel.description || JSON.stringify(selectedModel.details, null, 2)
+      })
+    } else {
+      setSelectedModelDetails({ name: "", description: "" })
+    }
+  }, [config?.model, availableModels, localModels])
 
   return (
     <>
@@ -60,17 +70,18 @@ const ConfigurationSection = ({
                 onChange={handleConfigChange}
                 label="Model"
               >
-                {availableModels.map((library) => (
-                  <MenuItem key={library.name} value={library.name}>
-                    {library.name}
+                {availableModels.concat(localModels).map((model) => (
+                  <MenuItem key={model.name} value={model.name}>
+                    {model.name}
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
-            {selectedModelDescription && (
+            {selectedModelDetails.name && (
               <Card sx={{ ml: 2, flex: 2 }}>
                 <CardContent>
-                  <Typography variant="body1">{selectedModelDescription}</Typography>
+                  <Typography variant="h6">{selectedModelDetails.name}</Typography>
+                  <Typography variant="body1">{selectedModelDetails.description}</Typography>
                 </CardContent>
               </Card>
             )}

@@ -1,7 +1,7 @@
 import axios from "axios"
 import cheerio from "cheerio"
 import fs from "fs"
-import { ChatRequest, ChatResponse, Ollama as OllamaClient } from "ollama"
+import { ChatRequest, ChatResponse, ModelResponse, Ollama as OllamaClient } from "ollama"
 import path from "path"
 import yaml from "yaml"
 import Main from "../../electron/ElectronStarter"
@@ -20,12 +20,13 @@ export default class Ollama extends Service {
   // Class properties
   private intervalId: NodeJS.Timeout | null = null
   protected availableModels: Model[] = []
+  protected localModels: ModelResponse[] = []
 
   config = {
     installed: false,
     url: "http://localhost:11434",
     model: "llama3",
-    maxHistory: 10,
+    maxHistory: 4,
     wakeWord: "wake",
     sleepWord: "sleep",
     prompt: "PirateBot"
@@ -89,6 +90,11 @@ export default class Ollama extends Service {
         this.ready = true
         this.invoke("broadcastState")
         log.info("Ollama is ready")
+        const oc = new OllamaClient({ host: this.config.url })
+        oc.list().then((models) => {
+          this.localModels = models?.models
+          this.invoke("broadcastState")
+        })
       }
       log.debug(`Response from ${this.config.url}:${response.data}`)
     } catch (error) {
@@ -199,40 +205,42 @@ export default class Ollama extends Service {
       // consider calling in parallel, or different order
       // currently we'll just serially call the two chat completions
       // if tools has data
-      if (prompt?.messages?.tools) {
-        log.info(`tools would do a tools request`)
-        // let toolsPrompt = prompt.messages.tools?.content
-        // { role: "system", content: toolsPrompt + " " + JSON.stringify(prompt.tools) },
+      // if (prompt?.messages?.tools) {
+      //   log.info(`tools would do a tools request`)
+      //   // let toolsPrompt = prompt.messages.tools?.content
+      //   // { role: "system", content: toolsPrompt + " " + JSON.stringify(prompt.tools) },
 
-        let request: ChatRequest = {
-          model: this.config.model,
-          messages: [
-            // { role: "system", content: JSON.stringify(prompt.tools) },
-            // { role: "system", content: toolsPrompt },
-            ...prompt.messages.tools,
-            { role: "user", content: text }
-          ],
-          format: "json",
-          stream: false
-        }
+      //   let request: ChatRequest = {
+      //     model: this.config.model,
+      //     messages: [
+      //       // { role: "system", content: JSON.stringify(prompt.tools) },
+      //       // { role: "system", content: toolsPrompt },
+      //       ...prompt.messages.tools,
+      //       { role: "user", content: text }
+      //     ],
+      //     format: "json",
+      //     stream: false
+      //   }
 
-        // get tools system prompt
+      //   // get tools system prompt
 
-        this.invoke("publishRequest", request)
-        log.info(`tools chat request ${JSON.stringify(request)}`)
+      //   this.invoke("publishRequest", request)
+      //   log.info(`tools chat request ${JSON.stringify(request)}`)
 
-        let response: ChatResponse = await oc.chat(request as ChatRequest & { stream: false; format: "json" })
+      //   // let response: ChatResponse = await oc.chat(request as ChatRequest & { stream: false; format: "json" })
+      //   // FIXME add the format json option
+      //   let response: ChatResponse = await oc.chat(request as ChatRequest & { stream: false })
 
-        log.info(`tools chat response ${JSON.stringify(response)}`)
+      //   log.info(`tools chat response ${JSON.stringify(response)}`)
 
-        this.invoke("publishResponse", response)
-        this.invoke("publishChat", response.message.content)
+      //   this.invoke("publishResponse", response)
+      //   this.invoke("publishChat", response.message.content)
 
-        // TODO - need to handle json format if selected
-        this.invoke("publishText", response.message.content)
-      } else {
-        log.error("No tools prompt")
-      }
+      //   // TODO - need to handle json format if selected
+      //   this.invoke("publishText", response.message.content)
+      // } else {
+      //   log.error("No tools prompt")
+      // }
 
       if (prompt?.messages?.default) {
         // call the default now with regular system prompt - no json output
@@ -256,6 +264,11 @@ export default class Ollama extends Service {
 
         let response: ChatResponse = await oc.chat(request as ChatRequest & { stream: false })
         this.history.push(response.message)
+
+        while (this.history.length > this.config.maxHistory) {
+          this.history.shift() // Remove the oldest record
+        }
+
         this.invoke("publishResponse", response)
         this.invoke("publishChat", response.message.content)
         this.invoke("publishText", response.message.content)
@@ -349,6 +362,10 @@ export default class Ollama extends Service {
     this.prompts[prompt][key] = value
   }
 
+  onImage(image: any): void {
+    log.info(`onImage ${image}`)
+  }
+
   async scrapeLibrary() {
     try {
       const url = "https://ollama.com/library"
@@ -376,14 +393,14 @@ export default class Ollama extends Service {
       console.error(`Error fetching the URL: ${error}`)
     }
   }
-  // FIXME .. just find a list of all Service properties  e.g. ObjectKeys(this)
 
   toJSON() {
     return {
       ...super.toJSON(),
       prompts: this.prompts,
       history: this.history,
-      availableModels: this.availableModels
+      availableModels: this.availableModels,
+      localModels: this.localModels
     }
   }
 }
