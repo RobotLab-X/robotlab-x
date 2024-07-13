@@ -365,6 +365,19 @@ class Service:
             "pkg": self.pkg,
         }
 
+    def getMethods(self, filter: str = None) -> list:
+        method_names = [
+            method
+            for method in dir(self)
+            if callable(getattr(self, method)) and not method.startswith("__")
+        ]
+        if filter:
+            method_names = [
+                method for method in method_names if method.startswith(filter)
+            ]
+        method_names.sort()
+        return method_names
+
 
 def main():
     parser = argparse.ArgumentParser(description="WebSocket Client")
