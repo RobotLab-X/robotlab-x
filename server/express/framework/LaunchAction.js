@@ -1,5 +1,5 @@
 class LaunchAction {
-  constructor(name, pkg, config = null) {
+  constructor(name, pkg, config = null, listeners = {}) {
     this.name = name
     this.package = pkg
     this.config = config

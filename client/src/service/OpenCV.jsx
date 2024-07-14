@@ -94,6 +94,7 @@ export default function OpenCV({ fullname }) {
 
   // NOT service but pkg is installed
   if (!service?.pkg?.installed) {
+    // consider initializing in nodejs land - defaultConfig={{"camera_index": "0", "debounce": 1, "capture": false, "paused": false}}
     return <PythonWizard fullname={fullname} />
   } else
     return (

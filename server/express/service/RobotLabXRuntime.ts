@@ -369,7 +369,7 @@ export default class RobotLabXRuntime extends Service {
       // const configSetName = "default"
       // const configPath = path.join(process.cwd(), "config", configSetName, launcher)
 
-      const launchPath = path.join(process.cwd(), "launch", `${launchFile}.js`)
+      const launchPath = path.join(Main.distRoot, "launch", `${launchFile}.js`)
 
       log.info(`launchPath ${launchPath}`)
 
@@ -409,7 +409,7 @@ export default class RobotLabXRuntime extends Service {
       throw new Error("launchFile is null")
     }
 
-    const filePath = path.join("launch", `${launchFile}.js`)
+    const filePath = path.join(Main.distRoot, "launch", `${launchFile}.js`)
 
     let ld: LaunchDescription = null
     let runtimeAction = null
@@ -955,7 +955,7 @@ export default class RobotLabXRuntime extends Service {
   }
 
   getLaunchFiles(): string[] {
-    const launchDir = `${process.cwd()}/launch`
+    const launchDir = path.join(Main.distRoot, "launch")
     log.info(`publishLaunchFiles scanning directory ${launchDir}`)
     const launchFiles: string[] = []
     fs.readdirSync(launchDir).forEach((file) => {
@@ -1249,7 +1249,7 @@ export default class RobotLabXRuntime extends Service {
     }
 
     // make launch directory if it doesn't exist
-    const launchDir = "launch"
+    const launchDir = path.join(Main.distRoot, "launch")
     if (!fs.existsSync(launchDir)) {
       fs.mkdirSync(launchDir, { recursive: true })
     }

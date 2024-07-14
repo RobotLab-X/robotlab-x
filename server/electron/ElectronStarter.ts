@@ -122,7 +122,7 @@ export default class Main {
       // Extract the asar file if it hasn't been extracted already
       if (!fs.existsSync(Main.extractPath)) {
         // fs.mkdirSync(Main.extractPath, { recursive: true })
-        log.error(`bootServer: extracting asar ${asarPath} ... to ${Main.extractPath}`)
+        log.info(`bootServer: extracting asar ${asarPath} ... to ${Main.extractPath}`)
         asar.extractAll(asarPath, Main.extractPath)
       }
       Main.distRoot = path.join(Main.extractPath, "dist")

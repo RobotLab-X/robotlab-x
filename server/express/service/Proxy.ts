@@ -147,10 +147,14 @@ export default class Proxy extends Service {
             ws.send(JSON.stringify(notifyMsg))
           })
 
-          // we also send our config to the remote process
-          let configMsg = new Message(this.name, "applyConfig", [this.config])
-          configMsg.sender = this.fullname
-          ws.send(JSON.stringify(configMsg))
+          // we also send our config to the remote process, if its not empty
+          if (Object.keys(this.config).length > 0) {
+            let configMsg = new Message(this.name, "applyConfig", [this.config])
+            configMsg.sender = this.fullname
+            ws.send(JSON.stringify(configMsg))
+          } else {
+            log.warn("blank config - new install, not sending")
+          }
 
           this.clientConnectionState = "connected"
         }
