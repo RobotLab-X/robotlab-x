@@ -1,7 +1,6 @@
 import fs from "fs"
 import path from "path"
 import winston from "winston"
-import Main from "../../electron/ElectronStarter"
 
 // Define custom levels and their corresponding colors
 const logLevels = {
@@ -37,10 +36,12 @@ const logFormat = winston.format.printf(({ level, message, module }) => {
 })
 
 // Path to the log file
-const logFilePath = path.join(Main.distRoot, "robotlab-x.log")
-
+const logFilePath = path.join(__dirname, "robotlab-x.log")
 // Ensure the log file is truncated on start
-fs.writeFileSync(logFilePath, "")
+if (fs.existsSync(logFilePath)) {
+  console.log(`${logFilePath} exists. truncating...`)
+  fs.writeFileSync(logFilePath, "")
+}
 
 // Create a logger instance
 const log = winston.createLogger({
