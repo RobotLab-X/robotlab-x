@@ -25,10 +25,12 @@ const ChatHistory = ({ chatHistory }) => {
           let isImage = false
           let type = null
           let content = null
+          // FIXME - generalize chat request and response
           if (chat?.messages) {
             type = "request"
             // not [0] system content but [1] user content
             // request for chat completion
+            // FIXME waaay to ollama / llm specific !!! - but very useful for debugging
             content = chat.messages.filter((message) => message.role === "user").slice(-1)[0].content
           }
 

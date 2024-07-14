@@ -42,6 +42,7 @@ class OpenCV(Service):
             "camera_index": "0",
             # 1 second debounce
             "debounce": 1,
+            "capture": False,
         }
 
         self.pkg = {
@@ -84,6 +85,9 @@ class OpenCV(Service):
                     break
 
                 if (current_time - self.last_invoke_time) > self.config.get("debounce"):
+                    log.info(
+                        f"Publishing input image after {self.config.get('debounce')} seconds"
+                    )
                     _, buffer = cv2.imencode(".jpg", frame)
                     encoded64 = base64.b64encode(buffer).decode("utf-8")
                     self.invoke("publishInputBase64", encoded64)

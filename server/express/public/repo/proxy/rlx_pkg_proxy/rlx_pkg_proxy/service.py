@@ -170,6 +170,10 @@ class Service:
         if user_input.strip().lower() == "q":
             self.shutdown()
 
+    def applyConfig(self, config: any):
+        log.info(f"applyConfig {config}")
+        self.config = config
+
     def addListener(self, method: str, remoteName: str, remoteMethod: str = None):
         log.info(
             f"== addListener {self.client_id}.{method} --> {remoteName}.{remoteMethod}"

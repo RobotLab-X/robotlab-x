@@ -148,10 +148,6 @@ export default class Service implements Gateway {
     this.config = config
   }
 
-  apply(config: any) {
-    this.applyConfig(config)
-  }
-
   applyConfigValue(key: string, value: any) {
     this.config[key] = value
     this.invoke("broadcastState")
@@ -181,14 +177,19 @@ export default class Service implements Gateway {
 
   /**
    * Reflectively returns the names of methods in the class.
-   * @param filter Optional filter criteria to return methods that start with the filter. If null, returns all methods.
+   * @param filters Optional array of filter criteria to return methods that start with any of the filters. If null or empty, returns all methods.
    * @returns Array of method names.
    */
-  public getMethods(filter: string | null = null): string[] {
+  public getMethods(filters: string[] | null = null): string[] {
     const prototype = Object.getPrototypeOf(this)
     const methodNames = Object.getOwnPropertyNames(prototype)
       .filter((name) => typeof (this as any)[name] === "function" && name !== "constructor")
-      .filter((name) => (filter ? name.startsWith(filter) : true))
+      .filter((name) => {
+        if (!filters || filters.length === 0) {
+          return true
+        }
+        return filters.some((filter) => name.startsWith(filter))
+      })
       .sort()
     return methodNames
   }

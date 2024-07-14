@@ -73,7 +73,7 @@ export default function Ollama({ name, fullname, id }) {
       const newMessage = { user: "Bot", message: chat }
       setChatHistory([...chatHistory, newMessage])
     }
-  }, [chat])
+  }, [chat, service?.fullname])
 
   useEffect(() => {
     if (request) {
