@@ -36,27 +36,58 @@ components:
         type: array
     type: object
 paths:
-  /startService:
+  /publishSpeaking:
     put:
-      summary: Executes startService method
+      summary: Executes publishSpeaking method
       description: ""
       requestBody:
         content:
           application/json:
             schema:
               type: array
-              items: []
+              items:
+                - type: string
             example: []
       responses:
         "200":
-          description: startService method executed successfully
+          description: publishSpeaking method executed successfully
+  /onText:
+    put:
+      summary: Executes onText method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example: []
+      responses:
+        "200":
+          description: onText method executed successfully
+  /speak:
+    put:
+      summary: Executes speak method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example: []
+      responses:
+        "200":
+          description: speak method executed successfully
   /toJSON:
     put:
       summary: |-
-        Serializes the RobotLabXUI instance to JSON.
+        Serializes the GTTS instance to JSON.
         Excludes intervalId from serialization.
       description: |-
-        Serializes the RobotLabXUI instance to JSON.
+        Serializes the GTTS instance to JSON.
         Excludes intervalId from serialization.
       requestBody:
         content:

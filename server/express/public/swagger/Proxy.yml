@@ -196,9 +196,7 @@ paths:
           application/json:
             schema:
               type: array
-              items:
-                - type: string
-                - type: any
+              items: []
             example: []
       responses:
         "200":
@@ -214,8 +212,6 @@ paths:
               type: array
               items:
                 - type: "{}"
-                - type: string
-                - type: any
             example: []
       responses:
         "200":
@@ -231,8 +227,6 @@ paths:
               type: array
               items:
                 - type: "{}"
-                - type: string
-                - type: any
             example: []
       responses:
         "200":
@@ -248,8 +242,6 @@ paths:
               type: array
               items:
                 - type: string
-                - type: string
-                - type: any
             example: []
       responses:
         "200":
@@ -265,7 +257,7 @@ paths:
               type: array
               items:
                 - type: string
-                - type: any
+                - type: string
             example: []
       responses:
         "200":

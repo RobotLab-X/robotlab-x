@@ -64,6 +64,21 @@ paths:
       responses:
         "200":
           description: stopService method executed successfully
+  /applyConfig:
+    put:
+      summary: Executes applyConfig method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: any
+            example: []
+      responses:
+        "200":
+          description: applyConfig method executed successfully
   /connect:
     put:
       summary: Executes connect method

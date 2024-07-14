@@ -84,6 +84,22 @@ paths:
       responses:
         "200":
           description: publishServoMoveTo method executed successfully
+  /setMinMax:
+    put:
+      summary: Min and max of input range
+      description: Min and max of input range
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: integer
+                - type: integer
+            example: []
+      responses:
+        "200":
+          description: setMinMax method executed successfully
   /getServoControllers:
     put:
       summary: Get the current set of possible controllers
@@ -174,4 +190,61 @@ paths:
       responses:
         "200":
           description: rest method executed successfully
+  /enable:
+    put:
+      summary: Executes enable method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: enable method executed successfully
+  /disable:
+    put:
+      summary: Executes disable method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: disable method executed successfully
+  /isEnabled:
+    put:
+      summary: Executes isEnabled method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: isEnabled method executed successfully
+  /setEnabled:
+    put:
+      summary: Executes setEnabled method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: boolean
+            example: []
+      responses:
+        "200":
+          description: setEnabled method executed successfully
 tags: []

@@ -93,21 +93,6 @@ paths:
       responses:
         "200":
           description: addRoute method executed successfully
-  /apply:
-    put:
-      summary: Overloaded apply to apply launch actions from config.registry info
-      description: Overloaded apply to apply launch actions from config.registry info
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                - type: any
-            example: []
-      responses:
-        "200":
-          description: apply method executed successfully
   /applyServiceFileConfig:
     put:
       summary: |-
@@ -127,23 +112,6 @@ paths:
       responses:
         "200":
           description: applyServiceFileConfig method executed successfully
-  /createMessage:
-    put:
-      summary: Executes createMessage method
-      description: ""
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                - type: string
-                - type: string
-                - type: any[]
-            example: []
-      responses:
-        "200":
-          description: createMessage method executed successfully
   /connect:
     put:
       summary: >-
@@ -179,9 +147,9 @@ paths:
       responses:
         "200":
           description: connect method executed successfully
-  /readConfig:
+  /applyServiceConfig:
     put:
-      summary: Executes readConfig method
+      summary: Executes applyServiceConfig method
       description: ""
       requestBody:
         content:
@@ -194,7 +162,7 @@ paths:
             example: []
       responses:
         "200":
-          description: readConfig method executed successfully
+          description: applyServiceConfig method executed successfully
   /saveServiceConfig:
     put:
       summary: Executes saveServiceConfig method
@@ -211,6 +179,21 @@ paths:
       responses:
         "200":
           description: saveServiceConfig method executed successfully
+  /getLaunchDescription:
+    put:
+      summary: Executes getLaunchDescription method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example: []
+      responses:
+        "200":
+          description: getLaunchDescription method executed successfully
   /createInstance:
     put:
       summary: Executes createInstance method
@@ -221,7 +204,6 @@ paths:
             schema:
               type: array
               items:
-                - type: string
                 - type: string
             example: []
       responses:
@@ -440,6 +422,35 @@ paths:
       responses:
         "200":
           description: getService method executed successfully
+  /getLatestServiceData:
+    put:
+      summary: Executes getLatestServiceData method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example: []
+      responses:
+        "200":
+          description: getLatestServiceData method executed successfully
+  /getMessages:
+    put:
+      summary: Executes getMessages method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: getMessages method executed successfully
   /registerHost:
     put:
       summary: Executes registerHost method
@@ -737,6 +748,20 @@ paths:
       responses:
         "200":
           description: getRouteClient method executed successfully
+  /getLaunchFiles:
+    put:
+      summary: Executes getLaunchFiles method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: getLaunchFiles method executed successfully
   /setDebug:
     put:
       summary: Executes setDebug method
@@ -775,6 +800,22 @@ paths:
       responses:
         "200":
           description: registerConnection method executed successfully
+  /updateConnection:
+    put:
+      summary: Executes updateConnection method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+                - type: string
+            example: []
+      responses:
+        "200":
+          description: updateConnection method executed successfully
   /removeConnection:
     put:
       summary: Executes removeConnection method
@@ -954,6 +995,7 @@ paths:
             schema:
               type: array
               items:
+                - type: string
                 - type: string
                 - type: string
                 - type: string
