@@ -71,9 +71,9 @@ export default class Arduino extends Service {
     super.stopService()
   }
 
-  apply(config: any) {
-    console.log("apply", config)
-    super.apply(config)
+  applyConfig(config: any) {
+    console.log("applyConfig", config)
+    super.applyConfig(config)
     if (this.config.connect) {
       this.connect(config.port)
     }

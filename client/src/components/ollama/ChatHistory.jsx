@@ -22,17 +22,35 @@ const ChatHistory = ({ chatHistory }) => {
         .slice()
         .reverse()
         .map((chat, index) => {
+          let isImage = false
           let type = null
           let content = null
           if (chat?.messages) {
             type = "request"
             // not [0] system content but [1] user content
+            // request for chat completion
             content = chat.messages.filter((message) => message.role === "user").slice(-1)[0].content
           }
+
+          if (chat?.images) {
+            // request to generate
+            type = "request"
+            isImage = true
+            content = chat.images[0]
+          }
+
+          // chat completion
           if (chat?.message) {
             type = "response"
             content = chat.message.content
           }
+
+          // generation
+          if (chat?.response) {
+            type = "response"
+            content = chat.response
+          }
+
           return (
             <Box key={index} sx={{ mb: 2 }}>
               <Box
@@ -53,7 +71,7 @@ const ChatHistory = ({ chatHistory }) => {
                     display: "inline-block"
                   }}
                 >
-                  {content}
+                  {isImage ? <img src={`data:image/jpg;base64,${content}`} alt="request input" /> : content}
                 </Box>
                 {debug && (
                   <IconButton onClick={() => toggleExpand(index)} size="small">

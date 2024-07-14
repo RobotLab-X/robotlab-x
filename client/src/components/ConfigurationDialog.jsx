@@ -50,10 +50,11 @@ function ConfigurationDialog({ fullname, open, onClose }) {
     sendTo(fullname, "setConfigName", newValue)
   }
 
+  // FIXME - this is no longer valid
   const handleApplyConfig = () => {
     console.log(`Applying configuration: ${selectedConfig}`)
     sendTo(fullname, "setConfigName", selectedConfig)
-    sendTo(fullname, "apply")
+    sendTo(fullname, "applyConfig")
     onClose() // Close dialog after attempting to apply
   }
 

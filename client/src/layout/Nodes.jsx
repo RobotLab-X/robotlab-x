@@ -35,6 +35,19 @@ const Nodes = () => {
   const service = useProcessedMessage(serviceMsg)
   const publishMethods = useServiceMethods(currentNodeId)
 
+  const handleAddRoute = () => {
+    console.log(`Add Route clicked ${service1}.${method1} --> ${service2}.${method2}`)
+    sendTo(service1, "addListener", method1, service2, method2)
+    sendTo(service1, "broadcastState")
+  }
+
+  const handleClearRoute = () => {
+    setMethod1(null)
+    setMethod2(null)
+    setService1(null)
+    setService2(null)
+  }
+
   // Function to handle node click event and navigate to node details
   const handleNodeClick = (node, event) => {
     console.info(`Node clicked: ${node.name} ${event}`)
@@ -176,85 +189,79 @@ const Nodes = () => {
   }, [registry, nodeId, service, mode])
 
   return (
-    <>
-      <SplitPane split="vertical" minSize={200} defaultSize="70%">
-        <div className={`pane ${showGrid ? "grid" : ""}`}>
-          <Graph
-            nodes={nodes}
-            links={links}
-            onNodeClick={handleNodeClick}
-            onNodeRightClick={handleNodeRightClick}
-            imageCache={imageCache}
-            setImageCache={setImageCache}
-          />
-
-          {isContextMenuVisible && rightClickPosition && (
-            <div className="context-menu active" style={{ top: rightClickPosition.y, left: rightClickPosition.x }}>
-              {publishMethods ? (
-                publishMethods
-                  .filter((method) => {
-                    if (method1) {
-                      return method.startsWith("on")
-                    } else {
-                      return method.startsWith("get") || method.startsWith("publish")
-                    }
-                  })
-                  .map((method) => (
-                    <div key={method} className="menu-item" onClick={() => handleServiceMethodClick(method)}>
-                      {method}
-                    </div>
-                  ))
-              ) : (
-                <div className="menu-item">Loading...</div>
-              )}
-            </div>
-          )}
-        </div>
-        <div style={{ paddingLeft: "20px" }}>
-          <ServicePane
-            service={selectedService}
-            mode={mode}
-            setMode={setMode}
-            showGrid={showGrid}
-            setShowGrid={setShowGrid}
-          />
-          <Box border={1} borderRadius={4} padding={2}>
-            <Typography variant="h6" gutterBottom>
-              Routes
-            </Typography>
-            <Grid
-              container
-              spacing={2}
-              alignItems="center"
-              style={{ marginTop: "10px", marginBottom: "10px", marginLeft: "10px", marginRight: "10px" }}
-            >
-              {method1 && (
-                <>
-                  <Grid item xs={12}>
-                    &nbsp;
-                    {service1}.{method1} <ArrowForwardIcon />
-                    {service2}.{method2}
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Button variant="contained">Add Route</Button>
-                    <Button variant="contained" style={{ marginLeft: "10px" }}>
-                      Clear
-                    </Button>
-                  </Grid>
-                </>
-              )}
-            </Grid>
+    <SplitPane split="vertical" minSize={200} defaultSize="70%">
+      <Box className={`pane ${showGrid ? "grid" : ""}`}>
+        <Graph
+          nodes={nodes}
+          links={links}
+          onNodeClick={handleNodeClick}
+          onNodeRightClick={handleNodeRightClick}
+          imageCache={imageCache}
+          setImageCache={setImageCache}
+        />
+        {isContextMenuVisible && rightClickPosition && (
+          <Box
+            className="context-menu active"
+            sx={{ top: rightClickPosition.y, left: rightClickPosition.x, position: "absolute" }}
+          >
+            {publishMethods ? (
+              publishMethods
+                .filter((method) => {
+                  if (method1) {
+                    return method.startsWith("on")
+                  } else {
+                    return method.startsWith("get") || method.startsWith("publish")
+                  }
+                })
+                .map((method) => (
+                  <Box key={method} className="menu-item" onClick={() => handleServiceMethodClick(method)}>
+                    {method}
+                  </Box>
+                ))
+            ) : (
+              <Box className="menu-item">Loading...</Box>
+            )}
           </Box>
-          <br />
-          <br />
-          {selectedService ? (
-            <ServicePage fullname={selectedService.fullname} name={selectedService.name} id={selectedService.id} />
-          ) : (
-            <div>No service selected</div>
+        )}
+      </Box>
+      <Box sx={{ paddingLeft: "20px" }}>
+        <ServicePane
+          service={selectedService}
+          mode={mode}
+          setMode={setMode}
+          showGrid={showGrid}
+          setShowGrid={setShowGrid}
+        />
+
+        <h3>Routes</h3>
+
+        <Grid container spacing={2} alignItems="center" sx={{ mt: 1, mb: 1, ml: 1, mr: 1 }}>
+          {method1 && (
+            <>
+              <Grid item xs={12}>
+                {service1}.{method1} <ArrowForwardIcon /> {service2}.{method2}
+              </Grid>
+              <Grid item xs={12}>
+                <Button variant="contained" onClick={handleAddRoute}>
+                  Add Route
+                </Button>
+                <Button variant="contained" sx={{ ml: 1 }} onClick={handleClearRoute}>
+                  Clear
+                </Button>
+              </Grid>
+            </>
           )}
-        </div>{" "}
-      </SplitPane>
-    </>
+        </Grid>
+
+        <h3>Service</h3>
+
+        {selectedService ? (
+          <ServicePage fullname={selectedService.fullname} name={selectedService.name} id={selectedService.id} />
+        ) : (
+          <Typography>No service selected</Typography>
+        )}
+      </Box>
+    </SplitPane>
   )
 }
 

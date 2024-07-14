@@ -162,14 +162,6 @@ export default class RobotLabXRuntime extends Service {
   }
 
   /**
-   * Overloaded apply to apply launch actions from config.registry info
-   */
-  apply(config: any) {
-    this.config = config
-    return this.config
-  }
-
-  /**
    * Apply file {serviceName}.yml to the service
    * TODO - capability to apply ad hoc filename
    * @param serviceName
@@ -179,20 +171,6 @@ export default class RobotLabXRuntime extends Service {
   // FIXME - save a specific service config in a launch file ???
   applyServiceFileConfig(serviceName: string) {
     log.info(`applyServiceFileConfig ${serviceName}`)
-    // let cfg: any = this.readConfig(serviceName, this.configName)
-    // // let cfg: any = this.getServiceFileConfig(serviceName, filename)
-    // if (cfg === null) {
-    //   log.error(`Failed to load config for ${serviceName}`)
-    //   return
-    // }
-
-    // // this.invokeMsg("apply", cfg) should I route this as a message ?
-    // const service: Service = this.getService(serviceName)
-    // if (service === null) {
-    //   log.error(`Failed to load service ${serviceName}`)
-    //   return
-    // }
-    // service.apply(cfg)
   }
 
   /**
@@ -355,7 +333,7 @@ export default class RobotLabXRuntime extends Service {
       serviceName = CodecUtil.getFullName(serviceName)
       // if local this works
       if (CodecUtil.isLocal(serviceName)) {
-        this.getService(serviceName).apply(config)
+        this.getService(serviceName).applyConfig(config)
         return
       } else {
         // if remote, we need to send the config to the remote
@@ -656,7 +634,7 @@ export default class RobotLabXRuntime extends Service {
             // Do not merge - replace
             // service.config = { ...service.config, ...action.config }
             // service.config = action.config
-            service.apply(action.config)
+            service.applyConfig(action.config)
           }
 
           if (action.listeners) {

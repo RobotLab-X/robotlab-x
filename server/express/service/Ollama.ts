@@ -1,7 +1,14 @@
 import axios from "axios"
 import cheerio from "cheerio"
 import fs from "fs"
-import { ChatRequest, ChatResponse, ModelResponse, Ollama as OllamaClient } from "ollama"
+import {
+  ChatRequest,
+  ChatResponse,
+  GenerateRequest,
+  GenerateResponse,
+  ModelResponse,
+  Ollama as OllamaClient
+} from "ollama"
 import path from "path"
 import yaml from "yaml"
 import Main from "../../electron/ElectronStarter"
@@ -21,6 +28,7 @@ export default class Ollama extends Service {
   private intervalId: NodeJS.Timeout | null = null
   protected availableModels: Model[] = []
   protected localModels: ModelResponse[] = []
+  protected inputs: any = {}
 
   config = {
     installed: false,
@@ -29,7 +37,8 @@ export default class Ollama extends Service {
     maxHistory: 4,
     wakeWord: "wake",
     sleepWord: "sleep",
-    prompt: "PirateBot"
+    prompt: "ButlerBot",
+    defaultImagePrompt: "what is in this image?"
   }
 
   // loaded by Ollama.ts loadPrompts
@@ -85,7 +94,7 @@ export default class Ollama extends Service {
   private async check(): Promise<void> {
     try {
       const response = await axios.get(this.config.url)
-      if (this.ready === false) {
+      if (this.ready === false && response.data?.includes("Ollama is running")) {
         // state change to ready
         this.ready = true
         this.invoke("broadcastState")
@@ -154,7 +163,8 @@ export default class Ollama extends Service {
    * @returns The request object.
    */
   publishRequest(request: any): any {
-    log.info(`publishRequest ${JSON.stringify(request)}`)
+    log.info(`publishRequest`)
+    // log.info(`publishRequest ${JSON.stringify(request)}`)
     return request
   }
 
@@ -164,7 +174,7 @@ export default class Ollama extends Service {
    * @param content - The content string with placeholders.
    * @returns The processed content string.
    */
-  processInputs(inputs: any, content: string): string {
+  processInputs(template: string): string {
     const now = new Date()
 
     // Format date as YYYY-MM-DD
@@ -177,12 +187,10 @@ export default class Ollama extends Service {
       hour12: true
     })
 
-    let ret = content.replace("{{Date}}", date).replace("{{Time}}", time)
+    let ret = template.replace("{{Date}}", date).replace("{{Time}}", time)
 
-    if (inputs) {
-      for (const key in inputs) {
-        ret = ret.replace(`{{${key}}}`, inputs[key])
-      }
+    for (const key in this.inputs) {
+      ret = ret.replace(`{{${key}}}`, this.inputs[key])
     }
 
     return ret
@@ -246,7 +254,7 @@ export default class Ollama extends Service {
         // call the default now with regular system prompt - no json output
         let defaultMessage = prompt.messages.default
 
-        let promptText = this.processInputs(prompt.inputs, defaultMessage.content)
+        let promptText = this.processInputs(defaultMessage.content)
 
         const systemMessage = { role: "system", content: promptText }
         const userMessage = { role: "user", content: text }
@@ -275,6 +283,49 @@ export default class Ollama extends Service {
       } else {
         log.error("No default prompt")
       }
+    } catch (error) {
+      log.error(`Error fetching from ${this.config.url}:${error}`)
+    }
+  }
+
+  async generate(
+    imagesBase64: string[],
+    prompt: string = this.config.defaultImagePrompt,
+    model: string = this.config.model,
+    stream: boolean = false
+  ): Promise<void> {
+    try {
+      log.info(`generate model ${model} prompt ${prompt}`)
+
+      let promptText = this.processInputs(prompt)
+      // const prefix = imagesBase64.length > 0 ? imagesBase64[0].substring(0, 12) : "no images"
+      // log.info(`generate model ${model} prompt ${promptText} images ${imagesBase64}`)
+
+      const request: GenerateRequest = {
+        model: this.config.model,
+        prompt: promptText,
+        // system: system,
+        // template: null,
+        // raw: false,
+        images: imagesBase64,
+        // keep_alive: 100,
+        stream: stream
+        // options: null,
+      }
+      // create a chat client
+      const oc = new OllamaClient({ host: this.config.url })
+
+      // log.error(`generate request ${JSON.stringify(request)} `)
+
+      this.invoke("publishRequest", request)
+
+      let response: GenerateResponse = await oc.generate(request as GenerateRequest & { stream: false })
+
+      this.invoke("publishResponse", response)
+      this.invoke("publishChat", response)
+      this.invoke("publishText", response)
+
+      log.info(`generate response ${JSON.stringify(response)}`)
     } catch (error) {
       log.error(`Error fetching from ${this.config.url}:${error}`)
     }
@@ -359,11 +410,12 @@ export default class Ollama extends Service {
   }
 
   addInput(prompt: string, key: string, value: any): void {
-    this.prompts[prompt][key] = value
+    this.inputs[key] = value
   }
 
   onImage(image: any): void {
-    log.info(`onImage ${image}`)
+    // log.info(`onImage ${image}`)
+    this.generate([image])
   }
 
   async scrapeLibrary() {

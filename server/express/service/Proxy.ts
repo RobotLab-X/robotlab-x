@@ -147,6 +147,11 @@ export default class Proxy extends Service {
             ws.send(JSON.stringify(notifyMsg))
           })
 
+          // we also send our config to the remote process
+          let configMsg = new Message(this.name, "applyConfig", [this.config])
+          configMsg.sender = this.fullname
+          ws.send(JSON.stringify(configMsg))
+
           this.clientConnectionState = "connected"
         }
       }
