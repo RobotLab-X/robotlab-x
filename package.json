@@ -7,7 +7,7 @@
     "start-dev": "concurrently \"cd client && npm start\" \"wait-on http://localhost:3000 && cd server && yarn run electron-dev\"",
     "install-all": "yarn install && cd server && yarn install && cd ../client && yarn install",
     "clean": "shx rm -rf dist build client/dist client/build server/dist",
-    "clean-modules": "shx rm -rf node_modules && shx rm -rf client/node_modules && shx rm -rf server/node_modules",
+    "clean-modules": "shx rm -rf client/node_modules && shx rm -rf server/node_modules && shx rm -rf node_modules",
     "build-client": "cd client && yarn build",
     "build-server": "cd server && yarn build",
     "install-client": "shx mkdir -p server/dist/ && shx rm -rf server/dist/client && shx mv client/build server/dist/client",
