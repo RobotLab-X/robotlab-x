@@ -1,8 +1,6 @@
 import { CssBaseline, ThemeProvider } from "@mui/material"
 import SwaggerUIComponent from "components/SwaggerUIComponent"
 import { fetchGetJson } from "framework/fetchUtil"
-import { ProcessData } from "models/ProcessData"
-import Service from "models/Service"
 import { useEffect, useState } from "react"
 import { Route, Routes } from "react-router-dom"
 import { useStore } from "store/store"
@@ -39,24 +37,13 @@ window.addEventListener("unhandledrejection", (event) => {
  */
 function App() {
   // use approriate store selectors
-  const setName = useStore((state) => state.setName)
   const name = useStore((state) => state.name)
 
-  const setId = useStore((state) => state.setId)
-  const setFullname = useStore((state) => state.setFullname)
   const connect = useStore((state) => state.connect)
-  const sendTo = useStore((state) => state.sendTo)
-  const fullname = useStore((state) => state.fullname)
   const connected = useStore((state) => state.connected)
-  const subscribeTo = useStore((state) => state.subscribeTo)
   const id = useStore((state) => state.id)
   const setDefaultRemoteId = useStore((state) => state.setDefaultRemoteId)
 
-  const UAParser = require("ua-parser-js")
-  const parser = new UAParser()
-  const browser = parser.getBrowser()
-  const version = "0.0.1"
-  const typeKey = "RobotLabXUI"
   const [theme, colorMode] = useMode()
   const [isSidebar, setIsSidebar] = useState(true)
   const getApiUrl = useStore((state) => state.getApiUrl)
@@ -70,67 +57,21 @@ function App() {
     })
 
   useEffect(() => {
-    console.info(`name ${name}`)
-    setName("ui")
-  }, [name, setName])
-
-  useEffect(() => {
     if (name) {
       const fetchId = async () => {
         try {
           // important initalization
           const remoteId = await fetchGetJson(getApiUrl(), "/runtime/getId")
-          // setName("ui")
-          console.info(`name ${name} id ${remoteId}`)
+          console.info(`remote id ${remoteId}`)
           setDefaultRemoteId(remoteId)
-          setId(`${remoteId}.ui`) // ui@12345
-          setFullname(`ui@${remoteId}.ui`)
-          console.info(`fullname ${fullname}`)
-          console.info(`id ${id}`)
+          connect()
         } catch (error) {
           console.error("Error fetching id ! :", error)
         }
       }
       fetchId()
     }
-  }, [name, connect, setDefaultRemoteId, setId, getApiUrl])
-
-  useEffect(() => {
-    console.info(`useEffect 3`)
-    console.info(`name ${name}`)
-    console.info(`fullname ${fullname}`)
-    console.info(`id ${id}`)
-    if (name && fullname && id) {
-      connect()
-    } else {
-      console.info("waiting for name, fullname, id to be set ...")
-    }
-  }, [name, fullname, id])
-
-  useEffect(() => {
-    // send initial listeners when connected and id set
-    if (connected && id) {
-      // Absolute first thing to do is to register this process
-      // IF this client doesn't register on the connection (really it happens in the ws url ?id=ui-rlx1) then
-      // the listening server will auto-generate a process id and register it similar to ROS
-      let prossessData = new ProcessData(id, "browser", "browser", browser.name.toLowerCase(), browser.version)
-      sendTo("runtime", "registerProcess", prossessData)
-
-      // broadcast my state
-
-      // TODO make these "service" calls ??? or at least one shot calls
-      // that future callbacks are not needed
-      // setup server runtime subscriptions, register this runtime, get repo
-      subscribeTo("runtime", "getRegistry")
-      subscribeTo("runtime", "getRepo")
-      subscribeTo("runtime", "registered")
-      let service = new Service(id, name, typeKey, version, browser.name.toLowerCase())
-      sendTo("runtime", "register", service)
-      // FIXME - registerHost should be here?
-      sendTo("runtime", "getRegistry")
-      sendTo("runtime", "getRepo")
-    }
-  }, [connected, id, subscribeTo, sendTo, browser.name, browser.version, name, typeKey, version])
+  }, [name, connect, setDefaultRemoteId, getApiUrl])
 
   if (!connected || !id) {
     return <div>Connecting...</div>
