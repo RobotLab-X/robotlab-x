@@ -22,6 +22,7 @@ const store = (set, get) => ({
   // id of this process
   // id: `ui-${get().defaultRemoteId}-${NameGenerator.getName()}`,
   // id: `ui-rlx`,
+  // id: NameGenerator.getName(), Does not work !
   id: "ui",
 
   /**

@@ -18,13 +18,13 @@ const useServiceSubscription = (fullname, additionalSubscriptions = []) => {
     sendTo(fullname, "broadcastState")
     // console.error(`useServiceSubscription: ${fullname}`)
 
-    // Unsubscribe on component unmount
-    // dont usubscribe from status until released ?
     return () => {
-      unsubscribeFrom(fullname, "broadcastState")
-      additionalSubscriptions.forEach((sub) => {
-        unsubscribeFrom(fullname, sub)
-      })
+      // unmount - unsubscribe from all topics
+      // going to try without this
+      // unsubscribeFrom(fullname, "broadcastState")
+      // additionalSubscriptions.forEach((sub) => {
+      //   unsubscribeFrom(fullname, sub)
+      // })
     }
   }, [subscribeTo, unsubscribeFrom, sendTo, fullname]) // Removed additionalSubscriptions from dependencies to prevent re-triggering
 

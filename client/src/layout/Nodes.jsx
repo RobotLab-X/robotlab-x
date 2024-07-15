@@ -104,13 +104,13 @@ const Nodes = () => {
 
   // Function to initialize node positions in a circular layout
   const initializeNodePositions = (nodes) => {
-    const radius = 100
+    const radius = 75
     const angleIncrement = (2 * Math.PI) / nodes?.length || 1
 
     return nodes?.map((node, index) => {
       const angle = index * angleIncrement
-      node.x = radius * Math.cos(angle)
-      node.y = radius * Math.sin(angle)
+      node.x = radius * Math.cos(angle) - 300 // shift left
+      node.y = radius * Math.sin(angle) - 220 // shift up
       return node
     })
   }
