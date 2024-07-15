@@ -13,7 +13,6 @@ import HomeIcon from "@mui/icons-material/Home"
 import HubOutlinedIcon from "@mui/icons-material/HubOutlined"
 
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined"
-import TroubleshootOutlinedIcon from "@mui/icons-material/TroubleshootOutlined"
 import { useStore } from "../../store/store"
 
 const Item = ({ title, to, icon, selected, setSelected }) => {
@@ -81,9 +80,11 @@ const AppSidebar = () => {
           >
             {!isCollapsed && (
               <Box display="flex" justifyContent="space-between" alignItems="center" ml="15px">
+                {/*}
                 <Typography variant="h3" color={colors.grey[100]}>
                   ADMINIS
                 </Typography>
+                */}
                 <IconButton onClick={() => setIsCollapsed(!isCollapsed)}>
                   <MenuOutlinedIcon />
                 </IconButton>
@@ -113,15 +114,17 @@ const AppSidebar = () => {
           <MenuItem component={<Link to="/nodes" />} icon={<HubOutlinedIcon />}>
             Nodes
           </MenuItem>
-
+          {/*}
           <MenuItem component={<Link to="/network" />} icon={<TroubleshootOutlinedIcon />}>
             Network and Diagnostics
           </MenuItem>
+
 
           <MenuItem component={<Link to="/webxr" />} icon={<TroubleshootOutlinedIcon />}>
             <img src={`assets/vr-lite.png`} alt="WebXR" width="22" />
             WebXR
           </MenuItem>
+          */}
         </Menu>
       </Sidebar>
     </Box>

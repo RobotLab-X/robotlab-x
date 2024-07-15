@@ -227,7 +227,11 @@ export default class Service implements Gateway {
 
       if (msg.data && msg.data.length > 0) {
         // log.info(`--> ${msg.sender} --> ${msg.name}.${msg.method}(${JSON.stringify(msg.data)})`)
-        log.info(`--> ${msg.sender} --> ${msg.name}.${msg.method}(...)`)
+        if (msg.method === "addListener") {
+          log.info(`--> ${msg.sender} --> ${msg.name}.${msg.method}(${JSON.stringify(msg.data)})`)
+        } else {
+          log.info(`--> ${msg.sender} --> ${msg.name}.${msg.method}(...)`)
+        }
       } else {
         log.info(`--> ${msg.sender} --> ${msg.name}.${msg.method}()`)
       }
@@ -292,7 +296,7 @@ export default class Service implements Gateway {
       // FIXME - check if blocking or non-blocking
       // is this the service to invoke the method on ?
       if (fullName === msgFullName) {
-        log.info(`(invoke) ${msgFullName}.${msg.method} from ${msg.sender}.${msg.method}`)
+        // log.info(`(invoke) ${msgFullName}.${msg.method} from ${msg.sender}.${msg.method}`)
         let obj: any = this // cast away typescript
 
         if (!msg.method) {

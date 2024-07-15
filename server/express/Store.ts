@@ -160,11 +160,9 @@ export default class Store {
   private initWebSocketServer() {
     const runtime = RobotLabXRuntime.getInstance()
     this.wss.on("connection", (ws, request) => {
-      log.info("client connected")
-
       // Access the URL the client connected to
       const url = request.url
-      log.info(`connected to url: ${url}`)
+      log.info(`client connected at url: ${url}`)
 
       // Retrieve a specific query parameter (e.g., id)
       const urlParams = new URLSearchParams(url.split("?")[1]) // assuming your WS URL might contain query params
@@ -222,7 +220,7 @@ export default class Store {
         }
 
         // log.info(`--> ws ${JSON.stringify(msg)}`)
-        log.info(`--> ws ${msg.name} ${msg.method}`)
+        // log.info(`--> ws ${msg.name} ${msg.method}`)
         this.handleMessage(msg)
       } catch (e) {
         // ui error - user should be informed

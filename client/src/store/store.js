@@ -1,9 +1,18 @@
 // store.js
+
 import { create } from "zustand"
 import { devtools } from "zustand/middleware"
 import CodecUtil from "../framework/CodecUtil"
+
+import { ProcessData } from "../models/ProcessData"
+import Service from "../models/Service"
+
 // import NameGenerator from "../framework/NameGenerator"
 import Message from "../models/Message"
+
+const UAParser = require("ua-parser-js")
+const parser = new UAParser()
+const browser = parser.getBrowser()
 
 const useRegisteredService = (fullname) => {
   return useStore((state) => state.registry[fullname] || {})
@@ -13,7 +22,7 @@ const store = (set, get) => ({
   // id of this process
   // id: `ui-${get().defaultRemoteId}-${NameGenerator.getName()}`,
   // id: `ui-rlx`,
-  id: null,
+  id: "ui",
 
   /**
    * The process/instance which
@@ -22,9 +31,11 @@ const store = (set, get) => ({
    */
   defaultRemoteId: null,
 
-  name: null,
+  name: "ui",
 
-  fullname: null,
+  // you can't use get inside the initial state to compute derived values
+  // because get relies on the store being fully initialized
+  fullname: "ui@ui",
 
   setName: (newName) => {
     console.log("Setting name:", newName)
@@ -187,9 +198,29 @@ const store = (set, get) => ({
       // connected to a runtime instance
 
       // subscribe and prepare to query myrobotlab instance
-      get().subscribeTo("runtime", "getServiceNames")
-      get().subscribeTo("runtime", "getService")
-      get().sendTo("runtime", "getServiceNames")
+      // All removed - handled by getRegistry
+      // get().subscribeTo("runtime", "getServiceNames")
+      // get().subscribeTo("runtime", "getService")
+      // get().sendTo("runtime", "getServiceNames")
+
+      let prossessData = new ProcessData(get().id, "browser", "browser", browser.name.toLowerCase(), browser.version)
+      get().sendTo("runtime", "registerProcess", prossessData)
+
+      // broadcast my state
+
+      // TODO make these "service" calls ??? or at least one shot calls
+      // that future callbacks are not needed
+      // setup server runtime subscriptions, register this runtime, get repo
+      // the callbacks are handled in store.js -
+      // probably a good thing to avoid any unecessary re-rendering
+      get().subscribeTo("runtime", "getRegistry")
+      get().subscribeTo("runtime", "getRepo")
+      get().subscribeTo("runtime", "registered")
+      let service = new Service(get().id, get().name, "RobotLabXUI", "0.0.1", browser.name.toLowerCase())
+      get().sendTo("runtime", "register", service)
+      // FIXME - registerHost should be here?
+      get().sendTo("runtime", "getRegistry")
+      get().sendTo("runtime", "getRepo")
     }
 
     socket.onclose = () => {
@@ -226,12 +257,22 @@ const store = (set, get) => ({
 
         // To init all services
         if (key === `${get().fullname}.onRegistry`) {
+          // FIXME - replacing whole registry is dangerous
+          // should iterate service by service
+          // init our registry
           set({ registry: msg.data[0] })
+          // iterate through registry and subscribe to all services
+          Object.entries(msg.data[0]).forEach(([key, value]) => {
+            get().subscribeTo(key, "broadcastState")
+            get().sendTo(key, "broadcastState")
+          })
         }
 
         // to subscribe to new services
         if (key === `${get().fullname}.onRegistered`) {
           get().updateRegistryOnRegistered(msg.data[0])
+          get().subscribeTo(msg.data[0].fullname, "broadcastState")
+          get().sendTo(msg.data[0].fullname, "broadcastState")
         }
 
         // latest update to a service
