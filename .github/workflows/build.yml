@@ -42,9 +42,11 @@ jobs:
           jq --arg VERSION "$VERSION" '.version = $VERSION' client/package.json > client/package.json.tmp && mv client/package.json.tmp client/package.json
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add package.json server/package.json client/package.json
-          git commit -m "Bump version to $VERSION"
-          git push origin main
+
+        # temporarily disabled
+        # git add package.json server/package.json client/package.json
+        # git commit -m "Bump version to $VERSION"
+        # git push origin main
 
       # Run ESLint but ignore errors
       - name: Run ESLint
