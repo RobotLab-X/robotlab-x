@@ -31,6 +31,10 @@ jobs:
       - name: Install dependencies
         run: yarn install-all
 
+      # Run ESLint but ignore errors
+      - name: Run ESLint
+        run: yarn lint || true
+
       - name: Run tests
         run: |
           cd server
