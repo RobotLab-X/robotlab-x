@@ -24,12 +24,6 @@ import { useProcessedMessage } from "../hooks/useProcessedMessage"
 import { useRegisteredService, useStore } from "../store/store"
 import useServiceSubscription from "../store/useServiceSubscription"
 
-const containerStyle = {
-  position: "relative",
-  minHeight: "100vh", // Ensure the parent takes up the full height of the viewport
-  paddingBottom: "400px" // Space for the StatusList at the bottom
-}
-
 const containerStyle2 = {}
 
 const ServicePage = ({ fullname, name, id }) => {

@@ -31,6 +31,21 @@ jobs:
       - name: Install dependencies
         run: yarn install-all
 
+      - name: Bump version
+        id: bump_version
+        run: |
+          BUILD_NUMBER=${{ github.run_number }}
+          VERSION="0.9.${BUILD_NUMBER}"
+          echo "Bumping version to $VERSION"
+          jq --arg VERSION "$VERSION" '.version = $VERSION' package.json > package.json.tmp && mv package.json.tmp package.json
+          jq --arg VERSION "$VERSION" '.version = $VERSION' server/package.json > server/package.json.tmp && mv server/package.json.tmp server/package.json
+          jq --arg VERSION "$VERSION" '.version = $VERSION' client/package.json > client/package.json.tmp && mv client/package.json.tmp client/package.json
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add package.json server/package.json client/package.json
+          git commit -m "Bump version to $VERSION"
+          git push origin main
+
       # Run ESLint but ignore errors
       - name: Run ESLint
         run: yarn lint || true
@@ -69,8 +84,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ github.run_number }}
-          release_name: Release v${{ github.run_number }}
+          tag_name: v0.9.${{ github.run_number }}
+          release_name: Release v0.9.${{ github.run_number }}
           draft: false
           prerelease: false
 
@@ -81,5 +96,5 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: dist/*.*
-          asset_name: electron-app-${{ github.run_number }}.zip
+          asset_name: electron-app-0.9.${{ github.run_number }}.zip
           asset_content_type: application/zip
