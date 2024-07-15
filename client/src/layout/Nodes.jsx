@@ -110,7 +110,7 @@ const Nodes = () => {
     return nodes?.map((node, index) => {
       const angle = index * angleIncrement
       node.x = radius * Math.cos(angle) - 300 // shift left
-      node.y = radius * Math.sin(angle) - 220 // shift up
+      node.y = radius * Math.sin(angle) // shift up
       return node
     })
   }
