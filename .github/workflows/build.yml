@@ -60,8 +60,11 @@ jobs:
           cd server
           yarn test
 
-      - name: Build the Electron app
+      - name: Build Linux
         run: yarn build-linux
+
+      - name: Build Win
+        run: yarn build-win
 
       - name: List dist/packages contents
         run: ls -l dist/packages
