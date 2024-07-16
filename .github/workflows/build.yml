@@ -68,10 +68,9 @@ jobs:
           sudo dpkg --add-architecture i386
           sudo mkdir -pm755 /etc/apt/keyrings
           sudo curl -fsSL https://dl.winehq.org/wine-builds/winehq.key | sudo tee /etc/apt/keyrings/winehq-archive.key
-          sudo curl -fsSL https://dl.winehq.org/wine-builds/ubuntu/dists/$(lsb_release -cs)/winehq-archive.key | sudo tee /etc/apt/keyrings/winehq-archive.key
-          sudo curl -fsSL https://dl.winehq.org/wine-builds/ubuntu/dists/$(lsb_release -cs)/main/binary-i386/Packages | sudo tee /etc/apt/sources.list.d/winehq.list
-          sudo apt update
-          sudo apt install --install-recommends winehq-stable
+          sudo curl -fsSL https://dl.winehq.org/wine-builds/ubuntu/dists/jammy/winehq-jammy.sources | sudo tee /etc/apt/sources.list.d/winehq.sources
+          sudo apt-get update
+          sudo apt-get install --install-recommends winehq-stable
           wine --version
 
       - name: Build the Electron app for Windows
@@ -94,7 +93,7 @@ jobs:
   #     - name: Download artifact
   #       uses: actions/download-artifact@v3
   #       with:
-  #         name: electron-app
+  #         name: RobotLab-X-0.9.${{ github.run_number }}.AppImage
   #         path: dist/
 
   #     - name: Create Release
@@ -114,6 +113,6 @@ jobs:
   #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   #       with:
   #         upload_url: ${{ steps.create_release.outputs.upload_url }}
-  #         asset_path: dist/*.*
-  #         asset_name: electron-app-0.9.${{ github.run_number }}.zip
-  #         asset_content_type: application/zip
+  #         asset_path: dist/packages/RobotLab-X-0.9.${{ github.run_number }}.AppImage
+  #         asset_name: RobotLab-X-0.9.${{ github.run_number }}.AppImage
+  #         asset_content_type: application/octet-stream
