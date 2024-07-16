@@ -1,0 +1,140 @@
+name: Build and Package RobotLab-X
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  CI: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [21.7.2]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install Yarn
+        run: npm install -g yarn
+
+      - name: Install dependencies
+        run: yarn install-all
+
+      - name: Bump version
+        id: bump_version
+        run: |
+          BUILD_NUMBER=${{ github.run_number }}
+          VERSION="0.9.${BUILD_NUMBER}"
+          echo "Bumping version to $VERSION"
+          jq --arg VERSION "$VERSION" '.version = $VERSION' package.json > package.json.tmp && mv package.json.tmp package.json
+          jq --arg VERSION "$VERSION" '.version = $VERSION' server/package.json > server/package.json.tmp && mv server/package.json.tmp server/package.json
+          jq --arg VERSION "$VERSION" '.version = $VERSION' client/package.json > client/package.json.tmp && mv client/package.json.tmp client/package.json
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+        # temporarily disabled
+        # git add package.json server/package.json client/package.json
+        # git commit -m "Bump version to $VERSION"
+        # git push origin main
+
+      # Run ESLint but ignore errors
+      - name: Run ESLint
+        run: yarn lint || true
+
+      - name: Run tests
+        run: |
+          cd server
+          yarn test
+
+      - name: Build Linux
+        run: yarn build-linux
+
+  build-windows:
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        node-version: [21.7.2]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install Yarn
+        run: npm install -g yarn
+
+      - name: Install dependencies
+        run: yarn install-all
+
+      - name: Bump version
+        id: bump_version
+        run: |
+          BUILD_NUMBER=${{ github.run_number }}
+          VERSION="0.9.${BUILD_NUMBER}"
+          echo "Bumping version to $VERSION"
+          jq --arg VERSION "$VERSION" '.version = $VERSION' package.json > package.json.tmp && mv package.json.tmp package.json
+          jq --arg VERSION "$VERSION" '.version = $VERSION' server/package.json > server/package.json.tmp && mv server/package.json.tmp server/package.json
+          jq --arg VERSION "$VERSION" '.version = $VERSION' client/package.json > client/package.json.tmp && mv client/package.json.tmp client/package.json
+
+      - name: Build the Electron app for Windows
+        run: yarn build-win
+
+      - name: List dist/packages contents
+        run: ls -l dist/packages
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: RobotLab-X-0.9.${{ github.run_number }}.exe
+          path: dist/packages/RobotLab-X-0.9.${{ github.run_number }}.exe
+
+  # release:
+  #   needs: build-windows
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+  #     - name: Download artifact
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         name: RobotLab-X-0.9.${{ github.run_number }}.exe
+  #         path: dist/
+
+  #     - name: Create Release
+  #       id: create_release
+  #       uses: actions/create-release@v1
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       with:
+  #         tag_name: v0.9.${{ github.run_number }}
+  #         release_name: Release v0.9.${{ github.run_number }}
+  #         draft: false
+  #         prerelease: false
+
+  #     - name: Upload Release Asset
+  #       uses: actions/upload-release-asset@v1
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       with:
+  #         upload_url: ${{ steps.create_release.outputs.upload_url }}
+  #         asset_path: dist/packages/RobotLab-X-0.9.${{ github.run_number }}.exe
+  #         asset_name: RobotLab-X-0.9.${{ github.run_number }}.exe
+  #         asset_content_type: application/octet-stream
