@@ -63,8 +63,8 @@ jobs:
       - name: Build macOS
         run: yarn build-mac
 
-      # - name: List dist/packages contents
-      #   run: ls -l dist/packages
+      - name: List dist/packages contents
+        run: ls -l dist/packages
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
