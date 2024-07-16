@@ -37,21 +37,11 @@ const logFormat = winston.format.printf(({ level, message, module }) => {
 })
 
 // Lazy initialization for logFilePath
-const getLogFilePath = () => {
+export const getLogFilePath = () => {
   let logFilePath: string | null = null
-  if (Electron.app.isPackaged) {
-    logFilePath = path.join(
-      Electron.app.getPath("userData"),
-      "resources",
-      "dist",
-      "express",
-      "public",
-      "robotlab-x.log"
-    )
-  } else {
-    logFilePath = path.join(process.cwd(), "express", "public", "robotlab-x.log")
-  }
-  // const logFilePath = path.join(Main.publicRoot, 'robotlab-x.log')
+  logFilePath = Electron.app.isPackaged
+    ? path.join(Electron.app.getPath("userData"), "robotlab-x.log") /*prod*/
+    : path.join(process.cwd(), "robotlab-x.log") /*dev*/
   if (fs.existsSync(logFilePath)) {
     console.log(`${logFilePath} exists. truncating...`)
     fs.writeFileSync(logFilePath, "")

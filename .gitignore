@@ -24,4 +24,4 @@ sessions
 # runtime files
 server/express/public/service/*
 yarn-error.log
-server/express/public/robotlab-x.log
+server/robotlab-x.log

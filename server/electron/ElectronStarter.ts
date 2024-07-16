@@ -3,7 +3,7 @@ import Electron, { Tray } from "electron"
 import os from "os"
 import path from "path"
 import "source-map-support/register"
-import { getLogger } from "../express/framework/Log"
+import { getLogFilePath, getLogger } from "../express/framework/Log"
 import { HostData } from "../express/models/HostData"
 import { ProcessData } from "../express/models/ProcessData"
 import RobotLabXRuntime from "../express/service/RobotLabXRuntime"
@@ -48,6 +48,8 @@ export default class Main {
   // if this variable is set to true in the main constructor, the app will quit when closing it in macOS
   private static quitOnCloseOSX: boolean
 
+  protected static logFilePath: string
+
   // Tray instance
   public static tray: Tray
 
@@ -58,6 +60,7 @@ export default class Main {
     Main.app.on("ready", Main.onReady)
     Main.app.on("activate", Main.onActivate)
     Main.quitOnCloseOSX = true
+    Main.logFilePath = getLogFilePath()
     Main.bootServer()
   }
 
@@ -109,6 +112,7 @@ export default class Main {
   private static bootServer() {
     log.info("bootServer: starting server")
     log.info(`bootServer: Main.isPackaged == ${Main.isPackaged}`)
+    log.info(`bootServer: app.getPath("userData") == ${app.getPath("userData")}`)
     let asarPath = Main.isPackaged ? path.join(process.resourcesPath, "app.asar") : null
     Main.extractPath = path.join(app.getPath("userData"), "resources")
     log.info(`bootServer: Main.extractPath == ${Main.extractPath} ==`)
