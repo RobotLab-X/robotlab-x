@@ -1,4 +1,4 @@
-name: Build and Package RobotLab-X for macOS
+name: MacOS Build and Package RobotLab-X
 
 on:
   push:
@@ -70,7 +70,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: RobotLab-X-0.9.${{ github.run_number }}.dmg
-          path: dist/packages/RobotLab-X-0.9.${{ github.run_number }}.dmg
+          path: dist/packages/RobotLab-X-0.9.${{ github.run_number }}-arm64.dmg
 
   # release:
   #   needs: build
