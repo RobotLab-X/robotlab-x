@@ -63,8 +63,8 @@ jobs:
       - name: Build the Electron app
         run: yarn build-linux
 
-      - name: Package the Electron app
-        run: yarn package
+      # - name: Package the Electron app
+      #   run: yarn package
 
       # - name: Upload artifact
       #   uses: actions/upload-artifact@v3
