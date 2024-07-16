@@ -40,9 +40,9 @@ jobs:
           BUILD_NUMBER=${{ github.run_number }}
           VERSION="0.9.${BUILD_NUMBER}"
           echo "Bumping version to $VERSION"
-          jq --arg VERSION "$VERSION" '.version = $VERSION' package.json > package.json.tmp && mv package.json.tmp package.json
-          jq --arg VERSION "$VERSION" '.version = $VERSION' server/package.json > server/package.json.tmp && mv server/package.json.tmp server/package.json
-          jq --arg VERSION "$VERSION" '.version = $VERSION' client/package.json > client/package.json.tmp && mv client/package.json.tmp client/package.json
+          npx json -I -f package.json -e "this.version='$VERSION'"
+          npx json -I -f server/package.json -e "this.version='$VERSION'"
+          npx json -I -f client/package.json -e "this.version='$VERSION'"
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
@@ -91,18 +91,18 @@ jobs:
       - name: Bump version
         id: bump_version
         run: |
-          BUILD_NUMBER=${{ github.run_number }}
-          VERSION="0.9.${BUILD_NUMBER}"
-          echo "Bumping version to $VERSION"
-          jq --arg VERSION "$VERSION" '.version = $VERSION' package.json > package.json.tmp && mv package.json.tmp package.json
-          jq --arg VERSION "$VERSION" '.version = $VERSION' server/package.json > server/package.json.tmp && mv server/package.json.tmp server/package.json
-          jq --arg VERSION "$VERSION" '.version = $VERSION' client/package.json > client/package.json.tmp && mv client/package.json.tmp client/package.json
+          $BUILD_NUMBER = ${{ github.run_number }}
+          $VERSION = "0.9.$BUILD_NUMBER"
+          Write-Host "Bumping version to $VERSION"
+          npx json -I -f package.json -e "this.version='$VERSION'"
+          npx json -I -f server/package.json -e "this.version='$VERSION'"
+          npx json -I -f client/package.json -e "this.version='$VERSION'"
 
       - name: Build the Electron app for Windows
         run: yarn build-win
 
       - name: List dist/packages contents
-        run: ls -l dist/packages
+        run: dir dist\\packages
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
