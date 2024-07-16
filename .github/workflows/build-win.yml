@@ -83,7 +83,10 @@ jobs:
         run: npm install -g yarn
 
       - name: Install dependencies
-        run: yarn install-all
+        run: |
+          yarn config set network-timeout 600000 -g
+          yarn config set registry https://registry.npm.taobao.org
+          yarn install-all
 
       - name: Bump version
         id: bump_version
