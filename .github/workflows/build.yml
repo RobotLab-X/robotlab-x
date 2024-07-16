@@ -70,7 +70,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: electron-app
-          path: dist/packages/RobotLab-X-0.9.0.AppImage
+          path: dist/packages/RobotLab-X-0.9.${{ github.run_number }}.AppImage
 
   # release:
   #   needs: build
