@@ -44,7 +44,7 @@ jobs:
           jq --arg VERSION "$VERSION" '.version = $VERSION' server/package.json > server/package.json.tmp && mv server/package.json.tmp server/package.json
           jq --arg VERSION "$VERSION" '.version = $VERSION' client/package.json > client/package.json.tmp && mv client/package.json.tmp client/package.json
           git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com
 
         # temporarily disabled
         # git add package.json server/package.json client/package.json
@@ -63,14 +63,14 @@ jobs:
       - name: Build the Electron app
         run: yarn build-linux
 
-      # - name: Package the Electron app
-      #   run: yarn package
+      - name: List dist/packages contents
+        run: ls -l dist/packages
 
-      # - name: Upload artifact
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: electron-app
-      #     path: dist/
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: electron-app
+          path: dist/packages/RobotLab-X-0.9.0.AppImage
 
   # release:
   #   needs: build
