@@ -108,7 +108,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: RobotLab-X-0.9.${{ github.run_number }}.exe
-          path: dist/packages/RobotLab-X-0.9.${{ github.run_number }}.exe
+          path: dist/packages/RobotLab-X-Setup-0.9.${{ github.run_number }}.exe
 
   # release:
   #   needs: build-windows

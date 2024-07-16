@@ -24,7 +24,8 @@
       "icon": "../assets/mac/icon.png"
     },
     "win": {
-      "icon": "../assets/win/icon.png"
+      "icon": "../assets/win/icon.png",
+      "artifactName": "RobotLab-X-Setup-${version}.${ext}"
     },
     "nsis": {
       "installerIcon": "../assets/win/logo.ico",
