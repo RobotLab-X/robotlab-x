@@ -1,3 +1,4 @@
+import Electron from "electron"
 import fs from "fs"
 import path from "path"
 import winston from "winston"
@@ -35,14 +36,28 @@ const logFormat = winston.format.printf(({ level, message, module }) => {
   return `${level}[${formattedModule}]: ${message}`
 })
 
-// Path to the log file
-const logFilePath = path.join(__dirname, "robotlab-x.log")
-// Ensure the log file is truncated on start
-if (fs.existsSync(logFilePath)) {
-  console.log(`${logFilePath} exists. truncating...`)
-  fs.writeFileSync(logFilePath, "")
+// Lazy initialization for logFilePath
+const getLogFilePath = () => {
+  let logFilePath: string | null = null
+  if (Electron.app.isPackaged) {
+    logFilePath = path.join(
+      Electron.app.getPath("userData"),
+      "resources",
+      "dist",
+      "express",
+      "public",
+      "robotlab-x.log"
+    )
+  } else {
+    logFilePath = path.join(process.cwd(), "express", "public", "robotlab-x.log")
+  }
+  // const logFilePath = path.join(Main.publicRoot, 'robotlab-x.log')
+  if (fs.existsSync(logFilePath)) {
+    console.log(`${logFilePath} exists. truncating...`)
+    fs.writeFileSync(logFilePath, "")
+  }
+  return logFilePath
 }
-
 // Create a logger instance
 const log = winston.createLogger({
   levels: logLevels.levels,
@@ -55,7 +70,7 @@ const log = winston.createLogger({
       level: "info" // default level for the console transport
     }),
     new winston.transports.File({
-      filename: logFilePath,
+      filename: getLogFilePath(),
       format: winston.format.combine(winston.format.timestamp(), winston.format.json(), logFormat),
       level: "info" // default level for the file transport
     })
@@ -69,5 +84,7 @@ winston.addColors(logLevels.colors)
 export function getLogger(moduleName: string): winston.Logger {
   return log.child({ module: moduleName })
 }
+
+// log.info(`Log file path: ${getLogFilePath()}`)
 
 export { log }
