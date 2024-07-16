@@ -53,7 +53,7 @@ const ServicePage = ({ fullname, name, id }) => {
 
       loadAsyncPage()
     }
-  }, [resolvedType])
+  }, [resolvedType, fullname])
 
   const handleDeleteClick = useCallback(() => {
     setOpenDelete(true)
@@ -106,7 +106,7 @@ const ServicePage = ({ fullname, name, id }) => {
           <ReactJson src={service} name="service" displayDataTypes={false} displayObjectSize={false} />
         </>
       ),
-    [showJson, registered, service]
+    [showJson, registered, service, fullname]
   )
 
   return (

@@ -303,13 +303,8 @@ export default class Store {
     // The dev express server does not serve the client, instead the npm dev server does
     // and api requests are proxied to the express server, however, when packaged
     // the express server needs to serve the client
-    this.express.use("/", express.static(path.join(Main.distRoot, "client")))
-    // }
-    // BELOW - is this API RELATED ONLY?
-    // this.express.use("/images", express.static(path.join(Main.publicRoot, "images")))
-    // this.express.use("/repo", express.static(path.join(Main.publicRoot, "repo")))
-    // this.express.use("/swagger", express.static(path.join(Main.publicRoot, "swagger")))
     this.express.use("/public", express.static(Main.publicRoot))
+    this.express.use("/", express.static(path.join(Main.distRoot, "client")))
     this.express.use(bodyParser.json())
     this.express.use(bodyParser.urlencoded({ extended: false }))
   }
