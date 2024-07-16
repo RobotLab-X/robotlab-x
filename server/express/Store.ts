@@ -15,7 +15,7 @@ import RobotLabXRuntime from "./service/RobotLabXRuntime"
 
 const session = require("express-session")
 const FileStore = require("session-file-store")(session)
-const apiPrefix = "/api/v1/services"
+const apiPrefix = "/v1/services"
 
 const log = getLogger("Store")
 
@@ -304,7 +304,9 @@ export default class Store {
     // and api requests are proxied to the express server, however, when packaged
     // the express server needs to serve the client
     this.express.use("/public", express.static(Main.publicRoot))
+    this.express.use("/log", express.static(path.join(process.cwd(), "robotlab-x.log")))
     this.express.use("/", express.static(path.join(Main.distRoot, "client")))
+
     this.express.use(bodyParser.json())
     this.express.use(bodyParser.urlencoded({ extended: false }))
   }
@@ -404,6 +406,16 @@ export default class Store {
       res.json(runtime.getRegistry())
     })
 
-    this.express.use("/", router)
+    this.express.use("/api", router)
+
+    // Catch-all route to serve index.html for client-side routing
+    this.express.get("*", (req, res, next) => {
+      if (req.originalUrl.startsWith(apiPrefix)) {
+        // If the request starts with the API prefix, pass it to the next middleware
+        return next()
+      }
+      // Otherwise, serve index.html for client-side routing
+      res.sendFile(path.join(Main.distRoot, "client", "index.html"))
+    })
   }
 }
