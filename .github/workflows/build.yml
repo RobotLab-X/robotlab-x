@@ -63,7 +63,18 @@ jobs:
       - name: Build Linux
         run: yarn build-linux
 
-      - name: Build Win
+      - name: Install Wine
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo mkdir -pm755 /etc/apt/keyrings
+          sudo curl -fsSL https://dl.winehq.org/wine-builds/winehq.key | sudo tee /etc/apt/keyrings/winehq-archive.key
+          sudo curl -fsSL https://dl.winehq.org/wine-builds/ubuntu/dists/$(lsb_release -cs)/winehq-archive.key | sudo tee /etc/apt/keyrings/winehq-archive.key
+          sudo curl -fsSL https://dl.winehq.org/wine-builds/ubuntu/dists/$(lsb_release -cs)/main/binary-i386/Packages | sudo tee /etc/apt/sources.list.d/winehq.list
+          sudo apt update
+          sudo apt install --install-recommends winehq-stable
+          wine --version
+
+      - name: Build the Electron app for Windows
         run: yarn build-win
 
       - name: List dist/packages contents
