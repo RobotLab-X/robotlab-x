@@ -2,6 +2,7 @@ import loadable from "@loadable/component"
 import DeleteIcon from "@mui/icons-material/Delete"
 import DescriptionIcon from "@mui/icons-material/Description"
 import FileOpenIcon from "@mui/icons-material/FileOpen"
+import InfoIcon from "@mui/icons-material/Info"
 import RefreshIcon from "@mui/icons-material/Refresh"
 import SaveIcon from "@mui/icons-material/Save"
 import SettingsIcon from "@mui/icons-material/Settings"
@@ -17,6 +18,7 @@ import {
   Tooltip,
   Typography
 } from "@mui/material"
+import PkgDialog from "components/PkgDialog"
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 import ReactJson from "react-json-view"
 import { useNavigate } from "react-router-dom"
@@ -27,6 +29,7 @@ import useServiceSubscription from "../store/useServiceSubscription"
 const containerStyle2 = {}
 
 const ServicePage = ({ fullname, name, id }) => {
+  const [pkgDialogOpen, setPkgDialogOpen] = useState(false)
   const registered = useRegisteredService(fullname)
   const serviceMsg = useServiceSubscription(fullname)
   const service = useProcessedMessage(serviceMsg)
@@ -82,6 +85,9 @@ const ServicePage = ({ fullname, name, id }) => {
     console.log("Service refreshed")
     sendTo(fullname, "broadcastState")
   }, [fullname, sendTo])
+
+  const handlePkgDialogOpen = () => setPkgDialogOpen(true)
+  const handlePkgDialogClose = () => setPkgDialogOpen(false)
 
   const handleSaveClick = useCallback(() => {
     console.log(`Saving ${fullname}`)
@@ -156,6 +162,11 @@ const ServicePage = ({ fullname, name, id }) => {
             <DeleteIcon />
           </IconButton>
         </Tooltip>
+        <Tooltip title="Info">
+          <IconButton onClick={handlePkgDialogOpen} aria-label="info">
+            <InfoIcon />
+          </IconButton>
+        </Tooltip>
       </Typography>
 
       {asyncPageMemo}
@@ -182,6 +193,8 @@ const ServicePage = ({ fullname, name, id }) => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <PkgDialog dialogOpen={pkgDialogOpen} handleDialogClose={handlePkgDialogClose} fullname={service?.fullname} />
     </div>
   )
 }

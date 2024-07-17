@@ -83,7 +83,7 @@ const Topbar = () => {
           />
         </Box>
         <Typography variant="h4" component="span">
-          RobotLab-X {remoteId} {service?.pkg?.version} {host?.platform}
+          {remoteId} {host?.platform} v{service?.pkg?.version}
         </Typography>
       </Box>
 
