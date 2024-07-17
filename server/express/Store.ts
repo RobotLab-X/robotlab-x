@@ -15,7 +15,7 @@ import RobotLabXRuntime from "./service/RobotLabXRuntime"
 
 const session = require("express-session")
 const FileStore = require("session-file-store")(session)
-const apiPrefix = "/v1/services"
+const apiPrefix = "/api/v1/services"
 
 const log = getLogger("Store")
 
@@ -66,7 +66,6 @@ export default class Store {
       store.http = http.createServer(store.express)
       store.wss = new WebSocketServer({ server: store.http })
       store.middleware()
-      store.routes()
       store.initWebSocketServer()
 
       // FIXME - this is dumb - RuntimeXServer should have config
@@ -283,10 +282,16 @@ export default class Store {
     return null
   }
 
+  public getMessages(): { [key: string]: Message } {
+    return this.messages
+  }
+
   // Configure Express middleware.
   private middleware(): void {
+    // Uncomment if you want to use a logger
     // this.express.use(logger("dev"));
 
+    // Session middleware
     this.express.use(
       session({
         store: new FileStore(), // options iApps optional
@@ -297,37 +302,26 @@ export default class Store {
       })
     )
 
+    // CORS middleware
     this.express.use(cors())
 
-    // if (Main.isPackaged) {
-    // The dev express server does not serve the client, instead the npm dev server does
-    // and api requests are proxied to the express server, however, when packaged
-    // the express server needs to serve the client
-    this.express.use("/public", express.static(Main.publicRoot))
-    this.express.use("/log", express.static(path.join(process.cwd(), "robotlab-x.log")))
-    this.express.use("/", express.static(path.join(Main.distRoot, "client")))
-
+    // Body parsers
     this.express.use(bodyParser.json())
     this.express.use(bodyParser.urlencoded({ extended: false }))
-  }
 
-  public getMessages(): { [key: string]: Message } {
-    return this.messages
-  }
+    // Static file serving
+    this.express.use("/public", express.static(Main.publicRoot))
+    this.express.use("/log", express.static(path.join(process.cwd(), "robotlab-x.log")))
+    this.express.use("/static", express.static(path.join(Main.distRoot, "client", "static")))
+    this.express.use("/manifest.json", express.static(path.join(Main.distRoot, "client", "manifest.json")))
 
-  // Configure API endpoints.
-  private routes(): void {
-    /* This is just to get up and running, and to make sure what we've got is
-     * working so far. This function will change when we start to add more
-     * API endpoints */
-    const router = express.Router()
-
-    router.put(`${apiPrefix}/*`, (req, res, next) => {
+    // API routes
+    this.express.use(`${apiPrefix}/*`, (req, res, next) => {
       log.info(`--> put ${req.originalUrl} ${JSON.stringify(req.body)}`)
       const serviceData = req.body
 
       const pathSegments = req.originalUrl.split("/").filter((segment) => segment.length > 0)
-      if (pathSegments.length != 5) {
+      if (pathSegments.length !== 5) {
         res.json({
           error: `invalid path ${req.originalUrl} must follow pattern ${apiPrefix}/{serviceName}/{method}`
         })
@@ -343,23 +337,23 @@ export default class Store {
       res.json(ret)
     })
 
-    router.put(`${apiPrefix}/runtime/register`, (req, res, next) => {
+    this.express.use(`${apiPrefix}/runtime/register`, (req, res) => {
       log.info(req.body)
       const serviceData = req.body
-      let runtime = RobotLabXRuntime.getInstance()
+      const runtime = RobotLabXRuntime.getInstance()
       runtime.register(serviceData)
       res.json(serviceData)
     })
 
-    router.put(`${apiPrefix}/runtime/registerType`, (req, res, next) => {
+    this.express.use(`${apiPrefix}/runtime/registerType`, (req, res) => {
       log.info(req.body)
       const serviceDataType = req.body
-      let runtime = RobotLabXRuntime.getInstance()
+      const runtime = RobotLabXRuntime.getInstance()
       runtime.registerType(serviceDataType)
       res.json(serviceDataType)
     })
 
-    router.get(`${apiPrefix}/*`, (req, res, next) => {
+    this.express.use(`${apiPrefix}/*`, (req, res) => {
       log.info(`--> incoming get ${req.originalUrl}`)
       const pathSegments = req.originalUrl.split("/").filter((segment) => segment.length > 0)
       if (pathSegments.length < 3) {
@@ -369,10 +363,10 @@ export default class Store {
         return
       }
 
-      let runtime = RobotLabXRuntime.getInstance()
+      const runtime = RobotLabXRuntime.getInstance()
 
-      if (pathSegments.length == 4) {
-        // return service
+      if (pathSegments.length === 4) {
+        // Return service
         const name = pathSegments[3]
         log.info(`getting service ${name}`)
         const service = runtime.getService(name)
@@ -381,13 +375,13 @@ export default class Store {
       }
 
       if (pathSegments.length > 4) {
-        // no parameter invoke
+        // Invoke method
         const name = pathSegments[3]
         const methodName = pathSegments[4]
         const service = runtime.getService(name)
 
-        const params: any = []
-        // parameters supplied
+        const params: any[] = []
+        // Parameters supplied
         if (pathSegments.length > 5) {
           for (let i = 5; i < pathSegments.length; i++) {
             params.push(JSON.parse(decodeURIComponent(pathSegments[i])))
@@ -395,7 +389,7 @@ export default class Store {
         }
 
         const msg: Message = new Message(name, methodName, params)
-        let ret = this.handleMessage(msg)
+        const ret = this.handleMessage(msg)
         log.info(`--> get ${req.originalUrl} return ${JSON.stringify(ret)}`)
         res.json(ret)
         return
@@ -406,16 +400,27 @@ export default class Store {
       res.json(runtime.getRegistry())
     })
 
-    this.express.use("/api", router)
+    // Catch-all handler to serve index.html for client-side routing
+    this.express.use((req, res, next) => {
+      if (
+        !req.originalUrl.startsWith(apiPrefix) &&
+        !req.originalUrl.startsWith("/public") &&
+        !req.originalUrl.startsWith("/log") &&
+        !req.originalUrl.startsWith("/static") &&
+        !req.originalUrl.startsWith("/manifest.json")
+      ) {
+        // res.sendFile(path.join(Main.distRoot, "client", "index.html"))
 
-    // Catch-all route to serve index.html for client-side routing
-    this.express.get("*", (req, res, next) => {
-      if (req.originalUrl.startsWith(apiPrefix)) {
-        // If the request starts with the API prefix, pass it to the next middleware
-        return next()
+        // Serve the file based on the requested path
+        res.sendFile(path.join(Main.distRoot, "client", req.originalUrl), (err) => {
+          if (err) {
+            // If the file does not exist, serve index.html
+            res.sendFile(path.join(Main.distRoot, "client", "index.html"))
+          }
+        })
+      } else {
+        next()
       }
-      // Otherwise, serve index.html for client-side routing
-      res.sendFile(path.join(Main.distRoot, "client", "index.html"))
     })
   }
 }

@@ -87,7 +87,7 @@ function App() {
             <Topbar setIsSidebar={setIsSidebar} />
             <Routes>
               {/** TODO splash screen with examples */}
-              <Route path="/" element={<Home />} />
+              <Route exact path="/" element={<Home />} />
               {/** Add /:fullname for url access to services */}
 
               <Route path="/dashboard" element={<Dashboard />} />
@@ -96,6 +96,9 @@ function App() {
               <Route path="/swagger/:fullname" element={<SwaggerUIComponent fullname="" />} />
               <Route path="/network" element={<Network />} />
               <Route path="/webxr/:tabName" element={<WebXR />} />
+              {/*}
+              <Route path="*" element={<Navigate to="/" replace />} />
+              */}
             </Routes>
           </main>
         </div>

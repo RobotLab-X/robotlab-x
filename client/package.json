@@ -47,7 +47,7 @@
       "last 1 safari version"
     ]
   },
-  "homepage": "./",
+  "homepage": "/",
   "devDependencies": {
     "@babel/core": "^7.24.7",
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
