@@ -46,6 +46,7 @@ jobs:
           npx json -I -f package.json -e "this.version='$VERSION'"
           npx json -I -f server/package.json -e "this.version='$VERSION'"
           npx json -I -f client/package.json -e "this.version='$VERSION'"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       # Run ESLint but ignore errors
       - name: Run ESLint
@@ -56,9 +57,6 @@ jobs:
           cd server
           yarn test
 
-      - name: Generate the package file
-        run: yarn generate-pkg-file
-
       - name: Build the Electron app for Windows
         run: yarn build-win
 
@@ -68,8 +66,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: RobotLab-X-0.9.${{ github.run_number }}.exe
-          path: dist/packages/RobotLab-X-Setup-0.9.${{ github.run_number }}.exe
+          name: RobotLab-X-${{ env.VERSION }}.exe
+          path: dist/packages/RobotLab-X-Setup-${{ env.VERSION }}.exe
 
   # release:
   #   needs: build
@@ -79,7 +77,7 @@ jobs:
   #     - name: Download artifact
   #       uses: actions/download-artifact@v3
   #       with:
-  #         name: RobotLab-X-0.9.${{ github.run_number }}.exe
+  #         name: RobotLab-X-${{ env.VERSION }}.exe
   #         path: dist/
 
   #     - name: Create Release
@@ -88,8 +86,8 @@ jobs:
   #       env:
   #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   #       with:
-  #         tag_name: v0.9.${{ github.run_number }}
-  #         release_name: Release v0.9.${{ github.run_number }}
+  #         tag_name: v${{ env.VERSION }}
+  #         release_name: Release v${{ env.VERSION }}
   #         draft: false
   #         prerelease: false
 
@@ -99,7 +97,7 @@ jobs:
   #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   #       with:
   #         upload_url: ${{ steps.create_release.outputs.upload_url }}
-  #         asset_path: dist/packages/RobotLab-X-0.9.${{ github.run_number }}.exe
-  #         asset_name: RobotLab-X-0.9.${{ github.run_number }}.exe
+  #         asset_path: dist/packages/RobotLab-X-${{ env.VERSION }}.exe
+  #         asset_name: RobotLab-X-${{ env.VERSION }}.exe
   #         asset_content_type: application/octet-stream
 

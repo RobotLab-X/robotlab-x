@@ -45,6 +45,7 @@ jobs:
           jq --arg VERSION "$VERSION" '.version = $VERSION' client/package.json > client/package.json.tmp && mv client/package.json.tmp client/package.json
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
 
         # temporarily disabled
         # git add package.json server/package.json client/package.json
@@ -60,9 +61,6 @@ jobs:
           cd server
           yarn test
 
-      - name: Generate the package file
-        run: yarn generate-pkg-file
-
       - name: Build
         run: yarn build-linux
 
@@ -72,8 +70,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: RobotLab-X-0.9.${{ github.run_number }}.AppImage
-          path: dist/packages/RobotLab-X-0.9.${{ github.run_number }}.AppImage
+          name: RobotLab-X-${{ env.VERSION }}.AppImage
+          path: dist/packages/RobotLab-X-${{ env.VERSION }}.AppImage
 
   # release:
   #   needs: build
@@ -83,7 +81,7 @@ jobs:
   #     - name: Download artifact
   #       uses: actions/download-artifact@v3
   #       with:
-  #         name: RobotLab-X-0.9.${{ github.run_number }}.AppImage
+  #         name: RobotLab-X-${{ env.VERSION }}.AppImage
   #         path: dist/
 
   #     - name: Create Release
@@ -92,8 +90,8 @@ jobs:
   #       env:
   #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   #       with:
-  #         tag_name: v0.9.${{ github.run_number }}
-  #         release_name: Release v0.9.${{ github.run_number }}
+  #         tag_name: v${{ env.VERSION }}
+  #         release_name: Release v${{ env.VERSION }}
   #         draft: false
   #         prerelease: false
 
@@ -103,6 +101,6 @@ jobs:
   #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   #       with:
   #         upload_url: ${{ steps.create_release.outputs.upload_url }}
-  #         asset_path: dist/packages/RobotLab-X-0.9.${{ github.run_number }}.AppImage
-  #         asset_name: RobotLab-X-0.9.${{ github.run_number }}.AppImage
+  #         asset_path: dist/packages/RobotLab-X-${{ env.VERSION }}.AppImage
+  #         asset_name: RobotLab-X-${{ env.VERSION }}.AppImage
   #         asset_content_type: application/octet-stream
