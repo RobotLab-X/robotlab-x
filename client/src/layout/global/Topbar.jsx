@@ -83,7 +83,7 @@ const Topbar = () => {
           />
         </Box>
         <Typography variant="h4" component="span">
-          {remoteId} {host?.platform} v{service?.pkg?.version}
+          {remoteId} {host?.platform} {service?.pkg?.version}
         </Typography>
       </Box>
 
