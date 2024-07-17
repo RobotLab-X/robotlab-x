@@ -62,7 +62,6 @@ jobs:
       - name: Build the Electron app for Windows
         run: yarn build-win
 
-
       - name: List dist/packages contents
         run: dir dist\\packages
 

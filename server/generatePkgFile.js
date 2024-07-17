@@ -9,6 +9,15 @@ const inputFilePath = path.join(__dirname, "express", "public", "repo", "robotla
 const outputFilePath = path.join(__dirname, "dist", "express", "public", "repo", "robotlabxruntime", "package.yml")
 
 async function generateVersionFile() {
+  function ensureDirectoryExistence(filePath) {
+    const dirname = path.dirname(filePath)
+    if (fs.existsSync(dirname)) {
+      return true
+    }
+    ensureDirectoryExistence(dirname)
+    fs.mkdirSync(dirname)
+  }
+
   try {
     // Read the existing YAML file
     const fileContents = fs.readFileSync(inputFilePath, "utf8")
@@ -46,10 +55,12 @@ async function generateVersionFile() {
 
     // Save the updated data to the output file
     const updatedYaml = yaml.stringify(updatedPackageData)
+    ensureDirectoryExistence(outputFilePath)
     fs.writeFileSync(outputFilePath, updatedYaml)
     console.log("package.yml file updated successfully")
   } catch (err) {
     console.error("Error generating version.json file:", err)
+    throw err
   }
 }
 
