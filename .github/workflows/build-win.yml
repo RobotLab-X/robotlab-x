@@ -101,6 +101,9 @@ jobs:
       - name: Build the Electron app for Windows
         run: yarn build-win
 
+      - name: Generate the package file
+        run: yarn generate-pkg-file
+
       - name: List dist/packages contents
         run: dir dist\\packages
 
