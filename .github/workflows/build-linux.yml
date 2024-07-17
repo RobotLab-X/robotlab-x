@@ -60,11 +60,12 @@ jobs:
           cd server
           yarn test
 
-      - name: Build Linux
-        run: yarn build-linux
-
       - name: Generate the package file
         run: yarn generate-pkg-file
+
+      - name: Build
+        run: yarn build-linux
+
 
       # - name: List dist/packages contents
       #   run: ls -l dist/packages

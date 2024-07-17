@@ -60,11 +60,12 @@ jobs:
           cd server
           yarn test
 
-      - name: Build macOS
-        run: yarn build-mac
-
       - name: Generate the package file
         run: yarn generate-pkg-file
+
+      - name: Build
+        run: yarn build-mac
+
 
       - name: List dist/packages contents
         run: ls -l dist/packages

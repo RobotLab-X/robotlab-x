@@ -13,57 +13,6 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [21.7.2]
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-
-      - name: Install Yarn
-        run: npm install -g yarn
-
-      - name: Install dependencies
-        run: yarn install-all
-
-      - name: Bump version
-        id: bump_version
-        run: |
-          BUILD_NUMBER=${{ github.run_number }}
-          VERSION="0.9.${BUILD_NUMBER}"
-          echo "Bumping version to $VERSION"
-          npx json -I -f package.json -e "this.version='$VERSION'"
-          npx json -I -f server/package.json -e "this.version='$VERSION'"
-          npx json -I -f client/package.json -e "this.version='$VERSION'"
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
-        # temporarily disabled
-        # git add package.json server/package.json client/package.json
-        # git commit -m "Bump version to $VERSION"
-        # git push origin main
-
-      # Run ESLint but ignore errors
-      - name: Run ESLint
-        run: yarn lint || true
-
-      - name: Run tests
-        run: |
-          cd server
-          yarn test
-
-      - name: Build Linux
-        run: yarn build-linux
-
-  build-windows:
     runs-on: windows-latest
 
     strategy:
@@ -98,11 +47,21 @@ jobs:
           npx json -I -f server/package.json -e "this.version='$VERSION'"
           npx json -I -f client/package.json -e "this.version='$VERSION'"
 
-      - name: Build the Electron app for Windows
-        run: yarn build-win
+      # Run ESLint but ignore errors
+      - name: Run ESLint
+        run: yarn lint || true
+
+      - name: Run tests
+        run: |
+          cd server
+          yarn test
 
       - name: Generate the package file
         run: yarn generate-pkg-file
+
+      - name: Build the Electron app for Windows
+        run: yarn build-win
+
 
       - name: List dist/packages contents
         run: dir dist\\packages
@@ -114,7 +73,7 @@ jobs:
           path: dist/packages/RobotLab-X-Setup-0.9.${{ github.run_number }}.exe
 
   # release:
-  #   needs: build-windows
+  #   needs: build
   #   runs-on: ubuntu-latest
 
   #   steps:
@@ -144,3 +103,4 @@ jobs:
   #         asset_path: dist/packages/RobotLab-X-0.9.${{ github.run_number }}.exe
   #         asset_name: RobotLab-X-0.9.${{ github.run_number }}.exe
   #         asset_content_type: application/octet-stream
+
