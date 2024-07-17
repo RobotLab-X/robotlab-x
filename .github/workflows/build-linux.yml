@@ -64,6 +64,9 @@ jobs:
       - name: Build
         run: yarn build-linux
 
+      - name: Set executable permissions
+        run: chmod +x dist/packages/RobotLab-X-${{ env.VERSION }}.AppImage
+
       - name: List dist/packages contents
         run: ls -l dist/packages
 
@@ -96,11 +99,3 @@ jobs:
   #         prerelease: false
 
   #     - name: Upload Release Asset
-  #       uses: actions/upload-release-asset@v1
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #       with:
-  #         upload_url: ${{ steps.create_release.outputs.upload_url }}
-  #         asset_path: dist/packages/RobotLab-X-${{ env.VERSION }}.AppImage
-  #         asset_name: RobotLab-X-${{ env.VERSION }}.AppImage
-  #         asset_content_type: application/octet-stream
