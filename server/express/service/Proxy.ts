@@ -72,6 +72,7 @@ export default class Proxy extends Service {
   ) {
     super(id, name, typeKey, version, hostname)
     this.envPath = path.join(Main.publicRoot, "repo", this.typeKey.toLowerCase())
+    // this.envPath = path.join(Main.publicRoot, "repo", this.proxyTypeKey.toLowerCase())
   }
 
   startService(): void {

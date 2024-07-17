@@ -24,6 +24,7 @@
     "cross-env": "^7.0.3",
     "prettier": "3.2.5",
     "shx": "^0.3.4",
+    "simple-git": "^3.25.0",
     "wait-on": "^5.2.0"
   },
   "resolutions": {

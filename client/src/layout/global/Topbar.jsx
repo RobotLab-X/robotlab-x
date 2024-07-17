@@ -21,8 +21,10 @@ import {
   Typography,
   useTheme
 } from "@mui/material"
+import { useProcessedMessage } from "hooks/useProcessedMessage"
 import React, { useContext, useState } from "react"
 import { useStore } from "store/store"
+import useServiceSubscription from "store/useServiceSubscription"
 import { ColorModeContext, tokens } from "../../theme"
 
 const Topbar = () => {
@@ -34,6 +36,9 @@ const Topbar = () => {
   const debug = useStore((state) => state.debug)
   const setDebug = useStore((state) => state.setDebug)
   const sendTo = useStore((state) => state.sendTo)
+
+  const serviceMsg = useServiceSubscription(`runtime@${remoteId}`)
+  const service = useProcessedMessage(serviceMsg)
 
   const [dialogOpen, setDialogOpen] = useState(false)
 
@@ -57,6 +62,8 @@ const Topbar = () => {
     sendTo("runtime", "setDebug", event.target.checked)
   }
 
+  const host = (service && Object.values(service?.hosts)[0]) || {}
+
   return (
     <Box display="flex" justifyContent="space-between" alignItems="center" p={2}>
       <Box display="flex" flexGrow={1} alignItems="center">
@@ -76,7 +83,7 @@ const Topbar = () => {
           />
         </Box>
         <Typography variant="h4" component="span">
-          RobotLab-X {remoteId}
+          RobotLab-X {remoteId} {service?.pkg?.version} {host?.platform}
         </Typography>
       </Box>
 

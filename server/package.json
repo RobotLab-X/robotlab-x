@@ -1,11 +1,11 @@
 {
   "name": "robotlab-x-server",
-  "version": "0.9.0",
+  "version": "0.0.0",
   "description": "A cross platform desktop application for creating and running robots (Server side)",
   "license": "MPL-2.0",
   "main": "./dist/electron/ElectronStarter.js",
   "build": {
-    "appId": "org.robotlab-x.app",
+    "appId": "com.robotlab-x.appId",
     "productName": "RobotLab-X",
     "extends": null,
     "files": [
@@ -44,7 +44,8 @@
     "test": "jest",
     "test-coverage": "nyc yarn run test",
     "generate-schemas": "typescript-json-schema tsconfig.json 'Ollama' --out schemas.json",
-    "generate-swagger": "node generate-swagger-paths.js"
+    "generate-swagger": "node generate-swagger-paths.js",
+    "generate-pkg-file": "node generatePkgFile.js"
   },
   "author": "GroG",
   "devDependencies": {

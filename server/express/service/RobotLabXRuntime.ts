@@ -456,6 +456,7 @@ export default class RobotLabXRuntime extends Service {
         os.hostname()
       )
       instance = RobotLabXRuntime.instance
+      instance.pkg = instance.getPackage("robotlabxruntime")
       Store.createInstance(RobotLabXRuntime.instance)
     } else {
       log.error("RobotLabXRuntime instance already exists")
