@@ -45,7 +45,7 @@ jobs:
           jq --arg VERSION "$VERSION" '.version = $VERSION' client/package.json > client/package.json.tmp && mv client/package.json.tmp client/package.json
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "VERSION=0.9.${{ github.run_number }}" >> $GITHUB_ENV
 
         # temporarily disabled
         # git add package.json server/package.json client/package.json
@@ -70,8 +70,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: RobotLab-X-${{ env.VERSION }}.dmg
-          path: dist/packages/RobotLab-X-${{ env.VERSION }}-arm64.dmg
+          name: RobotLab-X-0.9.${{ github.run_number }}.dmg
+          path: dist/packages/RobotLab-X-0.9.${{ github.run_number }}-arm64.dmg
 
   # release:
   #   needs: build

@@ -46,7 +46,7 @@ jobs:
           npx json -I -f package.json -e "this.version='$VERSION'"
           npx json -I -f server/package.json -e "this.version='$VERSION'"
           npx json -I -f client/package.json -e "this.version='$VERSION'"
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "VERSION=0.9.${{ github.run_number }}" >> $GITHUB_ENV
 
       # Run ESLint but ignore errors
       - name: Run ESLint
@@ -66,8 +66,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: RobotLab-X-${{ env.VERSION }}.exe
-          path: dist/packages/RobotLab-X-Setup-${{ env.VERSION }}.exe
+          name: RobotLab-X-0.9.${{ github.run_number }}.exe
+          path: dist/packages/RobotLab-X-0.9.${{ github.run_number }}.exe
 
   # release:
   #   needs: build

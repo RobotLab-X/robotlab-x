@@ -45,7 +45,7 @@ jobs:
           jq --arg VERSION "$VERSION" '.version = $VERSION' client/package.json > client/package.json.tmp && mv client/package.json.tmp client/package.json
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "VERSION=0.9.${{ github.run_number }}" >> $GITHUB_ENV
 
         # temporarily disabled
         # git add package.json server/package.json client/package.json
@@ -65,7 +65,7 @@ jobs:
         run: yarn build-linux
 
       - name: Set executable permissions
-        run: chmod +x dist/packages/RobotLab-X-${{ env.VERSION }}.AppImage
+        run: chmod +x dist/packages/otLab-X-0.9.${{ github.run_number }}.AppImage
 
       - name: List dist/packages contents
         run: ls -l dist/packages
@@ -73,8 +73,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: RobotLab-X-${{ env.VERSION }}.AppImage
-          path: dist/packages/RobotLab-X-${{ env.VERSION }}.AppImage
+          name: RobotLab-X-0.9.${{ github.run_number }}.AppImage
+          path: dist/packages/RobotLab-X-0.9.${{ github.run_number }}.AppImage
 
   # release:
   #   needs: build
