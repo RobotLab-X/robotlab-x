@@ -325,7 +325,8 @@ export default class Proxy extends Service {
       // Python command to get the pip version
       const pythonCommand = "import pip; print(pip.__version__)"
 
-      const pythonPath = os.platform() === "win32" ? "python.bat" : "python"
+      // const pythonPath = os.platform() === "win32" ? "python.bat" : "python"
+      const pythonPath = "python"
       // Run the Python command to get pip version
       PythonShell.runString(pythonCommand, { pythonPath: pythonPath })
         .then((results) => {
