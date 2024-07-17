@@ -15,7 +15,8 @@
     "build-linux": "yarn build-client && yarn install-client && cd server && yarn run electron-build-linux",
     "build-mac": "yarn build-client && yarn install-client && cd server && yarn run electron-build-mac",
     "test": "cd client && yarn run test-no-watch && cd ../server && yarn run test",
-    "test-coverage": "cd client && yarn run test-coverage && cd ../server && yarn run test-coverage"
+    "test-coverage": "cd client && yarn run test-coverage && cd ../server && yarn run test-coverage",
+    "generate-pkg-file": "cd server && yarn run generate-pkg-file"
   },
   "author": "GroG",
   "license": "MPL-2.0",
