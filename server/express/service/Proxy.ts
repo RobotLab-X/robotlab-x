@@ -326,9 +326,8 @@ export default class Proxy extends Service {
 
       // pyenv related
       // const pythonPath = os.platform() === "win32" ? "python.bat" : "python"
-      const pythonPath = "python"
       // Run the Python command to get pip version
-      PythonShell.runString(pythonCommand, { pythonPath: pythonPath })
+      PythonShell.runString(pythonCommand)
         .then((results) => {
           const versionString = results[0]
           this.info(`Raw pip Version: ${versionString}`)
@@ -377,9 +376,8 @@ print(result.stderr.decode(), file=sys.stderr)
 
       // pyenv related
       // const pythonPath = os.platform() === "win32" ? "python.bat" : "python"
-      const pythonPath = "pythonPath"
       // Run the Python script to create the virtual environment
-      PythonShell.runString(pythonScript, { pythonPath: pythonPath })
+      PythonShell.runString(pythonScript)
         .then(() => {
           // Check if the virtual environment was created successfully
           const activateScript = path.join(fullPath, process.platform === "win32" ? "Scripts" : "bin", "activate") // On Windows: 'Scripts' instead of 'bin'
