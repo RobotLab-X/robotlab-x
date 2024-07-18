@@ -48,7 +48,6 @@ jobs:
           npx json -I -f client/package.json -e "this.version='$VERSION'"
           echo "VERSION=0.9.${{ github.run_number }}" >> $GITHUB_ENV
 
-      # Run ESLint but ignore errors
       - name: Run ESLint
         run: yarn lint || true
 
@@ -56,6 +55,9 @@ jobs:
         run: |
           cd server
           yarn test
+
+      - name: Generate package file
+        run: yarn generate-pkg-file
 
       - name: Build the Electron app for Windows
         run: yarn build-win
