@@ -13,6 +13,7 @@
     "install-client": "shx mkdir -p server/dist/ && shx rm -rf server/dist/client && shx mv client/build server/dist/client",
     "build-win": "yarn build-client && yarn install-client && cd server && yarn run electron-build-win",
     "build-linux": "yarn build-client && yarn install-client && cd server && yarn run electron-build-linux",
+    "build-raspi": "yarn build-client && yarn install-client && cd server && yarn run electron-build-raspi",
     "build-mac": "yarn build-client && yarn install-client && cd server && yarn run electron-build-mac",
     "test": "cd client && yarn run test-no-watch && cd ../server && yarn run test",
     "test-coverage": "cd client && yarn run test-coverage && cd ../server && yarn run test-coverage"

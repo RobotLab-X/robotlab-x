@@ -54,6 +54,7 @@ export default class Main {
   public static tray: Tray
 
   public static main(electronApp: Electron.App, browserWindow: typeof Electron.BrowserWindow) {
+    log.info("Main.main")
     Main.BrowserWindow = browserWindow
     Main.app = electronApp
     Main.app.on("window-all-closed", Main.onWindowAllClosed)
@@ -64,7 +65,17 @@ export default class Main {
     Main.bootServer()
   }
 
+  public static isGraphicalEnvironmentAvailable(): boolean {
+    return !!process.env.DISPLAY
+  }
+
   private static onReady() {
+    log.info("Main.onReady")
+    if (!Main.isGraphicalEnvironmentAvailable()) {
+      log.error("Graphical environment not available ... runing headless")
+      return
+    }
+
     log.info(`onReady: Main.publicRoot ${Main.publicRoot}`)
     Main.mainWindow = new Main.BrowserWindow({
       width: 800,
@@ -93,18 +104,21 @@ export default class Main {
   }
 
   private static onWindowAllClosed() {
+    log.info("Main.onWindowAllClosed")
     if (process.platform !== "darwin" || Main.quitOnCloseOSX) {
       Main.app.quit()
     }
   }
 
   private static onActivate() {
+    log.info("Main.onActivate")
     if (Main.mainWindow === null) {
       Main.onReady()
     }
   }
 
   private static onClose() {
+    log.info("Main.onClose")
     // Dereference the window object.
     //  Main.mainWindow = null
   }
@@ -120,7 +134,34 @@ export default class Main {
     log.info(`bootServer: asarPath == ${asarPath}`)
     log.info(`bootServer: process.cwd() == ${process.cwd()}`)
 
-    if (asarPath && fs.existsSync(asarPath)) {
+    // set our version from __dirname (dev mode or asar) - SHOULD EXIST IN ANY CONTEXT !!!
+    const runningRobotLabXRuntimeYmlFilename = path.join(
+      __dirname,
+      "..",
+      "express",
+      "public",
+      "repo",
+      "robotlabxruntime",
+      "package.yml"
+    )
+
+    if (fs.existsSync(runningRobotLabXRuntimeYmlFilename)) {
+      Main.version = yaml.parse(fs.readFileSync(runningRobotLabXRuntimeYmlFilename, "utf8"))?.version
+    }
+
+    log.info(`bootServer: version ${Main.version}`)
+
+    // check if existing resource versino exists
+    let existingVersion = null
+
+    // In theory the ts/js files would be replaced by the setup
+    // but anything in userData is not replaced, however the dist/resources we will need to manage
+    // asar extract is not forceful and will die silently if already extracted
+
+    // if a previous version exists, move the resources to resources.{version}
+    // extract the new resources
+
+    if (Main.isPackaged && fs.existsSync(asarPath)) {
       // FIXME - make a flag based on major/minor version which replaces repo if changed
       // FIXME - this will throw if file exists, will not overwrite - need to resolve
       // Extract the asar file if it hasn't been extracted already

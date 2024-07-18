@@ -2,7 +2,6 @@ author: "GroG"
 categories: ["docker"]
 dependencies: null
 description: "Docker interface"
-# hmmm docker might not be installed on the host
 installed: true
 license: "MIT"
 platform: "node"
