@@ -48,6 +48,10 @@ jobs:
           npx json -I -f client/package.json -e "this.version='$VERSION'"
           echo "VERSION=0.9.${{ github.run_number }}" >> $GITHUB_ENV
 
+      - name: Print server/package.json
+        run: type server\\package.json
+        shell: cmd
+
       - name: Run ESLint
         run: yarn lint || true
 
@@ -58,6 +62,7 @@ jobs:
 
       - name: Print all environment variables
         run: set
+        shell: cmd
 
       - name: Build the Electron app for Windows
         run: yarn build-win
