@@ -3,6 +3,7 @@ import Electron, { Tray } from "electron"
 import os from "os"
 import path from "path"
 import "source-map-support/register"
+import yaml from "yaml"
 import { getLogFilePath, getLogger } from "../express/framework/Log"
 import { HostData } from "../express/models/HostData"
 import { ProcessData } from "../express/models/ProcessData"
@@ -52,6 +53,8 @@ export default class Main {
 
   // Tray instance
   public static tray: Tray
+
+  protected static version: string
 
   public static main(electronApp: Electron.App, browserWindow: typeof Electron.BrowserWindow) {
     Main.BrowserWindow = browserWindow
@@ -120,10 +123,72 @@ export default class Main {
     log.info(`bootServer: asarPath == ${asarPath}`)
     log.info(`bootServer: process.cwd() == ${process.cwd()}`)
 
-    if (asarPath && fs.existsSync(asarPath)) {
+    // set our version from __dirname (dev mode or asar) - SHOULD EXIST IN ANY CONTEXT !!!
+    const runningRobotLabXRuntimeYmlFilename = path.join(
+      __dirname,
+      "..",
+      "express",
+      "public",
+      "repo",
+      "robotlabxruntime",
+      "package.yml"
+    )
+    const robotlabxruntimePkg = yaml.parse(fs.readFileSync(runningRobotLabXRuntimeYmlFilename, "utf8"))
+    Main.version = robotlabxruntimePkg.version
+    log.info(`bootServer: version ${Main.version}`)
+
+    // check if existing resource versino exists
+    let existingVersion = null
+
+    // In theory the ts/js files would be replaced by the setup
+    // but anything in userData is not replaced, however the dist/resources we will need to manage
+    // asar extract is not forceful and will die silently if already extracted
+
+    // if a previous version exists, move the resources to resources.{version}
+    // extract the new resources
+
+    if (Main.isPackaged && fs.existsSync(asarPath)) {
       // FIXME - make a flag based on major/minor version which replaces repo if changed
       // FIXME - this will throw if file exists, will not overwrite - need to resolve
       // Extract the asar file if it hasn't been extracted already
+
+      // determine if we need to move the previous resources
+      const robotlabxruntimePkgFilename = path.join(
+        Main.extractPath,
+        "dist",
+        "express",
+        "public",
+        "repo",
+        "robotlabxruntime",
+        "package.yml"
+      )
+      if (fs.existsSync(robotlabxruntimePkgFilename)) {
+        log.info(`bootServer: found robotlabxruntime package.yml`)
+        const robotlabxruntimePkg = yaml.parse(fs.readFileSync(robotlabxruntimePkgFilename, "utf8"))
+        existingVersion = robotlabxruntimePkg.version
+        log.info(`bootServer: existingVersion ${existingVersion}`)
+      } else {
+        log.info(`bootServer: no ${runningRobotLabXRuntimeYmlFilename} found`)
+      }
+
+      if (existingVersion && existingVersion !== Main.version) {
+        // move existing resources to resources.{existingVersion}
+
+        // const resourcesDirVersion = path.join(resourcesDir, existingVersion)
+        if (fs.existsSync(Main.extractPath)) {
+          const prevVersionResources = `${Main.extractPath}-${existingVersion}`
+          log.info(`bootServer: moving previous existing resources to ${prevVersionResources}`)
+          fs.renameSync(Main.extractPath, prevVersionResources)
+        }
+      } else {
+        log.info(
+          `bootServer: existing version ${existingVersion} matches current version ${Main.version} not moving resources`
+        )
+      }
+
+      // get internal asar version of RobotLabXRuntime
+      const serviceDir = path.join(__dirname, "..", "service")
+
       if (!fs.existsSync(Main.extractPath)) {
         // fs.mkdirSync(Main.extractPath, { recursive: true })
         log.info(`bootServer: extracting asar ${asarPath} ... to ${Main.extractPath}`)

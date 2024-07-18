@@ -86,7 +86,6 @@ export class Repo {
         if (file.endsWith(".js")) {
           const servicePath = path.join(serviceDir, file)
           log.info(`attempting to load:[${servicePath}]`)
-          // const ServiceClass = require(servicePath)
 
           const importedModule = require(servicePath)
           const ServiceClass = importedModule.default // Accessing the default export
