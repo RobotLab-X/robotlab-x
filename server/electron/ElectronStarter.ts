@@ -199,7 +199,7 @@ export default class Main {
         }
       } else {
         log.info(
-          `bootServer: existing version ${existingVersion} matches current version ${Main.version} not moving resources`
+          `bootServer: existing version ${existingVersion} is null or matches current version ${Main.version} not moving resources`
         )
       }
 
