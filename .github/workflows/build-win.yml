@@ -61,11 +61,12 @@ jobs:
           yarn test
 
       - name: Print all environment variables
-        run: set
+        run: set "VERSION=0.9.${{ github.run_number }}" && set
         shell: cmd
 
       - name: Build the Electron app for Windows
-        run: yarn build-win
+        run: set "VERSION=0.9.${{ github.run_number }}" && yarn build-win
+        shell: cmd
 
       - name: List dist/packages contents
         run: dir dist\\packages
