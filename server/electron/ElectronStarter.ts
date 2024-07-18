@@ -57,6 +57,7 @@ export default class Main {
   protected static version: string
 
   public static main(electronApp: Electron.App, browserWindow: typeof Electron.BrowserWindow) {
+    log.info("Main.main")
     Main.BrowserWindow = browserWindow
     Main.app = electronApp
     Main.app.on("window-all-closed", Main.onWindowAllClosed)
@@ -67,7 +68,17 @@ export default class Main {
     Main.bootServer()
   }
 
+  public static isGraphicalEnvironmentAvailable(): boolean {
+    return !!process.env.DISPLAY
+  }
+
   private static onReady() {
+    log.info("Main.onReady")
+    if (!Main.isGraphicalEnvironmentAvailable()) {
+      log.error("Graphical environment not available ... runing headless")
+      return
+    }
+
     log.info(`onReady: Main.publicRoot ${Main.publicRoot}`)
     Main.mainWindow = new Main.BrowserWindow({
       width: 800,
@@ -96,18 +107,21 @@ export default class Main {
   }
 
   private static onWindowAllClosed() {
+    log.info("Main.onWindowAllClosed")
     if (process.platform !== "darwin" || Main.quitOnCloseOSX) {
       Main.app.quit()
     }
   }
 
   private static onActivate() {
+    log.info("Main.onActivate")
     if (Main.mainWindow === null) {
       Main.onReady()
     }
   }
 
   private static onClose() {
+    log.info("Main.onClose")
     // Dereference the window object.
     //  Main.mainWindow = null
   }
@@ -133,8 +147,11 @@ export default class Main {
       "robotlabxruntime",
       "package.yml"
     )
-    const robotlabxruntimePkg = yaml.parse(fs.readFileSync(runningRobotLabXRuntimeYmlFilename, "utf8"))
-    Main.version = robotlabxruntimePkg.version
+
+    if (fs.existsSync(runningRobotLabXRuntimeYmlFilename)) {
+      Main.version = yaml.parse(fs.readFileSync(runningRobotLabXRuntimeYmlFilename, "utf8"))?.version
+    }
+
     log.info(`bootServer: version ${Main.version}`)
 
     // check if existing resource versino exists
