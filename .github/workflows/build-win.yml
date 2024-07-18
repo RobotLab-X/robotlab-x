@@ -56,9 +56,6 @@ jobs:
           cd server
           yarn test
 
-      - name: Generate package file
-        run: yarn generate-pkg-file
-
       - name: Build the Electron app for Windows
         run: yarn build-win
 

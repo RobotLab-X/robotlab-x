@@ -70,7 +70,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: RobotLab-X-0.9.${{ github.run_number }}.dmg
+          name: RobotLab-X-0.9.${{ github.run_number }}-arm64.dmg
           path: dist/packages/RobotLab-X-0.9.${{ github.run_number }}-arm64.dmg
 
   # release:

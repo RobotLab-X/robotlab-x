@@ -52,9 +52,9 @@ async function generateVersionFile() {
       ...packageData,
       ...versionInfo
     }
-
     // Save the updated data to the output file
     const updatedYaml = yaml.stringify(updatedPackageData)
+    console.log(updatedYaml)
     ensureDirectoryExistence(outputFilePath)
     fs.writeFileSync(outputFilePath, updatedYaml)
     console.log("package.yml file updated successfully")
