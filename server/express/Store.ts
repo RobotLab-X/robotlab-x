@@ -315,28 +315,7 @@ export default class Store {
     this.express.use("/static", express.static(path.join(Main.distRoot, "client", "static")))
     this.express.use("/manifest.json", express.static(path.join(Main.distRoot, "client", "manifest.json")))
 
-    // API routes
-    this.express.use(`${apiPrefix}/*`, (req, res, next) => {
-      log.info(`--> put ${req.originalUrl} ${JSON.stringify(req.body)}`)
-      const serviceData = req.body
-
-      const pathSegments = req.originalUrl.split("/").filter((segment) => segment.length > 0)
-      if (pathSegments.length !== 5) {
-        res.json({
-          error: `invalid path ${req.originalUrl} must follow pattern ${apiPrefix}/{serviceName}/{method}`
-        })
-        return
-      }
-
-      const name = pathSegments[3]
-      const methodName = pathSegments[4]
-      const runtime = RobotLabXRuntime.getInstance()
-      const service = runtime.getService(name)
-      const msg = new Message(name, methodName, serviceData)
-      const ret = this.handleMessage(msg)
-      res.json(ret)
-    })
-
+    // TODO - REMOVE THIS !!! - this.express.use(`${apiPrefix}/*` should handle it
     this.express.use(`${apiPrefix}/runtime/register`, (req, res) => {
       log.info(req.body)
       const serviceData = req.body
@@ -345,6 +324,7 @@ export default class Store {
       res.json(serviceData)
     })
 
+    // TODO - REMOVE THIS !!! - this.express.use(`${apiPrefix}/*` should handle it
     this.express.use(`${apiPrefix}/runtime/registerType`, (req, res) => {
       log.info(req.body)
       const serviceDataType = req.body
@@ -353,6 +333,9 @@ export default class Store {
       res.json(serviceDataType)
     })
 
+    // TODO - make this handle all GET and POST
+    // Make it convert all of them to messages
+    // Implement blocking messages
     this.express.use(`${apiPrefix}/*`, (req, res) => {
       log.info(`--> incoming get ${req.originalUrl}`)
       const pathSegments = req.originalUrl.split("/").filter((segment) => segment.length > 0)
@@ -369,8 +352,12 @@ export default class Store {
         // Return service
         const name = pathSegments[3]
         log.info(`getting service ${name}`)
-        const service = runtime.getService(name)
-        res.json(service)
+        // const service = runtime.getService(name)
+        // res.json(service)
+        const msg = new Message(name, "broadcastState", null)
+        const ret = this.handleMessage(msg)
+        res.json(ret)
+
         return
       }
 
@@ -380,12 +367,16 @@ export default class Store {
         const methodName = pathSegments[4]
         const service = runtime.getService(name)
 
-        const params: any[] = []
+        let params: any[] = []
         // Parameters supplied
         if (pathSegments.length > 5) {
           for (let i = 5; i < pathSegments.length; i++) {
             params.push(JSON.parse(decodeURIComponent(pathSegments[i])))
           }
+        }
+
+        if (req.body) {
+          params = req.body
         }
 
         const msg: Message = new Message(name, methodName, params)
@@ -396,7 +387,6 @@ export default class Store {
       }
 
       log.info(`pathSegments ${pathSegments}`)
-
       res.json(runtime.getRegistry())
     })
 

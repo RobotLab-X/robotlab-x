@@ -75,7 +75,7 @@ export default class Main {
   private static onReady() {
     log.info("Main.onReady")
     if (!Main.isGraphicalEnvironmentAvailable()) {
-      log.error("Graphical environment not available ... runing headless")
+      log.error("Graphical environment not available ... running headless")
       return
     }
 
