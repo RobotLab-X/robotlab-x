@@ -12,18 +12,13 @@ const { app } = require("electron")
 const asar = require("asar")
 const fs = require("fs-extra")
 const minimist = require("minimist")
-
-// require("electron-reload")(__dirname, {
-//   electron: require(`${__dirname}/node_modules/electron`)
-// })
-
 const log = getLogger("ElectronStarter")
 
 export default class Main {
   private static app: Electron.App
   private static BrowserWindow: typeof Electron.BrowserWindow
   public static mainWindow: Electron.BrowserWindow
-  public static isPackaged: boolean = app.isPackaged
+  public static isPackaged: boolean = app?.isPackaged
   // The root directory of the app in both development and production
   public static distRoot: string = null
   // The root directory of the express server in both development and production
@@ -56,15 +51,14 @@ export default class Main {
 
   protected static version: string
 
-  public static main(electronApp: Electron.App, browserWindow: typeof Electron.BrowserWindow) {
+  public static main() {
     log.info("Main.main")
-    Main.BrowserWindow = browserWindow
-    Main.app = electronApp
+    Main.BrowserWindow = Electron.BrowserWindow
+    Main.app = Electron.app
     Main.app.on("window-all-closed", Main.onWindowAllClosed)
     Main.app.on("ready", Main.onReady)
     Main.app.on("activate", Main.onActivate)
     Main.quitOnCloseOSX = true
-    Main.logFilePath = getLogFilePath()
     Main.bootServer()
   }
 
@@ -126,7 +120,13 @@ export default class Main {
     //  Main.mainWindow = null
   }
 
-  private static bootServer() {
+  public static bootServer() {
+    Main.logFilePath = getLogFilePath()
+
+    // TODO - determine if we are running as a Node.js process or an Electron process
+    // set static variables based on the process type
+    // if Node.js process, then we need to extract asar and start the server
+
     log.info("bootServer: starting server")
     log.info(`bootServer: Main.isPackaged == ${Main.isPackaged}`)
     log.info(`bootServer: app.getPath("userData") == ${app.getPath("userData")}`)
@@ -269,4 +269,8 @@ export default class Main {
   }
 } // Main
 
-Main.main(Electron.app, Electron.BrowserWindow)
+if (process.env.ELECTRON_RUN_AS_NODE) {
+  Main.bootServer()
+} else {
+  Main.main()
+}
