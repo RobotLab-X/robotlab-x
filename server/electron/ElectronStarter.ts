@@ -63,7 +63,7 @@ export default class Main {
   }
 
   public static isGraphicalEnvironmentAvailable(): boolean {
-    return !!process.env.DISPLAY
+    return true // !!process.env.DISPLAY
   }
 
   private static onReady() {
