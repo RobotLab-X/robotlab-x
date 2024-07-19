@@ -1,4 +1,4 @@
-name: Linux Build and Package RobotLab-X
+name: Raspi Build and Package RobotLab-X
 
 on:
   push:
