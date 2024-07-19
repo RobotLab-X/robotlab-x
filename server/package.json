@@ -31,6 +31,13 @@
       "installerIcon": "../assets/win/logo.ico",
       "installerHeaderIcon": "../assets/win/logo.ico",
       "deleteAppDataOnUninstall": true
+    },
+    "extraMetadata": {
+      "raspi": {
+        "linux": {
+          "artifactName": "RobotLab-X-${version}-armv7l.${ext}"
+        }
+      }
     }
   },
   "scripts": {
@@ -39,7 +46,7 @@
     "electron-build-mac": "yarn build && yarn copy-public && yarn generate-pkg-file && electron-builder -m",
     "electron-build-win": "yarn build && yarn copy-public && yarn generate-pkg-file && electron-builder -w",
     "electron-build-linux": "yarn build && yarn copy-public && yarn generate-pkg-file && electron-builder -l",
-    "electron-build-raspi": "yarn build && yarn copy-public && yarn generate-pkg-file && electron-builder --armv7l",
+    "electron-build-raspi": "yarn build && yarn copy-public && yarn generate-pkg-file && electron-builder --armv7l --config.extraMetadata.raspi",
     "electron-dev": "nodemon --exec \"yarn run build && cross-env ELECTRON_START_URL=http://localhost:3000 electron --inspect ./dist/electron/ElectronStarter.js\"",
     "watch": "npm-run-all --parallel watch-build watch-static",
     "test": "jest",
