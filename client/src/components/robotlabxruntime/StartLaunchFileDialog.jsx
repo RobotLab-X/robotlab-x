@@ -14,51 +14,47 @@ import {
 import React, { useEffect, useState } from "react"
 import AceEditor from "react-ace"
 import { useStore } from "store/store"
-import { useProcessedMessage } from "../../hooks/useProcessedMessage"
-import useServiceSubscription from "../../store/useServiceSubscription"
 
 // Import Ace build files
 import "ace-builds/src-noconflict/ace"
 import "ace-builds/src-noconflict/ext-language_tools"
 import "ace-builds/src-noconflict/mode-javascript"
-import "ace-builds/src-noconflict/theme-github"
 import "ace-builds/src-noconflict/theme-monokai"
 
-export default function StartLaunchFileDialog({ fullname, open, onClose, launchFiles, onLaunchFileSelect }) {
-  const { subscribeTo, unsubscribeFrom, useMessage, sendTo } = useStore()
+export default function StartLaunchFileDialog({
+  fullname,
+  open,
+  onClose,
+  launchFiles,
+  isExampleFile,
+  onLaunchFileSelect
+}) {
+  const getApiUrl = useStore((state) => state.getApiUrl)
   const [selectedFile, setSelectedFile] = useState(null)
   const [autolaunch, setAutolaunch] = useState(false)
   const [editing, setEditing] = useState(false)
   const [fileContent, setFileContent] = useState("")
 
-  const serviceMsg = useServiceSubscription(fullname, ["getRepo", "getLaunchFiles", "getLaunchFile"])
-  const service = useProcessedMessage(serviceMsg)
-  const launchFileMsg = useMessage(fullname, "getLaunchFile")
-  const launchFile = useProcessedMessage(launchFileMsg)
-
   useEffect(() => {
     if (selectedFile) {
-      sendTo(fullname, "getLaunchFile", selectedFile)
+      let filename = isExampleFile ? `examples/${selectedFile}` : selectedFile
+      filename = encodeURIComponent(filename)
+      const url = `${getApiUrl()}/${fullname}/getLaunchFile/"${filename}"`
+      console.log("Fetching file content from URL:", url)
+      fetch(url)
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`)
+          }
+          return response.json()
+        })
+        .then((data) => {
+          console.log("File content fetched successfully:", data)
+          setFileContent(data.content)
+        })
+        .catch((error) => console.error("Error fetching file content:", error))
     }
-  }, [selectedFile, sendTo, fullname])
-
-  useEffect(() => {
-    if (launchFile) {
-      setFileContent(launchFile)
-    }
-  }, [launchFile])
-
-  useEffect(() => {
-    if (selectedFile && service?.config?.autoLaunch === selectedFile) {
-      setAutolaunch(true)
-    } else {
-      setAutolaunch(false)
-    }
-  }, [selectedFile, service])
-
-  const handleListItemClick = (file) => {
-    setSelectedFile(file)
-  }
+  }, [selectedFile])
 
   const handleEdit = () => {
     if (selectedFile) {
@@ -74,14 +70,37 @@ export default function StartLaunchFileDialog({ fullname, open, onClose, launchF
 
   const handleSave = () => {
     // Save the edited content logic
-    console.log("Saved content:", fileContent)
-    sendTo(fullname, "saveLaunchFile", selectedFile, fileContent)
+    console.log("Saving content for file:", selectedFile)
+    console.log("Content:", fileContent)
+    const url = `/api/v1/services/runtime/saveLaunchFile/${selectedFile}`
+    console.log("Saving file content to URL:", url)
+    fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ content: fileContent })
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        return response.json()
+      })
+      .then((data) => {
+        console.log("File saved successfully:", data)
+      })
+      .catch((error) => console.error("Error saving file:", error))
     setEditing(false)
   }
 
   const handleCancel = () => {
     setEditing(false)
     onClose()
+  }
+
+  const handleFileClick = (file, isExample) => {
+    setSelectedFile(file)
   }
 
   return (
@@ -113,7 +132,7 @@ export default function StartLaunchFileDialog({ fullname, open, onClose, launchF
                     button
                     key={index}
                     selected={selectedFile === file}
-                    onClick={() => handleListItemClick(file)}
+                    onClick={() => handleFileClick(file, false)}
                   >
                     <ListItemText primary={file} />
                   </ListItem>

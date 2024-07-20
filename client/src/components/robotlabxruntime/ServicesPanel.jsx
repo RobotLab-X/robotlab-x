@@ -151,14 +151,14 @@ const ServicesPanel = ({ id, fullname, name }) => {
         open={startExamplesDialogOpen}
         onClose={() => setStartExamplesDialogOpen(false)}
         launchFiles={examples}
-        onExampleSelect={handleLaunchFileSelect}
+        isExampleFile={true}
       />
       <StartLaunchFileDialog
         fullname={fullname}
         open={startLaunchFileDialogOpen}
         onClose={() => setStartLaunchFileDialogOpen(false)}
         launchFiles={launchFiles}
-        onLaunchFileSelect={handleLaunchFileSelect}
+        isExampleFile={false}
       />
       <SaveLaunchFileDialog
         open={saveLaunchFileDialogOpen}
