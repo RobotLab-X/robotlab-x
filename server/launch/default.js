@@ -16,16 +16,9 @@ function generateLaunchDescription() {
     config: { autoLaunch: null, id: "rxl-2", logLevel: "info", port: 3001, connect: [] },
     listeners: {}
   }
-  const ui = {
-    package: "robotlabxui",
-    name: "ui",
-    config: {},
-    listeners: {}
-  }
 
   // Add the node to the launch description
   ld.actions.push(runtime)
-  ld.actions.push(ui)
 
   return ld
 }

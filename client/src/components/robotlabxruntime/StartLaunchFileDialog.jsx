@@ -35,10 +35,10 @@ export default function StartLaunchFileDialog({
   const [editing, setEditing] = useState(false)
   const [fileContent, setFileContent] = useState("")
 
+  // TODO !!! - make this get("saveLaunchFile", filename, content) or put/post("saveLaunchFile", filename, content)
   useEffect(() => {
     if (selectedFile) {
-      let filename = isExampleFile ? `examples/${selectedFile}` : selectedFile
-      filename = encodeURIComponent(filename)
+      const filename = isExampleFile ? `examples%2F${selectedFile}` : selectedFile
       const url = `${getApiUrl()}/${fullname}/getLaunchFile/"${filename}"`
       console.log("Fetching file content from URL:", url)
       fetch(url)
@@ -50,11 +50,15 @@ export default function StartLaunchFileDialog({
         })
         .then((data) => {
           console.log("File content fetched successfully:", data)
-          setFileContent(data.content)
+          setFileContent(data)
         })
         .catch((error) => console.error("Error fetching file content:", error))
     }
-  }, [selectedFile])
+  }, [selectedFile, isExampleFile, getApiUrl, fullname])
+
+  useEffect(() => {
+    console.log("fileContent state updated:", fileContent)
+  }, [fileContent])
 
   const handleEdit = () => {
     if (selectedFile) {
@@ -69,17 +73,16 @@ export default function StartLaunchFileDialog({
   }
 
   const handleSave = () => {
-    // Save the edited content logic
     console.log("Saving content for file:", selectedFile)
     console.log("Content:", fileContent)
-    const url = `/api/v1/services/runtime/saveLaunchFile/${selectedFile}`
+    const url = `${getApiUrl()}/${fullname}/saveLaunchFile`
     console.log("Saving file content to URL:", url)
     fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ content: fileContent })
+      body: JSON.stringify([selectedFile, fileContent])
     })
       .then((response) => {
         if (!response.ok) {
@@ -99,7 +102,7 @@ export default function StartLaunchFileDialog({
     onClose()
   }
 
-  const handleFileClick = (file, isExample) => {
+  const handleFileClick = (file) => {
     setSelectedFile(file)
   }
 
@@ -109,11 +112,15 @@ export default function StartLaunchFileDialog({
       <DialogContent style={editing ? { height: "80vh", padding: 0 } : {}}>
         {editing ? (
           <AceEditor
+            key={selectedFile} // Add key prop to force re-render
             mode="javascript"
             theme="monokai"
             name="ace-editor"
             value={fileContent}
-            onChange={(newValue) => setFileContent(newValue)}
+            onChange={(newValue) => {
+              console.log("Ace Editor content change:", newValue)
+              setFileContent(newValue)
+            }}
             editorProps={{ $blockScrolling: true }}
             setOptions={{
               useWorker: false,
@@ -128,12 +135,7 @@ export default function StartLaunchFileDialog({
             <List>
               {launchFiles &&
                 launchFiles.map((file, index) => (
-                  <ListItem
-                    button
-                    key={index}
-                    selected={selectedFile === file}
-                    onClick={() => handleFileClick(file, false)}
-                  >
+                  <ListItem button key={index} selected={selectedFile === file} onClick={() => handleFileClick(file)}>
                     <ListItemText primary={file} />
                   </ListItem>
                 ))}
