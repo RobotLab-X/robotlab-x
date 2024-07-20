@@ -967,6 +967,30 @@ export default class RobotLabXRuntime extends Service {
     return launchFiles
   }
 
+  getLaunchFile(fileName: string): any {
+    log.info(`getLaunchFile ${fileName}`)
+
+    if (!fileName.toLowerCase().endsWith(".js")) {
+      fileName = fileName + ".js"
+    }
+    const launchDir = path.join(Main.distRoot, path.join("launch", fileName))
+    log.info(`publishLaunchFiles scanning directory ${launchDir}`)
+    const launchFile = fs.readFileSync(launchDir, "utf8")
+    return launchFile
+  }
+
+  getExamples(): string[] {
+    const launchDir = path.join(Main.distRoot, path.join("launch", "examples"))
+    log.info(`publishExamples scanning directory ${launchDir}`)
+    const launchFiles: string[] = []
+    fs.readdirSync(launchDir).forEach((file) => {
+      if (file.endsWith(".js")) {
+        launchFiles.push(file.substring(0, file.length - 3))
+      }
+    })
+    return launchFiles
+  }
+
   setDebug(debug: boolean) {
     log.info(`setting debug: ${debug}`)
     this.debug = debug
@@ -1241,12 +1265,14 @@ export default class RobotLabXRuntime extends Service {
         listeners = {}
       }
 
-      ld.addNode({
-        package: service.typeKey.toLowerCase(),
-        name: service.name,
-        config: service.config,
-        listeners: listeners
-      })
+      if (service.typeKey !== "RobotLabXUI") {
+        ld.addNode({
+          package: service.typeKey.toLowerCase(),
+          name: service.name,
+          config: service.config,
+          listeners: listeners
+        })
+      }
     }
 
     // make launch directory if it doesn't exist

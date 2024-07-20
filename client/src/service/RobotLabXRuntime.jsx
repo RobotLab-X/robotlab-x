@@ -2,50 +2,35 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined"
 import { IconButton, Paper, Tab, Table, TableBody, TableCell, TableRow, Tabs, Typography } from "@mui/material"
-import ConfigurationDialog from "components/ConfigurationDialog"
-import ConnectDialog from "components/ConnectDialog"
-import ServiceDialog from "components/ServiceDialog"
 import ConnectionsPanel from "components/robotlabxruntime/ConnectionsPanel"
 import HostsPanel from "components/robotlabxruntime/HostsPanel"
 import MessageLog from "components/robotlabxruntime/MessageLog"
 import ProcessesPanel from "components/robotlabxruntime/ProcessesPanel"
-import SaveLaunchFileDialog from "components/robotlabxruntime/SaveLaunchFileDialog"
 import ServicesPanel from "components/robotlabxruntime/ServicesPanel"
-import StartLaunchFileDialog from "components/robotlabxruntime/StartLaunchFileDialog"
 import { TabPanel } from "components/robotlabxruntime/TabPanel"
 import { useProcessedMessage } from "hooks/useProcessedMessage"
 import React, { useEffect, useState } from "react"
-import { useStore } from "../store/store"
-import useServiceSubscription from "../store/useServiceSubscription"
+import { useStore } from "store/store"
+import useServiceSubscription from "store/useServiceSubscription"
 
 export default function RobotLabXRuntime({ name, fullname, id }) {
   console.debug(`RobotLabXRuntime ${fullname}`)
 
   const { subscribeTo, unsubscribeFrom, useMessage, sendTo } = useStore()
-  const iconSize = 32
   const registry = useStore((state) => state.registry)
   const getBaseUrl = useStore((state) => state.getBaseUrl)
   const [messageLog, setMessageLog] = useState([])
 
   const newServiceMsg = useMessage(fullname, "registered")
   const repoMsg = useMessage(fullname, "getRepo")
-  const launchFilesMsg = useMessage(fullname, "getLaunchFiles")
 
-  const serviceMsg = useServiceSubscription(fullname, ["getRepo", "getLaunchFiles"])
+  const serviceMsg = useServiceSubscription(fullname, ["getRepo"])
   const service = useProcessedMessage(serviceMsg)
   const repo = useProcessedMessage(repoMsg)
-  const launchFiles = useProcessedMessage(launchFilesMsg)
 
   const imagesUrl = `${getBaseUrl()}/public/images`
 
-  const [open, setOpen] = useState(false)
-  const debug = useStore((state) => state.debug)
-
   const [activeTab, setActiveTab] = useState(0)
-  const [connectDialogOpen, setConnectDialogOpen] = useState(false)
-  const [configurationDialogOpen, setConfigurationDialogOpen] = useState(false)
-  const [startLaunchFileDialogOpen, setStartLaunchFileDialogOpen] = useState(false)
-  const [saveLaunchFileDialogOpen, setSaveLaunchFileDialogOpen] = useState(false)
   const [editMode, setEditMode] = useState(false)
   let addresses = []
 
@@ -67,37 +52,6 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
 
   const handleChange = (event, newValue) => {
     setActiveTab(newValue)
-  }
-
-  const handleStartNewService = () => {
-    console.info("Starting new node...")
-    setOpen(true)
-  }
-
-  const handleStartLaunchFile = () => {
-    console.info("handleStartLaunchFile...")
-    sendTo(fullname, "getLaunchFiles")
-    setStartLaunchFileDialogOpen(true)
-  }
-
-  const handleSaveLaunchFile = () => {
-    console.info("handleSaveLaunchFile...")
-    setSaveLaunchFileDialogOpen(true)
-  }
-
-  const handleLaunchFileSelect = (launchName, autolaunch) => {
-    console.info(`Selected launch file: ${launchName}`)
-    setStartLaunchFileDialogOpen(false)
-    sendTo(fullname, "start", launchName)
-  }
-
-  const handleSave = (filename, autolaunch) => {
-    console.info(`Saving launch file as: ${filename}`)
-    setSaveLaunchFileDialogOpen(false)
-    if (autolaunch) {
-      sendTo(fullname, "applyConfigValue", "autoLaunch", filename)
-    }
-    sendTo(fullname, "saveAll", filename)
   }
 
   useEffect(() => {
@@ -203,13 +157,7 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
         <Tab label={`Connections ${connectionArray.length}`} />
       </Tabs>
       <TabPanel value={activeTab} index={0}>
-        <ServicesPanel
-          iconSize={iconSize}
-          handleStartNewService={handleStartNewService}
-          setConnectDialogOpen={setConnectDialogOpen}
-          handleSaveLaunchFile={handleSaveLaunchFile}
-          handleStartLaunchFile={handleStartLaunchFile}
-        />
+        <ServicesPanel id={id} fullname={fullname} name={name} />
       </TabPanel>
       <TabPanel value={activeTab} index={1}>
         <ProcessesPanel processArray={processArray} imagesUrl={imagesUrl} />
@@ -225,30 +173,7 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
           routeTableArray={routeTableArray}
         />
       </TabPanel>
-      <ConnectDialog
-        id={id}
-        loopbackPort={service?.config?.port}
-        open={connectDialogOpen}
-        onClose={() => setConnectDialogOpen(false)}
-      />
-      {repo && <ServiceDialog packages={repo} fullname={fullname} open={open} setOpen={setOpen} />}
-      <ConfigurationDialog
-        fullname={fullname}
-        open={configurationDialogOpen}
-        onClose={() => setConfigurationDialogOpen(false)}
-      />
-      <StartLaunchFileDialog
-        fullname={fullname}
-        open={startLaunchFileDialogOpen}
-        onClose={() => setStartLaunchFileDialogOpen(false)}
-        launchFiles={launchFiles}
-        onLaunchFileSelect={handleLaunchFileSelect}
-      />
-      <SaveLaunchFileDialog
-        open={saveLaunchFileDialogOpen}
-        onClose={() => setSaveLaunchFileDialogOpen(false)}
-        onSave={handleSave}
-      />
+
       <MessageLog messageLog={messageLog} />
     </>
   )

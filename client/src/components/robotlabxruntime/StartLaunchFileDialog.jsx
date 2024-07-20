@@ -17,10 +17,12 @@ import { useStore } from "store/store"
 import { useProcessedMessage } from "../../hooks/useProcessedMessage"
 import useServiceSubscription from "../../store/useServiceSubscription"
 
-// Dynamically import Ace mode and theme
-const loadAceMode = () => import("ace-builds/src-noconflict/mode-javascript")
-const loadAceTheme = () => import("ace-builds/src-noconflict/theme-github")
-const loadAceExtLanguageTools = () => import("ace-builds/src-noconflict/ext-language_tools")
+// Import Ace build files
+import "ace-builds/src-noconflict/ace"
+import "ace-builds/src-noconflict/ext-language_tools"
+import "ace-builds/src-noconflict/mode-javascript"
+import "ace-builds/src-noconflict/theme-github"
+import "ace-builds/src-noconflict/theme-monokai"
 
 export default function StartLaunchFileDialog({ fullname, open, onClose, launchFiles, onLaunchFileSelect }) {
   const { subscribeTo, unsubscribeFrom, useMessage, sendTo } = useStore()
@@ -33,12 +35,6 @@ export default function StartLaunchFileDialog({ fullname, open, onClose, launchF
   const service = useProcessedMessage(serviceMsg)
   const launchFileMsg = useMessage(fullname, "getLaunchFile")
   const launchFile = useProcessedMessage(launchFileMsg)
-
-  useEffect(() => {
-    loadAceMode()
-    loadAceTheme()
-    loadAceExtLanguageTools()
-  }, [])
 
   useEffect(() => {
     if (selectedFile) {
@@ -88,13 +84,13 @@ export default function StartLaunchFileDialog({ fullname, open, onClose, launchF
   }
 
   return (
-    <Dialog open={open} onClose={handleCancel} maxWidth="md" fullWidth>
+    <Dialog open={open} onClose={handleCancel} maxWidth={editing ? "xl" : "md"} fullWidth>
       <DialogTitle>Select Launch File</DialogTitle>
-      <DialogContent>
+      <DialogContent style={editing ? { height: "80vh", padding: 0 } : {}}>
         {editing ? (
           <AceEditor
             mode="javascript"
-            theme="github"
+            theme="monokai"
             name="ace-editor"
             value={fileContent}
             onChange={(newValue) => setFileContent(newValue)}
@@ -105,7 +101,7 @@ export default function StartLaunchFileDialog({ fullname, open, onClose, launchF
               enableLiveAutocompletion: true,
               enableSnippets: true
             }}
-            style={{ width: "100%", height: "400px" }}
+            style={{ width: "100%", height: "100%" }}
           />
         ) : (
           <>

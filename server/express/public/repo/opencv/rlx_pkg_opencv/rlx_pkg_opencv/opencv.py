@@ -140,7 +140,7 @@ class OpenCV(Service):
         self.capturing = False
         if self.cap:
             # wait for capture to read the last frame
-            sleep(2)
+            sleep(1)
             self.cap.release()
             cv2.destroyAllWindows()
             self.cap = None

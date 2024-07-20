@@ -2,7 +2,6 @@ const { type } = require("os")
 const path = require("path")
 
 function generateLaunchDescription() {
-  // const ld = new LaunchDescription()
   const ld = {
     description: "Generated launch description",
     version: "0.0.1",

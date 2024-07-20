@@ -348,6 +348,7 @@ export default class Store {
 
       const runtime = RobotLabXRuntime.getInstance()
 
+      // service name only - returns service
       if (pathSegments.length === 4) {
         // Return service
         const name = pathSegments[3]
@@ -361,6 +362,10 @@ export default class Store {
         return
       }
 
+      // TODO - method query via http://localhost:3001/api/v1/services/runtime/
+      // with the last parameter being a /
+
+      // at least one parameter
       if (pathSegments.length > 4) {
         // Invoke method
         const name = pathSegments[3]
@@ -375,7 +380,8 @@ export default class Store {
           }
         }
 
-        if (req.body) {
+        // body has precedence over query params, if it exists
+        if (req.body && Object.keys(req.body).length > 0) {
           params = req.body
         }
 

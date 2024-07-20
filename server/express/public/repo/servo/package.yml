@@ -1,5 +1,5 @@
 author: "GroG"
-categories: -"servo"
+categories: ["servo"]
 dependencies: null
 description: "Servo control"
 installed: true
