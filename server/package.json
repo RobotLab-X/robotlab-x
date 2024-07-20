@@ -41,7 +41,7 @@
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig-build.json && cp -rv ./express/framework/*.js ./dist/express/framework && shx cp -rv ./express/framework/*.tpl ./dist/express/framework && mkdir -p ./dist/launch && cp -rv ./launch/* ./dist/launch",
+    "build": "tsc -p tsconfig-build.json && shx cp -rv ./express/framework/*.js ./dist/express/framework && shx cp -rv ./express/framework/*.tpl ./dist/express/framework && shx mkdir -p ./dist/launch && shx cp -rv ./launch/* ./dist/launch",
     "copy-public": "shx cp -rf express/public dist/express",
     "electron-build-mac": "yarn build && yarn copy-public && yarn generate-pkg-file && electron-builder -m",
     "electron-build-win": "yarn build && yarn copy-public && yarn generate-pkg-file && electron-builder -w",
