@@ -18,7 +18,7 @@ import { useProcessedMessage } from "../../hooks/useProcessedMessage"
 import useServiceSubscription from "../../store/useServiceSubscription"
 
 // Dynamically import Ace mode and theme
-const loadAceMode = () => import("ace-builds/src-noconflict/mode-yaml")
+const loadAceMode = () => import("ace-builds/src-noconflict/mode-javascript")
 const loadAceTheme = () => import("ace-builds/src-noconflict/theme-github")
 const loadAceExtLanguageTools = () => import("ace-builds/src-noconflict/ext-language_tools")
 
@@ -35,6 +35,24 @@ export default function StartLaunchFileDialog({ fullname, open, onClose, launchF
   const launchFile = useProcessedMessage(launchFileMsg)
 
   useEffect(() => {
+    loadAceMode()
+    loadAceTheme()
+    loadAceExtLanguageTools()
+  }, [])
+
+  useEffect(() => {
+    if (selectedFile) {
+      sendTo(fullname, "getLaunchFile", selectedFile)
+    }
+  }, [selectedFile, sendTo, fullname])
+
+  useEffect(() => {
+    if (launchFile) {
+      setFileContent(launchFile)
+    }
+  }, [launchFile])
+
+  useEffect(() => {
     if (selectedFile && service?.config?.autoLaunch === selectedFile) {
       setAutolaunch(true)
     } else {
@@ -42,16 +60,8 @@ export default function StartLaunchFileDialog({ fullname, open, onClose, launchF
     }
   }, [selectedFile, service])
 
-  useEffect(() => {
-    loadAceMode()
-    loadAceTheme()
-    loadAceExtLanguageTools()
-  }, [])
-
   const handleListItemClick = (file) => {
     setSelectedFile(file)
-    sendTo(fullname, "getLaunchFile", file)
-    setFileContent(launchFile)
   }
 
   const handleEdit = () => {
@@ -72,72 +82,74 @@ export default function StartLaunchFileDialog({ fullname, open, onClose, launchF
     setEditing(false)
   }
 
+  const handleCancel = () => {
+    setEditing(false)
+    onClose()
+  }
+
   return (
-    <>
-      {JSON.stringify(launchFile)}
-      <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-        <DialogTitle>Select Launch File</DialogTitle>
-        <DialogContent>
-          {editing ? (
-            <AceEditor
-              mode="yaml"
-              theme="github"
-              name="ace-editor"
-              value={fileContent}
-              onChange={(newValue) => setFileContent(newValue)}
-              editorProps={{ $blockScrolling: true }}
-              setOptions={{
-                useWorker: false,
-                enableBasicAutocompletion: true,
-                enableLiveAutocompletion: true,
-                enableSnippets: true
-              }}
-              style={{ width: "100%", height: "400px" }}
-            />
-          ) : (
-            <>
-              <List>
-                {launchFiles &&
-                  launchFiles.map((file, index) => (
-                    <ListItem
-                      button
-                      key={index}
-                      selected={selectedFile === file}
-                      onClick={() => handleListItemClick(file)}
-                    >
-                      <ListItemText primary={file} />
-                    </ListItem>
-                  ))}
-              </List>
-              {selectedFile && (
-                <Tooltip title="Autolaunch this file when RobotLab-X starts">
-                  <FormControlLabel
-                    control={<Checkbox checked={autolaunch} onChange={(e) => setAutolaunch(e.target.checked)} />}
-                    label="Autolaunch"
-                  />
-                </Tooltip>
-              )}
-            </>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={onClose}>Cancel</Button>
-          {editing ? (
-            <Button onClick={handleSave} color="primary">
-              Save
+    <Dialog open={open} onClose={handleCancel} maxWidth="md" fullWidth>
+      <DialogTitle>Select Launch File</DialogTitle>
+      <DialogContent>
+        {editing ? (
+          <AceEditor
+            mode="javascript"
+            theme="github"
+            name="ace-editor"
+            value={fileContent}
+            onChange={(newValue) => setFileContent(newValue)}
+            editorProps={{ $blockScrolling: true }}
+            setOptions={{
+              useWorker: false,
+              enableBasicAutocompletion: true,
+              enableLiveAutocompletion: true,
+              enableSnippets: true
+            }}
+            style={{ width: "100%", height: "400px" }}
+          />
+        ) : (
+          <>
+            <List>
+              {launchFiles &&
+                launchFiles.map((file, index) => (
+                  <ListItem
+                    button
+                    key={index}
+                    selected={selectedFile === file}
+                    onClick={() => handleListItemClick(file)}
+                  >
+                    <ListItemText primary={file} />
+                  </ListItem>
+                ))}
+            </List>
+            {selectedFile && (
+              <Tooltip title="Autolaunch this file when RobotLab-X starts">
+                <FormControlLabel
+                  control={<Checkbox checked={autolaunch} onChange={(e) => setAutolaunch(e.target.checked)} />}
+                  label="Autolaunch"
+                />
+              </Tooltip>
+            )}
+          </>
+        )}
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleCancel}>Cancel</Button>
+        {editing ? (
+          <Button onClick={handleSave} color="primary">
+            Save
+          </Button>
+        ) : (
+          <>
+            <Button onClick={handleEdit} disabled={!selectedFile} color="primary">
+              Edit
             </Button>
-          ) : (
-            <>
-              <Button onClick={handleEdit} disabled={!selectedFile} color="primary">
-                Edit
-              </Button>
-              <Button onClick={handleLaunch} disabled={!selectedFile} color="primary">
-                Launch
-              </Button>
-            </>
-          )}
-        </DialogActions>
-      </Dialog>
-    </>
+            <Button onClick={handleLaunch} disabled={!selectedFile} color="primary">
+              Launch
+            </Button>
+          </>
+        )}
+      </DialogActions>
+    </Dialog>
   )
 }
