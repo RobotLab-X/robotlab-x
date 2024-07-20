@@ -75,6 +75,7 @@ export default function StartLaunchFileDialog({ fullname, open, onClose, launchF
   const handleSave = () => {
     // Save the edited content logic
     console.log("Saved content:", fileContent)
+    sendTo(fullname, "saveLaunchFile", selectedFile, fileContent)
     setEditing(false)
   }
 

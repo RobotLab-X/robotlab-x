@@ -967,6 +967,17 @@ export default class RobotLabXRuntime extends Service {
     return launchFiles
   }
 
+  saveLaunchFile(fileName: string, content: string): void {
+    log.info(`saveLaunchFile ${fileName}`)
+
+    if (!fileName.toLowerCase().endsWith(".js")) {
+      fileName = fileName + ".js"
+    }
+    const launchDir = path.join(Main.distRoot, path.join("launch", fileName))
+    log.info(`saveLaunchFile saving to ${launchDir}`)
+    fs.writeFileSync(launchDir, content, "utf8")
+  }
+
   getLaunchFile(fileName: string): any {
     log.info(`getLaunchFile ${fileName}`)
 
