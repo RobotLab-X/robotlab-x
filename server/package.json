@@ -31,7 +31,8 @@
       "installerIcon": "../assets/win/logo.ico",
       "installerHeaderIcon": "../assets/win/logo.ico",
       "deleteAppDataOnUninstall": true,
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": true,
+      "oneClick": false
     },
     "extraMetadata": {
       "raspi": {
