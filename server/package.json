@@ -30,7 +30,8 @@
     "nsis": {
       "installerIcon": "../assets/win/logo.ico",
       "installerHeaderIcon": "../assets/win/logo.ico",
-      "deleteAppDataOnUninstall": true
+      "deleteAppDataOnUninstall": true,
+      "allowToChangeInstallationDirectory": true
     },
     "extraMetadata": {
       "raspi": {
