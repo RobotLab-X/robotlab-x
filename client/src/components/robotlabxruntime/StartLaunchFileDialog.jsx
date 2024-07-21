@@ -64,7 +64,12 @@ export default function StartLaunchFileDialog({ fullname, open, onClose, launchF
   }
 
   const handleLaunch = () => {
-    sendTo(fullname, "start", selectedFile)
+    if (isExampleFile) {
+      sendTo(fullname, "start", `examples/${selectedFile}`)
+    } else {
+      sendTo(fullname, "start", selectedFile)
+    }
+    onClose()
   }
 
   const handleSave = (filename) => {
@@ -114,7 +119,9 @@ export default function StartLaunchFileDialog({ fullname, open, onClose, launchF
   return (
     <>
       <Dialog open={open} onClose={handleCancel} maxWidth={editing ? "xl" : "md"} fullWidth>
-        <DialogTitle>{selectedFile ? `${selectedFile}` : "Select Launch File"}</DialogTitle>
+        <DialogTitle>
+          {isExampleFile ? "Examples" : "Launch Files"} {selectedFile ? `${selectedFile}` : "Select Launch File"}
+        </DialogTitle>
         <DialogContent style={editing ? { height: "80vh", padding: 0 } : {}}>
           {editing ? (
             <AceEditor
