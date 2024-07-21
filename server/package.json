@@ -34,9 +34,7 @@
     },
     "extraMetadata": {
       "raspi": {
-        "linux": {
-          "artifactName": "RobotLab-X-${version}-armv7l.${ext}"
-        }
+        "artifactName": "RobotLab-X-${version}-armv7l.${ext}"
       }
     }
   },
