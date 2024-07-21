@@ -32,7 +32,7 @@ function generateLaunchDescription() {
     listeners: {}
   }
   const cv1 = {
-    package: "proxy",
+    package: "opencv",
     name: "cv1",
     config: { camera_index: "0", debounce: 24, capture: true },
     listeners: {

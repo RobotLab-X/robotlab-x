@@ -1,5 +1,8 @@
 ## TODO
 
+### Ollama
+* enable streaming as an option
+
 * UI initialization should be
   * add listeners to runtime
   * ask for all service names
@@ -13,6 +16,10 @@
 * fix it and unit test it !!!
 * unit tests
 * Guard against illegal characters in service names - unit test
+
+### Proxy
+* hook connection with isReady
+* soft and hard release
 
 ### Logging
 * each service should have its own statusList, and batch updates in publishStatusList
