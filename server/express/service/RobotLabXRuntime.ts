@@ -580,8 +580,20 @@ export default class RobotLabXRuntime extends Service {
 
       const fullname = `${name}@${id}`
 
-      if (this.getService(fullname)) {
+      let service: Service = this.getService(fullname)
+
+      // service already exists
+      if (service) {
         log.warn(`service ${fullname} already exists`)
+        if (action.config) {
+          // Do not merge - replace
+          // service.config = { ...service.config, ...action.config }
+          // service.config = action.config
+          service.applyConfig(action.config)
+          if (action.listeners) {
+            service.notifyList = listeners
+          }
+        }
         return
       }
 
@@ -597,7 +609,6 @@ export default class RobotLabXRuntime extends Service {
       // and mrl and process exists - then /runtime/start
       log.info(`package.platform: ${pkg.platform}, type: ${serviceType} in ${process.cwd()}`)
       log.info(`starting process ${targetDir}/${pkg.cmd} ${pkg.args}`)
-      let service: Service = null
 
       this.info(`node process ${name} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
       try {

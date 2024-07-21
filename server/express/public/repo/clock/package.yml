@@ -4,6 +4,7 @@ dependencies: null
 description: "A timer for scheduled events"
 installed: true
 license: "MIT"
+online: false
 platform: "node"
 platformVersion: "v20.9.0"
 title: "Clock"
