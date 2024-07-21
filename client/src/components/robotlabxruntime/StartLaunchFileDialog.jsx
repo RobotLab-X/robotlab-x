@@ -108,7 +108,7 @@ export default function StartLaunchFileDialog({
 
   return (
     <Dialog open={open} onClose={handleCancel} maxWidth={editing ? "xl" : "md"} fullWidth>
-      <DialogTitle>Select Launch File</DialogTitle>
+      <DialogTitle>{selectedFile ? `${selectedFile}` : "Select Launch File"}</DialogTitle>
       <DialogContent style={editing ? { height: "80vh", padding: 0 } : {}}>
         {editing ? (
           <AceEditor
@@ -154,9 +154,14 @@ export default function StartLaunchFileDialog({
       <DialogActions>
         <Button onClick={handleCancel}>Cancel</Button>
         {editing ? (
-          <Button onClick={handleSave} color="primary">
-            Save
-          </Button>
+          <>
+            <Button onClick={handleSave} color="primary">
+              Save As
+            </Button>
+            <Button onClick={handleSave} color="primary">
+              Save
+            </Button>
+          </>
         ) : (
           <>
             <Button onClick={handleEdit} disabled={!selectedFile} color="primary">
