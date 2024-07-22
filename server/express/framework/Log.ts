@@ -1,4 +1,3 @@
-import Electron from "electron"
 import fs from "fs"
 import path from "path"
 import winston from "winston"
@@ -38,10 +37,11 @@ const logFormat = winston.format.printf(({ level, message, module }) => {
 
 // Lazy initialization for logFilePath
 export const getLogFilePath = () => {
+  // Root of logging check Main.root where other paths are set
+  // this function gets called before Main.main() so its path needs to be set
+  let root = process.env.ROOT_DIR || process.cwd()
   let logFilePath: string | null = null
-  logFilePath = Electron.app.isPackaged
-    ? path.join(Electron.app.getPath("userData"), "robotlab-x.log") /*prod*/
-    : path.join(process.cwd(), "robotlab-x.log") /*dev*/
+  logFilePath = path.join(root, "robotlab-x.log")
   if (fs.existsSync(logFilePath)) {
     console.log(`${logFilePath} exists. truncating...`)
     fs.writeFileSync(logFilePath, "")

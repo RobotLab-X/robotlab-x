@@ -137,7 +137,6 @@ export default class Main {
     Main.app.setPath("sessionData", Main.root)
     Main.app.setPath("logs", Main.root)
     Main.app.setPath("temp", path.join(Main.root, "tmp"))
-    Main.app.setPath("tmp", path.join(Main.root, "tmp"))
     Main.app.setPath("crashDumps", Main.root)
 
     log.info(`bootServer: root: ${Main.root}`)
