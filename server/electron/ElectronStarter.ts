@@ -18,7 +18,7 @@ export default class Main {
   private static app: Electron.App
   private static BrowserWindow: typeof Electron.BrowserWindow
   public static mainWindow: Electron.BrowserWindow
-  public static isPackaged: boolean = app?.isPackaged
+  public static isPackaged: boolean
   // The root directory of the app in both development and production
   public static distRoot: string = null
   // The root directory of the express server in both development and production
@@ -51,10 +51,16 @@ export default class Main {
 
   protected static version: string
 
+  protected static root: string
+
   public static main() {
     log.info("Main.main")
     Main.BrowserWindow = Electron.BrowserWindow
+    // when running as a service the following line might need to change
+    // assignment of Electron.app to Main.app - we should be done with direct Electron dependencies
     Main.app = Electron.app
+    Main.isPackaged = app?.isPackaged
+
     Main.app.on("window-all-closed", Main.onWindowAllClosed)
     Main.app.on("ready", Main.onReady)
     Main.app.on("activate", Main.onActivate)
@@ -121,21 +127,43 @@ export default class Main {
   }
 
   public static bootServer() {
+    // getPath(name: 'home' | 'appData' | 'userData' | 'sessionData' | 'temp' | 'exe' | 'module' | 'desktop' | 'documents' | 'downloads' | 'music' | 'pictures' | 'videos' | 'recent' | 'logs' | 'crashDumps')
+
+    // if env var or cmdline param CUSTOM_USER_DATA_DIR use that otherwise
+    // root of all is cwd - if "dev/!isPackaged" then cwd is the dist directory
+    Main.root = process.env.ROOT_DIR || process.cwd()
+    Main.app.setPath("appData", Main.root)
+    Main.app.setPath("userData", Main.root)
+    Main.app.setPath("sessionData", Main.root)
+    Main.app.setPath("logs", Main.root)
+    Main.app.setPath("temp", path.join(Main.root, "tmp"))
+    Main.app.setPath("tmp", path.join(Main.root, "tmp"))
+    Main.app.setPath("crashDumps", Main.root)
+
+    log.info(`bootServer: root: ${Main.root}`)
+
+    log.info("bootServer: starting server")
+    Main.app.setAppLogsPath
+    log.info(`bootServer: appData: ${Main.app.getPath("appData")}`)
+    Main.app.setPath("userData", path.join(Main.app.getPath("appData"), "robotlab-x"))
+    log.info(`bootServer: userData: ${Main.app.getPath("userData")}`)
+
+    // Main.app.setPath("userData", path.join(app.getPath("appData"), "robotlab-x"))
+
     Main.logFilePath = getLogFilePath()
 
     // TODO - determine if we are running as a Node.js process or an Electron process
     // set static variables based on the process type
     // if Node.js process, then we need to extract asar and start the server
-
-    log.info("bootServer: starting server")
     log.info(`bootServer: Main.isPackaged == ${Main.isPackaged}`)
-    log.info(`bootServer: app.getPath("userData") == ${app.getPath("userData")}`)
-    let asarPath = Main.isPackaged ? path.join(process.resourcesPath, "app.asar") : null
-    Main.extractPath = path.join(app.getPath("userData"), "resources")
-    log.info(`bootServer: Main.extractPath == ${Main.extractPath} ==`)
     log.info(`bootServer: __dirname == ${__dirname}`)
+    log.info(`bootServer: app.getPath("userData") == ${Main.app.getPath("userData")}`)
+
+    let asarPath = Main.isPackaged ? path.join(process.resourcesPath, "app.asar") : null
+    Main.extractPath = path.join(Main.app.getPath("userData"), "resources")
+
+    log.info(`bootServer: Main.extractPath == ${Main.extractPath} ==`)
     log.info(`bootServer: asarPath == ${asarPath}`)
-    log.info(`bootServer: process.cwd() == ${process.cwd()}`)
 
     // set our version from __dirname (dev mode or asar) - SHOULD EXIST IN ANY CONTEXT !!!
     const runningRobotLabXRuntimeYmlFilename = path.join(
