@@ -70,11 +70,17 @@ jobs:
       - name: List dist/packages contents
         run: ls -l dist/packages
 
-      - name: Upload artifact
+      - name: Upload AppImage artifact
         uses: actions/upload-artifact@v3
         with:
           name: RobotLab-X-0.9.${{ github.run_number }}.AppImage
           path: dist/packages/RobotLab-X-0.9.${{ github.run_number }}.AppImage
+
+      - name: Upload .deb artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: RobotLab-X-0.9.${{ github.run_number }}.deb
+          path: dist/packages/robotlab-x_0.9.${{ github.run_number }}_amd64.deb
 
   # release:
   #   needs: build

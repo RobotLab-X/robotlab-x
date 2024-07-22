@@ -16,6 +16,10 @@
       "output": "../dist/packages"
     },
     "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
       "category": "Development",
       "icon": "../assets/linux/icon.png"
     },
