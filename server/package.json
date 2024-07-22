@@ -1,9 +1,14 @@
 {
-  "name": "robotlab-x-server",
+  "name": "robotlab-x",
   "version": "0.0.0",
-  "description": "A cross platform desktop application for creating and running robots (Server side)",
+  "description": "Modern robotics framework with a focus on visualization",
   "license": "MPL-2.0",
   "main": "./dist/electron/ElectronStarter.js",
+  "homepage": "https://robotlab-x.com",
+  "author": {
+    "name": "GroG",
+    "email": "grog@example.com"
+  },
   "build": {
     "appId": "com.robotlab-x.appId",
     "productName": "RobotLab-X",
@@ -21,7 +26,8 @@
         "deb"
       ],
       "category": "Development",
-      "icon": "../assets/linux/icon.png"
+      "icon": "../assets/linux/icon.png",
+      "maintainer": "GroG <grog@example.com>"
     },
     "mac": {
       "category": "public.app-category.developer-tools",
@@ -61,7 +67,6 @@
     "generate-swagger": "node generate-swagger-paths.js",
     "generate-pkg-file": "node generatePkgFile.js"
   },
-  "author": "GroG",
   "devDependencies": {
     "@microsoft/tsdoc": "^0.15.0",
     "@types/cors": "^2.8.17",
