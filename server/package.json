@@ -27,7 +27,8 @@
       ],
       "category": "Development",
       "icon": "../assets/linux/icon.png",
-      "maintainer": "GroG <grog@example.com>"
+      "maintainer": "GroG <grog@example.com>",
+      "artifactName": "robotlab-x-${version}.${ext}"
     },
     "mac": {
       "category": "public.app-category.developer-tools",
