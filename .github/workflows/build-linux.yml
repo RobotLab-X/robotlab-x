@@ -82,7 +82,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: RobotLab-X-0.9.${{ github.run_number }}.deb
-          path: dist/packages/robotlab-x_0.9.${{ github.run_number }}_amd64.deb
+          path: dist/packages/RobotLab-X-0.9.${{ github.run_number }}.deb
 
   # release:
   #   needs: build
