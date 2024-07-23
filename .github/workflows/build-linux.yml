@@ -66,11 +66,11 @@ jobs:
       - name: Build
         run: yarn build-linux
 
-      - name: Set executable permissions
-        run: chmod +x dist/packages/RobotLab-X-0.9.${{ github.run_number }}.AppImage
-
       - name: List dist/packages contents
         run: ls -l dist/packages
+
+      - name: Set executable permissions
+        run: chmod +x dist/packages/RobotLab-X-0.9.${{ github.run_number }}.AppImage
 
       - name: Upload AppImage artifact
         uses: actions/upload-artifact@v3
