@@ -18,12 +18,11 @@
     ],
     "directories": {
       "buildResources": "../assets",
-      "output": "../dist/packages"
+      "output": "../dist/packages/RobotLab-X-0.0.0"
     },
     "linux": {
       "target": [
-        "AppImage",
-        "deb"
+        "AppImage"
       ],
       "category": "Development",
       "icon": "../assets/linux/icon.png",
@@ -66,6 +65,7 @@
     "build": "tsc -p tsconfig-build.json && shx cp -r ./express/framework/*.js ./dist/express/framework && shx cp -r ./express/framework/*.tpl ./dist/express/framework && shx mkdir -p ./dist/launch && shx cp -r ./launch/* ./dist/launch",
     "copy-public": "shx cp -rf express/public dist/express",
     "prebuild": "node prebuild.js",
+    "postbuild": "node postbuild.js",
     "electron-build-mac": "yarn build && yarn copy-public && yarn generate-pkg-file && electron-builder -m",
     "electron-build-win": "yarn build && yarn copy-public && yarn generate-pkg-file && electron-builder -w",
     "electron-build-linux": "yarn build && yarn copy-public && yarn generate-pkg-file && electron-builder -l",
