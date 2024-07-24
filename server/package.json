@@ -1,5 +1,5 @@
 {
-  "name": "robotlab-x-0.0.0",
+  "name": "robotlab-x",
   "version": "0.0.0",
   "description": "Modern robotics framework with a focus on visualization",
   "license": "MPL-2.0",
@@ -11,7 +11,7 @@
   },
   "build": {
     "appId": "com.robotlab-x.appId",
-    "productName": "RobotLab-X",
+    "productName": "RobotLab-X-0.0.0",
     "extends": null,
     "files": [
       "dist/**/*"
@@ -76,6 +76,7 @@
     "@types/semver": "^7.5.8",
     "@types/uuid": "^9.0.8",
     "@types/ws": "^8.5.10",
+    "openapi-types": "^12.1.3",
     "cross-env": "^7.0.3",
     "electron": "^31.2.1",
     "electron-builder": "^24.13.3",
