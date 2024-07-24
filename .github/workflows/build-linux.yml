@@ -39,7 +39,6 @@ jobs:
         run: |
           BUILD_NUMBER=${{ github.run_number }}
           VERSION="0.9.${BUILD_NUMBER}"
-          PRODUCT_NAME="robotlab-x-${VERSION}"
           echo "Bumping version to $VERSION"
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
@@ -69,8 +68,9 @@ jobs:
       - name: Make version folder and move executable to that folder
         run: mkdir -p artifact/RobotLab-X-0.9.${{ github.run_number }} && mv dist/packages/RobotLab-X-0.9.${{ github.run_number }}.AppImage artifact/RobotLab-X-0.9.${{ github.run_number }}
 
-      - name: Create tarball
-        run: tar -czvf artifact/RobotLab-X-0.9.${{ github.run_number }}.tar.gz -C artifact RobotLab-X-0.9.${{ github.run_number }}
+      # - releases can be tar.gz not artifacts
+      # - name: Create tarball
+      #   run: tar -czvf artifact/RobotLab-X-0.9.${{ github.run_number }}.tar.gz -C artifact RobotLab-X-0.9.${{ github.run_number }}
 
       - name: Upload tarball artifact
         uses: actions/upload-artifact@v3

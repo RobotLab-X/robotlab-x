@@ -44,11 +44,6 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           echo "VERSION=0.9.${{ github.run_number }}" >> $GITHUB_ENV
 
-        # temporarily disabled
-        # git add package.json server/package.json client/package.json
-        # git commit -m "Bump version to $VERSION"
-        # git push origin main
-
       # Run ESLint but ignore errors
       - name: Run ESLint
         run: yarn lint || true
@@ -58,20 +53,31 @@ jobs:
           cd server
           yarn test
 
+      - name: PreBuild
+        run: yarn prebuild
+
       - name: Build
         run: yarn build-linux
-
-      - name: Set executable permissions
-        run: chmod +x dist/packages/RobotLab-X-0.9.${{ github.run_number }}.AppImage
 
       - name: List dist/packages contents
         run: ls -l dist/packages
 
-      - name: Upload artifact
+      - name: Set executable permissions
+        run: chmod +x dist/packages/RobotLab-X-0.9.${{ github.run_number }}.AppImage
+
+      - name: Make version folder and move executable to that folder
+        run: mkdir -p artifact/RobotLab-X-0.9.${{ github.run_number }} && mv dist/packages/RobotLab-X-0.9.${{ github.run_number }}.AppImage artifact/RobotLab-X-0.9.${{ github.run_number }}
+
+      # - releases can be tar.gz not artifacts
+      # - name: Create tarball
+      #   run: tar -czvf artifact/RobotLab-X-0.9.${{ github.run_number }}.tar.gz -C artifact RobotLab-X-0.9.${{ github.run_number }}
+
+      - name: Upload tarball artifact
         uses: actions/upload-artifact@v3
         with:
           name: RobotLab-X-0.9.${{ github.run_number }}.AppImage
-          path: dist/packages/RobotLab-X-0.9.${{ github.run_number }}.AppImage
+          path: artifact
+          retention-days: 5
 
   # release:
   #   needs: build
