@@ -10,7 +10,7 @@
     "email": "grog@example.com"
   },
   "build": {
-    "appId": "com.robotlab-x.appId",
+    "appId": "com.robotlab-x-0.0.0",
     "productName": "RobotLab-X-0.0.0",
     "extends": null,
     "files": [
