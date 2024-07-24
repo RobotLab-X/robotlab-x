@@ -75,8 +75,8 @@ jobs:
       - name: Upload tarball artifact
         uses: actions/upload-artifact@v3
         with:
-          name: RobotLab-X-0.9.${{ github.run_number }}
-          path: artifact/RobotLab-X-0.9.${{ github.run_number }}.tar.gz
+          name: RobotLab-X-0.9.${{ github.run_number }}.AppImage
+          path: artifact
           retention-days: 5
 
       # Uncomment the following lines to upload the .deb artifact
