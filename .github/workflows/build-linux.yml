@@ -45,11 +45,6 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           echo "VERSION=0.9.${{ github.run_number }}" >> $GITHUB_ENV
 
-        # temporarily disabled
-        # git add package.json server/package.json client/package.json
-        # git commit -m "Bump version to $VERSION"
-        # git push origin main
-
       # Run ESLint but ignore errors
       - name: Run ESLint
         run: yarn lint || true
@@ -79,13 +74,16 @@ jobs:
         with:
           name: RobotLab-X-0.9.${{ github.run_number }}
           path: RobotLab-X-0.9.${{ github.run_number }}
+          retention-days: 5
 
+      # Uncomment the following lines to upload the .deb artifact
       # - name: Upload .deb artifact
       #   uses: actions/upload-artifact@v3
       #   with:
       #     name: RobotLab-X-0.9.${{ github.run_number }}.deb
       #     path: dist/packages/RobotLab-X-0.9.${{ github.run_number }}.deb
 
+  # Uncomment the following lines to enable the release step
   # release:
   #   needs: build
   #   runs-on: ubuntu-latest
