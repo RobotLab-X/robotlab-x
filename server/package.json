@@ -23,7 +23,8 @@
     "linux": {
       "target": [
         "AppImage"
-      ]
+      ],
+      "artifactName": "RobotLab-X-0.0.0.${ext}"
     },
     "mac": {
       "category": "public.app-category.developer-tools",
