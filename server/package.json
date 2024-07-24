@@ -1,5 +1,5 @@
 {
-  "name": "robotlab-x",
+  "name": "robotlab-x-0.0.0",
   "version": "0.0.0",
   "description": "Modern robotics framework with a focus on visualization",
   "license": "MPL-2.0",
@@ -7,7 +7,7 @@
   "homepage": "https://robotlab-x.com",
   "author": {
     "name": "GroG",
-    "email": "grog@example.com"
+    "email": "grog@robotlab-x.com"
   },
   "build": {
     "appId": "com.robotlab-x-0.0.0",
@@ -27,11 +27,11 @@
       ],
       "category": "Development",
       "icon": "../assets/linux/icon.png",
-      "maintainer": "GroG <grog@example.com>",
+      "maintainer": "GroG <grog@robotlab-x.com>",
       "artifactName": "RobotLab-X-0.0.0.${ext}",
       "executableName": "RobotLab-X-0.0.0",
       "desktop": {
-        "Name": "RobotLab-X",
+        "Name": "RobotLab-X-0.0.0",
         "Comment": "Modern robotics framework with a focus on visualization",
         "Icon": "icon",
         "Terminal": "false",
