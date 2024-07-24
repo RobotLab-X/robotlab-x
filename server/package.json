@@ -28,7 +28,16 @@
       "category": "Development",
       "icon": "../assets/linux/icon.png",
       "maintainer": "GroG <grog@example.com>",
-      "artifactName": "RobotLab-X-${version}.${ext}"
+      "artifactName": "RobotLab-X-${version}.${ext}",
+      "desktop": {
+        "Name": "RobotLab-X",
+        "Comment": "Modern robotics framework with a focus on visualization",
+        "Exec": "robotlab-x",
+        "Icon": "icon",
+        "Terminal": "false",
+        "Type": "Application",
+        "Categories": "Robotics;Development;Utility;"
+      }
     },
     "mac": {
       "category": "public.app-category.developer-tools",
