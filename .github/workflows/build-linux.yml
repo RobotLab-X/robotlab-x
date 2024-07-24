@@ -69,11 +69,14 @@ jobs:
       - name: Make version folder and move executable to that folder
         run: mkdir -p artifact/RobotLab-X-0.9.${{ github.run_number }} && mv dist/packages/RobotLab-X-0.9.${{ github.run_number }}.AppImage artifact/RobotLab-X-0.9.${{ github.run_number }}
 
-      - name: Upload AppImage artifact
+      - name: Create tarball
+        run: tar -czvf artifact/RobotLab-X-0.9.${{ github.run_number }}.tar.gz -C artifact RobotLab-X-0.9.${{ github.run_number }}
+
+      - name: Upload tarball artifact
         uses: actions/upload-artifact@v3
         with:
-          name: RobotLab-X-0.9.${{ github.run_number }}.AppImage
-          path: artifact
+          name: RobotLab-X-0.9.${{ github.run_number }}
+          path: artifact/RobotLab-X-0.9.${{ github.run_number }}.tar.gz
           retention-days: 5
 
       # Uncomment the following lines to upload the .deb artifact
