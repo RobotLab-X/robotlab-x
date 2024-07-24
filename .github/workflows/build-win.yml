@@ -43,9 +43,6 @@ jobs:
           $BUILD_NUMBER = ${{ github.run_number }}
           $VERSION = "0.9.$BUILD_NUMBER"
           Write-Host "Bumping version to $VERSION"
-          npx json -I -f package.json -e "this.version='$VERSION'"
-          npx json -I -f server/package.json -e "this.version='$VERSION'"
-          npx json -I -f client/package.json -e "this.version='$VERSION'"
           echo "VERSION=0.9.${{ github.run_number }}" >> $GITHUB_ENV
 
       - name: Print server/package.json

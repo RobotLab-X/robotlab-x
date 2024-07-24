@@ -40,9 +40,6 @@ jobs:
           BUILD_NUMBER=${{ github.run_number }}
           VERSION="0.9.${BUILD_NUMBER}"
           echo "Bumping version to $VERSION"
-          jq --arg VERSION "$VERSION" '.version = $VERSION' package.json > package.json.tmp && mv package.json.tmp package.json
-          jq --arg VERSION "$VERSION" '.version = $VERSION' server/package.json > server/package.json.tmp && mv server/package.json.tmp server/package.json
-          jq --arg VERSION "$VERSION" '.version = $VERSION' client/package.json > client/package.json.tmp && mv client/package.json.tmp client/package.json
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           echo "VERSION=0.9.${{ github.run_number }}" >> $GITHUB_ENV
