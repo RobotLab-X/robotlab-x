@@ -64,14 +64,11 @@ jobs:
       - name: List dist/packages contents
         run: ls -l dist/packages
 
-      - name: Make version folder and move executable to that folder
-        run: mkdir -p artifact/RobotLab-X-0.9.${{ github.run_number }} && mv dist/packages/RobotLab-X-0.9.${{ github.run_number }}-arm64.dmg artifact/RobotLab-X-0.9.${{ github.run_number }}
-
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: RobotLab-X-0.9.${{ github.run_number }}-arm64.dmg
-          path: artifact
+          path: dist/packages/RobotLab-X-0.9.${{ github.run_number }}-arm64.dmg
 
   # release:
   #   needs: build

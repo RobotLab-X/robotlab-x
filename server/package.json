@@ -28,8 +28,7 @@
     },
     "mac": {
       "category": "public.app-category.developer-tools",
-      "icon": "../assets/mac/icon.png",
-      "artifactName": "RobotLab-X-0.0.0.dmg"
+      "icon": "../assets/mac/icon.png"
     },
     "win": {
       "icon": "../assets/win/icon.png",
