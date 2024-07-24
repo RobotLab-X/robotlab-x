@@ -69,14 +69,14 @@ jobs:
         run: dir dist\\packages
 
       # - name: Make version folder and move executable to that folder
-      #   run: mkdir -p artifact/RobotLab-X-0.9.${{ github.run_number }} && mv dist/packages/RobotLab-X-Stetup-0.9.${{ github.run_number }}.exe artifact/RobotLab-X-0.9.${{ github.run_number }}
+      #   run: mkdir -p artifact/RobotLab-X-0.9.${{ github.run_number }} && mv dist/packages/RobotLab-X-Setup-0.9.${{ github.run_number }}.exe artifact/RobotLab-X-0.9.${{ github.run_number }}
 
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: RobotLab-X-Setupe-0.9.${{ github.run_number }}.exe
-          path: dist/packages/RobotLab-X-Stetup-0.9.${{ github.run_number }}.exe
+          name: RobotLab-X-Setup-0.9.${{ github.run_number }}.exe
+          path: dist/packages/RobotLab-X-Setup-0.9.${{ github.run_number }}.exe
           retention-days: 5
 
 
