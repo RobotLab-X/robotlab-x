@@ -69,7 +69,7 @@ jobs:
         run: dir dist\\packages
 
       - name: Make version folder and move executable to that folder
-        run: mkdir /p artifact/RobotLab-X-0.9.${{ github.run_number }} && mv dist/packages/RobotLab-X-0.9.${{ github.run_number }}.exe artifact/RobotLab-X-0.9.${{ github.run_number }}
+        run: mkdir -p artifact/RobotLab-X-0.9.${{ github.run_number }} && mv dist/packages/RobotLab-X-0.9.${{ github.run_number }}.exe artifact/RobotLab-X-0.9.${{ github.run_number }}
 
 
       - name: Upload artifact
