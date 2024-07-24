@@ -35,7 +35,12 @@
       "icon": "../assets/win/icon.png",
       "artifactName": "RobotLab-X-0.0.0.exe",
       "target": [
-        "portable"
+        {
+          "target": "portable",
+          "portable": {
+            "unpackDirName": "."
+          }
+        }
       ]
     },
     "extraMetadata": {

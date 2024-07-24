@@ -75,7 +75,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: RobotLab-X-Setup-0.9.${{ github.run_number }}.exe
+          name: RobotLab-X-0.9.${{ github.run_number }}.exe
           path: artifact
           retention-days: 5
 
