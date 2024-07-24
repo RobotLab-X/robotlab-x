@@ -71,17 +71,20 @@ jobs:
       - name: Set executable permissions
         run: chmod +x dist/packages/RobotLab-X-0.9.${{ github.run_number }}.AppImage
 
+      - name: Move to version folder
+        run: mkdir RobotLab-X-0.9.${{ github.run_number }} && mv dist/packages/RobotLab-X-0.9.${{ github.run_number }}.AppImage RobotLab-X-0.9.${{ github.run_number }}
+
       - name: Upload AppImage artifact
         uses: actions/upload-artifact@v3
         with:
           name: RobotLab-X-0.9.${{ github.run_number }}.AppImage
-          path: dist/packages/RobotLab-X-0.9.${{ github.run_number }}.AppImage
+          path: RobotLab-X-0.9.${{ github.run_number }}
 
-      - name: Upload .deb artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: RobotLab-X-0.9.${{ github.run_number }}.deb
-          path: dist/packages/RobotLab-X-0.9.${{ github.run_number }}.deb
+      # - name: Upload .deb artifact
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: RobotLab-X-0.9.${{ github.run_number }}.deb
+      #     path: dist/packages/RobotLab-X-0.9.${{ github.run_number }}.deb
 
   # release:
   #   needs: build

@@ -18,7 +18,7 @@
     ],
     "directories": {
       "buildResources": "../assets",
-      "output": "../dist/packages/RobotLab-X-0.0.0"
+      "output": "../dist/packages"
     },
     "linux": {
       "target": [
