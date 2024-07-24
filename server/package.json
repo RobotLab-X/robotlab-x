@@ -33,15 +33,15 @@
     },
     "win": {
       "icon": "../assets/win/icon.png",
-      "artifactName": "RobotLab-X-0.0.0.exe",
-      "target": [
-        {
-          "target": "portable",
-          "portable": {
-            "unpackDirName": "."
-          }
-        }
-      ]
+      "artifactName": "RobotLab-X-Setup-0.0.0.${ext}"
+    },
+    "nsis": {
+      "installerIcon": "../assets/win/logo.ico",
+      "installerHeaderIcon": "../assets/win/logo.ico",
+      "deleteAppDataOnUninstall": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "oneClick": false
     },
     "extraMetadata": {
       "raspi": {
