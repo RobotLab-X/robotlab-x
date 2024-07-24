@@ -24,15 +24,16 @@
       "target": [
         "AppImage"
       ],
-      "artifactName": "RobotLab-X-0.0.0.${ext}"
+      "artifactName": "RobotLab-X-0.0.0.AppImage"
     },
     "mac": {
       "category": "public.app-category.developer-tools",
-      "icon": "../assets/mac/icon.png"
+      "icon": "../assets/mac/icon.png",
+      "artifactName": "RobotLab-X-0.0.0.dmg"
     },
     "win": {
       "icon": "../assets/win/icon.png",
-      "artifactName": "RobotLab-X-0.0.0.${ext}",
+      "artifactName": "RobotLab-X-0.0.0.exe",
       "target": [
         "portable"
       ]
@@ -40,7 +41,7 @@
     "extraMetadata": {
       "raspi": {
         "linux": {
-          "artifactName": "RobotLab-X-0.0.0-armv7l.${ext}"
+          "artifactName": "RobotLab-X-0.0.0-armv7l.AppImage"
         }
       }
     }
