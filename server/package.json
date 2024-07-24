@@ -23,20 +23,7 @@
     "linux": {
       "target": [
         "AppImage"
-      ],
-      "category": "Development",
-      "icon": "../assets/linux/icon.png",
-      "maintainer": "GroG <grog@robotlab-x.com>",
-      "artifactName": "RobotLab-X-0.0.0.${ext}",
-      "executableName": "RobotLab-X-0.0.0",
-      "desktop": {
-        "Name": "RobotLab-X-0.0.0",
-        "Comment": "Modern robotics framework with a focus on visualization",
-        "Icon": "icon",
-        "Terminal": "false",
-        "Type": "Application",
-        "Categories": "Robotics;Development;Utility;"
-      }
+      ]
     },
     "mac": {
       "category": "public.app-category.developer-tools",
@@ -44,14 +31,10 @@
     },
     "win": {
       "icon": "../assets/win/icon.png",
-      "artifactName": "RobotLab-X-Setup-0.0.0.${ext}"
-    },
-    "nsis": {
-      "installerIcon": "../assets/win/logo.ico",
-      "installerHeaderIcon": "../assets/win/logo.ico",
-      "deleteAppDataOnUninstall": true,
-      "allowToChangeInstallationDirectory": true,
-      "oneClick": false
+      "artifactName": "RobotLab-X-0.0.0.${ext}",
+      "target": [
+        "portable"
+      ]
     },
     "extraMetadata": {
       "raspi": {
