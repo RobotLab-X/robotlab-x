@@ -28,11 +28,11 @@
       "category": "Development",
       "icon": "../assets/linux/icon.png",
       "maintainer": "GroG <grog@example.com>",
-      "artifactName": "RobotLab-X-${version}.${ext}",
+      "artifactName": "RobotLab-X-0.0.0.${ext}",
+      "executableName": "RobotLab-X-0.0.0",
       "desktop": {
         "Name": "RobotLab-X",
         "Comment": "Modern robotics framework with a focus on visualization",
-        "Exec": "robotlab-x",
         "Icon": "icon",
         "Terminal": "false",
         "Type": "Application",
@@ -45,7 +45,7 @@
     },
     "win": {
       "icon": "../assets/win/icon.png",
-      "artifactName": "RobotLab-X-Setup-${version}.${ext}"
+      "artifactName": "RobotLab-X-Setup-0.0.0.${ext}"
     },
     "nsis": {
       "installerIcon": "../assets/win/logo.ico",
@@ -57,7 +57,7 @@
     "extraMetadata": {
       "raspi": {
         "linux": {
-          "artifactName": "RobotLab-X-${version}-armv7l.${ext}"
+          "artifactName": "RobotLab-X-0.0.0-armv7l.${ext}"
         }
       }
     }
