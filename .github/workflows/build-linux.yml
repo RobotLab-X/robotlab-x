@@ -59,7 +59,7 @@ jobs:
           cd server
           yarn test
 
-      - name: Build
+      - name: PreBuild
         run: yarn prebuild
 
       - name: Build
@@ -77,7 +77,7 @@ jobs:
       - name: Upload AppImage artifact
         uses: actions/upload-artifact@v3
         with:
-          name: RobotLab-X-0.9.${{ github.run_number }}.AppImage
+          name: RobotLab-X-0.9.${{ github.run_number }}
           path: RobotLab-X-0.9.${{ github.run_number }}
 
       # - name: Upload .deb artifact
