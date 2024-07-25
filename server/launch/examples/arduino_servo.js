@@ -8,13 +8,6 @@ function generateLaunchDescription() {
     actions: []
   }
 
-  // Create a node with parameters and remappings
-  const runtime = {
-    package: "robotlabxruntime",
-    name: "runtime",
-    config: { autoLaunch: null, id: "rxl-2", logLevel: "info", port: 3001, connect: [] },
-    listeners: {}
-  }
   const arduino = {
     package: "arduino",
     name: "arduino",
@@ -43,7 +36,6 @@ function generateLaunchDescription() {
   }
 
   // Add the node to the launch description
-  ld.actions.push(runtime)
   ld.actions.push(arduino)
   ld.actions.push(s1)
 

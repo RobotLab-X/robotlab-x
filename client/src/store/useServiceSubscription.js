@@ -6,6 +6,10 @@ const useServiceSubscription = (fullname, additionalSubscriptions = []) => {
   const { subscribeTo, unsubscribeFrom, useMessage, sendTo } = useStore()
   const serviceMsg = useMessage(fullname, "broadcastState")
 
+  if (!fullname){
+    console.error('fullname null in useServiceSubscription!')
+  }
+
   useEffect(() => {
     // Subscribe to broadcastState and any additional topics
     subscribeTo(fullname, "broadcastState")

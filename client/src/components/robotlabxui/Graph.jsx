@@ -52,7 +52,7 @@ const Graph = ({ nodes, links, onNodeClick, onNodeRightClick, imageCache, setIma
       linkDirectionalParticles={1}
       linkDirectionalParticleSpeed={0.01}
       linkDirectionalParticleWidth={2}
-      nodeRelSize={10}
+      nodeRelSize={8}
       nodeCanvasObject={(node, ctx, globalScale) => {
         const drawImage = (img, node) => {
           const size = 12

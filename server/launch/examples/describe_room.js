@@ -10,12 +10,6 @@ function generateLaunchDescription() {
   }
 
   // Create a node with parameters and remappings
-  const runtime = {
-    package: "robotlabxruntime",
-    name: "runtime",
-    config: { autoLaunch: null, id: "rxl-2", logLevel: "info", port: 3001, connect: [] },
-    listeners: {}
-  }
   const llava = {
     package: "ollama",
     name: "llava",
@@ -41,7 +35,6 @@ function generateLaunchDescription() {
   }
 
   // Add the node to the launch description
-  ld.actions.push(runtime)
   ld.actions.push(llava)
   ld.actions.push(cv1)
 

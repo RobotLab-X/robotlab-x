@@ -1239,6 +1239,11 @@ export default class RobotLabXRuntime extends Service {
       //   continue
       // }
 
+      if (service.typeKey === "RobotLabXRuntime") {
+        // immutable
+        continue
+      }
+
       // FIXME - responsible for local proxies, but not remote proxies,
       // nor connected services - how to distinguish ?
 

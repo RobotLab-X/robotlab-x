@@ -20,7 +20,6 @@ const Nodes = () => {
   const [imageCache, setImageCache] = useState({}) // State to cache images
   const [rightClickPosition, setRightClickPosition] = useState(null) // State for right-click position
   const [isContextMenuVisible, setIsContextMenuVisible] = useState(false) // State for context menu visibility
-  const [currentNodeId, setCurrentNodeId] = useState(null) // State for the current node ID
   const [method1, setMethod1] = useState(null)
   const [service1, setService1] = useState(null)
   const [method2, setMethod2] = useState(null)
@@ -31,6 +30,7 @@ const Nodes = () => {
   const { useMessage, sendTo } = useStore()
   const serviceArray = Object.values(registry)
   const defaultRemoteId = useStore((state) => state.defaultRemoteId)
+  const [currentNodeId, setCurrentNodeId] = useState(`runtime@${defaultRemoteId}`) // State for the current node ID
   const serviceMsg = useServiceSubscription(`runtime@${defaultRemoteId}`, [])
   const service = useProcessedMessage(serviceMsg)
   const publishMethods = useServiceMethods(currentNodeId)

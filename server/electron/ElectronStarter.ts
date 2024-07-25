@@ -131,7 +131,7 @@ export default class Main {
 
     // if env var or cmdline param CUSTOM_USER_DATA_DIR use that otherwise
     // root of all is cwd - if "dev/!isPackaged" then cwd is the dist directory
-    Main.root = process.env.ROOT_DIR || process.cwd()
+    Main.root = process.env.ROOT_DIR || (Main.isPackaged ? process.cwd() : path.join(process.cwd(), "dist"))
     Main.app.setPath("appData", Main.root)
     Main.app.setPath("userData", Main.root)
     Main.app.setPath("sessionData", Main.root)

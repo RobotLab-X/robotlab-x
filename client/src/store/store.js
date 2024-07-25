@@ -131,7 +131,7 @@ const store = (set, get) => ({
    */
   statusList: [],
 
-  updateRegistryOnRegistered: (data) =>
+  updateRegistryOnRegistered: (data) => {
     set((state) => {
       const key = data.name + "@" + data.id
       return {
@@ -140,7 +140,8 @@ const store = (set, get) => ({
           [key]: data
         }
       }
-    }),
+    })
+  },
 
   updateServicesOnBroadcastState: (data) =>
     set((state) => {
@@ -251,7 +252,9 @@ const store = (set, get) => ({
 
       // XXX GOOD DEBUGGING
       // console.info(`---> ${msg.name}.${msg.method} ${JSON.stringify(msg.data)}`)
-      console.info(`---> ${msg.name}.${msg.method} `)
+      let remoteKey = `${msg.sender}.${msg.method}`
+
+      console.info(`---> ${msg.name}.${msg.method} storing msg ${remoteKey}`)
 
       try {
         let key = msg.name + "." + msg.method
@@ -281,12 +284,10 @@ const store = (set, get) => ({
           get().updateServicesOnBroadcastState(msg.data[0])
         }
 
-        let remoteKey = `${msg.sender}.${msg.method}`
-
         // equivalent of MQTT RETAIN
         // store the message
         // console.info(`storing message ${remoteKey} ${JSON.stringify(msg)}`)
-        console.info(`storing message ${remoteKey}`)
+        // console.info(`storing message ${remoteKey}`)
 
         set((state) => ({
           messages: {
@@ -332,10 +333,18 @@ const store = (set, get) => ({
 
   // FIXME no need to double encode
   sendMessage: (msg) => {
+    if (!msg.sender) {
+      msg.sender = `${get().name}@${get().id}`
+    }
+
     const json = JSON.stringify(msg)
 
     // GOOD DEBUGGING
-    console.info(`<-- ${msg.name}.${msg.method} ${JSON.stringify(msg.data)}`)
+    if (msg.data && msg.data.length > 0) {
+      console.info(`<-- ${msg.name}.${msg.method} ${JSON.stringify(msg.data)}`)
+    } else {
+      console.info(`<-- ${msg.name}.${msg.method}`)
+    }
     // msg.encoding = "json"
     // if (msg.data) {
     //   for (let i = 0; i < msg.data.length; i++) {
@@ -347,6 +356,7 @@ const store = (set, get) => ({
   },
 
   sendTo: function (name, method) {
+    name = get().getFullName(name)
     var args = Array.prototype.slice.call(arguments, 2)
     var msg = get().createMessage(name, method, args)
     // msg.sendingMethod = "sendTo"
@@ -369,8 +379,16 @@ const store = (set, get) => ({
   },
 
   getFullName: (name) => {
-    // FIXME - fix correctly
-    return name
+    if (!name) {
+      return null
+    }
+
+    const atIndex = name.lastIndexOf("@")
+    if (atIndex !== -1) {
+      return name
+    }
+
+    return `${name}@${get().defaultRemoteId}`
   },
 
   useMessage: (fullname, method) => {

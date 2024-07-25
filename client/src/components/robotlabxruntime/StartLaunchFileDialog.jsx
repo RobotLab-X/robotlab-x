@@ -54,7 +54,7 @@ export default function StartLaunchFileDialog({ fullname, open, onClose, launchF
   }, [selectedFile, isExampleFile, getApiUrl, fullname])
 
   useEffect(() => {
-    console.log("fileContent state updated:", fileContent)
+    // console.log("fileContent state updated:", fileContent)
   }, [fileContent])
 
   const handleEdit = () => {

@@ -227,7 +227,7 @@ export default class Service implements Gateway {
 
       if (msg.data && msg.data.length > 0) {
         // log.info(`--> ${msg.sender} --> ${msg.name}.${msg.method}(${JSON.stringify(msg.data)})`)
-        if (msg.method === "addListener") {
+        if (msg.method === "addListener" || msg.method === "removeListener") {
           log.info(`--> ${msg.sender} --> ${msg.name}.${msg.method}(${JSON.stringify(msg.data)})`)
         } else {
           log.info(`--> ${msg.sender} --> ${msg.name}.${msg.method}(...)`)
@@ -258,7 +258,7 @@ export default class Service implements Gateway {
         // const json = JSON.stringify(msg)
         log.info(`<-- ${msgFullName}.${msg.method} <-- ${msg.sender}.${msg.method}`)
         // FIXME bork'd - need state information regarding connectivity of process/service, and its an "array" of connections
-        log.info(`connectionImpl / connections ${[...runtime.getClients().keys()]} `)
+        // log.info(`connectionImpl / connections ${[...runtime.getClients().keys()]} `)
 
         // fine the gateway for the message's remoteId
         let gateway: Gateway = runtime.getGateway(msgId)
@@ -266,6 +266,8 @@ export default class Service implements Gateway {
           log.error(`NO GATEWAY for remoteId ${msgId}`)
           return null
         }
+
+        log.info(`gateway ${gateway.fullname} handling msg for id ${msgId}`)
 
         // TODO - implement synchronous blocking
         let blockingObject = gateway.sendRemote(msg)

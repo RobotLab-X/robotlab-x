@@ -58,10 +58,10 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
     subscribeTo(fullname, "registered")
     sendTo(fullname, "getRepo")
     sendTo(fullname, "getLaunchFiles")
-
-    return () => {
-      unsubscribeFrom(fullname, "registered")
-    }
+    // why would you do this ?
+    // return () => {
+    //   unsubscribeFrom(fullname, "registered")
+    // }
   }, [subscribeTo, unsubscribeFrom, fullname, sendTo])
 
   useEffect(() => {

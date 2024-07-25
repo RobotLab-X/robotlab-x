@@ -193,8 +193,9 @@ const ServicePage = ({ fullname, name, id }) => {
           </Button>
         </DialogActions>
       </Dialog>
-
-      <PkgDialog dialogOpen={pkgDialogOpen} handleDialogClose={handlePkgDialogClose} fullname={service?.fullname} />
+      {service && (
+        <PkgDialog dialogOpen={pkgDialogOpen} handleDialogClose={handlePkgDialogClose} fullname={service.fullname} />
+      )}
     </div>
   )
 }
