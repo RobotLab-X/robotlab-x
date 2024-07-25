@@ -95,9 +95,9 @@ export default class Main {
     // FIXME - startUrl is not correct when packaged
     log.info(`onReady: Main.startUrl == ${Main.startUrl}`)
     Main.mainWindow.loadURL(Main.startUrl)
-    if (!Main.isPackaged) {
-      Main.mainWindow.webContents.openDevTools()
-    }
+    // if (!Main.isPackaged) {
+    //   Main.mainWindow.webContents.openDevTools()
+    // }
 
     Main.mainWindow.on("closed", Main.onClose)
 
