@@ -187,6 +187,18 @@ export default class Store {
         // NOT REMOVING CONNECTION TO TEST FROM PYTHON SIDE
         // runtime.removeConnection(gatewayId)
         runtime.updateConnection(gatewayId, "disconnected")
+
+        // update all services belonging to this id and connection
+        runtime.getServiceNames().forEach((serviceName: string) => {
+          const service = runtime.getService(serviceName)
+          if (service?.id === gatewayId) {
+            service.invoke("onConnectionClosed")
+            // this removes all services associated with this connection id
+            // RobotLabXRuntime.getInstance().removeConnection(gatewayId)
+          }
+        })
+        RobotLabXRuntime.getInstance().setConnectionImpl(gatewayId, null)
+
         runtime.invoke("broadcastState")
       })
 

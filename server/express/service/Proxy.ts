@@ -29,6 +29,8 @@ export default class Proxy extends Service {
    * This is the type of the service that the proxy is proxying
    *
    */
+
+  // FIXEM - remove use pkg.proxyTypeKey
   public proxyTypeKey: string = null
 
   protected envName = ".venv"
@@ -71,13 +73,12 @@ export default class Proxy extends Service {
     public hostname: string
   ) {
     super(id, name, typeKey, version, hostname)
-    this.envPath = path.join(Main.publicRoot, "repo", this.typeKey.toLowerCase())
-    // this.envPath = path.join(Main.publicRoot, "repo", this.proxyTypeKey.toLowerCase())
   }
 
   startService(): void {
     super.startService()
-    log.info(`proxy starting service ${this.name} ${this.typeKey} ${this.version}`)
+    log.info(`proxy starting service ${this.name} ${this.pkg.proxyTypeKey} ${this.version}`)
+    this.envPath = path.join(Main.publicRoot, "repo", this.pkg.proxyTypeKey.toLowerCase())
     this.ready = false // not ready until connected
     const runtime: RobotLabXRuntime = RobotLabXRuntime.getInstance()
 
@@ -583,6 +584,13 @@ print(result.stderr.decode(), file=sys.stderr)
         reject(`Error: ${error.message}`)
       })
     })
+  }
+
+  onConnectionClosed() {
+    this.info(`onConnectionClosed`)
+    this.ready = false
+    this.clientConnectionState = "disconnected"
+    this.invoke("broadcastState")
   }
 
   async installRepoRequirements(envName = ".venv", envPath = this.pkg.cwd): Promise<string[]> {

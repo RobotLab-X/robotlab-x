@@ -919,6 +919,10 @@ export default class RobotLabXRuntime extends Service {
     return this.connectionImpl.get(gatewayId) as WebSocket
   }
 
+  setConnectionImpl(gatewayId: string, ws: WebSocket) {
+    return this.connectionImpl.set(gatewayId, ws)
+  }
+
   getRegistry(): Object {
     return Store.getInstance().getRegistry()
   }
