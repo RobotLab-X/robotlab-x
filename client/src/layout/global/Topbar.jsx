@@ -22,12 +22,15 @@ import {
   useTheme
 } from "@mui/material"
 import { useProcessedMessage } from "hooks/useProcessedMessage"
-import React, { useContext, useState } from "react"
+import React, { useContext, useEffect, useState } from "react"
 import { useStore } from "store/store"
 import useServiceSubscription from "store/useServiceSubscription"
 import { ColorModeContext, tokens } from "../../theme"
 
 const Topbar = () => {
+  // data from ipc main process
+  const [versions, setVersions] = useState({ appVersion: "", chrome: "", node: "", electron: "" })
+
   const theme = useTheme()
   const colors = tokens(theme.palette.mode)
   const colorMode = useContext(ColorModeContext)
@@ -48,6 +51,12 @@ const Topbar = () => {
     marginBottom: "16px",
     width: "100%"
   }
+
+  useEffect(() => {
+    // Fetch version information from the electron API
+    const versionInfo = window.electron.getVersions()
+    setVersions(versionInfo)
+  }, [])
 
   const handleDialogOpen = () => {
     setDialogOpen(true)
@@ -105,6 +114,13 @@ const Topbar = () => {
       <Dialog open={dialogOpen} onClose={handleDialogClose}>
         <DialogTitle>Settings</DialogTitle>
         <DialogContent>
+          <div>
+            <p>App version: {versions.appVersion}</p>
+            <p>Chrome version: {versions.chrome}</p>
+            <p>Node.js version: {versions.node}</p>
+            <p>Electron version: {versions.electron}</p>
+          </div>
+
           <FormControlLabel
             control={<Checkbox checked={debug} onChange={handleCheckboxChange} name="debug" />}
             label="Debug"

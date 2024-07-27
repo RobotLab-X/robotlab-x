@@ -8,16 +8,20 @@ import { getLogFilePath, getLogger } from "../express/framework/Log"
 import { HostData } from "../express/models/HostData"
 import { ProcessData } from "../express/models/ProcessData"
 import RobotLabXRuntime from "../express/service/RobotLabXRuntime"
-const { app } = require("electron")
+const { app, ipcMain } = require("electron")
 const asar = require("asar")
 const fs = require("fs-extra")
 const minimist = require("minimist")
 const log = getLogger("ElectronStarter")
+const { exec } = require("child_process")
 
 export default class Main {
+  // FIXME ! - all these statics are a bad idea
+
   private static app: Electron.App
   private static BrowserWindow: typeof Electron.BrowserWindow
   public static mainWindow: Electron.BrowserWindow
+  public static hiddenWindow: Electron.BrowserWindow
   public static isPackaged: boolean
   // The root directory of the app in both development and production
   public static distRoot: string = null
@@ -49,6 +53,10 @@ export default class Main {
   // Tray instance
   public static tray: Tray
 
+  // RobotLabXRuntime.yml
+  public static pkg: any
+
+  // FIXME - remove version info is in pkg
   protected static version: string
 
   protected static root: string
@@ -85,6 +93,8 @@ export default class Main {
       height: 600,
       icon: path.join(Main.publicRoot, "repo", "robotlab-x-48.png"),
       webPreferences: {
+        // nodeIntegration: false,
+        // contextIsolation: true,
         nodeIntegration: false,
         contextIsolation: true,
         preload: path.join(__dirname, "Preload.js")
@@ -104,6 +114,50 @@ export default class Main {
     // Create the Tray instance and set the tooltip
     Main.tray = new Tray(path.join(Main.publicRoot, "repo", "robotlab-x-48.png"))
     Main.tray.setToolTip("RobotLab-X")
+
+    // Create the hidden window
+    Main.hiddenWindow = new Main.BrowserWindow({
+      show: false,
+      webPreferences: {
+        preload: path.join(__dirname, "Preload.js")
+      }
+    })
+
+    // Main.hiddenWindow.loadURL(`${Main.startUrl}/hidden.html`)
+    Main.hiddenWindow.loadFile(path.join(__dirname, "hidden.html"))
+    Main.hiddenWindow.webContents.openDevTools({ mode: "detach" })
+
+    // IPC handlers from renderers --to--> main process
+    ipcMain.on("play-sound", (event, arg) => {
+      console.log("Received play-sound in main process:", arg)
+      const audioFilePath = path.resolve(process.cwd(), arg)
+      console.log("Resolved audio file path:", audioFilePath)
+      // relayed to hidden renderer
+      Main.hiddenWindow.webContents.send("play-sound", audioFilePath)
+    })
+
+    ipcMain.on("get-versions", (event) => {
+      event.returnValue = {
+        chrome: process.versions.chrome,
+        node: process.versions.node,
+        electron: process.versions.electron,
+        appVersion: Main.version
+      }
+    })
+
+    // ipcMain.on("play-audio", (event, filePath) => {
+    //   const audioPath = path.resolve(filePath)
+    //   exec(`start "" "${audioPath}"`, (error: any) => {
+    //     if (error) {
+    //       console.error(`Error playing audio: ${error.message}`)
+    //     }
+    //   })
+    // })
+
+    // ipcMain.on("get-audio-path", (event, filePath) => {
+    //   const audioPath = path.resolve(filePath)
+    //   event.returnValue = audioPath
+    // })
   }
 
   private static onWindowAllClosed() {
@@ -124,6 +178,9 @@ export default class Main {
     log.info("Main.onClose")
     // Dereference the window object.
     //  Main.mainWindow = null
+    if (Main.hiddenWindow) {
+      Main.hiddenWindow.close()
+    }
   }
 
   public static bootServer() {
@@ -176,7 +233,8 @@ export default class Main {
     )
 
     if (fs.existsSync(runningRobotLabXRuntimeYmlFilename)) {
-      Main.version = yaml.parse(fs.readFileSync(runningRobotLabXRuntimeYmlFilename, "utf8"))?.version
+      Main.pkg = yaml.parse(fs.readFileSync(runningRobotLabXRuntimeYmlFilename, "utf8"))
+      Main.version = Main.pkg?.version
     }
 
     log.info(`bootServer: version ${Main.version}`)
