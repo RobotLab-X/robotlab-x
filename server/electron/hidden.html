@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hidden Audio Player</title>
+</head>
+<body>
+  This is a hidden renderer for service related processing.
+  <audio id="audioPlayer" controls>
+    <source id="audioSource" src="" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+  <script>
+    // Ensure the electron API is available
+    if (window.electron) {
+      window.electron.onPlaySound((file) => {
+        console.log('Received play-sound in hidden window:', file)
+        const audioPlayer = document.getElementById('audioPlayer')
+        const audioSource = document.getElementById('audioSource')
+
+        // Log to verify file path and audio element states
+        console.log('Audio element before setting source:', audioPlayer)
+        console.log('Audio source before setting src:', audioSource)
+
+        // Update the audio source and play the audio
+        audioSource.src = file
+        audioPlayer.load()
+
+        audioPlayer.play().then(() => {
+          console.log('Audio started playing')
+        }).catch((error) => {
+          console.error('Error playing audio:', error)
+        })
+      })
+
+      // Log to ensure hidden window is loaded correctly
+      console.log('Hidden window loaded and script executed')
+    } else {
+      console.error('Electron API not available in hidden window')
+    }
+  </script>
+</body>
+</html>
