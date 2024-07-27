@@ -1,4 +1,10 @@
-import { PollyClient, SynthesizeSpeechCommand, SynthesizeSpeechCommandInput } from "@aws-sdk/client-polly"
+import {
+  DescribeVoicesCommand,
+  DescribeVoicesCommandInput,
+  PollyClient,
+  SynthesizeSpeechCommand,
+  SynthesizeSpeechCommandInput
+} from "@aws-sdk/client-polly"
 import crypto from "crypto"
 import fs from "fs"
 import path from "path"
@@ -6,10 +12,6 @@ import { Readable } from "stream"
 import Main from "../../electron/ElectronStarter"
 import { getLogger } from "../framework/Log"
 import Service from "../framework/Service"
-// const load = require("audio-loader")
-// const play = require("audio-play")
-// const { createAudio } = require("node-mp3-player")
-// const Audio = createAudio()
 
 const log = getLogger("Polly")
 
@@ -24,12 +26,13 @@ export default class Polly extends Service {
    */
   config = {
     voice: "Joanna",
-    secretAccessKey: null as string,
-    secretId: null as string,
+    secretAccessKey: null as string | null,
+    secretId: null as string | null,
     format: "mp3" as "mp3" | "ogg" | "pcm"
   }
 
   client: PollyClient | null = null
+  voices: { id: string; name: string }[] = []
 
   /**
    * Creates an instance of Polly.
@@ -49,11 +52,47 @@ export default class Polly extends Service {
     super(id, name, typeKey, version, hostname)
   }
 
-  startService() {
+  async startService() {
     super.startService()
     if (!this.config.secretAccessKey || !this.config.secretId) {
       log.info(`Polly.startService: Missing secretAccessKey or secretId`)
       this.ready = false
+    } else {
+      await this.initializePollyClient()
+      await this.fetchVoices()
+    }
+  }
+
+  async initializePollyClient() {
+    if (!this.client) {
+      this.client = new PollyClient({
+        credentials: {
+          accessKeyId: this.config.secretId!,
+          secretAccessKey: this.config.secretAccessKey!
+        }
+      })
+    }
+  }
+
+  async fetchVoices() {
+    if (!this.client) {
+      log.error("Polly client not initialized")
+      return
+    }
+
+    try {
+      const command = new DescribeVoicesCommand({} as DescribeVoicesCommandInput)
+      const response = await this.client.send(command)
+      if (response.Voices) {
+        this.voices = response.Voices.map((voice) => ({
+          id: voice.Id!,
+          name: voice.Name!
+        }))
+        log.info(`Fetched ${this.voices.length} voices`)
+      }
+      this.invoke("broadcastState")
+    } catch (error) {
+      log.error(`Error fetching voices: ${error}`)
     }
   }
 
@@ -96,19 +135,13 @@ export default class Polly extends Service {
       }
 
       if (!this.client) {
-        this.client = new PollyClient({
-          // region: "us-east-1", // replace with your desired region
-          credentials: {
-            accessKeyId: this.config.secretId, // replace with your access key id
-            secretAccessKey: this.config.secretAccessKey // replace with your secret access key
-          }
-        })
+        await this.initializePollyClient()
       }
 
       const params: SynthesizeSpeechCommandInput = {
         OutputFormat: (this.config.format as "json") || "mp3" || "ogg_vorbis" || "pcm",
         Text: text,
-        VoiceId: this.config.voice as "Joanna" | "Matthew" // replace with your desired voice
+        VoiceId: this.config.voice as "Joanna" | "Matthew"
       }
 
       const command = new SynthesizeSpeechCommand(params)
@@ -141,7 +174,8 @@ export default class Polly extends Service {
    */
   toJSON() {
     return {
-      ...super.toJSON()
+      ...super.toJSON(),
+      voices: this.voices
     }
   }
 }
