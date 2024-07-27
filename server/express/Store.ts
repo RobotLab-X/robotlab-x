@@ -192,7 +192,11 @@ export default class Store {
         runtime.getServiceNames().forEach((serviceName: string) => {
           const service = runtime.getService(serviceName)
           if (service?.id === gatewayId) {
-            service.invoke("onConnectionClosed")
+            if (service.invoke) {
+              service.invoke("onConnectionClosed")
+            } else {
+              log.error(`service ${serviceName} does not have an invoke method`)
+            }
             // this removes all services associated with this connection id
             // RobotLabXRuntime.getInstance().removeConnection(gatewayId)
           }
