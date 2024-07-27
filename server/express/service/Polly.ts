@@ -32,7 +32,7 @@ export default class Polly extends Service {
   }
 
   client: PollyClient | null = null
-  voices: { id: string; name: string }[] = []
+  voices: { id: string; name: string; language: string; gender: string }[] = []
 
   /**
    * Creates an instance of Polly.
@@ -86,7 +86,9 @@ export default class Polly extends Service {
       if (response.Voices) {
         this.voices = response.Voices.map((voice) => ({
           id: voice.Id!,
-          name: voice.Name!
+          name: voice.Name!,
+          language: voice.LanguageName!,
+          gender: voice.Gender!
         }))
         log.info(`Fetched ${this.voices.length} voices`)
       }
