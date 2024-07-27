@@ -128,9 +128,9 @@ export default class Main {
     Main.hiddenWindow.webContents.openDevTools({ mode: "detach" })
 
     // IPC handlers from renderers --to--> main process
-    ipcMain.on("play-sound", (event, arg) => {
-      console.log("Received play-sound in main process:", arg)
-      const audioFilePath = path.resolve(process.cwd(), arg)
+    ipcMain.on("play-sound", (event, audioFilePath) => {
+      console.log("Received play-sound in main process:", audioFilePath)
+      // const audioFilePath = path.resolve(process.cwd(), arg)
       console.log("Resolved audio file path:", audioFilePath)
       // relayed to hidden renderer
       Main.hiddenWindow.webContents.send("play-sound", audioFilePath)

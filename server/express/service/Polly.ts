@@ -114,7 +114,7 @@ export default class Polly extends Service {
     // Trim the text and generate a hash
     const trimmedText = text.trim()
     const hash = crypto.createHash("md5").update(trimmedText).digest("hex")
-    const filename = path.join(Main.publicRoot, "repo", "polly", "cache", `${hash}.mp3`)
+    const filename = path.resolve(path.join(Main.publicRoot, "repo", "polly", "cache", `${hash}.mp3`))
 
     // Ensure the cache directory exists
     const cacheDir = path.dirname(filename)

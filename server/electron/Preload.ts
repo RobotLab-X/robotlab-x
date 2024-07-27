@@ -7,9 +7,4 @@ contextBridge.exposeInMainWorld("electron", {
   playSound: (file: string) => ipcRenderer.send("play-sound", file),
   onPlaySound: (callback: (file: string) => void) => ipcRenderer.on("play-sound", (event, file) => callback(file)),
   getVersions: () => versions
-  // getVersions: () => ({
-  //   chrome: process.versions.chrome,
-  //   node: process.versions.node,
-  //   electron: process.versions.electron
-  // })
 })

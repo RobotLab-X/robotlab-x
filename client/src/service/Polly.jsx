@@ -1,6 +1,6 @@
 import ExpandLessIcon from "@mui/icons-material/ExpandLess"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
-import { Box, Button, TextField, Typography } from "@mui/material"
+import { Box, Button, MenuItem, Select, TextField, Typography } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
 import { useStore } from "../store/store"
@@ -12,16 +12,13 @@ export default function Polly({ fullname }) {
 
   const [editMode, setEditMode] = useState(false)
   const [text, setText] = useState("")
-  // TERRIBLE ! - handle config generically
   const [secretId, setSecretId] = useState("")
   const [secretAccessKey, setSecretAccessKey] = useState("")
+  const [selectedVoice, setSelectedVoice] = useState("")
 
   const { useMessage, sendTo } = useStore()
-  // makes reference to the message object in store
   const publishSpeakingMsg = useMessage(fullname, "publishSpeaking")
-  // creates subscriptions to topics and returns the broadcastState message reference
   const serviceMsg = useServiceSubscription(fullname, ["publishSpeaking"])
-  // processes the msg.data[0] and returns the data
   const service = useProcessedMessage(serviceMsg)
   const spoken = useProcessedMessage(publishSpeakingMsg)
 
@@ -29,11 +26,11 @@ export default function Polly({ fullname }) {
     if (service?.config) {
       setSecretId(service.config.secretId)
       setSecretAccessKey(service.config.secretAccessKey)
+      setSelectedVoice(service.config.voice)
     }
   }, [service, fullname])
 
   const playAudio = () => {
-    // window.electron.playAudio("hey.mp3")
     window.electron.playAudio(audioFile)
   }
 
@@ -54,10 +51,14 @@ export default function Polly({ fullname }) {
     }
   }
 
+  const handleVoiceChange = (event) => {
+    setSelectedVoice(event.target.value)
+  }
+
   const handleSaveConfig = () => {
-    // TERRIBLE ! - handle config generically
     sendTo(fullname, "applyConfigValue", "secretId", secretId)
     sendTo(fullname, "applyConfigValue", "secretAccessKey", secretAccessKey)
+    sendTo(fullname, "applyConfigValue", "voice", selectedVoice)
     setEditMode(false)
   }
 
@@ -92,6 +93,20 @@ export default function Polly({ fullname }) {
               onChange={handleConfigChange}
               sx={{ flex: 1 }} // Ensure consistent width
             />
+            <Select
+              label="Voice"
+              value={selectedVoice}
+              onChange={handleVoiceChange}
+              fullWidth
+              margin="normal"
+              sx={{ flex: 1 }}
+            >
+              {service?.voices.map((voice) => (
+                <MenuItem key={voice.id} value={voice.id}>
+                  {`${voice.name} (${voice.language}, ${voice.gender})`}
+                </MenuItem>
+              ))}
+            </Select>
           </Box>
 
           <Box sx={{ mt: 2, display: "flex", gap: 2 }}>
@@ -122,11 +137,6 @@ export default function Polly({ fullname }) {
             <Button variant="contained" color="primary" onClick={handleSpeak}>
               Speak
             </Button>
-            <div>
-              <h1>Audio Player</h1>
-              <button onClick={playAudio}>Play Audio</button>
-            </div>
-            {/* <audio ref="audio_tag" src="./static/music/foo.mp3" controls autoPlay /> */}
           </Box>
         </Box>
       </Box>

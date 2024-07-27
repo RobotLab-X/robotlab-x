@@ -6,6 +6,7 @@ import SendIcon from "@mui/icons-material/ForwardToInbox"
 import InfoIcon from "@mui/icons-material/Info"
 import RefreshIcon from "@mui/icons-material/Refresh"
 import SaveIcon from "@mui/icons-material/Save"
+
 import SettingsIcon from "@mui/icons-material/Settings"
 import {
   Box,
@@ -19,6 +20,7 @@ import {
   Tooltip,
   Typography
 } from "@mui/material"
+import NewMessageRouteDialog from "components/NewMessageRouteDialog"
 import PkgDialog from "components/PkgDialog"
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 import ReactJson from "react-json-view"
@@ -31,6 +33,7 @@ const containerStyle2 = {}
 
 const ServicePage = ({ fullname, name, id }) => {
   const [pkgDialogOpen, setPkgDialogOpen] = useState(false)
+  const [messageRouteDialogOpen, setMessageRouteDialogOpen] = useState(false)
   const registered = useRegisteredService(fullname)
   const serviceMsg = useServiceSubscription(fullname)
   const service = useProcessedMessage(serviceMsg)
@@ -78,8 +81,8 @@ const ServicePage = ({ fullname, name, id }) => {
   }, [])
 
   const handleMakeMessageRoute = useCallback(() => {
-    // setShowJson((prev) => !prev)
-  }, [fullname])
+    setMessageRouteDialogOpen(true)
+  }, [])
 
   const handleSwaggerClick = useCallback(() => {
     console.info(`Navigating to /swagger/${fullname}`)
@@ -206,6 +209,7 @@ const ServicePage = ({ fullname, name, id }) => {
       {service && (
         <PkgDialog dialogOpen={pkgDialogOpen} handleDialogClose={handlePkgDialogClose} fullname={service.fullname} />
       )}
+      <NewMessageRouteDialog open={messageRouteDialogOpen} setOpen={setMessageRouteDialogOpen} fullname={fullname} />
     </div>
   )
 }

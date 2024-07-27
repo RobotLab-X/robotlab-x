@@ -1,10 +1,10 @@
 import ExpandLessIcon from "@mui/icons-material/ExpandLess"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import { Box, Button, TextField, Typography } from "@mui/material"
+import { useProcessedMessage } from "hooks/useProcessedMessage"
 import React, { useState } from "react"
-import { useProcessedMessage } from "../hooks/useProcessedMessage"
-import { useStore } from "../store/store"
-import useServiceSubscription from "../store/useServiceSubscription"
+import { useStore } from "store/store"
+import useServiceSubscription from "store/useServiceSubscription"
 
 // FIXME remove fullname with context provider
 export default function Clock({ fullname }) {
