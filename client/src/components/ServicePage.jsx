@@ -2,6 +2,7 @@ import loadable from "@loadable/component"
 import DeleteIcon from "@mui/icons-material/Delete"
 import DescriptionIcon from "@mui/icons-material/Description"
 import FileOpenIcon from "@mui/icons-material/FileOpen"
+import SendIcon from "@mui/icons-material/ForwardToInbox"
 import InfoIcon from "@mui/icons-material/Info"
 import RefreshIcon from "@mui/icons-material/Refresh"
 import SaveIcon from "@mui/icons-material/Save"
@@ -76,6 +77,10 @@ const ServicePage = ({ fullname, name, id }) => {
     setShowJson((prev) => !prev)
   }, [])
 
+  const handleMakeMessageRoute = useCallback(() => {
+    // setShowJson((prev) => !prev)
+  }, [fullname])
+
   const handleSwaggerClick = useCallback(() => {
     console.info(`Navigating to /swagger/${fullname}`)
     navigate(`/swagger/${fullname}`)
@@ -132,6 +137,11 @@ const ServicePage = ({ fullname, name, id }) => {
         </Tooltip>
         {registered?.name}
         <span style={{ color: "grey", margin: "0 8px" }}>@{registered?.id}</span>
+        <Tooltip title="Make message route">
+          <IconButton onClick={handleMakeMessageRoute} aria-label="api">
+            <SendIcon />
+          </IconButton>
+        </Tooltip>
         <Tooltip title="Settings">
           <IconButton onClick={handleSettingsClick} aria-label="settings">
             <SettingsIcon />
