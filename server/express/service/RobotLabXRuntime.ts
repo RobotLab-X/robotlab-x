@@ -1025,8 +1025,10 @@ export default class RobotLabXRuntime extends Service {
 
     if (debug) {
       Main.mainWindow.webContents.openDevTools()
+      Main.hiddenWindow.webContents.openDevTools({ mode: "detach" })
     } else {
       Main.mainWindow.webContents.closeDevTools()
+      Main.hiddenWindow.webContents.closeDevTools()
     }
   }
 

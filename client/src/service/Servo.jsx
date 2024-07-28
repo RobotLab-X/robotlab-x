@@ -68,6 +68,12 @@ export default function Servo({ name, fullname, id }) {
   }
 
   const handleSpeedChange = (event, newValue) => {
+    if (newValue > 199) {
+      console.info("removing speed control")
+      sendTo(fullname, "setSpeed", null)
+    } else {
+      sendTo(fullname, "setSpeed", newValue)
+    }
     setSpeedValue(newValue)
   }
 
@@ -158,8 +164,8 @@ export default function Servo({ name, fullname, id }) {
             value={speedValue}
             onChange={handleSpeedChange}
             aria-labelledby="speed-slider"
-            min={0}
-            max={100}
+            min={1}
+            max={200}
             valueLabelDisplay="auto"
             sx={{ width: 150 }}
           />

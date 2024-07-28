@@ -418,6 +418,11 @@ export default class Ollama extends Service {
     this.generate([image])
   }
 
+  onBase64Image(image: any): void {
+    // log.info(`onImage ${image}`)
+    this.generate([image])
+  }
+
   async scrapeLibrary() {
     try {
       const url = "https://ollama.com/library"

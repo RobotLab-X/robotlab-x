@@ -90,7 +90,10 @@ class OpenCV(Service):
                     )
                     _, buffer = cv2.imencode(".jpg", frame)
                     encoded64 = base64.b64encode(buffer).decode("utf-8")
+                    # deprecated
                     self.invoke("publishInputBase64", encoded64)
+                    # use this one
+                    self.invoke("publishBase64Image", encoded64)
                     self.last_invoke_time = current_time
 
                 for cvfilter in self.filters:
@@ -127,6 +130,10 @@ class OpenCV(Service):
     def publishRecognition(self, recognition):
         # log.info(f"publishRecognition: {recognition}")
         return recognition
+
+    def publishBase64Image(self, base64_image):
+        # log.info(f"publishBase64Image: {base64_image}")
+        return base64_image
 
     def publishInputBase64(self, input_base64):
         # log.info(f"publishInputBase64: {input_base64}")
