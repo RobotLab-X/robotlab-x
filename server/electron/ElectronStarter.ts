@@ -97,6 +97,7 @@ export default class Main {
         // contextIsolation: true,
         nodeIntegration: false,
         contextIsolation: true,
+        webSecurity: false,
         preload: path.join(__dirname, "Preload.js")
       }
     })
@@ -119,13 +120,14 @@ export default class Main {
     Main.hiddenWindow = new Main.BrowserWindow({
       show: false,
       webPreferences: {
+        webSecurity: false,
         preload: path.join(__dirname, "Preload.js")
       }
     })
 
     // Main.hiddenWindow.loadURL(`${Main.startUrl}/hidden.html`)
     Main.hiddenWindow.loadFile(path.join(__dirname, "hidden.html"))
-    Main.hiddenWindow.webContents.openDevTools({ mode: "detach" })
+    // Main.hiddenWindow.webContents.openDevTools({ mode: "detach" })
 
     // IPC handlers from renderers --to--> main process
     ipcMain.on("play-sound", (event, audioFilePath) => {
