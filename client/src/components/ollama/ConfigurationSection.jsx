@@ -31,25 +31,34 @@ const ConfigurationSection = ({
   getBaseUrl,
   name,
   localModels,
-  availableModels
+  availableModels,
+  sendTo,
+  fullname
 }) => {
   const [selectedModelDetails, setSelectedModelDetails] = useState({ name: "", description: "" })
+  const [selectedAvailableModel, setSelectedAvailableModel] = useState("")
 
   const toggleEditMode = () => setEditMode(!editMode)
 
   useEffect(() => {
-    const selectedModel =
-      availableModels.find((model) => model.name === config?.model) ||
-      localModels.find((model) => model.name === config?.model)
-    if (selectedModel) {
-      setSelectedModelDetails({
-        name: selectedModel.name,
-        description: selectedModel.description || JSON.stringify(selectedModel.details, null, 2)
-      })
-    } else {
-      setSelectedModelDetails({ name: "", description: "" })
+    if (config) {
+      const selectedModel = localModels.find((model) => model.name === config.model)
+      if (selectedModel) {
+        setSelectedModelDetails({
+          name: selectedModel.name,
+          description: selectedModel.description || JSON.stringify(selectedModel.details, null, 2)
+        })
+      } else {
+        setSelectedModelDetails({ name: "", description: "" })
+      }
     }
-  }, [config?.model, availableModels, localModels])
+  }, [config, localModels])
+
+  const handlePullModel = () => {
+    if (selectedAvailableModel) {
+      sendTo(fullname, "pullModel", selectedAvailableModel)
+    }
+  }
 
   return (
     <>
@@ -61,16 +70,16 @@ const ConfigurationSection = ({
         <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "80%" } }}>
           <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
             <FormControl variant="outlined" sx={{ minWidth: 200, flex: 1 }}>
-              <InputLabel id="model-select-label">Model</InputLabel>
+              <InputLabel id="local-model-select-label">Local Model</InputLabel>
               <Select
-                labelId="model-select-label"
-                id="model-select"
+                labelId="local-model-select-label"
+                id="local-model-select"
                 name="model"
-                value={config?.model}
+                value={config?.model || ""}
                 onChange={handleConfigChange}
-                label="Model"
+                label="Local Model"
               >
-                {availableModels.concat(localModels).map((model) => (
+                {localModels.map((model) => (
                   <MenuItem key={model.name} value={model.name}>
                     {model.name}
                   </MenuItem>
@@ -86,6 +95,30 @@ const ConfigurationSection = ({
               </Card>
             )}
           </Box>
+          <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+            <FormControl variant="outlined" sx={{ minWidth: 200, flex: 1 }}>
+              <InputLabel id="available-model-select-label">Available Model</InputLabel>
+              <Select
+                labelId="available-model-select-label"
+                id="available-model-select"
+                name="availableModel"
+                value={selectedAvailableModel}
+                onChange={(event) => setSelectedAvailableModel(event.target.value)}
+                label="Available Model"
+              >
+                {availableModels.map((model) => (
+                  <MenuItem key={model.name} value={model.name}>
+                    {model.name} - {model.description}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            {selectedAvailableModel && (
+              <Button variant="contained" color="primary" onClick={handlePullModel} sx={{ ml: 2 }}>
+                Pull
+              </Button>
+            )}
+          </Box>
           <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
             <TextField
               label="URL"
@@ -93,7 +126,7 @@ const ConfigurationSection = ({
               variant="outlined"
               fullWidth
               margin="normal"
-              value={config?.url ?? ""}
+              value={config?.url || ""}
               onChange={handleConfigChange}
               sx={{ flex: 1 }}
             />
@@ -104,7 +137,7 @@ const ConfigurationSection = ({
               fullWidth
               margin="normal"
               type="number"
-              value={config?.maxHistory ?? 0}
+              value={config?.maxHistory || 0}
               onChange={handleConfigChange}
               sx={{ flex: 1 }}
             />

@@ -7,7 +7,8 @@ import {
   GenerateRequest,
   GenerateResponse,
   ModelResponse,
-  Ollama as OllamaClient
+  Ollama as OllamaClient,
+  PullRequest
 } from "ollama"
 import path from "path"
 import yaml from "yaml"
@@ -394,6 +395,26 @@ export default class Ollama extends Service {
     })
 
     log.info("Prompts loaded successfully")
+  }
+
+  pullModel(model: string, stream: boolean = false) {
+    log.info(`pullModel ${model}`)
+    const oc = new OllamaClient({ host: this.config.url })
+    const pr: PullRequest = { model: model, insecure: true, stream: false }
+    if (stream) {
+      const pr: PullRequest & { stream: true } = { model: model, insecure: true, stream: true }
+      oc.pull(pr)
+    } else {
+      const pr: PullRequest & { stream: false } = { model: model, insecure: true, stream: false }
+      oc.pull(pr)
+        .then((response) => {
+          log.info(`Pull response: ${JSON.stringify(response)}`)
+          this.info(`Pull response: ${JSON.stringify(response)}`)
+        })
+        .catch((error) => {
+          log.error(`Pull error: ${error}`)
+        })
+    }
   }
 
   startService(): void {

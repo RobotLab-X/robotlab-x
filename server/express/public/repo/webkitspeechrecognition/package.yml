@@ -1,0 +1,12 @@
+author: "GroG"
+categories: ["state machine", "fsm"]
+dependencies: null
+description: "Webkit Speech Recognition"
+installed: true
+license: "MIT"
+platform: "node"
+platformVersion: "v20.9.0"
+title: "Webkit Speech Recognition"
+typeKey: "WebkitSpeechRecognition"
+version: "0.0.1"
+visible: true

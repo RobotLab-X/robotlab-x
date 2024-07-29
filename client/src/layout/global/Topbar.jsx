@@ -54,7 +54,8 @@ const Topbar = () => {
 
   useEffect(() => {
     // Fetch version information from the electron API
-    const versionInfo = window.electron.getVersions()
+    // BE AWARE ! - window.electron does not exist in browser !!!
+    const versionInfo = window?.electron?.getVersions()
     setVersions(versionInfo)
   }, [])
 
@@ -115,10 +116,11 @@ const Topbar = () => {
         <DialogTitle>Settings</DialogTitle>
         <DialogContent>
           <div>
-            <p>App version: {versions.appVersion}</p>
-            <p>Chrome version: {versions.chrome}</p>
-            <p>Node.js version: {versions.node}</p>
-            <p>Electron version: {versions.electron}</p>
+            {/* // BE AWARE ! - window.electron does not exist in browser !!! */}
+            <p>App version: {versions?.appVersion}</p>
+            <p>Chrome version: {versions?.chrome}</p>
+            <p>Node.js version: {versions?.node}</p>
+            <p>Electron version: {versions?.electron}</p>
           </div>
 
           <FormControlLabel

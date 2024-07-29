@@ -88,20 +88,22 @@ export default function Ollama({ name, fullname, id }) {
   }, [response])
 
   const handleFinishInstall = () => {
-    // const updatedService = { ...service, config: { ...service.config, installed: true, url: installUrl } }
-    //     setService(updatedService)
-    config.installed = true
-    sendTo(fullname, "applyConfig", config)
-    sendTo(fullname, "saveConfig")
-    sendTo(fullname, "broadcastState")
+    if (config) {
+      config.installed = true
+      sendTo(fullname, "applyConfig", config)
+      sendTo(fullname, "saveConfig")
+      sendTo(fullname, "broadcastState")
+    }
   }
 
   const handleSaveConfig = () => {
-    config.prompt = currentPromptKey
-    sendTo(fullname, "applyConfig", config)
-    sendTo(fullname, "saveConfig")
-    sendTo(fullname, "broadcastState")
-    setEditMode(false)
+    if (config) {
+      config.prompt = currentPromptKey
+      sendTo(fullname, "applyConfig", config)
+      sendTo(fullname, "saveConfig")
+      sendTo(fullname, "broadcastState")
+      setEditMode(false)
+    }
   }
 
   const handleConfigChange = (event) => {
@@ -140,7 +142,6 @@ export default function Ollama({ name, fullname, id }) {
       </div>
       {service?.config?.installed && service && (
         <>
-          {/* this is dumb - too much stuff being passed as props */}
           <ConfigurationSection
             config={config}
             handleConfigChange={handleConfigChange}
@@ -157,6 +158,7 @@ export default function Ollama({ name, fullname, id }) {
             fullname={fullname}
             localModels={service?.localModels}
             availableModels={service?.availableModels}
+            sendTo={sendTo}
           />
           <ChatInput
             chatInput={chatInput}
