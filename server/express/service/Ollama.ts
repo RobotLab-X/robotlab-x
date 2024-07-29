@@ -34,7 +34,7 @@ export default class Ollama extends Service {
   config = {
     installed: false,
     url: "http://localhost:11434",
-    model: "llama3",
+    model: "llama3:latest",
     maxHistory: 4,
     wakeWord: "wake",
     sleepWord: "sleep",
@@ -115,6 +115,22 @@ export default class Ollama extends Service {
         log.error("Ollama is not ready")
       }
       log.debug(`Error fetching from ${this.config.url}:${error}`)
+    }
+  }
+
+  listModels() {
+    log.info("listModels")
+    try {
+      const oc = new OllamaClient({ host: this.config.url })
+      oc.list().then((models) => {
+        this.localModels = models?.models
+        this.invoke("broadcastState")
+      })
+
+      log.info(`listModels ${JSON.stringify(this.localModels, null, 2)}`)
+      this.invoke("broadcastState")
+    } catch (error: any) {
+      log.error(`Error listing models: ${error.message}`)
     }
   }
 
