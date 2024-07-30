@@ -1,5 +1,4 @@
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward"
-import { Box, Button, Grid, Typography } from "@mui/material"
+import { Box, Typography } from "@mui/material"
 import Graph from "components/robotlabxui/Graph"
 import ServicePage from "components/ServicePage"
 import ServicePane from "components/ServicePane"
@@ -35,19 +34,6 @@ const Nodes = () => {
   const service = useProcessedMessage(serviceMsg)
   const publishMethods = useServiceMethods(currentNodeId)
 
-  const handleAddRoute = () => {
-    console.log(`Add Route clicked ${service1}.${method1} --> ${service2}.${method2}`)
-    sendTo(service1, "addListener", method1, service2, method2)
-    sendTo(service1, "broadcastState")
-  }
-
-  const handleClearRoute = () => {
-    setMethod1(null)
-    setMethod2(null)
-    setService1(null)
-    setService2(null)
-  }
-
   // Function to handle node click event and navigate to node details
   const handleNodeClick = (node, event) => {
     console.info(`Node clicked: ${node.name} ${event}`)
@@ -58,17 +44,6 @@ const Nodes = () => {
   const handleNodeRightClick = (node, event) => {
     event.preventDefault()
     console.info(`Node right clicked for node: ${node.name} ${node.fullname} ${node.id}`)
-
-    if (!method1) {
-      setService1(node.id)
-    } else {
-      setService2(node.id)
-    }
-
-    sendTo(node.id, "getMethods")
-    setRightClickPosition({ x: event.clientX, y: event.clientY - 84 })
-    setCurrentNodeId(node.id)
-    setIsContextMenuVisible(true)
   }
 
   const handleClickOutside = (event) => {
@@ -232,34 +207,14 @@ const Nodes = () => {
           showGrid={showGrid}
           setShowGrid={setShowGrid}
         />
-
-        <h3>Routes</h3>
-
-        <Grid container spacing={2} alignItems="center" sx={{ mt: 1, mb: 1, ml: 1, mr: 1 }}>
-          {method1 && (
-            <>
-              <Grid item xs={12}>
-                {service1}.{method1} <ArrowForwardIcon /> {service2}.{method2}
-              </Grid>
-              <Grid item xs={12}>
-                <Button variant="contained" onClick={handleAddRoute}>
-                  Add Route
-                </Button>
-                <Button variant="contained" sx={{ ml: 1 }} onClick={handleClearRoute}>
-                  Clear
-                </Button>
-              </Grid>
-            </>
-          )}
-        </Grid>
-
         <h3>Service</h3>
-
         {selectedService ? (
           <ServicePage fullname={selectedService.fullname} name={selectedService.name} id={selectedService.id} />
         ) : (
           <Typography>No service selected</Typography>
         )}
+
+        <h3>Routes</h3>
       </Box>
     </SplitPane>
   )

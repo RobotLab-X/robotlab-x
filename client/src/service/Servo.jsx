@@ -1,3 +1,5 @@
+import ExpandLessIcon from "@mui/icons-material/ExpandLess"
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import { Box, Button, FormControl, InputLabel, MenuItem, Select, Slider, Typography } from "@mui/material"
 import CodecUtil from "framework/CodecUtil"
 import React, { useEffect, useState } from "react"
@@ -8,22 +10,33 @@ import useServiceSubscription from "../store/useServiceSubscription"
 export default function Servo({ name, fullname, id }) {
   console.debug(`Servo ${fullname}`)
 
+  const { useMessage, sendTo } = useStore()
   const [value, setRange] = useState([0, 180])
   const [mainSliderValue, setMainSliderValue] = useState(90)
   const [speedValue, setSpeedValue] = useState(50)
   const [selectedController, setSelectedController] = useState("")
   const [selectedPin, setSelectedPin] = useState("")
-
-  const { useMessage, sendTo } = useStore()
-
+  const [editMode, setEditMode] = useState(false)
   const publishServoMoveToMsg = useMessage(fullname, "publishServoMoveTo")
   const getServoControllersMsg = useMessage(fullname, "getServoControllers")
-
   const serviceMsg = useServiceSubscription(fullname, ["publishServoMoveTo", "getServoControllers"])
-
   const service = useProcessedMessage(serviceMsg)
   const publishServoMoveTo = useProcessedMessage(publishServoMoveToMsg)
   const getServoControllers = useProcessedMessage(getServoControllersMsg)
+
+  const handleSaveConfig = () => {
+    if (config) {
+      config.prompt = currentPromptKey
+      sendTo(fullname, "applyConfig", config)
+      sendTo(fullname, "saveConfig")
+      sendTo(fullname, "broadcastState")
+      setEditMode(false)
+    }
+  }
+
+  const toggleEditMode = () => {
+    setEditMode(!editMode)
+  }
 
   useEffect(() => {
     if (service?.config?.controller) {
@@ -119,61 +132,90 @@ export default function Servo({ name, fullname, id }) {
 
   return (
     <Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center">
-        <FormControl fullWidth sx={{ mt: 2, mr: 1 }}>
-          <InputLabel id="controller-select-label">Controller</InputLabel>
-          <Select
-            labelId="controller-select-label"
-            id="controller-select"
-            value={selectedController}
-            label="Controller"
-            onChange={handleControllerChange}
-            onOpen={handleControllerOpen}
-          >
-            <MenuItem value="">
-              <em>None</em>
-            </MenuItem>
-            {getServoControllers?.map((controller, index) => {
-              const shortName = CodecUtil.getShortName(controller)
-              return (
-                <MenuItem key={index} value={shortName}>
-                  {shortName}
-                </MenuItem>
-              )
-            })}
-          </Select>
-        </FormControl>
-        <FormControl fullWidth sx={{ mt: 2, ml: 1 }}>
-          <InputLabel id="pin-select-label">Pin</InputLabel>
-          <Select labelId="pin-select-label" id="pin-select" value={selectedPin} label="Pin" onChange={handlePinChange}>
-            {Array.from({ length: 58 }, (_, i) => (
-              <MenuItem key={i} value={i}>
-                {i}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-        <Typography variant="h2">{mainSliderValue}</Typography>
-        <Box display="flex" alignItems="center">
-          <Typography variant="h6" sx={{ mr: 1 }}>
-            Speed
-          </Typography>
-          <Slider
-            value={speedValue}
-            onChange={handleSpeedChange}
-            aria-labelledby="speed-slider"
-            min={1}
-            max={200}
-            valueLabelDisplay="auto"
-            sx={{ width: 150 }}
-          />
-          <Typography variant="h6" sx={{ ml: 1 }}>
-            {speedValue}
-          </Typography>
+      <h3 style={{ display: "flex", alignItems: "center", cursor: "pointer" }} onClick={toggleEditMode}>
+        Configuration
+        {editMode ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+      </h3>
+
+      {editMode ? (
+        <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "80%" } }}>
+          <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+              <FormControl fullWidth sx={{ mt: 2, mr: 1 }}>
+                <InputLabel id="controller-select-label">Controller</InputLabel>
+                <Select
+                  labelId="controller-select-label"
+                  id="controller-select"
+                  value={selectedController}
+                  label="Controller"
+                  onChange={handleControllerChange}
+                  onOpen={handleControllerOpen}
+                >
+                  <MenuItem value="">
+                    <em>None</em>
+                  </MenuItem>
+                  {getServoControllers?.map((controller, index) => {
+                    const shortName = CodecUtil.getShortName(controller)
+                    return (
+                      <MenuItem key={index} value={shortName}>
+                        {shortName}
+                      </MenuItem>
+                    )
+                  })}
+                </Select>
+              </FormControl>
+              <FormControl fullWidth sx={{ mt: 2, ml: 1 }}>
+                <InputLabel id="pin-select-label">Pin</InputLabel>
+                <Select
+                  labelId="pin-select-label"
+                  id="pin-select"
+                  value={selectedPin}
+                  label="Pin"
+                  onChange={handlePinChange}
+                >
+                  {Array.from({ length: 58 }, (_, i) => (
+                    <MenuItem key={i} value={i}>
+                      {i}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+              <Typography variant="h2">{mainSliderValue}</Typography>
+              <Box display="flex" alignItems="center">
+                <Typography variant="h6" sx={{ mr: 1 }}>
+                  Speed
+                </Typography>
+                <Slider
+                  value={speedValue}
+                  onChange={handleSpeedChange}
+                  aria-labelledby="speed-slider"
+                  min={1}
+                  max={200}
+                  valueLabelDisplay="auto"
+                  sx={{ width: 150 }}
+                />
+                <Typography variant="h6" sx={{ ml: 1 }}>
+                  {speedValue}
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
         </Box>
-      </Box>
+      ) : null}
+      {editMode ? (
+        <Slider
+          value={value}
+          onChange={handleRangeChange}
+          valueLabelDisplay="auto"
+          aria-labelledby="range-slider"
+          min={0}
+          max={180}
+          sx={sliderStyles}
+        />
+      ) : null}
+
       <Slider
         value={mainSliderValue}
         onChange={(event, newValue) => handleMoveTo(event, newValue)}
@@ -184,15 +226,7 @@ export default function Servo({ name, fullname, id }) {
         max={180}
         sx={sliderStyles}
       />
-      <Slider
-        value={value}
-        onChange={handleRangeChange}
-        valueLabelDisplay="auto"
-        aria-labelledby="range-slider"
-        min={0}
-        max={180}
-        sx={sliderStyles}
-      />
+
       {service?.config && (
         <Box display="flex" justifyContent="flex-start" alignItems="center" mt={2}>
           <Button variant="contained" color="primary" onClick={handleToggleEnable}>
@@ -204,6 +238,11 @@ export default function Servo({ name, fullname, id }) {
           <Button variant="contained" color="error" onClick={handleStop} sx={{ ml: 2 }}>
             Stop
           </Button>
+          {editMode && (
+            <Button variant="contained" color="primary" onClick={handleSaveConfig} sx={{ ml: 2 }}>
+              Save
+            </Button>
+          )}
         </Box>
       )}
     </Box>
