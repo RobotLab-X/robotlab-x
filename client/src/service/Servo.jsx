@@ -182,7 +182,6 @@ export default function Servo({ name, fullname, id }) {
               </FormControl>
             </Box>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-              <Typography variant="h2">{mainSliderValue}</Typography>
               <Box display="flex" alignItems="center">
                 <Typography variant="h6" sx={{ mr: 1 }}>
                   Speed
@@ -205,16 +204,27 @@ export default function Servo({ name, fullname, id }) {
         </Box>
       ) : null}
       {editMode ? (
-        <Slider
-          value={value}
-          onChange={handleRangeChange}
-          valueLabelDisplay="auto"
-          aria-labelledby="range-slider"
-          min={0}
-          max={180}
-          sx={sliderStyles}
-        />
+        <>
+          <Typography variant="h6" sx={{ mr: 1 }}>
+            Range {value[0]} - {value[1]}
+          </Typography>
+          <Slider
+            value={value}
+            onChange={handleRangeChange}
+            valueLabelDisplay="auto"
+            aria-labelledby="range-slider"
+            min={0}
+            max={180}
+            sx={sliderStyles}
+          />
+        </>
       ) : null}
+
+      <Typography variant="h2">{mainSliderValue}</Typography>
+
+      <Typography variant="h6" sx={{ mr: 1 }}>
+        Speed {speedValue}
+      </Typography>
 
       <Slider
         value={mainSliderValue}
