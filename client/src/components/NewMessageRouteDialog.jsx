@@ -60,7 +60,7 @@ const NewMessageRouteDialog = ({ open, setOpen, fullname }) => {
       <DialogTitle>New Message Route</DialogTitle>
       <DialogContent>
         <TextField
-          label="Full Name"
+          label="Name"
           value={CodecUtil.getShortName(fullname)}
           InputProps={{
             readOnly: true

@@ -57,14 +57,14 @@ class OpenCV(Service):
             "installed": True,
         }
 
-        print(f"OpenCV version: {self.version}")
+        log.info(f"OpenCV version: {self.version}")
 
     def set_camera(self, camera_index):
         self.config["camera_index"] = camera_index
 
     def capture(self):
         if self.capturing:
-            print("Webcam is already capturing.")
+            log.info("Webcam is already capturing.")
             return
 
         self.capturing = True
@@ -72,7 +72,7 @@ class OpenCV(Service):
 
     def _capture(self):
         try:
-            print("Starting webcam capture...")
+            log.info("Starting webcam capture...")
             self.cap = cv2.VideoCapture(int(self.config.get("camera_index")))
             while self.capturing:
                 start_time = time.perf_counter()
@@ -81,18 +81,15 @@ class OpenCV(Service):
                 ret, frame = self.cap.read()
 
                 if not ret:
-                    print("Error: Failed to capture image.")
+                    log.error("Error: Failed to capture image.")
                     break
 
                 if (current_time - self.last_invoke_time) > self.config.get("debounce"):
-                    log.info(
-                        f"Publishing input image after {self.config.get('debounce')} seconds"
-                    )
+                    # log.info(
+                    #     f"Publishing input image after {self.config.get('debounce')} seconds"
+                    # )
                     _, buffer = cv2.imencode(".jpg", frame)
                     encoded64 = base64.b64encode(buffer).decode("utf-8")
-                    # deprecated
-                    self.invoke("publishInputBase64", encoded64)
-                    # use this one
                     self.invoke("publishBase64Image", encoded64)
                     self.last_invoke_time = current_time
 
@@ -115,7 +112,7 @@ class OpenCV(Service):
                     self.invoke("publishFps", int(fps))
 
         except Exception as e:
-            print(f"Error: {e}")
+            log.error(f"Error: {e}")
         finally:
             self.stop_capture()
 
@@ -123,20 +120,20 @@ class OpenCV(Service):
         # log.info(f"publishFps: {fps}")
         return fps
 
-    def publishDetection(self, detections: List[Dict[str, Any]]):
-        # log.info(f"publishDetection: {detection}")
+    def publishDetection(self, detections):
+        # log.info(f"publishDetection: {detections}")
         return detections
 
-    def publishRecognition(self, recognition):
-        # log.info(f"publishRecognition: {recognition}")
-        return recognition
+    def publishRecognition(self, recognitions):
+        # log.info(f"publishRecognition: {recognitions}")
+        return recognitions
 
     def publishBase64Image(self, base64_image):
         # log.info(f"publishBase64Image: {base64_image}")
         return base64_image
 
-    def publishInputBase64(self, input_base64):
-        # log.info(f"publishInputBase64: {input_base64}")
+    def publishBase64Image(self, input_base64):
+        # log.info(f"publishBase64Image: {input_base64}")
         return input_base64
 
     def setInstalled(self, installed):
@@ -151,7 +148,7 @@ class OpenCV(Service):
             self.cap.release()
             cv2.destroyAllWindows()
             self.cap = None
-        print("Webcam capture stopped.")
+        log.info("Webcam capture stopped.")
 
     def onStatus(self, status):
         log.error(f"why should I be receiving a onStatus: {status}")
@@ -169,31 +166,31 @@ class OpenCV(Service):
             # Create an instance of the filter class
             filter_instance = filter_class(name_of_filter, self)
             self.filters.append(filter_instance)
-            print(f"Added filter: {name_of_filter} of type: {type_of_filter}")
+            log.info(f"Added filter: {name_of_filter} of type: {type_of_filter}")
         except ModuleNotFoundError:
-            print(f"Module {module_name} not found.")
+            log.error(f"Module {module_name} not found.")
         except AttributeError:
-            print(f"Filter class {filter_class_name} not found in {module_name}.")
+            log.error(f"Filter class {filter_class_name} not found in {module_name}.")
         except Exception as e:
-            print(f"Error adding filter: {e}")
+            log.error(f"Error adding filter: {e}")
 
     def remove_filter(self, name_of_filter):
         self.filters = [
             filter for filter in self.filters if filter.name != name_of_filter
         ]
-        print(f"Removed filter: {name_of_filter}")
+        log.info(f"Removed filter: {name_of_filter}")
 
     def releaseService(self):
         """Releases the service from the proxied runtime
         Will shutdown our capture and websocket and coroutines
         """
-        print("Releasing service")
+        log.info("Releasing service")
 
         # Stop capturing
         try:
             self.stop_capture()
         except Exception as e:
-            print(f"Error stopping capture: {e}")
+            log.error(f"Error stopping capture: {e}")
 
         # Call the super class's releaseService method
         super().releaseService()
@@ -233,7 +230,7 @@ def main():
     )
 
     args = parser.parse_args()
-    print(args)
+    log.info(args)
 
     cv = OpenCV(args.id)
     cv.connect(args.connect)

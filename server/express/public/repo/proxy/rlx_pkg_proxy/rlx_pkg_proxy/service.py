@@ -128,7 +128,7 @@ class Service:
             message["sender"] = f"{self.client_id}@{self.client_id}"
             log.info(
                 # f"<-- {message.get('name')} {message.get('method')} <-- @{self.client_id}{message.get('data')}"
-                f"<-- {message.get('name')} {message.get('method')} <-- @{self.client_id}"
+                f" <-- {message.get('name')}.{message.get('method')} <-- {self.name}@{self.client_id}"
             )
             json_data = json.dumps(message)
             await self.websocket.send(json_data)
@@ -323,7 +323,7 @@ class Service:
                     subscriber.callbackName, subscriber.callbackMethod
                 )
                 # log.info(f"<-- {msg.name}.{msg.method} {result}")
-                log.info(f"<-- {msg.name}.{msg.method}")
+                # log.info(f"<-- {msg.name}.{msg.method}")
                 msg.data = [result]
                 self.send_message(msg.__dict__)
 

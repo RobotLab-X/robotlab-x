@@ -1,13 +1,13 @@
 // hooks/useServiceSubscription.js
 import { useEffect } from "react"
-import { useStore } from "../store/store"
+import { useStore } from "store/store"
 
 const useServiceSubscription = (fullname, additionalSubscriptions = []) => {
   const { subscribeTo, unsubscribeFrom, useMessage, sendTo } = useStore()
   const serviceMsg = useMessage(fullname, "broadcastState")
 
-  if (!fullname){
-    console.error('fullname null in useServiceSubscription!')
+  if (!fullname) {
+    console.error("fullname null in useServiceSubscription!")
   }
 
   useEffect(() => {

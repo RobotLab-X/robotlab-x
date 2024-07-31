@@ -1,14 +1,14 @@
 // store.js
 
+import CodecUtil from "framework/CodecUtil"
 import { create } from "zustand"
 import { devtools } from "zustand/middleware"
-import CodecUtil from "../framework/CodecUtil"
 
-import { ProcessData } from "../models/ProcessData"
-import Service from "../models/Service"
+import { ProcessData } from "models/ProcessData"
+import Service from "models/Service"
 
-// import NameGenerator from "../framework/NameGenerator"
-import Message from "../models/Message"
+// import NameGenerator from "framework/NameGenerator"
+import Message from "models/Message"
 
 const UAParser = require("ua-parser-js")
 const parser = new UAParser()

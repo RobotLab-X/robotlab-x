@@ -17,12 +17,8 @@ const Nodes = () => {
   const [selectedService, setSelectedService] = useState(null) // State for selected service
   const [showGrid, setShowGrid] = useState(true) // State for grid visibility
   const [imageCache, setImageCache] = useState({}) // State to cache images
-  const [rightClickPosition, setRightClickPosition] = useState(null) // State for right-click position
   const [isContextMenuVisible, setIsContextMenuVisible] = useState(false) // State for context menu visibility
   const [method1, setMethod1] = useState(null)
-  const [service1, setService1] = useState(null)
-  const [method2, setMethod2] = useState(null)
-  const [service2, setService2] = useState(null)
   const navigate = useNavigate()
   const { nodeId } = useParams()
   const registry = useStore((state) => state.services)
@@ -44,37 +40,6 @@ const Nodes = () => {
   const handleNodeRightClick = (node, event) => {
     event.preventDefault()
     console.info(`Node right clicked for node: ${node.name} ${node.fullname} ${node.id}`)
-  }
-
-  const handleClickOutside = (event) => {
-    if (isContextMenuVisible && event.target.closest(".context-menu") === null) {
-      setIsContextMenuVisible(false)
-    }
-  }
-
-  const handleKeyDown = (event) => {
-    if (isContextMenuVisible && event.key === "Escape") {
-      setIsContextMenuVisible(false)
-    }
-  }
-
-  useEffect(() => {
-    document.addEventListener("click", handleClickOutside)
-    document.addEventListener("keydown", handleKeyDown)
-    return () => {
-      document.removeEventListener("click", handleClickOutside)
-      document.removeEventListener("keydown", handleKeyDown)
-    }
-  }, [isContextMenuVisible])
-
-  const handleServiceMethodClick = (item) => {
-    console.log(`Menu item clicked: ${item}`)
-    if (!method1) {
-      setMethod1(item)
-    } else {
-      setMethod2(item)
-    }
-    setIsContextMenuVisible(false)
   }
 
   // Function to initialize node positions in a circular layout
@@ -163,6 +128,24 @@ const Nodes = () => {
     }
   }, [registry, nodeId, service, mode])
 
+  // Function to render routes list
+  const renderRoutes = () => {
+    if (!selectedService?.notifyList) return null
+
+    return Object.keys(selectedService.notifyList).map((topic) => (
+      <Box key={topic} sx={{ marginBottom: "10px" }}>
+        <Typography variant="h6">{topic}</Typography>
+        <Box sx={{ paddingLeft: "10px" }}>
+          {selectedService.notifyList[topic].map((entry, index) => (
+            <Typography key={index}>
+              {entry.callbackName}.{entry.callbackMethod} &larr; {entry.topicMethod}
+            </Typography>
+          ))}
+        </Box>
+      </Box>
+    ))
+  }
+
   return (
     <SplitPane split="vertical" minSize={200} defaultSize="70%">
       <Box className={`pane ${showGrid ? "grid" : ""}`}>
@@ -174,30 +157,6 @@ const Nodes = () => {
           imageCache={imageCache}
           setImageCache={setImageCache}
         />
-        {isContextMenuVisible && rightClickPosition && (
-          <Box
-            className="context-menu active"
-            sx={{ top: rightClickPosition.y, left: rightClickPosition.x, position: "absolute" }}
-          >
-            {publishMethods ? (
-              publishMethods
-                .filter((method) => {
-                  if (method1) {
-                    return method.startsWith("on")
-                  } else {
-                    return method.startsWith("get") || method.startsWith("publish")
-                  }
-                })
-                .map((method) => (
-                  <Box key={method} className="menu-item" onClick={() => handleServiceMethodClick(method)}>
-                    {method}
-                  </Box>
-                ))
-            ) : (
-              <Box className="menu-item">Loading...</Box>
-            )}
-          </Box>
-        )}
       </Box>
       <Box sx={{ paddingLeft: "20px" }}>
         <ServicePane
@@ -213,8 +172,8 @@ const Nodes = () => {
         ) : (
           <Typography>No service selected</Typography>
         )}
-
         <h3>Routes</h3>
+        {renderRoutes()}
       </Box>
     </SplitPane>
   )

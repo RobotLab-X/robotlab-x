@@ -1,32 +1,26 @@
 import { Box } from "@mui/material"
-import { useProcessedMessage } from "hooks/useProcessedMessage"
 import React, { useEffect, useState } from "react"
 import { useStore } from "store/store"
-import useServiceSubscription from "store/useServiceSubscription"
+import useSubscription from "store/useSubscription"
 import OllamaWizard from "wizards/OllamaWizard"
 
-import ChatHistory from "../components/ollama/ChatHistory"
-import ChatInput from "../components/ollama/ChatInput"
-import ConfigurationSection from "../components/ollama/ConfigurationSection"
+import ChatHistory from "components/ollama/ChatHistory"
+import ChatInput from "components/ollama/ChatInput"
+import ConfigurationSection from "components/ollama/ConfigurationSection"
 
 export default function Ollama({ fullname }) {
   console.debug(`Ollama ${fullname}`)
 
-  const { useMessage, sendTo } = useStore()
+  const { sendTo } = useStore()
   const [config, setConfig] = useState(null)
   const [chatInput, setChatInput] = useState("")
   const [chatHistory, setChatHistory] = useState([])
   const [requestResponseHistory, setRequestResponseHistory] = useState([])
 
-  const chatMsg = useMessage(fullname, "publishChat")
-  const requestMsg = useMessage(fullname, "publishRequest")
-  const responseMsg = useMessage(fullname, "publishResponse")
-
-  const serviceMsg = useServiceSubscription(fullname, ["publishChat", "publishRequest", "publishResponse"])
-  const service = useProcessedMessage(serviceMsg)
-  const chat = useProcessedMessage(chatMsg)
-  const request = useProcessedMessage(requestMsg)
-  const response = useProcessedMessage(responseMsg)
+  const service = useSubscription(fullname, "broadcastState", true)
+  const chat = useSubscription(fullname, "publishChat")
+  const request = useSubscription(fullname, "publishRequest")
+  const response = useSubscription(fullname, "publishResponse")
 
   useEffect(() => {
     if (service) {

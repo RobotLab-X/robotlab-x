@@ -1,24 +1,19 @@
 import ExpandLessIcon from "@mui/icons-material/ExpandLess"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import { Box, Button, TextField, Typography } from "@mui/material"
-import { useProcessedMessage } from "hooks/useProcessedMessage"
 import React, { useState } from "react"
 import { useStore } from "store/store"
-import useServiceSubscription from "store/useServiceSubscription"
+import useSubscription from "store/useSubscription"
 
 // FIXME remove fullname with context provider
 export default function Clock({ fullname }) {
   console.debug(`Clock ${fullname}`)
 
   const [editMode, setEditMode] = useState(false)
-  const { useMessage, sendTo } = useStore()
-  // makes reference to the message object in store
-  const epochMsg = useMessage(fullname, "publishEpoch")
-  // creates subscriptions to topics and returns the broadcastState message reference
-  const serviceMsg = useServiceSubscription(fullname, ["publishEpoch"])
-  // processes the msg.data[0] and returns the data
-  const service = useProcessedMessage(serviceMsg)
-  const timestamp = useProcessedMessage(epochMsg)
+  const { sendTo } = useStore()
+
+  const service = useSubscription(fullname, "broadcastState", true)
+  const timestamp = useSubscription(fullname, "publishEpoch")
 
   const toggleEditMode = () => {
     setEditMode(!editMode)
@@ -37,11 +32,6 @@ export default function Clock({ fullname }) {
   const handleConfigChange = (event) => {
     const { name, value, type } = event.target
     const newValue = type === "number" ? Number(value) : value
-    // service?.config.intervalMs = newValue
-    // setConfig((prevConfig) => ({
-    //   ...prevConfig,
-    //   [name]: newValue
-    // }))
   }
 
   const handleSaveConfig = () => {

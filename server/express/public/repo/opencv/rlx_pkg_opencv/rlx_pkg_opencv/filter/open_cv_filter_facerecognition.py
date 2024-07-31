@@ -207,9 +207,6 @@ class OpenCVFilterFaceRecognition(OpenCVFilter):
             self.service.invoke("publishRecognition", recognitions)
             self.last_invoke_time = current_time  # Update last invoke time
 
-            if self.service:
-                self.service.invoke("publishRecognition", recognitions)
-
         return frame
 
     def to_dict(self):

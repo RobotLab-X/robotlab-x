@@ -1,41 +1,28 @@
 import ExpandLessIcon from "@mui/icons-material/ExpandLess"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import { Box } from "@mui/material"
+import CaptureControl from "components/opencv/CaptureControl"
+import Configuration from "components/opencv/Configuration"
+import FilterDialog from "components/opencv/FilterDialog"
+import Filters from "components/opencv/Filters"
+import PossibleFilters from "components/opencv/PossibleFilters"
 import React, { useEffect, useRef, useState } from "react"
-// import OpenCVWizard from "wizards/OpenCVWizard"
+import { useStore } from "store/store"
+import useSubscription from "store/useSubscription"
 import PythonWizard from "wizards/PythonWizard"
-import CaptureControl from "../components/opencv/CaptureControl"
-import Configuration from "../components/opencv/Configuration"
-import FilterDialog from "../components/opencv/FilterDialog"
-import Filters from "../components/opencv/Filters"
-import PossibleFilters from "../components/opencv/PossibleFilters"
-import { useProcessedMessage } from "../hooks/useProcessedMessage"
-import { useStore } from "../store/store"
-import useServiceSubscription from "../store/useServiceSubscription"
 
 export default function OpenCV({ fullname }) {
   console.debug(`OpenCV ${fullname}`)
 
   const [editMode, setEditMode] = useState(false)
-  const { useMessage, sendTo } = useStore()
+  const { sendTo } = useStore()
 
-  const publishFpsMsg = useMessage(fullname, "publishFps")
-  const publishDetectionMsg = useMessage(fullname, "publishDetection")
-  const publishRecognitionMsg = useMessage(fullname, "publishRecognition")
-  const publishInputBase64Msg = useMessage(fullname, "publishInputBase64")
-
-  const serviceMsg = useServiceSubscription(fullname, [
-    "publishFps",
-    "publishDetection",
-    "publishRecognition",
-    "publishInputBase64"
-  ])
-
-  const service = useProcessedMessage(serviceMsg)
-  const publishFps = useProcessedMessage(publishFpsMsg)
-  const publishDetection = useProcessedMessage(publishDetectionMsg)
-  const publishRecognition = useProcessedMessage(publishRecognitionMsg)
-  const publishInputBase64 = useProcessedMessage(publishInputBase64Msg)
+  const service = useSubscription(fullname, "broadcastState", true)
+  const status = useSubscription(fullname, "publishStatus")
+  const publishFps = useSubscription(fullname, "publishFps")
+  const publishDetection = useSubscription(fullname, "publishDetection")
+  const publishRecognition = useSubscription(fullname, "publishRecognition")
+  const publishBase64Image = useSubscription(fullname, "publishBase64Image")
 
   const [possibleFilters] = useState(["Canny", "Yolo3", "FaceDetect", "FaceRecognition"])
   const [selectedFilterType, setSelectedFilterType] = useState(null)
@@ -110,9 +97,10 @@ export default function OpenCV({ fullname }) {
             handleSaveConfig={handleSaveConfig}
           />
         )}
-        Fps {publishFps} Detection {JSON.stringify(publishDetection)} Recognition {JSON.stringify(publishRecognition)}
+        Fps {publishFps} Status {status} Detection {JSON.stringify(publishDetection)} Recognition{" "}
+        {JSON.stringify(publishRecognition)}
         <br />
-        {publishInputBase64 && <img src={`data:image/jpg;base64,${publishInputBase64}`} alt="input" />}
+        {publishBase64Image && <img src={`data:image/jpg;base64,${publishBase64Image}`} alt="input" />}
         <Box sx={{ display: "flex", justifyContent: "space-between", maxWidth: { xs: "100%", sm: "80%", md: "80%" } }}>
           <Filters
             service={service}

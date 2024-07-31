@@ -428,14 +428,17 @@ export default class Service implements Gateway {
   }
 
   info(msg: string | null) {
+    log.info(msg)
     this.invoke("publishStatus", new Status("info", msg, this.name))
   }
 
   warn(msg: string | null) {
+    log.warn(msg)
     this.invoke("publishStatus", new Status("warn", msg, this.name))
   }
 
   error(msg: string | null) {
+    log.error(msg)
     this.invoke("publishStatus", new Status("error", msg, this.name))
   }
 
