@@ -4,31 +4,21 @@ import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined"
 import { IconButton, Paper, Tab, Table, TableBody, TableCell, TableRow, Tabs, Typography } from "@mui/material"
 import ConnectionsPanel from "components/robotlabxruntime/ConnectionsPanel"
 import HostsPanel from "components/robotlabxruntime/HostsPanel"
-import MessageLog from "components/robotlabxruntime/MessageLog"
 import ProcessesPanel from "components/robotlabxruntime/ProcessesPanel"
 import ServicesPanel from "components/robotlabxruntime/ServicesPanel"
 import { TabPanel } from "components/robotlabxruntime/TabPanel"
-import { useProcessedMessage } from "hooks/useProcessedMessage"
-import React, { useEffect, useState } from "react"
+import React, { useState } from "react"
 import { useStore } from "store/store"
-import useServiceSubscription from "store/useServiceSubscription"
+import useSubscription from "store/useSubscription"
 
 export default function RobotLabXRuntime({ name, fullname, id }) {
   console.debug(`RobotLabXRuntime ${fullname}`)
 
-  const { subscribeTo, unsubscribeFrom, useMessage, sendTo } = useStore()
   const registry = useStore((state) => state.registry)
   const getBaseUrl = useStore((state) => state.getBaseUrl)
-  const [messageLog, setMessageLog] = useState([])
-
-  const newServiceMsg = useMessage(fullname, "registered")
-  const repoMsg = useMessage(fullname, "getRepo")
-
-  const serviceMsg = useServiceSubscription(fullname, ["getRepo"])
-  const service = useProcessedMessage(serviceMsg)
-  const repo = useProcessedMessage(repoMsg)
-
   const imagesUrl = `${getBaseUrl()}/public/images`
+
+  const service = useSubscription(fullname, "broadcastState", true)
 
   const [activeTab, setActiveTab] = useState(0)
   const [editMode, setEditMode] = useState(false)
@@ -53,22 +43,6 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
   const handleChange = (event, newValue) => {
     setActiveTab(newValue)
   }
-
-  useEffect(() => {
-    subscribeTo(fullname, "registered")
-    sendTo(fullname, "getRepo")
-    sendTo(fullname, "getLaunchFiles")
-    // why would you do this ?
-    // return () => {
-    //   unsubscribeFrom(fullname, "registered")
-    // }
-  }, [subscribeTo, unsubscribeFrom, fullname, sendTo])
-
-  useEffect(() => {
-    if (newServiceMsg) {
-      console.log("new registered msg:", newServiceMsg)
-    }
-  }, [newServiceMsg])
 
   return (
     <>
@@ -173,8 +147,6 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
           routeTableArray={routeTableArray}
         />
       </TabPanel>
-
-      <MessageLog messageLog={messageLog} />
     </>
   )
 }
