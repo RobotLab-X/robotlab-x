@@ -425,7 +425,7 @@ print(result.stderr.decode(), file=sys.stderr)
       const pipProcess = spawn(command, args)
 
       pipProcess.stdout.on("data", (data: Buffer) => {
-        log.info(`stdout: ${data.toString()}`)
+        log.info(`pip install stdout: ${data.toString()}`)
         if (
           data.toString().includes("Successfully installed") ||
           data.toString().includes("Requirement already satisfied")
@@ -439,11 +439,11 @@ print(result.stderr.decode(), file=sys.stderr)
         const str = data.toString()
         // this.error(`stderr: ${data.toString()}`)
         if (str.startsWith("ERROR:")) {
-          this.error(str)
+          this.error(`pip install stderr: ${str}`)
         } else if (str.startsWith("WARN:")) {
-          this.warn(str)
+          this.warn(`pip install stderr: ${str}`)
         } else {
-          log.info(str)
+          log.info(`pip install stderr: ${str}`)
         }
       })
 
@@ -496,19 +496,19 @@ print(result.stderr.decode(), file=sys.stderr)
       const pipProcess = spawn(command, args, { cwd: this.pkg.cwd })
 
       pipProcess.stdout.on("data", (data: Buffer) => {
-        log.info(`stdout: ${data.toString()}`)
+        log.info(`proxy:stdout: ${data.toString()}`)
       })
 
       pipProcess.stderr.on("data", (data: Buffer) => {
         const str = data.toString()
         // this.error(`stderr: ${data.toString()}`)
         if (str.startsWith("ERROR:")) {
-          this.error(str)
+          this.error(`proxy:stderr: ${str}`)
         } else if (str.startsWith("WARN:")) {
-          this.warn(str)
+          this.warn(`proxy:stderr: ${str}`)
         } else {
           // log.info(str)
-          log.info(str)
+          log.info(`proxy:stderr: ${str}`)
           // Check if the client has connected
           // This comes in on stderr because its "logging" from the client
           if (str.includes("Service started")) {
@@ -556,19 +556,19 @@ print(result.stderr.decode(), file=sys.stderr)
         const output = data.toString()
         stdoutData += output
         // log.info(`stdout: ${output}`) To chatty
-        log.info(`stdout: ${output}`)
+        log.info(`pip install repo stdout: ${output}`)
       })
 
       pipProcess.stderr.on("data", (data: Buffer) => {
         const output = data.toString()
         stderrData += output
         if (output.startsWith("ERROR:")) {
-          this.error(output)
+          this.error(`pip install repo stderr: ${output}`)
         } else if (output.startsWith("WARN:")) {
-          this.warn(output)
+          this.warn(`pip install repo stderr: ${output}`)
         } else {
           // log.info(output) To chatty
-          log.info(output)
+          log.info(`pip install repo stderr: ${output}`)
         }
       })
 
@@ -623,6 +623,8 @@ print(result.stderr.decode(), file=sys.stderr)
     const repo = new Repo()
     repo.installPackage(this.pkg.typeKey)
     log.info(`saved package ${this.pkg.typeKey}`)
+    this.installed = true
+    this.startProxy()
 
     return results
   }

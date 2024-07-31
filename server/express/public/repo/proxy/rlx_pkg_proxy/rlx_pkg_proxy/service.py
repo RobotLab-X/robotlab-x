@@ -132,8 +132,8 @@ class Service:
             )
             json_data = json.dumps(message)
             await self.websocket.send(json_data)
-        except websockets.exceptions.ConnectionClosedError as e:
-            log.info(f"Connection closed: {e}")
+        except Exception as e:
+            log.error(f"Error sending message: {e}")
 
     def subscribe(self, fullname, method_name):
         asyncio.run_coroutine_threadsafe(

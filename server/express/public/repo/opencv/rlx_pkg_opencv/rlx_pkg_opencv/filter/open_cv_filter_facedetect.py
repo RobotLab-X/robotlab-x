@@ -34,10 +34,10 @@ class OpenCVFilterFaceDetect(OpenCVFilter):
                     "class_id": 0,
                     "confidence": 1.0,
                     "label": "face",
-                    "x": x,
-                    "y": y,
-                    "w": w,
-                    "h": h,
+                    "x": int(x),
+                    "y": int(y),
+                    "w": int(w),
+                    "h": int(h),
                     "ts": int(current_time),
                 }
             )
