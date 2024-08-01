@@ -2,7 +2,7 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import { Box, Button, FormControl, IconButton, InputLabel, MenuItem, Select, Typography } from "@mui/material"
 import { useProcessedMessage } from "hooks/useProcessedMessage"
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition"
 import { useStore } from "store/store"
 import useServiceSubscription from "store/useServiceSubscription"
@@ -18,6 +18,8 @@ export default function WebkitSpeechRecognition({ fullname }) {
   const serviceMsg = useServiceSubscription(fullname, ["publishEpoch"])
   const service = useProcessedMessage(serviceMsg)
   const timestamp = useProcessedMessage(epochMsg)
+
+  const previousTranscriptRef = useRef("")
 
   const toggleEditMode = () => {
     setEditMode(!editMode)
@@ -48,7 +50,15 @@ export default function WebkitSpeechRecognition({ fullname }) {
 
   let dateStr = (timestamp && new Date(timestamp).toLocaleString()) || ""
 
-  const { transcript, listening, resetTranscript, browserSupportsSpeechRecognition } = useSpeechRecognition()
+  const {
+    transcript,
+    interimTranscript,
+    finalTranscript,
+    resetTranscript,
+    listening,
+    browserSupportsSpeechRecognition,
+    isMicrophoneAvailable
+  } = useSpeechRecognition()
 
   useEffect(() => {
     if (!listening) {
@@ -60,6 +70,23 @@ export default function WebkitSpeechRecognition({ fullname }) {
       return () => clearTimeout(timer)
     }
   }, [listening, language])
+
+  useEffect(() => {
+    if (finalTranscript) {
+      console.log("Final Transcript:", finalTranscript)
+      sendTo(fullname, "publishText", finalTranscript)
+      resetTranscript()
+    }
+
+    // if (previousTranscriptRef.current !== transcript) {
+    //   console.log("Previous Transcript:", previousTranscriptRef.current)
+    //   console.log("Current Transcript:", transcript)
+    //   let difference = transcript.replace(previousTranscriptRef.current, "").trim()
+    //   console.log("Difference:", difference)
+    //   sendTo(fullname, "publishText", difference)
+    //   previousTranscriptRef.current = transcript
+    // }
+  }, [finalTranscript])
 
   if (!browserSupportsSpeechRecognition) {
     return <Typography variant="body1">Browser doesn't support speech recognition.</Typography>
@@ -81,6 +108,16 @@ export default function WebkitSpeechRecognition({ fullname }) {
 
   return (
     <>
+      <Typography variant="h6">
+        {window.electron ? "This service must run in a browser currently its running in electron" : ""}
+      </Typography>
+
+      <Typography variant="h6">Transcript: {transcript}</Typography>
+
+      <Typography variant="h6">Final Transcript: {finalTranscript}</Typography>
+
+      <Typography variant="h6">Interim Transcript: {interimTranscript}</Typography>
+
       <Box sx={{ display: "flex", alignItems: "center", cursor: "pointer" }} onClick={toggleEditMode}>
         <Typography variant="h6">Configuration</Typography>
         <IconButton>{editMode ? <ExpandLessIcon /> : <ExpandMoreIcon />}</IconButton>
