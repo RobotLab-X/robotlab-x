@@ -57,7 +57,7 @@ jobs:
         run: yarn prebuild
 
       - name: Build
-        run: yarn build-linux
+        run: yarn build-raspi
 
       - name: List dist/packages contents
         run: ls -l dist/packages
@@ -66,7 +66,7 @@ jobs:
         run: chmod +x dist/packages/RobotLab-X-0.9.${{ github.run_number }}.AppImage
 
       - name: Make version folder and move executable to that folder
-        run: mkdir -p artifact/RobotLab-X-0.9.${{ github.run_number }} && mv dist/packages/RobotLab-X-0.9.${{ github.run_number }}.AppImage artifact/RobotLab-X-0.9.${{ github.run_number }}
+        run: mkdir -p artifact/RobotLab-X-0.9.${{ github.run_number }} && mv dist/packages/RobotLab-X-0.9.${{ github.run_number }}.AppImage artifact/RobotLab-X-0.9.${{ github.run_number }}/RobotLab-X-0.9.${{ github.run_number }}-armv7l.AppImage
 
       # - releases can be tar.gz not artifacts
       # - name: Create tarball
@@ -75,10 +75,18 @@ jobs:
       - name: Upload tarball artifact
         uses: actions/upload-artifact@v3
         with:
-          name: RobotLab-X-0.9.${{ github.run_number }}.AppImage
+          name: RobotLab-X-0.9.${{ github.run_number }}-armv7l.AppImage
           path: artifact
           retention-days: 5
 
+      # Uncomment the following lines to upload the .deb artifact
+      # - name: Upload .deb artifact
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: RobotLab-X-0.9.${{ github.run_number }}.deb
+      #     path: dist/packages/RobotLab-X-0.9.${{ github.run_number }}.deb
+
+  # Uncomment the following lines to enable the release step
   # release:
   #   needs: build
   #   runs-on: ubuntu-latest
