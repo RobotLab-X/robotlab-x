@@ -124,14 +124,15 @@ export default class Ollama extends Service {
       const oc = new OllamaClient({ host: this.config.url })
       oc.list().then((models) => {
         this.localModels = models?.models
-        this.invoke("broadcastState")
+        // this.invoke("broadcastState") - bad idea, for a user trying to update a the model
       })
 
       log.info(`listModels ${JSON.stringify(this.localModels, null, 2)}`)
-      this.invoke("broadcastState")
+      // this.invoke("broadcastState") - bad idea, for a user trying to update a the model
     } catch (error: any) {
       log.error(`Error listing models: ${error.message}`)
     }
+    return this.localModels
   }
 
   /**
@@ -142,6 +143,11 @@ export default class Ollama extends Service {
       clearInterval(this.intervalId)
       this.intervalId = null
     }
+  }
+
+  onText(text: string): void {
+    log.info(`onText ${text}`)
+    this.chat(text)
   }
 
   /**

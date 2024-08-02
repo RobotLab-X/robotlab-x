@@ -14,10 +14,9 @@ import {
   TextField,
   Typography
 } from "@mui/material"
-import { useProcessedMessage } from "hooks/useProcessedMessage"
 import React, { useEffect, useState } from "react"
 import { useStore } from "store/store"
-import useServiceSubscription from "store/useServiceSubscription"
+import useSubscription from "store/useSubscription"
 import PromptCard from "./PromptCard"
 
 const ConfigurationSection = ({ fullname }) => {
@@ -31,8 +30,7 @@ const ConfigurationSection = ({ fullname }) => {
   const [selectedModelDetails, setSelectedModelDetails] = useState({ name: "", description: "" })
   const [selectedAvailableModel, setSelectedAvailableModel] = useState("")
 
-  const serviceMsg = useServiceSubscription(fullname, ["publishChat", "publishRequest", "publishResponse"])
-  const service = useProcessedMessage(serviceMsg)
+  const service = useSubscription(fullname, "broadcastState", true)
 
   useEffect(() => {
     if (service) {
