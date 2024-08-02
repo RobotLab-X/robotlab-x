@@ -64,6 +64,9 @@ jobs:
       - name: List dist/packages contents
         run: ls -l dist/packages
 
+      - name: Move to correct name because specifying archive name breaks build
+        run: mv dist/packages/RobotLab-X-0.9.${{ github.run_number }}-0.9.${{ github.run_number }}-arm64.dmg dist/packages/RobotLab-X-0.9.${{ github.run_number }}-arm64.dmg
+
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
