@@ -28,7 +28,8 @@
     },
     "mac": {
       "category": "public.app-category.developer-tools",
-      "icon": "../assets/mac/icon.png"
+      "icon": "../assets/mac/icon.png",
+      "artifactName": "RobotLab-X-0.0.0-arm64.dmg"
     },
     "win": {
       "icon": "../assets/win/icon.png",
@@ -123,6 +124,7 @@
     "wave": "^0.2.3",
     "winston": "^3.13.0",
     "ws": "^8.17.0",
+    "xstate": "^5.16.0",
     "yaml": "^2.4.1"
   }
 }
