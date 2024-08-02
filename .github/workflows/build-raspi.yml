@@ -66,7 +66,7 @@ jobs:
         run: chmod +x dist/packages/RobotLab-X-0.9.${{ github.run_number }}.AppImage
 
       - name: Make version folder and move executable to that folder
-        run: mkdir -p artifact/RobotLab-X-0.9.${{ github.run_number }} && mv dist/packages/RobotLab-X-0.9.${{ github.run_number }}.AppImage artifact/RobotLab-X-0.9.${{ github.run_number }}/RobotLab-X-0.9.${{ github.run_number }}-armv7l.AppImage
+        run: mkdir -p artifact/RobotLab-X-0.9.${{ github.run_number }} && mv dist/packages/RobotLab-X-0.9.${{ github.run_number }}.AppImage artifact/RobotLab-X-0.9.${{ github.run_number }}/RobotLab-X-0.9.${{ github.run_number }}-arm64.AppImage
 
       # - releases can be tar.gz not artifacts
       # - name: Create tarball
@@ -75,7 +75,7 @@ jobs:
       - name: Upload tarball artifact
         uses: actions/upload-artifact@v3
         with:
-          name: RobotLab-X-0.9.${{ github.run_number }}-armv7l.AppImage
+          name: RobotLab-X-0.9.${{ github.run_number }}-arm64.AppImage
           path: artifact
           retention-days: 5
 
