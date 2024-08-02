@@ -6,7 +6,6 @@ import SendIcon from "@mui/icons-material/ForwardToInbox"
 import InfoIcon from "@mui/icons-material/Info"
 import RefreshIcon from "@mui/icons-material/Refresh"
 import SaveIcon from "@mui/icons-material/Save"
-
 import SettingsIcon from "@mui/icons-material/Settings"
 import {
   Box,
@@ -46,10 +45,12 @@ const ServicePage = ({ fullname, name, id }) => {
   const [openDelete, setOpenDelete] = useState(false)
   const navigate = useNavigate()
   const [AsyncPage, setAsyncPage] = useState(null)
+  const [loading, setLoading] = useState(true) // Temporary loading state
 
   useEffect(() => {
-    if (resolvedType) {
-      const loadAsyncPage = async () => {
+    const loadAsyncPage = async () => {
+      setLoading(true)
+      if (resolvedType) {
         try {
           const LoadedPage = await loadable(() => import(`../service/${resolvedType}`))
           setAsyncPage(() => LoadedPage)
@@ -57,10 +58,11 @@ const ServicePage = ({ fullname, name, id }) => {
           setAsyncPage(() => () => <div>Service not found</div>)
         }
       }
-
-      loadAsyncPage()
+      setLoading(false)
     }
-  }, [resolvedType, fullname])
+
+    loadAsyncPage()
+  }, [resolvedType, fullname]) // Ensure this effect runs whenever `resolvedType` or `fullname` changes
 
   const handleDeleteClick = useCallback(() => {
     setOpenDelete(true)
@@ -108,8 +110,8 @@ const ServicePage = ({ fullname, name, id }) => {
   }, [fullname, sendTo])
 
   const asyncPageMemo = useMemo(
-    () => AsyncPage && <AsyncPage page={resolvedType} name={name} id={id} fullname={fullname} />,
-    [AsyncPage, resolvedType, name, id, fullname]
+    () => !loading && AsyncPage && <AsyncPage page={resolvedType} name={name} id={id} fullname={fullname} />,
+    [AsyncPage, resolvedType, name, id, fullname, loading]
   )
 
   const jsonDisplayMemo = useMemo(

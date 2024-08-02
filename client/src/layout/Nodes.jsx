@@ -168,7 +168,12 @@ const Nodes = () => {
         />
         <h3>Service</h3>
         {selectedService ? (
-          <ServicePage fullname={selectedService.fullname} name={selectedService.name} id={selectedService.id} />
+          <ServicePage
+            key={selectedService.fullname}
+            fullname={selectedService.fullname}
+            name={selectedService.name}
+            id={selectedService.id}
+          />
         ) : (
           <Typography>No service selected</Typography>
         )}

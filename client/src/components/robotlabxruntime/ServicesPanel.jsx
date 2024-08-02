@@ -3,34 +3,28 @@ import OpenInBrowserIcon from "@mui/icons-material/OpenInBrowser"
 import PlaylistAddOutlinedIcon from "@mui/icons-material/PlaylistAddOutlined"
 import SaveIcon from "@mui/icons-material/Save"
 import { Box, Grid, IconButton, Typography } from "@mui/material"
-import ConfigurationDialog from "components/ConfigurationDialog"
 import ConnectDialog from "components/ConnectDialog"
 import ServiceDialog from "components/ServiceDialog"
 import { useStore } from "store/store"
 
 import SaveLaunchFileDialog from "components/robotlabxruntime/SaveLaunchFileDialog"
 import StartLaunchFileDialog from "components/robotlabxruntime/StartLaunchFileDialog"
-import { useProcessedMessage } from "hooks/useProcessedMessage"
 import React, { useState } from "react"
 
-import useServiceSubscription from "store/useServiceSubscription"
+import useSubscription from "store/useSubscription"
 
 const ServicesPanel = ({ id, fullname, name }) => {
-  const { subscribeTo, unsubscribeFrom, useMessage, sendTo } = useStore()
+  console.info(`ServicesPanel ${fullname}`)
+  const { sendTo } = useStore()
   const [connectDialogOpen, setConnectDialogOpen] = useState(false)
-  const [configurationDialogOpen, setConfigurationDialogOpen] = useState(false)
   const [startLaunchFileDialogOpen, setStartLaunchFileDialogOpen] = useState(false)
   const [startExamplesDialogOpen, setStartExamplesDialogOpen] = useState(false)
   const [saveLaunchFileDialogOpen, setSaveLaunchFileDialogOpen] = useState(false)
-  const repoMsg = useMessage(fullname, "getRepo")
-  const examplesMsg = useMessage(fullname, "getExamples")
-  const examples = useProcessedMessage(examplesMsg)
-  const launchFilesMsg = useMessage(fullname, "getLaunchFiles")
-  const launchFiles = useProcessedMessage(launchFilesMsg)
 
-  const serviceMsg = useServiceSubscription(fullname, ["getRepo", "getLaunchFiles", "getExamples"])
-  const service = useProcessedMessage(serviceMsg)
-  const repo = useProcessedMessage(repoMsg)
+  const service = useSubscription(fullname, "broadcastState", true)
+  const repo = useSubscription(fullname, "getRepo", true)
+  const launchFiles = useSubscription(fullname, "getLaunchFiles", true)
+  const examples = useSubscription(fullname, "getExamples", true)
 
   const [open, setOpen] = useState(false)
 
@@ -53,18 +47,6 @@ const ServicesPanel = ({ id, fullname, name }) => {
   const handleSaveLaunchFile = () => {
     console.info("handleSaveLaunchFile...")
     setSaveLaunchFileDialogOpen(true)
-  }
-
-  const handleExampleSelect = (exampleName, autolaunch) => {
-    console.info(`Selected example: ${exampleName}`)
-    // setStartExampleDialogOpen(false)
-    // sendTo(fullname, "start", exampleName)
-  }
-
-  const handleLaunchFileSelect = (launchName, autolaunch) => {
-    console.info(`Selected launch file: ${launchName}`)
-    setStartLaunchFileDialogOpen(false)
-    sendTo(fullname, "start", launchName)
   }
 
   const handleSave = (filename, autolaunch) => {
@@ -141,11 +123,7 @@ const ServicesPanel = ({ id, fullname, name }) => {
         onClose={() => setConnectDialogOpen(false)}
       />
       {repo && <ServiceDialog packages={repo} fullname={fullname} open={open} setOpen={setOpen} />}
-      <ConfigurationDialog
-        fullname={fullname}
-        open={configurationDialogOpen}
-        onClose={() => setConfigurationDialogOpen(false)}
-      />
+
       <StartLaunchFileDialog
         fullname={fullname}
         open={startExamplesDialogOpen}

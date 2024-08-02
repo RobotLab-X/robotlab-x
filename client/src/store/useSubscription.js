@@ -6,11 +6,12 @@ const useSubscription = (fullname, topic, init = false) => {
   const message = useMessage(fullname, topic)
   const [processedMessage, setProcessedMessage] = useState(null)
 
-  if (!fullname) {
-    console.error("fullname null in useSubscription!")
-  }
-
   useEffect(() => {
+    if (!fullname) {
+      console.error("fullname null in useSubscription!")
+      return null
+    }
+
     // Subscribe to the main topic
     subscribeTo(fullname, topic)
 
