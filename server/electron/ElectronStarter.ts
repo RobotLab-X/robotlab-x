@@ -8,6 +8,7 @@ import { getLogFilePath, getLogger } from "../express/framework/Log"
 import { HostData } from "../express/models/HostData"
 import { ProcessData } from "../express/models/ProcessData"
 import RobotLabXRuntime from "../express/service/RobotLabXRuntime"
+
 const { app, ipcMain } = require("electron")
 const asar = require("asar")
 const fs = require("fs-extra")
@@ -24,8 +25,10 @@ export default class Main {
   public static hiddenWindow: Electron.BrowserWindow
   public static isPackaged: boolean
   // The root directory of the app in both development and production
+  // in dev this is cwd in prod its where the asar is extracted/dist
   public static distRoot: string = null
   // The root directory of the express server in both development and production
+  // although this location is different depending on dev or prod
   public static publicRoot: string = null
   // The root of the extracted asar file if it exists
   public static extractPath: string
@@ -101,7 +104,7 @@ export default class Main {
         preload: path.join(__dirname, "Preload.js")
       }
     })
-    // Set in Store.ts !!!! not here
+    // FIXME - Set in Store.ts !!!! not here
     Main.startUrl = process.env.ELECTRON_START_URL || "http://localhost:3001/"
     // FIXME - startUrl is not correct when packaged
     log.info(`onReady: Main.startUrl == ${Main.startUrl}`)
@@ -165,7 +168,7 @@ export default class Main {
   private static onWindowAllClosed() {
     log.info("Main.onWindowAllClosed")
     if (process.platform !== "darwin" || Main.quitOnCloseOSX) {
-      Main.app.quit()
+      Main.app?.quit()
     }
   }
 
@@ -191,22 +194,24 @@ export default class Main {
     // if env var or cmdline param CUSTOM_USER_DATA_DIR use that otherwise
     // root of all is cwd - if "dev/!isPackaged" then cwd is the dist directory
     Main.root = process.env.ROOT_DIR || (Main.isPackaged ? process.cwd() : path.join(process.cwd(), "dist"))
-    Main.app.setPath("appData", Main.root)
-    Main.app.setPath("userData", Main.root)
-    Main.app.setPath("sessionData", Main.root)
-    Main.app.setPath("logs", Main.root)
-    Main.app.setPath("temp", path.join(Main.root, "tmp"))
-    Main.app.setPath("crashDumps", Main.root)
+    Main.app?.setPath("appData", Main.root)
+    Main.app?.setPath("userData", Main.root)
+    Main.app?.setPath("sessionData", Main.root)
+    Main.app?.setPath("logs", Main.root)
+    Main.app?.setPath("temp", path.join(Main.root, "tmp"))
+    Main.app?.setPath("crashDumps", Main.root)
 
     log.info(`bootServer: root: ${Main.root}`)
 
     log.info("bootServer: starting server")
-    Main.app.setAppLogsPath
-    log.info(`bootServer: appData: ${Main.app.getPath("appData")}`)
-    Main.app.setPath("userData", path.join(Main.app.getPath("appData"), "robotlab-x"))
-    log.info(`bootServer: userData: ${Main.app.getPath("userData")}`)
+    // Main.app?.setAppLogsPath
+    log.info(`bootServer: appData: ${Main.app?.getPath("appData")}`)
+    if (Main.app) {
+      Main.app?.setPath("userData", path.join(Main.app?.getPath("appData"), "robotlab-x"))
+    }
+    log.info(`bootServer: userData: ${Main.app?.getPath("userData")}`)
 
-    // Main.app.setPath("userData", path.join(app.getPath("appData"), "robotlab-x"))
+    // Main.app?.setPath("userData", path.join(app.getPath("appData"), "robotlab-x"))
 
     Main.logFilePath = getLogFilePath()
 
@@ -215,10 +220,14 @@ export default class Main {
     // if Node.js process, then we need to extract asar and start the server
     log.info(`bootServer: Main.isPackaged == ${Main.isPackaged}`)
     log.info(`bootServer: __dirname == ${__dirname}`)
-    log.info(`bootServer: app.getPath("userData") == ${Main.app.getPath("userData")}`)
+    log.info(`bootServer: app.getPath("userData") == ${Main.app?.getPath("userData")}`)
 
     let asarPath = Main.isPackaged ? path.join(process.resourcesPath, "app.asar") : null
-    Main.extractPath = path.join(Main.app.getPath("userData"), "resources")
+    if (Main.app) {
+      Main.extractPath = path.join(Main.app?.getPath("userData"), "resources")
+    } else {
+      Main.extractPath = path.join(process.cwd(), "dist", "resources")
+    }
 
     log.info(`bootServer: Main.extractPath == ${Main.extractPath} ==`)
     log.info(`bootServer: asarPath == ${asarPath}`)
@@ -294,18 +303,15 @@ export default class Main {
       const serviceDir = path.join(__dirname, "..", "service")
 
       if (!fs.existsSync(Main.extractPath)) {
-        // fs.mkdirSync(Main.extractPath, { recursive: true })
         log.info(`bootServer: extracting asar ${asarPath} ... to ${Main.extractPath}`)
         asar.extractAll(asarPath, Main.extractPath)
       }
       Main.distRoot = path.join(Main.extractPath, "dist")
       Main.publicRoot = path.join(Main.distRoot, "express/public")
     } else {
-      //
       Main.distRoot = path.join(process.cwd(), "dist")
       // not in dist - because we want "live" files in git
       Main.publicRoot = path.join(process.cwd(), "express/public")
-      // Main.publicRoot = path.join(Main.distRoot, "express/public")
     }
 
     // probably absolute file path asap

@@ -2,6 +2,7 @@ import bodyParser from "body-parser"
 import cors from "cors"
 import express from "express"
 import http, { Server as HTTPServer } from "http"
+// import open from "open"
 import path from "path"
 import { v4 as uuidv4 } from "uuid"
 import { WebSocket, Server as WebSocketServer } from "ws"
@@ -14,6 +15,8 @@ import Message from "./models/Message"
 import RobotLabXRuntime from "./service/RobotLabXRuntime"
 
 const session = require("express-session")
+// const open = require('open'); ESM 6 ONLY !!!
+
 const FileStore = require("session-file-store")(session)
 const apiPrefix = "/api/v1/services"
 
@@ -112,6 +115,45 @@ export default class Store {
     } else {
       const bind = typeof addr === "string" ? `pipe ${addr}` : `port ${addr.port}`
       log.info(`listening on ${bind}`)
+
+      // FIXME in ElectonStarter.ts normalize
+      const url = process.env.ELECTRON_START_URL || "http://localhost:3001/"
+
+      // Would use npm "open" package - but it is ESM 6 only !!!
+      if (process.env.DISPLAY || process.platform.startsWith("win")) {
+        try {
+          const { exec } = require("child_process")
+
+          let command
+
+          if (process.platform === "win32") {
+            command = `start ${url}`
+          } else if (process.platform === "darwin") {
+            command = `open ${url}`
+          } else if (process.platform === "linux") {
+            command = `xdg-open ${url}`
+          }
+
+          exec(command, (err: any) => {
+            if (err) {
+              console.error("Error opening the URL:", err)
+            } else {
+              console.log(`Opened ${url} in the default browser.`)
+            }
+          })
+
+          // Opening URL if DISPLAY
+          // open(url)
+          //   .then(() => {
+          //     log.info(`Opened ${url} in the default browser.`)
+          //   })
+          //   .catch((err: any) => {
+          //     log.error("Error opening the URL:", err)
+          //   })
+        } catch (error) {
+          console.error("Error importing child_process:", error)
+        }
+      }
     }
   }
 

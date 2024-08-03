@@ -7,7 +7,7 @@ import useSubscription from "store/useSubscription"
 
 // FIXME remove fullname with context provider
 export default function Clock({ fullname }) {
-  console.debug(`Clock ${fullname}`)
+  console.info(`Clock ${fullname}`)
 
   const [editMode, setEditMode] = useState(false)
   const { sendTo } = useStore()
