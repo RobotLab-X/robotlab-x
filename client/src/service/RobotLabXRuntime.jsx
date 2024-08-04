@@ -12,7 +12,7 @@ import { useStore } from "store/store"
 import useSubscription from "store/useSubscription"
 
 export default function RobotLabXRuntime({ name, fullname, id }) {
-  console.debug(`RobotLabXRuntime ${fullname}`)
+  console.info(`RobotLabXRuntime ${fullname}`)
 
   const registry = useStore((state) => state.registry)
   const getBaseUrl = useStore((state) => state.getBaseUrl)

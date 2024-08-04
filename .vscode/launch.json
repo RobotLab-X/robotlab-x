@@ -7,7 +7,7 @@
         "type": "node",
         "request": "launch",
         "runtimeExecutable": "${workspaceFolder}/server/node_modules/.bin/electron",
-        "program": "${workspaceFolder}/server/dist/electron/ElectronStarter.js",
+        "program": "${workspaceFolder}/server/dist/electron/Main.js",
         "outFiles": ["${workspaceFolder}/server/dist/**/*.js"],
         "sourceMaps": true,
         "console": "integratedTerminal",

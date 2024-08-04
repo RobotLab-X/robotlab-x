@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "description": "Modern robotics framework with a focus on visualization",
   "license": "MPL-2.0",
-  "main": "./dist/electron/ElectronStarter.js",
+  "main": "./dist/electron/Main.js",
   "homepage": "https://robotlab-x.com",
   "author": {
     "name": "GroG",
@@ -58,7 +58,7 @@
     "electron-build-win": "yarn build && yarn copy-public && yarn generate-pkg-file && electron-builder -w",
     "electron-build-linux": "yarn build && yarn copy-public && yarn generate-pkg-file && electron-builder -l",
     "electron-build-raspi": "yarn build && yarn copy-public && yarn generate-pkg-file && electron-builder -l --arm64",
-    "electron-dev": "nodemon --exec \"yarn run build && cross-env ELECTRON_START_URL=http://localhost:3000 electron --inspect ./dist/electron/ElectronStarter.js\"",
+    "electron-dev": "nodemon --exec \"yarn run build && cross-env ELECTRON_START_URL=http://localhost:3000 electron --inspect ./dist/electron/Main.js\"",
     "watch": "npm-run-all --parallel watch-build watch-static",
     "test": "jest",
     "test-coverage": "nyc yarn run test",

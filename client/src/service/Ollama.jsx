@@ -9,7 +9,7 @@ import ChatInput from "components/ollama/ChatInput"
 import ConfigurationSection from "components/ollama/ConfigurationSection"
 
 export default function Ollama({ fullname }) {
-  console.debug(`Ollama ${fullname}`)
+  console.info(`Ollama ${fullname}`)
 
   const { sendTo } = useStore()
   const [config, setConfig] = useState(null)

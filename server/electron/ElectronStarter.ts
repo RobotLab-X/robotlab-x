@@ -48,9 +48,6 @@ export default class Main {
    */
   public static startUrl: string
 
-  // if this variable is set to true in the main constructor, the app will quit when closing it in macOS
-  private static quitOnCloseOSX: boolean
-
   protected static logFilePath: string
 
   // Tray instance
@@ -75,7 +72,6 @@ export default class Main {
     Main.app.on("window-all-closed", Main.onWindowAllClosed)
     Main.app.on("ready", Main.onReady)
     Main.app.on("activate", Main.onActivate)
-    Main.quitOnCloseOSX = true
     Main.bootServer()
   }
 
@@ -167,9 +163,7 @@ export default class Main {
 
   private static onWindowAllClosed() {
     log.info("Main.onWindowAllClosed")
-    if (process.platform !== "darwin" || Main.quitOnCloseOSX) {
-      Main.app?.quit()
-    }
+    Main.app?.quit()
   }
 
   private static onActivate() {
@@ -361,9 +355,3 @@ export default class Main {
     }
   }
 } // Main
-
-if (process.env.ELECTRON_RUN_AS_NODE) {
-  Main.bootServer()
-} else {
-  Main.main()
-}
