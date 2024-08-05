@@ -9,7 +9,7 @@ import crypto from "crypto"
 import fs from "fs"
 import path from "path"
 import { Readable } from "stream"
-import Main from "../../electron/ElectronStarter"
+import Main from "../../electron/Main"
 import { getLogger } from "../framework/Log"
 import Service from "../framework/Service"
 
@@ -114,7 +114,8 @@ export default class Polly extends Service {
     // Trim the text and generate a hash
     const trimmedText = text.trim()
     const hash = crypto.createHash("md5").update(trimmedText).digest("hex")
-    const filename = path.resolve(path.join(Main.publicRoot, "repo", "polly", "cache", `${hash}.mp3`))
+    const main = Main.getInstance()
+    const filename = path.resolve(path.join(main.publicRoot, "repo", "polly", "cache", `${hash}.mp3`))
 
     // Ensure the cache directory exists
     const cacheDir = path.dirname(filename)

@@ -1,7 +1,7 @@
 import fs from "fs"
 import path from "path"
 import { default as yaml, default as YAML } from "yaml"
-import Main from "../../electron/ElectronStarter"
+import Main from "../../electron/Main"
 import Service from "../framework/Service"
 import Package from "../models/Package"
 import { getLogger } from "./Log"
@@ -39,7 +39,8 @@ export class Repo {
     // FIXME - needs to be {dist}/espress/public /repo
     // FIXME - express root is {dist}/express/public /service
     // FIXME - express root is {dist}/express/public /images
-    this.processRepoDirectory(path.join(Main.publicRoot, "repo"))
+    const main = Main.getInstance()
+    this.processRepoDirectory(path.join(main.publicRoot, "repo"))
     this.loadServices()
   }
 
@@ -55,7 +56,8 @@ export class Repo {
       }
       pkgName = pkgName.toLowerCase()
       log.info(`${pkgName} getting package`)
-      const targetDir = path.join(Main.publicRoot, `repo/${pkgName}`)
+      const main = Main.getInstance()
+      const targetDir = path.join(main.publicRoot, `repo/${pkgName}`)
       log.info(`successful ${targetDir}`)
       const pkgYmlFile = `${targetDir}/package.yml`
 
@@ -127,13 +129,15 @@ export class Repo {
   }
 
   installPackage(pkgTypeKey: string) {
-    const installFile = path.join(Main.publicRoot, "repo", pkgTypeKey.toLowerCase(), "installed.txt")
+    const main = Main.getInstance()
+    const installFile = path.join(main.publicRoot, "repo", pkgTypeKey.toLowerCase(), "installed.txt")
     fs.writeFileSync(installFile, new Date().toLocaleString())
     log.info(`package ${pkgTypeKey} installed`)
   }
 
   isInstalled(pkgTypeKey: string): boolean {
-    const installFile = path.join(Main.publicRoot, "repo", pkgTypeKey.toLowerCase(), "installed.txt")
+    const main = Main.getInstance()
+    const installFile = path.join(main.publicRoot, "repo", pkgTypeKey.toLowerCase(), "installed.txt")
     const exists = fs.existsSync(installFile)
     if (exists) {
       log.info(`package ${pkgTypeKey} installed`)

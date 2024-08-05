@@ -1,6 +1,6 @@
 import path from "path"
 // import { send } from "process"
-import Main from "../../electron/ElectronStarter"
+import Main from "../../electron/Main"
 import Gateway from "../interfaces/Gateway"
 import InstallStatus from "../models/InstallStatus"
 import Message from "../models/Message"
@@ -48,7 +48,8 @@ export default class Service implements Gateway {
     this.hostname = hostname
     this.fullname = `${this.name}@${this.id}`
     // FIXME should be publicRoot/data
-    this.dataPath = path.join(Main.publicRoot, `service/${this.name}`)
+    const main = Main.getInstance()
+    this.dataPath = path.join(main.publicRoot, `service/${this.name}`)
   }
 
   getSubscribersForMethod(method: string): SubscriptionListener[] {

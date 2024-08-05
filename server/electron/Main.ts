@@ -1,13 +1,15 @@
 import asar from "asar"
 import fs from "fs"
+import minimist from "minimist"
 import os from "os"
 import path from "path"
 import yaml from "yaml"
 import { getLogFilePath, getLogger } from "../express/framework/Log"
+import RobotLabXRuntime from "../express/service/RobotLabXRuntime"
 
 const log = getLogger("Main")
 
-class Main {
+export default class Main {
   static instance: Main
 
   args: string[]
@@ -44,6 +46,9 @@ class Main {
   startUrl: string
 
   logFilePath: string
+
+  // typeless reference to electron
+  electron: any
 
   // robotlabxruntime/package.yml
   pkg: any
@@ -85,13 +90,14 @@ class Main {
       log.info(`isPackaged: ${this.isPackaged}`)
 
       // if prod everything is in cwd in dev everything is in cwd/dist to keep it clean
-      this.root = process.env.ROOT_DIR || (this.isPackaged ? process.cwd() : path.join(process.cwd(), "dist"))
+      // this.root = process.env.ROOT_DIR || (this.isPackaged ? process.cwd() : path.join(process.cwd(), "dist"))
+      this.root = process.env.ROOT_DIR || process.cwd()
       log.info(`root: ${this.root}`)
 
       this.userData = path.join(this.root, "robotlab-x")
       log.info(`userData: ${this.userData}`)
 
-      if (!this.isPackaged) {
+      if (this.isPackaged) {
         // i think electron-builder compresses all data in this path in the asar file
         this.distRoot = path.join(this.userData, "dist")
       } else {
@@ -140,9 +146,23 @@ class Main {
         return
       }
 
+      const argv = minimist(process.argv.slice(2))
+      log.info(`bootServer: argv: ${JSON.stringify(argv)}`)
+
+      // start RobotLabXRuntime
+      let launchFile = argv.config ? argv.config : "default"
+      // must create instance before startServiceType to fix chicken egg problem
+      let runtime: RobotLabXRuntime = RobotLabXRuntime.createInstance(launchFile)
+
       // start electron or express or both
 
       // no electron if headless
+
+      // load runtime config
+
+      // url config
+      // FIXME - need to appropriately switch https when asked
+      this.serviceUrl = `http://localhost:${runtime.getConfig().port}`
 
       if (!this.hasDisplay()) {
         log.info("No display detected, starting express only")
@@ -195,6 +215,27 @@ class Main {
     `
     log.info(help)
     console.info(help)
+  }
+
+  // FIXME make conditional callbacks to electron
+  setDebug(debug: boolean) {
+    if (debug) {
+      this.electron?.mainWindow.webContents.openDevTools()
+      this.electron?.hiddenWindow.webContents.openDevTools({ mode: "detach" })
+    } else {
+      this.electron?.mainWindow.webContents.closeDevTools()
+      this.electron?.hiddenWindow.webContents.closeDevTools()
+    }
+  }
+
+  public toJSON(): any {
+    return {
+      serviceUrl: this.serviceUrl,
+      startUrl: this.startUrl,
+      isPackaged: this.isPackaged,
+      distRoot: this.distRoot,
+      publicRoot: this.publicRoot
+    }
   }
 }
 

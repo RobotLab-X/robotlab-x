@@ -9,7 +9,7 @@ import path from "path"
 import { send } from "process"
 import { v4 as uuidv4 } from "uuid"
 import { WebSocket } from "ws"
-import Main from "../../electron/ElectronStarter"
+import Main from "../../electron/Main"
 import Store from "../Store"
 import { CodecUtil } from "../framework/CodecUtil"
 import { getLogger } from "../framework/Log"
@@ -89,7 +89,7 @@ export default class RobotLabXRuntime extends Service {
       defaultRoute: this.defaultRoute,
       routeTable: this.routeTable,
       types: this.types,
-      main: Main.toJSON()
+      main: Main.getInstance().toJSON()
     }
   }
 
@@ -368,8 +368,9 @@ export default class RobotLabXRuntime extends Service {
       // Dynamically import the configuration based on the launcher name
       // const configSetName = "default"
       // const configPath = path.join(process.cwd(), "config", configSetName, launcher)
+      const main = Main.getInstance()
 
-      const launchPath = path.join(Main.distRoot, "launch", `${launchFile}.js`)
+      const launchPath = path.join(main.distRoot, "launch", `${launchFile}.js`)
 
       log.info(`launchPath ${launchPath}`)
 
@@ -409,7 +410,9 @@ export default class RobotLabXRuntime extends Service {
       throw new Error("launchFile is null")
     }
 
-    const filePath = path.join(Main.distRoot, "launch", `${launchFile}.js`)
+    const main = Main.getInstance()
+
+    const filePath = path.join(main.distRoot, "launch", `${launchFile}.js`)
 
     let ld: LaunchDescription = null
     let runtimeAction = null
@@ -462,7 +465,7 @@ export default class RobotLabXRuntime extends Service {
       log.error("RobotLabXRuntime instance already exists")
     }
 
-    // FIXME - have a Repo.createInstance() and have it load in ElectronStarter
+    // FIXME - have a Repo.createInstance() and have it load in Main
     instance.repo.load()
 
     // FIXME remove this
@@ -525,7 +528,9 @@ export default class RobotLabXRuntime extends Service {
     launch?.actions?.forEach((action: LaunchAction) => {
       log.info(`Launching package ${action.package} named ${action.name}`)
 
-      const targetDir = path.join(Main.publicRoot, `repo/${action.package}`)
+      const main = Main.getInstance()
+
+      const targetDir = path.join(main.publicRoot, `repo/${action.package}`)
       const pkg: Package = this.getPackage(action.package)
       const serviceType = pkg.typeKey
       let name = null
@@ -971,7 +976,8 @@ export default class RobotLabXRuntime extends Service {
   }
 
   getLaunchFiles(): string[] {
-    const launchDir = path.join(Main.distRoot, "launch")
+    const main = Main.getInstance()
+    const launchDir = path.join(main.distRoot, "launch")
     log.info(`publishLaunchFiles scanning directory ${launchDir}`)
     const launchFiles: string[] = []
     fs.readdirSync(launchDir).forEach((file) => {
@@ -988,7 +994,9 @@ export default class RobotLabXRuntime extends Service {
     if (!fileName.toLowerCase().endsWith(".js")) {
       fileName = fileName + ".js"
     }
-    const launchDir = path.join(Main.distRoot, path.join("launch", fileName))
+
+    const main = Main.getInstance()
+    const launchDir = path.join(main.distRoot, path.join("launch", fileName))
     log.info(`saveLaunchFile saving to ${launchDir}`)
     fs.writeFileSync(launchDir, content, "utf8")
   }
@@ -999,14 +1007,16 @@ export default class RobotLabXRuntime extends Service {
     if (!fileName.toLowerCase().endsWith(".js")) {
       fileName = fileName + ".js"
     }
-    const launchDir = path.join(Main.distRoot, path.join("launch", fileName))
+    const main = Main.getInstance()
+    const launchDir = path.join(main.distRoot, path.join("launch", fileName))
     log.info(`publishLaunchFiles scanning directory ${launchDir}`)
     const launchFile = fs.readFileSync(launchDir, "utf8")
     return launchFile
   }
 
   getExamples(): string[] {
-    const launchDir = path.join(Main.distRoot, path.join("launch", "examples"))
+    const main = Main.getInstance()
+    const launchDir = path.join(main.distRoot, path.join("launch", "examples"))
     log.info(`publishExamples scanning directory ${launchDir}`)
     const launchFiles: string[] = []
     fs.readdirSync(launchDir).forEach((file) => {
@@ -1023,13 +1033,8 @@ export default class RobotLabXRuntime extends Service {
     // TODO change winston's log level
     /// log.setLevel(debug ? "debug" : "info")
 
-    if (debug) {
-      Main.mainWindow.webContents.openDevTools()
-      Main.hiddenWindow.webContents.openDevTools({ mode: "detach" })
-    } else {
-      Main.mainWindow.webContents.closeDevTools()
-      Main.hiddenWindow.webContents.closeDevTools()
-    }
+    const main = Main.getInstance()
+    main.setDebug(debug)
   }
 
   /**
@@ -1309,7 +1314,8 @@ export default class RobotLabXRuntime extends Service {
     }
 
     // make launch directory if it doesn't exist
-    const launchDir = path.join(Main.distRoot, "launch")
+    const main = Main.getInstance()
+    const launchDir = path.join(main.distRoot, "launch")
     if (!fs.existsSync(launchDir)) {
       fs.mkdirSync(launchDir, { recursive: true })
     }

@@ -6,7 +6,7 @@ import http, { Server as HTTPServer } from "http"
 import path from "path"
 import { v4 as uuidv4 } from "uuid"
 import { WebSocket, Server as WebSocketServer } from "ws"
-import Main from "../electron/ElectronStarter"
+import Main from "../electron/Main"
 import { getLogger } from "../express/framework/Log"
 import { CodecUtil } from "./framework/CodecUtil"
 import Service from "./framework/Service"
@@ -74,9 +74,6 @@ export default class Store {
       // FIXME - this is dumb - RuntimeXServer should have config
       log.info(`setting port ${runtime.getConfig().port}`)
       store.express.set("port", runtime.getConfig().port)
-
-      // FIXME - need to appropriately switch https when asked
-      Main.serviceUrl = `http://localhost:${runtime.getConfig().port}`
 
       store.http.listen(runtime.getConfig().port)
       store.http.on("error", Store.onError)
@@ -377,10 +374,11 @@ export default class Store {
     this.express.use(bodyParser.urlencoded({ extended: false }))
 
     // Static file serving
-    this.express.use("/public", express.static(Main.publicRoot))
+    const main = Main.getInstance()
+    this.express.use("/public", express.static(main.publicRoot))
     this.express.use("/log", express.static(path.join(process.cwd(), "robotlab-x.log")))
-    this.express.use("/static", express.static(path.join(Main.distRoot, "client", "static")))
-    this.express.use("/manifest.json", express.static(path.join(Main.distRoot, "client", "manifest.json")))
+    this.express.use("/static", express.static(path.join(main.distRoot, "client", "static")))
+    this.express.use("/manifest.json", express.static(path.join(main.distRoot, "client", "manifest.json")))
 
     // TODO - REMOVE THIS !!! - this.express.use(`${apiPrefix}/*` should handle it
     this.express.use(`${apiPrefix}/runtime/register`, (req, res) => {
@@ -475,10 +473,10 @@ export default class Store {
         // res.sendFile(path.join(Main.distRoot, "client", "index.html"))
 
         // Serve the file based on the requested path
-        res.sendFile(path.join(Main.distRoot, "client", req.originalUrl), (err) => {
+        res.sendFile(path.join(main.distRoot, "client", req.originalUrl), (err) => {
           if (err) {
             // If the file does not exist, serve index.html
-            res.sendFile(path.join(Main.distRoot, "client", "index.html"))
+            res.sendFile(path.join(main.distRoot, "client", "index.html"))
           }
         })
       } else {

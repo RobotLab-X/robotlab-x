@@ -12,7 +12,8 @@
         "sourceMaps": true,
         "console": "integratedTerminal",
         "internalConsoleOptions": "neverOpen",
-        "args": ["--config", "default"]
+        "args": ["--config", "default"],
+        "preLaunchTask": "build server"
       },
       {
         "type": "node",

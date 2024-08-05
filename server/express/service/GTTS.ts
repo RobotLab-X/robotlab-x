@@ -1,7 +1,7 @@
 import crypto from "crypto"
 import fs from "fs"
 import path from "path"
-import Main from "../../electron/ElectronStarter"
+import Main from "../../electron/Main"
 import { getLogger } from "../framework/Log"
 import Service from "../framework/Service"
 const gTTS = require("gtts")
@@ -57,7 +57,8 @@ export default class GTTS extends Service {
     // Trim the text and generate a hash
     const trimmedText = text.trim()
     const hash = crypto.createHash("md5").update(trimmedText).digest("hex")
-    const filename = path.join(Main.publicRoot, "repo", "gtts", "cache", `${hash}.mp3`)
+    const main = Main.getInstance()
+    const filename = path.join(main.publicRoot, "repo", "gtts", "cache", `${hash}.mp3`)
 
     // Ensure the cache directory exists
     const cacheDir = path.dirname(filename)

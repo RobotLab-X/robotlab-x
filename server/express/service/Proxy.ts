@@ -4,7 +4,7 @@ import fs from "fs"
 import path from "path"
 import { PythonShell } from "python-shell"
 import semver from "semver"
-import Main from "../../electron/ElectronStarter"
+import Main from "../../electron/Main"
 import { CodecUtil } from "../framework/CodecUtil"
 import { getLogger } from "../framework/Log"
 import { Repo } from "../framework/Repo"
@@ -78,7 +78,8 @@ export default class Proxy extends Service {
   startService(): void {
     super.startService()
     log.info(`proxy starting service ${this.name} ${this.pkg.proxyTypeKey} ${this.version}`)
-    this.envPath = path.join(Main.publicRoot, "repo", this.pkg.proxyTypeKey.toLowerCase())
+    const main = Main.getInstance()
+    this.envPath = path.join(main.publicRoot, "repo", this.pkg.proxyTypeKey.toLowerCase())
     this.ready = false // not ready until connected
     const runtime: RobotLabXRuntime = RobotLabXRuntime.getInstance()
 
@@ -469,11 +470,12 @@ print(result.stderr.decode(), file=sys.stderr)
 
       // THIS MUST BE FIXED !!!
 
+      const main = Main.getInstance()
       const searchReplace: Record<string, string> = {
         "{{name}}": this.name,
         "{{id}}": this.id,
         // this is runtimes serviceUrl - should proxy open a new one ?
-        "{{serviceUrl}}": Main.serviceUrl
+        "{{serviceUrl}}": main.serviceUrl
       }
 
       const args: string[] = []
@@ -538,7 +540,8 @@ print(result.stderr.decode(), file=sys.stderr)
     const rlx_pkg = CodecUtil.getPipPackageName(typeKey)
 
     const fullPath = path.join(this.envPath, this.envName)
-    const clientPath = path.join(`${Main.publicRoot}`, "repo", typeKey.toLowerCase(), rlx_pkg)
+    const main = Main.getInstance()
+    const clientPath = path.join(`${main.publicRoot}`, "repo", typeKey.toLowerCase(), rlx_pkg)
     log.info(`Installing client ${clientPath} to ${fullPath}`)
 
     return new Promise<string>((resolve, reject) => {

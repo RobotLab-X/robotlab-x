@@ -12,7 +12,7 @@ import {
 } from "ollama"
 import path from "path"
 import yaml from "yaml"
-import Main from "../../electron/ElectronStarter"
+import Main from "../../electron/Main"
 import { getLogger } from "../framework/Log"
 import Service from "../framework/Service"
 
@@ -394,7 +394,8 @@ export default class Ollama extends Service {
   loadPrompts(): void {
     log.info("loadPrompts")
 
-    const promptsDir = path.join(Main.publicRoot, "repo", this.typeKey.toLowerCase(), "prompts")
+    const main = Main.getInstance()
+    const promptsDir = path.join(main.publicRoot, "repo", this.typeKey.toLowerCase(), "prompts")
     if (!fs.existsSync(promptsDir)) {
       log.error(`Prompts directory not found: ${promptsDir}`)
       return
