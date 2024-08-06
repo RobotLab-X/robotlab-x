@@ -115,13 +115,16 @@ export default class Main {
 
       log.info(`distRoot: ${this.distRoot}`)
 
-      this.publicRoot = path.join(this.distRoot, "express", "public")
+      // publicRoot is the path to the public directory - either the dist/express/public (prod) or the express/public (dev)
+      this.publicRoot = this.isPackaged
+        ? path.join(this.distRoot, "express", "public")
+        : path.join(process.cwd(), "express", "public")
       log.info(`publicRoot: ${this.publicRoot}`)
 
       // immutable type and version information
       // should always exist
       // should also allow path to be passed in
-      const runtimeYmlPath = path.join(__dirname, "..", "express", "public", "repo", "robotlabxruntime", "package.yml")
+      const runtimeYmlPath: string = path.join(this.publicRoot, "repo", "robotlabxruntime", "package.yml")
 
       log.info(`runtimeYmlPath: ${runtimeYmlPath}`)
 
