@@ -25,3 +25,4 @@ sessions
 server/express/public/service/*
 yarn-error.log
 server/robotlab-x.log
+server/appData

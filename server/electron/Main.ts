@@ -5,6 +5,8 @@ import os from "os"
 import path from "path"
 import yaml from "yaml"
 import { getLogFilePath, getLogger } from "../express/framework/Log"
+import { HostData } from "../express/models/HostData"
+import { ProcessData } from "../express/models/ProcessData"
 import RobotLabXRuntime from "../express/service/RobotLabXRuntime"
 
 const log = getLogger("Main")
@@ -16,6 +18,9 @@ export default class Main {
 
   // top of the tree
   root: string
+
+  // electron's appData directory
+  appData: string
 
   // user data directory separation from appData vs userData
   userData: string
@@ -94,6 +99,9 @@ export default class Main {
       this.root = process.env.ROOT_DIR || process.cwd()
       log.info(`root: ${this.root}`)
 
+      this.appData = path.join(this.root, "appData")
+      log.info(`appData: ${this.appData}`)
+
       this.userData = path.join(this.root, "robotlab-x")
       log.info(`userData: ${this.userData}`)
 
@@ -107,7 +115,7 @@ export default class Main {
 
       log.info(`distRoot: ${this.distRoot}`)
 
-      this.publicRoot = path.join(this.root, "express", "public")
+      this.publicRoot = path.join(this.distRoot, "express", "public")
       log.info(`publicRoot: ${this.publicRoot}`)
 
       // immutable type and version information
@@ -154,6 +162,19 @@ export default class Main {
       // must create instance before startServiceType to fix chicken egg problem
       let runtime: RobotLabXRuntime = RobotLabXRuntime.createInstance(launchFile)
 
+      runtime.startServiceType("runtime", "RobotLabXRuntime")
+
+      // register the host
+      let host = HostData.getLocalHostData(os)
+
+      // running start before this is critical
+      runtime.registerHost(host)
+      // register process
+      let pd: ProcessData = runtime.getLocalProcessData()
+      pd.hostname = host.hostname
+      runtime.registerProcess(pd)
+      runtime.register(runtime)
+
       // start electron or express or both
 
       // no electron if headless
@@ -163,18 +184,18 @@ export default class Main {
       // url config
       // FIXME - need to appropriately switch https when asked
       this.serviceUrl = `http://localhost:${runtime.getConfig().port}`
+      this.startUrl = process.env.ELECTRON_START_URL || "http://localhost:3001/"
 
-      if (!this.hasDisplay()) {
+      if (this.hasDisplay()) {
         log.info("No display detected, starting express only")
-        const { startExpress } = await import(path.join(__dirname, "ExpressApp"))
-        startExpress()
+        // ExpressAdapter ???
       } else {
         log.info("Display detected, starting electron")
         const { default: ElectronMain } = await import(path.join(__dirname, "ElectronStarter")) // ElectronStarter.ts
-        const { startExpress } = await import(path.join(__dirname, "ExpressAdapter"))
         ElectronMain.main()
-        startExpress()
       }
+
+      // goint to try express only
     } catch (error) {
       log.error(`Main.run error: ${error}`)
     }
@@ -196,10 +217,6 @@ export default class Main {
       Main.instance.run()
     }
     return Main.instance
-  }
-
-  public isGraphicalEnvironmentAvailable(): boolean {
-    return true // !!process.env.DISPLAY
   }
 
   private printHelp(): void {
