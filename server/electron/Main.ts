@@ -189,14 +189,17 @@ export default class Main {
       this.serviceUrl = `http://localhost:${runtime.getConfig().port}`
       this.startUrl = process.env.ELECTRON_START_URL || "http://localhost:3001/"
 
-      if (this.hasDisplay()) {
-        log.info("No display detected, starting express only")
-        // ExpressAdapter ???
-      } else {
-        log.info("Display detected, starting electron")
-        const { default: ElectronMain } = await import(path.join(__dirname, "ElectronStarter")) // ElectronStarter.ts
-        ElectronMain.main()
-      }
+      // app.commandLine.appendSwitch('headless')
+      // app.disableHardwareAcceleration()
+
+      // if (!this.hasDisplay()) {
+      //   log.info("No display detected, starting express only")
+      //   // ExpressAdapter ???
+      // } else {
+      //   log.info("Display detected, starting electron")
+      //   const { default: ElectronMain } = await import(path.join(__dirname, "ElectronStarter")) // ElectronStarter.ts
+      //   ElectronMain.main()
+      // }
 
       // goint to try express only
     } catch (error) {
