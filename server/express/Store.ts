@@ -117,7 +117,10 @@ export default class Store {
       const url = process.env.ELECTRON_START_URL || "http://localhost:3001/"
 
       // Would use npm "open" package - but it is ESM 6 only !!!
-      if (process.env.DISPLAY || process.platform.startsWith("win")) {
+      // if (!Main.getInstance().hasDisplay()) {
+      // FIXME - should be based on config
+      const startBrowser = false
+      if (startBrowser) {
         try {
           const { exec } = require("child_process")
 

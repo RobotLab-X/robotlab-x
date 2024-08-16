@@ -1,4 +1,5 @@
 import {
+  Avatar,
   Button,
   Checkbox,
   Dialog,
@@ -8,6 +9,7 @@ import {
   FormControlLabel,
   List,
   ListItem,
+  ListItemAvatar,
   ListItemText,
   TextField,
   Tooltip
@@ -24,6 +26,8 @@ import "ace-builds/src-noconflict/theme-monokai"
 
 export default function StartLaunchFileDialog({ fullname, open, onClose, launchFiles, isExampleFile }) {
   const { subscribeTo, unsubscribeFrom, useMessage, sendTo } = useStore()
+  const getPublicUrl = useStore((state) => state.getPublicUrl)
+
   const getApiUrl = useStore((state) => state.getApiUrl)
   const [selectedFile, setSelectedFile] = useState(null)
   const [autolaunch, setAutolaunch] = useState(false)
@@ -148,8 +152,16 @@ export default function StartLaunchFileDialog({ fullname, open, onClose, launchF
               <List>
                 {launchFiles &&
                   launchFiles.map((file, index) => (
-                    <ListItem button key={index} selected={selectedFile === file} onClick={() => handleFileClick(file)}>
-                      <ListItemText primary={file} />
+                    <ListItem
+                      button
+                      key={index}
+                      selected={selectedFile === file.path}
+                      onClick={() => handleFileClick(file.path)}
+                    >
+                      <ListItemAvatar>
+                        <Avatar src={getPublicUrl() + `/images/examples/${file.path}.png`} />
+                      </ListItemAvatar>
+                      <ListItemText primary={file.path} secondary={file.description} />
                     </ListItem>
                   ))}
               </List>

@@ -75,6 +75,7 @@
     "@types/semver": "^7.5.8",
     "@types/uuid": "^9.0.8",
     "@types/ws": "^8.5.10",
+    "@types/yaml": "^1.9.7",
     "cross-env": "^7.0.3",
     "electron": "^31.2.1",
     "electron-builder": "^24.13.3",
