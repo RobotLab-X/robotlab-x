@@ -1,4 +1,4 @@
-import Electron, { Tray } from "electron"
+import Electron, { Menu, shell, Tray } from "electron"
 import path from "path"
 import "source-map-support/register"
 import { getLogger } from "../express/framework/Log"
@@ -34,6 +34,83 @@ export default class ElectronStarter {
     ElectronStarter.bootServer()
   }
 
+  public static createMenu = () => {
+    const template: (Electron.MenuItemConstructorOptions | Electron.MenuItem)[] = [
+      {
+        label: "File",
+        submenu: [{ role: "quit" }]
+      },
+      /*
+      {
+        label: "Edit",
+        submenu: [
+          { role: "undo" },
+          { role: "redo" },
+          { type: "separator" },
+          { role: "cut" },
+          { role: "copy" },
+          { role: "paste" }
+        ]
+      },
+      */
+      {
+        label: "View",
+        submenu: [
+          { role: "reload" },
+          { role: "forceReload" }, // Corrected from "forcereload"
+          { role: "toggleDevTools" }, // Corrected from "toggledevtools"
+          { type: "separator" },
+          { role: "resetZoom" }, // Corrected from "resetzoom"
+          { role: "zoomIn" }, // Corrected from "zoomin"
+          { role: "zoomOut" }, // Corrected from "zoomout"
+          { type: "separator" },
+          { role: "togglefullscreen" }
+        ]
+      },
+      {
+        label: "Window",
+        submenu: [{ role: "minimize" }, { role: "close" }]
+      },
+      {
+        label: "Help",
+        submenu: [
+          {
+            label: "Learn about RobotLab-X",
+            click: async () => {
+              // No Subscription required
+              await shell.openExternal("https://www.patreon.com/RobotLabX/posts")
+            }
+          },
+          {
+            label: "RobotLab-X Community",
+            click: async () => {
+              // No Subscription required
+              await shell.openExternal("https://discord.gg/FJnM4GNb")
+            }
+          },
+          {
+            label: "RobotLab-X Tutorials",
+            click: async () => {
+              // Subscription required
+              await shell.openExternal("https://www.patreon.com/RobotLabX/posts")
+            }
+          },
+          {
+            label: "Send a No Worky (Bug Report)",
+            click: async () => {
+              // Subscription required - send No Worky ! - implement !
+              // await shell.openExternal("https://github.com/electron/electron/issues")
+              await shell.openExternal("https://discord.gg/FJnM4GNb")
+            }
+          }
+        ]
+      }
+    ]
+
+    const menu = Menu.buildFromTemplate(template)
+    Menu.setApplicationMenu(menu)
+  }
+
   private static onReady() {
     log.info("ElectronStarter.onReady")
     if (!Main.getInstance().hasDisplay()) {
@@ -42,6 +119,8 @@ export default class ElectronStarter {
     }
 
     const main = Main.getInstance()
+
+    ElectronStarter.createMenu()
 
     log.info(`onReady: ElectronStarter.publicRoot ${main.publicRoot}`)
     ElectronStarter.mainWindow = new ElectronStarter.BrowserWindow({
@@ -129,7 +208,7 @@ export default class ElectronStarter {
     log.info("ElectronStarter.onClose")
     // Dereference the window object.
     //  ElectronStarter.mainWindow = null
-    if (ElectronStarter.hiddenWindow) {
+    if (ElectronStarter.hiddenWindow && !ElectronStarter.hiddenWindow.isDestroyed()) {
       ElectronStarter.hiddenWindow.close()
     }
   }
