@@ -422,6 +422,16 @@ const store = (set, get) => ({
     }
   },
 
+  getType: (fullname) => {
+    const registered = get().registry[fullname]
+
+    let type = registered?.typeKey || "Unknown"
+    // if Proxy, then use the proxyTypeKey
+    const imgType = type === "Proxy" ? registered.proxyTypeKey : type
+
+    return type
+  },
+
   getTypeImage: (fullname) => {
     const registered = get().registry[fullname]
 

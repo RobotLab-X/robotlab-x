@@ -519,6 +519,11 @@ export default class RobotLabXRuntime extends Service {
     return this.repo.getPackage(pkgName)
   }
 
+  getType(fullname: string): string {
+    const service = this.getService(fullname)
+    return service?.pkg?.typeKey
+  }
+
   launch(launch: LaunchDescription) {
     log.info(`launching ${launch?.actions?.length} actions`)
 
@@ -975,14 +980,24 @@ export default class RobotLabXRuntime extends Service {
     return conn
   }
 
-  getLaunchFiles(): string[] {
+  getLaunchFiles(launchDir: string = path.join(Main.getInstance().distRoot, "launch")): any[] {
     const main = Main.getInstance()
-    const launchDir = path.join(main.distRoot, "launch")
-    log.info(`publishLaunchFiles scanning directory ${launchDir}`)
-    const launchFiles: string[] = []
+    log.info(`publishExamples scanning directory ${launchDir}`)
+    const launchFiles: any[] = []
     fs.readdirSync(launchDir).forEach((file) => {
       if (file.endsWith(".js")) {
-        launchFiles.push(file.substring(0, file.length - 3))
+        let ld: LaunchDescription = null
+        try {
+          const filePath = path.join("examples", file)
+          ld = RobotLabXRuntime.getLaunchDescription(filePath)
+        } catch (error) {
+          log.error(`error: ${error}`)
+        }
+        launchFiles.push({
+          imageUrl: path.join(main.publicRoot, "repo", "examples", file),
+          description: ld?.description,
+          path: file
+        })
       }
     })
     return launchFiles
@@ -1015,28 +1030,7 @@ export default class RobotLabXRuntime extends Service {
   }
 
   getExamples(): any[] {
-    const main = Main.getInstance()
-    const launchDir = path.join(main.distRoot, path.join("launch", "examples"))
-    log.info(`publishExamples scanning directory ${launchDir}`)
-    const launchFiles: any[] = []
-    fs.readdirSync(launchDir).forEach((file) => {
-      if (file.endsWith(".js")) {
-        // launchFiles.push(file.substring(0, file.length - 3))
-        let ld: LaunchDescription = null
-        try {
-          const filePath = path.join("examples", file)
-          ld = RobotLabXRuntime.getLaunchDescription(filePath)
-        } catch (error) {
-          log.error(`error: ${error}`)
-        }
-        launchFiles.push({
-          imageUrl: path.join(main.publicRoot, "repo", "examples", file),
-          description: ld?.description,
-          path: file
-        })
-      }
-    })
-    return launchFiles
+    return this.getLaunchFiles(path.join(Main.getInstance().distRoot, "launch", "examples"))
   }
 
   setDebug(debug: boolean) {

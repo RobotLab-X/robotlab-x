@@ -1,5 +1,4 @@
 import {
-  Avatar,
   Button,
   Checkbox,
   Dialog,
@@ -9,7 +8,6 @@ import {
   FormControlLabel,
   List,
   ListItem,
-  ListItemAvatar,
   ListItemText,
   TextField,
   Tooltip
@@ -158,9 +156,22 @@ export default function StartLaunchFileDialog({ fullname, open, onClose, launchF
                       selected={selectedFile === file.path}
                       onClick={() => handleFileClick(file.path)}
                     >
-                      <ListItemAvatar>
-                        <Avatar src={getPublicUrl() + `/images/examples/${file.path}.png`} />
-                      </ListItemAvatar>
+                      <div
+                        style={{
+                          width: "48px",
+                          marginRight: "16px",
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center"
+                        }}
+                      >
+                        <img
+                          src={getPublicUrl() + `/images/examples/${file.path}.png`}
+                          width="48"
+                          height="48"
+                          onError={(e) => (e.target.style.visibility = "hidden")} // Keeps the space even if the image is broken
+                        />
+                      </div>
                       <ListItemText primary={file.path} secondary={file.description} />
                     </ListItem>
                   ))}

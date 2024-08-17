@@ -1,7 +1,8 @@
-import { Box, Typography } from "@mui/material"
+import { Box, Checkbox, FormControlLabel, Typography } from "@mui/material"
 import Graph from "components/robotlabxui/Graph"
 import ServicePage from "components/ServicePage"
 import ServicePane from "components/ServicePane"
+import CodecUtil from "framework/CodecUtil"
 import { useProcessedMessage } from "hooks/useProcessedMessage"
 import useServiceMethods from "hooks/useServiceMethods"
 import React, { useEffect, useState } from "react"
@@ -19,10 +20,11 @@ const Nodes = () => {
   const [imageCache, setImageCache] = useState({}) // State to cache images
   const [isContextMenuVisible, setIsContextMenuVisible] = useState(false) // State for context menu visibility
   const [method1, setMethod1] = useState(null)
+  const [filterUIRoutes, setFilterUIRoutes] = useState(true) // State for checkbox to filter UI routes
   const navigate = useNavigate()
   const { nodeId } = useParams()
   const registry = useStore((state) => state.services)
-  const { useMessage, sendTo } = useStore()
+  const { useMessage, sendTo, getType } = useStore()
   const serviceArray = Object.values(registry)
   const defaultRemoteId = useStore((state) => state.defaultRemoteId)
   const [currentNodeId, setCurrentNodeId] = useState(`runtime@${defaultRemoteId}`) // State for the current node ID
@@ -134,13 +136,14 @@ const Nodes = () => {
 
     return Object.keys(selectedService.notifyList).map((topic) => (
       <Box key={topic} sx={{ marginBottom: "10px" }}>
-        <Typography variant="h6">{topic}</Typography>
         <Box sx={{ paddingLeft: "10px" }}>
-          {selectedService.notifyList[topic].map((entry, index) => (
-            <Typography key={index}>
-              {entry.callbackName}.{entry.callbackMethod} &larr; {entry.topicMethod}
-            </Typography>
-          ))}
+          {selectedService.notifyList[topic]
+            .filter((entry) => !filterUIRoutes || getType(entry.callbackName) !== "RobotLabXUI") // Conditionally filter based on checkbox
+            .map((entry, index) => (
+              <Typography key={index}>
+                {entry.topicMethod} &rarr; {CodecUtil.getShortName(entry.callbackName)}.{entry.callbackMethod}{" "}
+              </Typography>
+            ))}
         </Box>
       </Box>
     ))
@@ -177,7 +180,19 @@ const Nodes = () => {
         ) : (
           <Typography>No service selected</Typography>
         )}
-        <h3>Routes</h3>
+        <h3>
+          Message Routes
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={filterUIRoutes}
+                onChange={() => setFilterUIRoutes((prev) => !prev)} // Toggle filter state
+              />
+            }
+            label="Filter UI Routes"
+            sx={{ marginLeft: "10px" }}
+          />
+        </h3>
         {renderRoutes()}
       </Box>
     </SplitPane>
