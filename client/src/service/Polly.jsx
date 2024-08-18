@@ -1,12 +1,11 @@
 import ExpandLessIcon from "@mui/icons-material/ExpandLess"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
-import { Box, Button, MenuItem, Select, TextField, Typography } from "@mui/material"
+import { Box, Button, Checkbox, FormControlLabel, MenuItem, Select, TextField, Typography } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
 import { useStore } from "../store/store"
 import useServiceSubscription from "../store/useServiceSubscription"
 
-// FIXME remove fullname with context provider
 export default function Polly({ fullname }) {
   console.debug(`Polly ${fullname}`)
 
@@ -15,6 +14,7 @@ export default function Polly({ fullname }) {
   const [secretId, setSecretId] = useState("")
   const [secretAccessKey, setSecretAccessKey] = useState("")
   const [selectedVoice, setSelectedVoice] = useState("")
+  const [autoClear, setAutoClear] = useState(true) // State to control auto-clear functionality
 
   const { useMessage, sendTo } = useStore()
   const publishSpeakingMsg = useMessage(fullname, "publishSpeaking")
@@ -40,6 +40,10 @@ export default function Polly({ fullname }) {
 
   const handleSpeak = () => {
     sendTo(fullname, "speak", text)
+
+    if (autoClear) {
+      setText("") // Clear text if autoClear is enabled
+    }
   }
 
   const handleConfigChange = (event) => {
@@ -56,10 +60,11 @@ export default function Polly({ fullname }) {
   }
 
   const handleSaveConfig = () => {
-    sendTo(fullname, "applyConfigValue", "secretId", secretId)
-    sendTo(fullname, "applyConfigValue", "secretAccessKey", secretAccessKey)
-    sendTo(fullname, "applyConfigValue", "voice", selectedVoice)
-    setEditMode(false)
+    service.config.secretId = secretId
+    service.config.secretAccessKey = secretAccessKey
+    service.config.voice = selectedVoice
+    sendTo(fullname, "applyConfig", service.config)
+    sendTo(fullname, "broadcastState")
   }
 
   return (
@@ -116,7 +121,6 @@ export default function Polly({ fullname }) {
           </Box>
         </Box>
       ) : null}
-
       <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "80%" } }}>
         <Box sx={{ m: 2 }}>
           <Typography variant="h6" sx={{ mb: 2 }}>
@@ -130,16 +134,28 @@ export default function Polly({ fullname }) {
               margin="normal"
               value={text}
               onChange={(e) => setText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleSpeak()
+                }
+              }}
               sx={{ flex: 1 }} // Ensure consistent width
             />
           </Box>
-          <Box>
+          <Box sx={{ display: "flex", alignItems: "center", mt: 2 }}>
             <Button variant="contained" color="primary" onClick={handleSpeak}>
               Speak
             </Button>
+            <FormControlLabel
+              control={
+                <Checkbox checked={autoClear} onChange={(e) => setAutoClear(e.target.checked)} color="primary" />
+              }
+              label="Auto-clear text"
+              sx={{ ml: 2 }}
+            />
           </Box>
         </Box>
-      </Box>
+      </Box>{" "}
     </>
   )
 }

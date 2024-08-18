@@ -45,6 +45,7 @@ const ServicePage = ({ fullname, name, id }) => {
   const navigate = useNavigate()
   const [AsyncPage, setAsyncPage] = useState(null)
   const [loading, setLoading] = useState(true) // Temporary loading state
+  const remoteId = useStore((state) => state.defaultRemoteId)
 
   useEffect(() => {
     const loadAsyncPage = async () => {
@@ -124,6 +125,8 @@ const ServicePage = ({ fullname, name, id }) => {
     [showJson, registered, service, fullname]
   )
 
+  const displayId = remoteId === id ? "" : `@${id}`
+
   return (
     <div className="service-content-div" style={containerStyle2}>
       <Typography variant="h4" component="div" sx={{ display: "flex", alignItems: "center" }}>
@@ -140,7 +143,7 @@ const ServicePage = ({ fullname, name, id }) => {
           <Box width={10} height={10} borderRadius="50%" bgcolor={service?.ready ? "green" : "red"} mr={1} />
         </Tooltip>
         {registered?.name}
-        <span style={{ color: "grey", margin: "0 8px" }}>@{registered?.id}</span>
+        <span style={{ color: "grey" }}>{displayId}</span>
         <Tooltip title="Make message route">
           {/*
           <IconButton onClick={handleMakeMessageRoute} aria-label="api">

@@ -139,6 +139,8 @@ export default class Polly extends Service {
 
       if (!this.client) {
         await this.initializePollyClient()
+        await this.fetchVoices()
+        this.ready = true
       }
 
       const params: SynthesizeSpeechCommandInput = {

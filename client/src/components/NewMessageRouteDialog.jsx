@@ -40,6 +40,7 @@ const NewMessageRouteDialog = ({ open, setOpen, fullname }) => {
     // const newRoute = { fromService: selectedService, methodName: selectedMethod, toService: "SomeOtherService" }
     // setMessageRoutes([...messageRoutes, newRoute])
     sendTo(fullname, "addListener", selectedMethod, selectedService)
+    sendTo(fullname, "broadcastState")
     // Optionally close the dialog after adding
     setOpen(false)
   }
@@ -106,13 +107,21 @@ const NewMessageRouteDialog = ({ open, setOpen, fullname }) => {
             {serviceNames &&
               [...serviceNames]
                 .sort((a, b) => a.localeCompare(b)) // Sort the service names alphabetically
-                .map((service) => (
-                  <MenuItem key={service} value={service}>
-                    {CodecUtil.getShortName(service)}
-                  </MenuItem>
-                ))}
+                .map((service) => {
+                  const [name, id] = service.split("@")
+                  const shortName = CodecUtil.getShortName(service)
+                  const displayId = CodecUtil.getId(service)
+                  const isRemoteId = id === remoteId
+
+                  return (
+                    <MenuItem key={service} value={service}>
+                      {shortName}
+                      {!isRemoteId && <span style={{ color: "grey" }}>@{displayId}</span>}
+                    </MenuItem>
+                  )
+                })}
           </Select>
-        </FormControl>
+        </FormControl>{" "}
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose} color="primary">
