@@ -1246,6 +1246,10 @@ export default class RobotLabXRuntime extends Service {
     ld.description = description
     ld.version = "0.0.1" // FIXME - version of release
 
+    if (!filename.toLowerCase().endsWith(".js")) {
+      filename = filename + ".js"
+    }
+
     // this.getServiceNames().forEach((serviceName: string) => {
     //   const service: Service = this.getService(serviceName)
     //   ld.addNode({
@@ -1340,7 +1344,7 @@ export default class RobotLabXRuntime extends Service {
     const ldjs = ld.serialize(format)
 
     // Write to file
-    fs.writeFileSync(path.join(launchDir, filename + "." + format), ldjs)
+    fs.writeFileSync(path.join(launchDir, filename), ldjs)
     return ldjs
   }
 }

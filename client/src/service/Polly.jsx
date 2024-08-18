@@ -114,7 +114,10 @@ export default function Polly({ fullname }) {
             </Select>
           </Box>
 
-          <Box sx={{ mt: 2, display: "flex", gap: 2 }}>
+          <Box sx={{ mt: 2, display: "flex", gap: 2, justifyContent: "flex-end" }}>
+            <Button variant="contained" color="primary" onClick={handleSaveConfig}>
+              Apply
+            </Button>
             <Button variant="contained" color="primary" onClick={handleSaveConfig}>
               Save
             </Button>

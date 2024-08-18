@@ -13,6 +13,11 @@ const Graph = ({ nodes, links, onNodeClick, onNodeRightClick, imageCache, setIma
       fg.d3Force("charge", null)
       fg.d3Force("center", null)
       fg.d3Force("collide", null)
+
+      // Force a resize after initial render to correct any scaling issues
+      setTimeout(() => {
+        fg.zoomToFit(400, 40) // Adjusts the graph view to fit the canvas with padding
+      }, 100) // Timeout ensures it runs after any initial rendering issues
     }
   }, [])
 

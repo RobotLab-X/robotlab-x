@@ -108,6 +108,16 @@ export default class Polly extends Service {
     this.speak(text)
   }
 
+  applyConfig(config: any): void {
+    super.applyConfig(config)
+    if (this.config.secretAccessKey && this.config.secretId) {
+      this.initializePollyClient()
+      this.fetchVoices()
+      this.ready = true
+      this.invoke("broadcastState")
+    }
+  }
+
   async speak(text: string) {
     log.info(`Polly.speak: ${text}`)
 
