@@ -18,6 +18,7 @@ import {
   Tooltip,
   Typography
 } from "@mui/material"
+import MessageRoutes from "components/MessageRoutes"
 import PkgDialog from "components/PkgDialog"
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 import ReactJson from "react-json-view"
@@ -211,9 +212,7 @@ const ServicePage = ({ fullname, name, id }) => {
       {service && (
         <PkgDialog dialogOpen={pkgDialogOpen} handleDialogClose={handlePkgDialogClose} fullname={service.fullname} />
       )}
-      {/*
-      <NewMessageRouteDialog open={messageRouteDialogOpen} setOpen={setMessageRouteDialogOpen} fullname={fullname} />
-      */}
+      {service && <MessageRoutes fullname={service.fullname} />}
     </div>
   )
 }

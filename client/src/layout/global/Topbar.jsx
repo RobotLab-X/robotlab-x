@@ -18,8 +18,11 @@ import {
   useTheme
 } from "@mui/material"
 import InputAdornment from "@mui/material/InputAdornment"
+import { useProcessedMessage } from "hooks/useProcessedMessage"
 import React, { useContext, useEffect, useState } from "react"
 import { useStore } from "store/store"
+import useServiceSubscription from "store/useServiceSubscription"
+
 import { ColorModeContext } from "../../theme"
 
 const Topbar = () => {
@@ -33,7 +36,12 @@ const Topbar = () => {
   const remoteId = useStore((state) => state.defaultRemoteId)
   const sendTo = useStore((state) => state.sendTo)
 
+  const serviceMsg = useServiceSubscription(`runtime@${remoteId}`)
+  const service = useProcessedMessage(serviceMsg)
+
   useEffect(() => {
+    // Fetch version information from the electron API
+    // BE AWARE ! - window.electron does not exist in browser !!!
     const versionInfo = window?.electron?.getVersions()
     setVersions(versionInfo)
   }, [])
@@ -55,24 +63,28 @@ const Topbar = () => {
     console.log("Shutdown canceled")
   }
 
+  const host = (service && Object.values(service?.hosts)[0]) || {}
+
   return (
     <Box display="flex" justifyContent="space-between" alignItems="center" p={2}>
       <Box display="flex" flexGrow={1} alignItems="center">
-        <TextField
-          fullWidth
-          variant="outlined"
-          placeholder="Search..."
-          onChange={(e) => setFilter(e.target.value)}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon />
-              </InputAdornment>
-            )
-          }}
-        />
-        <Typography variant="h4" component="span" ml={2}>
-          {remoteId}
+        <Box width={280} mr={2}>
+          <TextField
+            fullWidth
+            variant="outlined"
+            placeholder="Search..."
+            onChange={(e) => setFilter(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              )
+            }}
+          />
+        </Box>
+        <Typography variant="h4" component="span">
+          {remoteId} {host?.platform} {service?.pkg?.version}
         </Typography>
       </Box>
 

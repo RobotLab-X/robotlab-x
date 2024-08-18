@@ -1,6 +1,6 @@
+import AddIcon from "@mui/icons-material/Add"
 import InputOutlinedIcon from "@mui/icons-material/InputOutlined"
 import OpenInBrowserIcon from "@mui/icons-material/OpenInBrowser"
-import PlaylistAddOutlinedIcon from "@mui/icons-material/PlaylistAddOutlined"
 import SaveIcon from "@mui/icons-material/Save"
 import { Box, Grid, IconButton, Typography } from "@mui/material"
 import ConnectDialog from "components/ConnectDialog"
@@ -66,7 +66,7 @@ const ServicesPanel = ({ id, fullname, name }) => {
             <Grid container alignItems="center">
               <Grid item>
                 <IconButton onClick={handleStartNewService}>
-                  <PlaylistAddOutlinedIcon />
+                  <AddIcon />
                 </IconButton>
               </Grid>
               <Grid item>

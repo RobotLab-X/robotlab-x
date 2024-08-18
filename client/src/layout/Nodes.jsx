@@ -1,5 +1,4 @@
 import { Box, Typography } from "@mui/material"
-import MessageRoutes from "components/MessageRoutes"
 import Graph from "components/robotlabxui/Graph"
 import ServicePage from "components/ServicePage"
 import ServicePane from "components/ServicePane"
@@ -130,7 +129,7 @@ const Nodes = () => {
           setImageCache={setImageCache}
         />
       </Box>
-      <Box sx={{ paddingLeft: "20px" }}>
+      <Box sx={{ paddingLeft: "20px", height: "100%", overflowY: "auto" }}>
         <ServicePane
           service={selectedService}
           mode={mode}
@@ -149,7 +148,6 @@ const Nodes = () => {
         ) : (
           <Typography>No service selected</Typography>
         )}
-        {selectedService && <MessageRoutes fullname={selectedService.fullname} />}
       </Box>
     </SplitPane>
   )
