@@ -1,6 +1,6 @@
 import ExpandLessIcon from "@mui/icons-material/ExpandLess"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
-import { Box, Button, FormControl, IconButton, InputLabel, MenuItem, Select, Typography } from "@mui/material"
+import { Box, Button, FormControl, InputLabel, Link, MenuItem, Select, Typography } from "@mui/material"
 import { useProcessedMessage } from "hooks/useProcessedMessage"
 import React, { useEffect, useRef, useState } from "react"
 import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition"
@@ -18,6 +18,7 @@ export default function WebkitSpeechRecognition({ fullname }) {
   const serviceMsg = useServiceSubscription(fullname, ["publishEpoch"])
   const service = useProcessedMessage(serviceMsg)
   const timestamp = useProcessedMessage(epochMsg)
+  const getBaseUrl = useStore((state) => state.getBaseUrl)
 
   const previousTranscriptRef = useRef("")
 
@@ -109,7 +110,17 @@ export default function WebkitSpeechRecognition({ fullname }) {
   return (
     <>
       <Typography variant="h6">
-        {window.electron ? "This service must run in a browser currently its running in electron" : ""}
+        {window.electron ? (
+          <>
+            This service must run in a browser; currently, it is running in Electron. Click the following link to open
+            the browser:{" "}
+            <Link href={getBaseUrl()} target="_blank" rel="noopener noreferrer">
+              {getBaseUrl()}
+            </Link>
+          </>
+        ) : (
+          ""
+        )}
       </Typography>
 
       <Typography variant="h6">Transcript: {transcript}</Typography>
@@ -118,10 +129,10 @@ export default function WebkitSpeechRecognition({ fullname }) {
 
       <Typography variant="h6">Interim Transcript: {interimTranscript}</Typography>
 
-      <Box sx={{ display: "flex", alignItems: "center", cursor: "pointer" }} onClick={toggleEditMode}>
-        <Typography variant="h6">Configuration</Typography>
-        <IconButton>{editMode ? <ExpandLessIcon /> : <ExpandMoreIcon />}</IconButton>
-      </Box>
+      <h3 style={{ display: "flex", alignItems: "center", cursor: "pointer" }} onClick={toggleEditMode}>
+        Configuration
+        {editMode ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+      </h3>
       {editMode && (
         <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "80%" } }}>
           <FormControl fullWidth margin="normal">
