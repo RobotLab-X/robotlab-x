@@ -104,11 +104,13 @@ const NewMessageRouteDialog = ({ open, setOpen, fullname }) => {
             onOpen={handleGetServiceNames}
           >
             {serviceNames &&
-              serviceNames.map((service) => (
-                <MenuItem key={service} value={service}>
-                  {CodecUtil.getShortName(service)}
-                </MenuItem>
-              ))}
+              [...serviceNames]
+                .sort((a, b) => a.localeCompare(b)) // Sort the service names alphabetically
+                .map((service) => (
+                  <MenuItem key={service} value={service}>
+                    {CodecUtil.getShortName(service)}
+                  </MenuItem>
+                ))}
           </Select>
         </FormControl>
       </DialogContent>

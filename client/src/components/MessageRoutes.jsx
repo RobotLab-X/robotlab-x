@@ -26,6 +26,7 @@ const MessageRoutes = ({ fullname }) => {
     // Implement your delete logic here
     console.log(`Delete route: ${topic} -> ${entry.callbackName}`)
     sendTo(fullname, "removeListener", topic, entry.callbackName, entry.callbackMethod)
+    sendTo(fullname, "broadcastState")
   }
 
   const renderRoutes = () => {
@@ -78,6 +79,8 @@ const MessageRoutes = ({ fullname }) => {
   const toggleExpanded = () => {
     setExpanded((prev) => !prev)
   }
+
+  const remoteId = useStore((state) => state.defaultRemoteId)
 
   return (
     <Box>
