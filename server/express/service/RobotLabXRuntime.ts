@@ -478,6 +478,11 @@ export default class RobotLabXRuntime extends Service {
     return RobotLabXRuntime.instance
   }
 
+  exit(exitCode: number = 0) {
+    log.info("exiting")
+    process.exit(exitCode)
+  }
+
   getClientKeys() {
     return [...this.getClients().keys()]
   }
@@ -1164,6 +1169,11 @@ export default class RobotLabXRuntime extends Service {
       return this.defaultRoute.gatewayId
     }
     return this.routeTable[remoteId].gatewayId
+  }
+
+  relaunch() {
+    log.info("relaunching")
+    Main.getInstance().relaunch()
   }
 
   /**

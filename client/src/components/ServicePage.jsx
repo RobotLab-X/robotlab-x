@@ -2,7 +2,6 @@ import loadable from "@loadable/component"
 import DeleteIcon from "@mui/icons-material/Delete"
 import DescriptionIcon from "@mui/icons-material/Description"
 import FileOpenIcon from "@mui/icons-material/FileOpen"
-import SendIcon from "@mui/icons-material/ForwardToInbox"
 import InfoIcon from "@mui/icons-material/Info"
 import RefreshIcon from "@mui/icons-material/Refresh"
 import SaveIcon from "@mui/icons-material/Save"
@@ -19,7 +18,6 @@ import {
   Tooltip,
   Typography
 } from "@mui/material"
-import NewMessageRouteDialog from "components/NewMessageRouteDialog"
 import PkgDialog from "components/PkgDialog"
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 import ReactJson from "react-json-view"
@@ -143,9 +141,11 @@ const ServicePage = ({ fullname, name, id }) => {
         {registered?.name}
         <span style={{ color: "grey", margin: "0 8px" }}>@{registered?.id}</span>
         <Tooltip title="Make message route">
+          {/*
           <IconButton onClick={handleMakeMessageRoute} aria-label="api">
             <SendIcon />
           </IconButton>
+          */}
         </Tooltip>
         <Tooltip title="Settings">
           <IconButton onClick={handleSettingsClick} aria-label="settings">
@@ -211,7 +211,9 @@ const ServicePage = ({ fullname, name, id }) => {
       {service && (
         <PkgDialog dialogOpen={pkgDialogOpen} handleDialogClose={handlePkgDialogClose} fullname={service.fullname} />
       )}
+      {/*
       <NewMessageRouteDialog open={messageRouteDialogOpen} setOpen={setMessageRouteDialogOpen} fullname={fullname} />
+      */}
     </div>
   )
 }

@@ -69,6 +69,13 @@ export default class Main {
     return false
   }
 
+  relaunch(): void {
+    log.info("Relaunching")
+    this.electron?.relaunch()
+    // FIXME - shut down express gracefully ?
+    // FIXME - if express "only" relaunch express "only"
+  }
+
   async run(): Promise<void> {
     try {
       // add version info
@@ -197,8 +204,11 @@ export default class Main {
         // ExpressAdapter ???
       } else {
         log.info("Display detected, starting electron")
-        const { default: ElectronMain } = await import(path.join(__dirname, "ElectronStarter")) // ElectronStarter.ts
-        ElectronMain.main()
+        const { default: electron } = await import(path.join(__dirname, "ElectronStarter")) // ElectronStarter.ts
+        this.electron = electron
+        this.electron.main()
+        // ElectronMain.relaunch()
+        // main.app = ElectronMain.relaunch xxx
       }
 
       // goint to try express only
@@ -242,6 +252,7 @@ export default class Main {
 
   // FIXME make conditional callbacks to electron
   setDebug(debug: boolean) {
+    log.info(`Setting debug to ${debug}`)
     if (debug) {
       this.electron?.mainWindow.webContents.openDevTools()
       this.electron?.hiddenWindow.webContents.openDevTools({ mode: "detach" })

@@ -100,7 +100,7 @@ export default class ElectronStarter {
             click: async () => {
               // Subscription required - send No Worky ! - implement !
               // await shell.openExternal("https://github.com/electron/electron/issues")
-              await shell.openExternal("https://discord.gg/FJnM4GNb")
+              await shell.openExternal("https://discord.gg/5kuwceeS")
             }
           }
         ]
@@ -109,6 +109,14 @@ export default class ElectronStarter {
 
     const menu = Menu.buildFromTemplate(template)
     Menu.setApplicationMenu(menu)
+  }
+
+  // FIXME restart with same cmd line args
+  public static relaunch() {
+    setTimeout(() => {
+      app.relaunch()
+      app.quit()
+    }, 2000) // 2-second delay
   }
 
   private static onReady() {

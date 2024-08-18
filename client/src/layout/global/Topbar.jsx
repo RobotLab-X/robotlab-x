@@ -41,11 +41,18 @@ const Topbar = () => {
   const handleShutdown = () => {
     setShutdownDialogOpen(false)
     console.log("Shutdown initiated")
+    sendTo("runtime", "exit")
   }
 
   const handleRestart = () => {
+    console.log("Restart initiated")
     setShutdownDialogOpen(false)
-    sendTo("runtime", "restart")
+    sendTo("runtime", "relaunch")
+  }
+
+  const handleCancel = () => {
+    setShutdownDialogOpen(false)
+    console.log("Shutdown canceled")
   }
 
   return (
@@ -108,8 +115,11 @@ const Topbar = () => {
           <Button onClick={handleShutdown} color="error">
             Shutdown
           </Button>
-          <Button onClick={handleRestart} color="primary">
+          <Button onClick={handleRestart} color="primary" autoFocus>
             Restart
+          </Button>
+          <Button onClick={handleCancel} color="primary">
+            Cancel
           </Button>
         </DialogActions>
       </Dialog>

@@ -1,8 +1,8 @@
-import { Box, Checkbox, FormControlLabel, Typography } from "@mui/material"
+import { Box, Typography } from "@mui/material"
+import MessageRoutes from "components/MessageRoutes"
 import Graph from "components/robotlabxui/Graph"
 import ServicePage from "components/ServicePage"
 import ServicePane from "components/ServicePane"
-import CodecUtil from "framework/CodecUtil"
 import { useProcessedMessage } from "hooks/useProcessedMessage"
 import useServiceMethods from "hooks/useServiceMethods"
 import React, { useEffect, useState } from "react"
@@ -18,9 +18,6 @@ const Nodes = () => {
   const [selectedService, setSelectedService] = useState(null) // State for selected service
   const [showGrid, setShowGrid] = useState(true) // State for grid visibility
   const [imageCache, setImageCache] = useState({}) // State to cache images
-  const [isContextMenuVisible, setIsContextMenuVisible] = useState(false) // State for context menu visibility
-  const [method1, setMethod1] = useState(null)
-  const [filterUIRoutes, setFilterUIRoutes] = useState(true) // State for checkbox to filter UI routes
   const navigate = useNavigate()
   const { nodeId } = useParams()
   const registry = useStore((state) => state.services)
@@ -32,19 +29,15 @@ const Nodes = () => {
   const service = useProcessedMessage(serviceMsg)
   const publishMethods = useServiceMethods(currentNodeId)
 
-  // Function to handle node click event and navigate to node details
   const handleNodeClick = (node, event) => {
-    console.info(`Node clicked: ${node.name} ${event}`)
     setSelectedService(serviceArray.find((service) => service.fullname === node.id))
     navigate(`/nodes/${node.id}`)
   }
 
   const handleNodeRightClick = (node, event) => {
     event.preventDefault()
-    console.info(`Node right clicked for node: ${node.name} ${node.fullname} ${node.id}`)
   }
 
-  // Function to initialize node positions in a circular layout
   const initializeNodePositions = (nodes) => {
     const radius = 75
     const angleIncrement = (2 * Math.PI) / nodes?.length || 1
@@ -57,7 +50,6 @@ const Nodes = () => {
     })
   }
 
-  // Function to process notify lists and create links between services
   const processNotifyListLinks = (services) => {
     const links = []
     services.forEach((service) => {
@@ -77,13 +69,11 @@ const Nodes = () => {
     return links
   }
 
-  // useEffect to update nodes and links based on registry and service data
   useEffect(() => {
     if (registry && service) {
       let filteredNodes
       let filteredLinks = []
 
-      // Filter nodes based on selected mode
       if (mode === "services") {
         filteredNodes = serviceArray.map((service) => ({
           id: service.fullname,
@@ -120,34 +110,13 @@ const Nodes = () => {
           })
       }
 
-      // Process notify list links and add to filtered links
       const notifyListLinks = processNotifyListLinks(serviceArray)
       filteredLinks = [...filteredLinks, ...notifyListLinks]
 
-      // Set nodes and links in state
       setNodes(initializeNodePositions(filteredNodes))
       setLinks(filteredLinks)
     }
   }, [registry, nodeId, service, mode])
-
-  // Function to render routes list
-  const renderRoutes = () => {
-    if (!selectedService?.notifyList) return null
-
-    return Object.keys(selectedService.notifyList).map((topic) => (
-      <Box key={topic} sx={{ marginBottom: "10px" }}>
-        <Box sx={{ paddingLeft: "10px" }}>
-          {selectedService.notifyList[topic]
-            .filter((entry) => !filterUIRoutes || getType(entry.callbackName) !== "RobotLabXUI") // Conditionally filter based on checkbox
-            .map((entry, index) => (
-              <Typography key={index}>
-                {entry.topicMethod} &rarr; {CodecUtil.getShortName(entry.callbackName)}.{entry.callbackMethod}{" "}
-              </Typography>
-            ))}
-        </Box>
-      </Box>
-    ))
-  }
 
   return (
     <SplitPane split="vertical" minSize={200} defaultSize="70%">
@@ -180,20 +149,7 @@ const Nodes = () => {
         ) : (
           <Typography>No service selected</Typography>
         )}
-        <h3>
-          Message Routes
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={filterUIRoutes}
-                onChange={() => setFilterUIRoutes((prev) => !prev)} // Toggle filter state
-              />
-            }
-            label="Filter UI Routes"
-            sx={{ marginLeft: "10px" }}
-          />
-        </h3>
-        {renderRoutes()}
+        {selectedService && <MessageRoutes fullname={selectedService.fullname} />}
       </Box>
     </SplitPane>
   )

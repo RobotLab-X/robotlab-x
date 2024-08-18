@@ -23,7 +23,7 @@ const store = (set, get) => ({
   // id: `ui-${get().defaultRemoteId}-${NameGenerator.getName()}`,
   // id: `ui-rlx`,
   // id: NameGenerator.getName(), Does not work !
-  id: "ui",
+  id: browser.name.toLowerCase(),
 
   /**
    * The process/instance which
@@ -36,7 +36,7 @@ const store = (set, get) => ({
 
   // you can't use get inside the initial state to compute derived values
   // because get relies on the store being fully initialized
-  fullname: "ui@ui",
+  fullname: `ui@${browser.name.toLowerCase()}`,
 
   setName: (newName) => {
     console.log("Setting name:", newName)
