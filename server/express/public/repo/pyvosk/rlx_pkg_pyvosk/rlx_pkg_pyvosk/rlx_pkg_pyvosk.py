@@ -52,6 +52,7 @@ class PyVosk(Service):
             "saveAudio": True,
             "rate": None,
             "language": "en-us",  # Default model
+            "filter": ["huh"],
         }
         self.mics = {}
         self.segment_cnt = 0
@@ -99,8 +100,12 @@ class PyVosk(Service):
                         result_msg = json.loads(result_json)
                         result = result_msg.get("text", "")
                         if result:
-                          log.info(f"Recognized text: {result}")
-                          self.invoke("publishText", result)
+                            if (
+                                self.config.get("filter") is None
+                                or result not in self.config["filter"]
+                            ):
+                                log.info(f"Recognized text: {result}")
+                                self.invoke("publishText", result)
                     else:
                         # log.info(f"Partial result: {self.rec.PartialResult()}")
                         pass
