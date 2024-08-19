@@ -95,7 +95,9 @@ export default class RobotLabXRuntime extends Service {
 
   // OVERRIDES Service.ts
   config = {
-    autoLaunch: null as string,
+    autoLaunch: true,
+    // cannot be null !!! - should be in topBar
+    launchFile: "default.js",
     id: null as string,
     logLevel: "info",
     port: 3001,
