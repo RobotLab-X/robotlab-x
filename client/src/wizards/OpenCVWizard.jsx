@@ -56,7 +56,9 @@ export default function OpenCVWizard({ fullname }) {
   const CheckPythonVersion = ({ nextStep }) => {
     return (
       <div>
-        <h2>Step 1 Check for Python</h2>
+        <h2>
+          Step 1 Check for Python {service?.pythonVersion} {service?.pythonVersionOk ? "ok" : "not ok"}
+        </h2>
         {!service?.pythonVersionOk && (
           <Button variant="contained" color="primary" onClick={checkPythonVersion}>
             Check
@@ -74,7 +76,7 @@ export default function OpenCVWizard({ fullname }) {
 
   const CheckPipVersion = ({ previousStep, nextStep }) => (
     <div>
-      <h2>Step 2 Check for Pip</h2>
+      <h2>Step 2 Check for Pip {service?.pipVersion}</h2>
       {!service?.pipVersionOk && (
         <Button variant="contained" color="primary" onClick={checkPipVersion}>
           Check
@@ -166,7 +168,7 @@ export default function OpenCVWizard({ fullname }) {
           Start
         </Button>
       )}
-      {service?.clientConnected && (
+      {service?.installed && (
         <Button variant="contained" color="primary" onClick={nextStep}>
           Next
         </Button>

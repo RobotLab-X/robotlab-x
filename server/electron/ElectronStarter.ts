@@ -1,303 +1,250 @@
-import debug from "debug"
-import Electron, { Tray } from "electron"
-import os from "os"
+import Electron, { Menu, shell, Tray } from "electron"
 import path from "path"
 import "source-map-support/register"
-import yaml from "yaml"
-import { getLogFilePath, getLogger } from "../express/framework/Log"
-import { HostData } from "../express/models/HostData"
-import { ProcessData } from "../express/models/ProcessData"
-import RobotLabXRuntime from "../express/service/RobotLabXRuntime"
-const { app } = require("electron")
+import { getLogger } from "../express/framework/Log"
+import Main from "./Main"
+
+const { app, ipcMain } = require("electron")
 const asar = require("asar")
 const fs = require("fs-extra")
 const minimist = require("minimist")
 const log = getLogger("ElectronStarter")
+const { exec } = require("child_process")
 
-export default class Main {
+export default class ElectronStarter {
+  // FIXME ! - all these statics are a bad idea
+
   private static app: Electron.App
   private static BrowserWindow: typeof Electron.BrowserWindow
   public static mainWindow: Electron.BrowserWindow
-  public static isPackaged: boolean
-  // The root directory of the app in both development and production
-  public static distRoot: string = null
-  // The root directory of the express server in both development and production
-  public static publicRoot: string = null
-  // The root of the extracted asar file if it exists
-  public static extractPath: string
-
-  // Service API AND WS URL - in Prod this will be the same as startUrl
-  // defaults:
-  //
-  // dev Main.serviceUrl = "http://localhost:3001"
-  // dev Main.startUrl = "http://localhost:3000"
-  //
-  // prod Main.serviceUrl = "http://localhost:3000"
-  // prod Main.startUrl = "http://localhost:3000"
-  public static serviceUrl: string
-
-  /**
-   * BrowserWindow.loadURL() will use this URL to load the app
-   */
-  public static startUrl: string
-
-  // if this variable is set to true in the main constructor, the app will quit when closing it in macOS
-  private static quitOnCloseOSX: boolean
-
-  protected static logFilePath: string
+  public static hiddenWindow: Electron.BrowserWindow
 
   // Tray instance
   public static tray: Tray
 
-  protected static version: string
-
-  protected static root: string
-
   public static main() {
-    log.info("Main.main")
-    Main.BrowserWindow = Electron.BrowserWindow
+    log.info("ElectronStarter.main")
+    ElectronStarter.BrowserWindow = Electron.BrowserWindow
     // when running as a service the following line might need to change
-    // assignment of Electron.app to Main.app - we should be done with direct Electron dependencies
-    Main.app = Electron.app
-    Main.isPackaged = app?.isPackaged
-
-    Main.app.on("window-all-closed", Main.onWindowAllClosed)
-    Main.app.on("ready", Main.onReady)
-    Main.app.on("activate", Main.onActivate)
-    Main.quitOnCloseOSX = true
-    Main.bootServer()
+    // assignment of Electron.app to ElectronStarter.app - we should be done with direct Electron dependencies
+    ElectronStarter.app = Electron.app
+    ElectronStarter.app.on("window-all-closed", ElectronStarter.onWindowAllClosed)
+    ElectronStarter.app.on("ready", ElectronStarter.onReady)
+    ElectronStarter.app.on("activate", ElectronStarter.onActivate)
+    ElectronStarter.bootServer()
   }
 
-  public static isGraphicalEnvironmentAvailable(): boolean {
-    return true // !!process.env.DISPLAY
+  public static createMenu = () => {
+    const template: (Electron.MenuItemConstructorOptions | Electron.MenuItem)[] = [
+      {
+        label: "File",
+        submenu: [{ role: "quit" }]
+      },
+      /*
+      {
+        label: "Edit",
+        submenu: [
+          { role: "undo" },
+          { role: "redo" },
+          { type: "separator" },
+          { role: "cut" },
+          { role: "copy" },
+          { role: "paste" }
+        ]
+      },
+      */
+      {
+        label: "View",
+        submenu: [
+          { role: "reload" },
+          { role: "forceReload" }, // Corrected from "forcereload"
+          { role: "toggleDevTools" }, // Corrected from "toggledevtools"
+          { type: "separator" },
+          { role: "resetZoom" }, // Corrected from "resetzoom"
+          { role: "zoomIn" }, // Corrected from "zoomin"
+          { role: "zoomOut" }, // Corrected from "zoomout"
+          { type: "separator" },
+          { role: "togglefullscreen" }
+        ]
+      },
+      {
+        label: "Window",
+        submenu: [{ role: "minimize" }, { role: "close" }]
+      },
+      {
+        label: "Help",
+        submenu: [
+          {
+            label: "Learn about RobotLab-X",
+            click: async () => {
+              // No Subscription required
+              await shell.openExternal("https://www.patreon.com/RobotLabX/posts")
+            }
+          },
+          {
+            label: "RobotLab-X Community",
+            click: async () => {
+              // No Subscription required
+              await shell.openExternal("https://discord.gg/FJnM4GNb")
+            }
+          },
+          {
+            label: "RobotLab-X Tutorials",
+            click: async () => {
+              // Subscription required
+              await shell.openExternal("https://www.patreon.com/RobotLabX/posts")
+            }
+          },
+          {
+            label: "Send a No Worky (Bug Report)",
+            click: async () => {
+              // Subscription required - send No Worky ! - implement !
+              // await shell.openExternal("https://github.com/electron/electron/issues")
+              await shell.openExternal("https://discord.gg/5kuwceeS")
+            }
+          }
+        ]
+      }
+    ]
+
+    const menu = Menu.buildFromTemplate(template)
+    Menu.setApplicationMenu(menu)
+  }
+
+  // FIXME restart with same cmd line args
+  public static relaunch() {
+    setTimeout(() => {
+      app.relaunch()
+      app.quit()
+    }, 2000) // 2-second delay
   }
 
   private static onReady() {
-    log.info("Main.onReady")
-    if (!Main.isGraphicalEnvironmentAvailable()) {
+    log.info("ElectronStarter.onReady")
+    if (!Main.getInstance().hasDisplay()) {
       log.error("Graphical environment not available ... running headless")
       return
     }
 
-    log.info(`onReady: Main.publicRoot ${Main.publicRoot}`)
-    Main.mainWindow = new Main.BrowserWindow({
+    const main = Main.getInstance()
+
+    ElectronStarter.createMenu()
+
+    log.info(`onReady: ElectronStarter.publicRoot ${main.publicRoot}`)
+    ElectronStarter.mainWindow = new ElectronStarter.BrowserWindow({
       width: 800,
       height: 600,
-      icon: path.join(Main.publicRoot, "repo", "robotlab-x-48.png"),
+      icon: path.join(main.publicRoot, "repo", "robotlab-x-48.png"),
       webPreferences: {
+        // nodeIntegration: false,
+        // contextIsolation: true,
         nodeIntegration: false,
         contextIsolation: true,
+        webSecurity: false,
         preload: path.join(__dirname, "Preload.js")
       }
     })
-    // Set in Store.ts !!!! not here
-    Main.startUrl = process.env.ELECTRON_START_URL || "http://localhost:3001/"
+    // FIXME - Set in Store.ts !!!! not here
     // FIXME - startUrl is not correct when packaged
-    log.info(`onReady: Main.startUrl == ${Main.startUrl}`)
-    Main.mainWindow.loadURL(Main.startUrl)
-    if (!Main.isPackaged) {
-      Main.mainWindow.webContents.openDevTools()
-    }
-
-    Main.mainWindow.on("closed", Main.onClose)
+    log.info(`onReady: loadURL ${main.startUrl}`)
+    ElectronStarter.mainWindow.loadURL(main.startUrl)
+    ElectronStarter.mainWindow.on("closed", ElectronStarter.onClose)
 
     // Create the Tray instance and set the tooltip
-    Main.tray = new Tray(path.join(Main.publicRoot, "repo", "robotlab-x-48.png"))
-    Main.tray.setToolTip("RobotLab-X")
+    ElectronStarter.tray = new Tray(path.join(main.publicRoot, "repo", "robotlab-x-48.png"))
+    ElectronStarter.tray.setToolTip("RobotLab-X")
+
+    // Create the hidden window
+    ElectronStarter.hiddenWindow = new ElectronStarter.BrowserWindow({
+      show: false,
+      webPreferences: {
+        webSecurity: false,
+        preload: path.join(__dirname, "Preload.js")
+      }
+    })
+
+    // ElectronStarter.hiddenWindow.loadURL(`${ElectronStarter.startUrl}/hidden.html`)
+    ElectronStarter.hiddenWindow.loadFile(path.join(__dirname, "hidden.html"))
+    // ElectronStarter.hiddenWindow.webContents.openDevTools({ mode: "detach" })
+
+    // IPC handlers from renderers --to--> main process
+    ipcMain.on("play-sound", (event, audioFilePath) => {
+      console.log("Received play-sound in main process:", audioFilePath)
+      // const audioFilePath = path.resolve(process.cwd(), arg)
+      console.log("Resolved audio file path:", audioFilePath)
+      // relayed to hidden renderer
+      ElectronStarter.hiddenWindow.webContents.send("play-sound", audioFilePath)
+    })
+
+    ipcMain.on("get-versions", (event) => {
+      event.returnValue = {
+        chrome: process.versions.chrome,
+        node: process.versions.node,
+        electron: process.versions.electron,
+        appVersion: main.pkg?.version
+      }
+    })
+
+    // ipcMain.on("play-audio", (event, filePath) => {
+    //   const audioPath = path.resolve(filePath)
+    //   exec(`start "" "${audioPath}"`, (error: any) => {
+    //     if (error) {
+    //       console.error(`Error playing audio: ${error.message}`)
+    //     }
+    //   })
+    // })
+
+    // ipcMain.on("get-audio-path", (event, filePath) => {
+    //   const audioPath = path.resolve(filePath)
+    //   event.returnValue = audioPath
+    // })
   }
 
   private static onWindowAllClosed() {
-    log.info("Main.onWindowAllClosed")
-    if (process.platform !== "darwin" || Main.quitOnCloseOSX) {
-      Main.app.quit()
-    }
+    log.info("ElectronStarter.onWindowAllClosed")
+    ElectronStarter.app?.quit()
   }
 
   private static onActivate() {
-    log.info("Main.onActivate")
-    if (Main.mainWindow === null) {
-      Main.onReady()
+    log.info("ElectronStarter.onActivate")
+    if (ElectronStarter.mainWindow === null) {
+      ElectronStarter.onReady()
     }
   }
 
   private static onClose() {
-    log.info("Main.onClose")
+    log.info("ElectronStarter.onClose")
     // Dereference the window object.
-    //  Main.mainWindow = null
+    //  ElectronStarter.mainWindow = null
+    if (ElectronStarter.hiddenWindow && !ElectronStarter.hiddenWindow.isDestroyed()) {
+      ElectronStarter.hiddenWindow.close()
+    }
   }
 
   public static bootServer() {
+    // Electron's path names
     // getPath(name: 'home' | 'appData' | 'userData' | 'sessionData' | 'temp' | 'exe' | 'module' | 'desktop' | 'documents' | 'downloads' | 'music' | 'pictures' | 'videos' | 'recent' | 'logs' | 'crashDumps')
 
-    // if env var or cmdline param CUSTOM_USER_DATA_DIR use that otherwise
-    // root of all is cwd - if "dev/!isPackaged" then cwd is the dist directory
-    Main.root = process.env.ROOT_DIR || process.cwd()
-    Main.app.setPath("appData", Main.root)
-    Main.app.setPath("userData", Main.root)
-    Main.app.setPath("sessionData", Main.root)
-    Main.app.setPath("logs", Main.root)
-    Main.app.setPath("temp", path.join(Main.root, "tmp"))
-    Main.app.setPath("crashDumps", Main.root)
+    const main = Main.getInstance()
 
-    log.info(`bootServer: root: ${Main.root}`)
+    log.info(`bootServer: appData: ${main.appData}`)
 
-    log.info("bootServer: starting server")
-    Main.app.setAppLogsPath
-    log.info(`bootServer: appData: ${Main.app.getPath("appData")}`)
-    Main.app.setPath("userData", path.join(Main.app.getPath("appData"), "robotlab-x"))
-    log.info(`bootServer: userData: ${Main.app.getPath("userData")}`)
+    ElectronStarter.app?.setPath("appData", main.appData)
+    ElectronStarter.app?.setPath("userData", main.appData)
+    ElectronStarter.app?.setPath("sessionData", main.appData)
+    ElectronStarter.app?.setPath("logs", main.appData)
+    ElectronStarter.app?.setPath("temp", path.join(main.appData, "tmp"))
+    ElectronStarter.app?.setPath("crashDumps", main.appData)
 
-    // Main.app.setPath("userData", path.join(app.getPath("appData"), "robotlab-x"))
-
-    Main.logFilePath = getLogFilePath()
-
-    // TODO - determine if we are running as a Node.js process or an Electron process
-    // set static variables based on the process type
-    // if Node.js process, then we need to extract asar and start the server
-    log.info(`bootServer: Main.isPackaged == ${Main.isPackaged}`)
-    log.info(`bootServer: __dirname == ${__dirname}`)
-    log.info(`bootServer: app.getPath("userData") == ${Main.app.getPath("userData")}`)
-
-    let asarPath = Main.isPackaged ? path.join(process.resourcesPath, "app.asar") : null
-    Main.extractPath = path.join(Main.app.getPath("userData"), "resources")
-
-    log.info(`bootServer: Main.extractPath == ${Main.extractPath} ==`)
-    log.info(`bootServer: asarPath == ${asarPath}`)
-
-    // set our version from __dirname (dev mode or asar) - SHOULD EXIST IN ANY CONTEXT !!!
-    const runningRobotLabXRuntimeYmlFilename = path.join(
-      __dirname,
-      "..",
-      "express",
-      "public",
-      "repo",
-      "robotlabxruntime",
-      "package.yml"
-    )
-
-    if (fs.existsSync(runningRobotLabXRuntimeYmlFilename)) {
-      Main.version = yaml.parse(fs.readFileSync(runningRobotLabXRuntimeYmlFilename, "utf8"))?.version
+    log.info(`Electron: appData: ${ElectronStarter.app?.getPath("appData")}`)
+    if (ElectronStarter.app) {
+      ElectronStarter.app?.setPath("userData", path.join(ElectronStarter.app?.getPath("appData"), "robotlab-x"))
     }
-
-    log.info(`bootServer: version ${Main.version}`)
-
-    // check if existing resource versino exists
-    let existingVersion = null
-
-    // In theory the ts/js files would be replaced by the setup
-    // but anything in userData is not replaced, however the dist/resources we will need to manage
-    // asar extract is not forceful and will die silently if already extracted
-
-    // if a previous version exists, move the resources to resources.{version}
-    // extract the new resources
-
-    if (Main.isPackaged && fs.existsSync(asarPath)) {
-      // FIXME - make a flag based on major/minor version which replaces repo if changed
-      // FIXME - this will throw if file exists, will not overwrite - need to resolve
-      // Extract the asar file if it hasn't been extracted already
-
-      // determine if we need to move the previous resources
-      const robotlabxruntimePkgFilename = path.join(
-        Main.extractPath,
-        "dist",
-        "express",
-        "public",
-        "repo",
-        "robotlabxruntime",
-        "package.yml"
-      )
-      if (fs.existsSync(robotlabxruntimePkgFilename)) {
-        log.info(`bootServer: found robotlabxruntime package.yml`)
-        const robotlabxruntimePkg = yaml.parse(fs.readFileSync(robotlabxruntimePkgFilename, "utf8"))
-        existingVersion = robotlabxruntimePkg.version
-        log.info(`bootServer: existingVersion ${existingVersion}`)
-      } else {
-        log.info(`bootServer: no ${runningRobotLabXRuntimeYmlFilename} found`)
-      }
-
-      if (existingVersion && existingVersion !== Main.version) {
-        // move existing resources to resources.{existingVersion}
-
-        // const resourcesDirVersion = path.join(resourcesDir, existingVersion)
-        if (fs.existsSync(Main.extractPath)) {
-          const prevVersionResources = `${Main.extractPath}-${existingVersion}`
-          log.info(`bootServer: moving previous existing resources to ${prevVersionResources}`)
-          fs.renameSync(Main.extractPath, prevVersionResources)
-        }
-      } else {
-        log.info(
-          `bootServer: existing version ${existingVersion} is null or matches current version ${Main.version} not moving resources`
-        )
-      }
-
-      // get internal asar version of RobotLabXRuntime
-      const serviceDir = path.join(__dirname, "..", "service")
-
-      if (!fs.existsSync(Main.extractPath)) {
-        // fs.mkdirSync(Main.extractPath, { recursive: true })
-        log.info(`bootServer: extracting asar ${asarPath} ... to ${Main.extractPath}`)
-        asar.extractAll(asarPath, Main.extractPath)
-      }
-      Main.distRoot = path.join(Main.extractPath, "dist")
-      Main.publicRoot = path.join(Main.distRoot, "express/public")
-    } else {
-      //
-      Main.distRoot = path.join(process.cwd(), "dist")
-      // not in dist - because we want "live" files in git
-      Main.publicRoot = path.join(process.cwd(), "express/public")
-      // Main.publicRoot = path.join(Main.distRoot, "express/public")
-    }
-
-    // probably absolute file path asap
-
-    log.info(`bootServer: Main.distRoot ==== ${Main.distRoot} ====`)
-    log.info(`bootServer: Main.publicRoot == ${Main.publicRoot}`)
-
-    const argv = minimist(process.argv.slice(2))
-    log.info(`bootServer: argv: ${JSON.stringify(argv)}`)
-
-    if (Main.isPackaged) {
-      debug.enable("server")
-    }
-
-    let launchFile = argv.config ? argv.config : "default"
-    // must create instance before startServiceType to fix chicken egg problem
-    let runtime: RobotLabXRuntime = RobotLabXRuntime.createInstance(launchFile)
-
-    // Store needs getId/id to be set
-
-    // starting self .. chicken egg problem
-    // but starting self is a good way to have runtime follow the same processes
-    // as other services and have a consistent lifecycle
-    // runtime.startService()
-    runtime.startServiceType("runtime", "RobotLabXRuntime")
-
-    // register the host
-    let host = HostData.getLocalHostData(os)
-
-    // running start before this is critical
-    runtime.registerHost(host)
-    // register process
-    let pd: ProcessData = runtime.getLocalProcessData()
-    pd.hostname = host.hostname
-    runtime.registerProcess(pd)
-    runtime.register(runtime)
+    log.info(`Electron: userData: ${ElectronStarter.app?.getPath("userData")}`)
   }
 
   public static toJSON(): any {
-    return {
-      serviceUrl: Main.serviceUrl,
-      startUrl: Main.startUrl,
-      isPackaged: Main.isPackaged,
-      distRoot: Main.distRoot,
-      publicRoot: Main.publicRoot,
-      extractPath: Main.extractPath
-    }
+    const main = Main.getInstance()
+    return main.toJSON()
   }
-} // Main
-
-if (process.env.ELECTRON_RUN_AS_NODE) {
-  Main.bootServer()
-} else {
-  Main.main()
-}
+} // ElectronStarter

@@ -5,6 +5,7 @@
   "description": "A cross platform desktop application for creating and running robots",
   "scripts": {
     "start-dev": "concurrently \"cd client && npm start\" \"wait-on http://localhost:3000 && cd server && yarn run electron-dev\"",
+    "prebuild": "cd server && yarn prebuild",
     "install-all": "yarn install && cd server && yarn install && cd ../client && yarn install",
     "clean": "shx rm -rf dist build client/dist client/build server/dist",
     "clean-modules": "shx rm -rf client/node_modules && shx rm -rf server/node_modules && shx rm -rf node_modules",

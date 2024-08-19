@@ -7,11 +7,12 @@ import {
   GenerateRequest,
   GenerateResponse,
   ModelResponse,
-  Ollama as OllamaClient
+  Ollama as OllamaClient,
+  PullRequest
 } from "ollama"
 import path from "path"
 import yaml from "yaml"
-import Main from "../../electron/ElectronStarter"
+import Main from "../../electron/Main"
 import { getLogger } from "../framework/Log"
 import Service from "../framework/Service"
 
@@ -33,7 +34,7 @@ export default class Ollama extends Service {
   config = {
     installed: false,
     url: "http://localhost:11434",
-    model: "llama3",
+    model: "llama3:latest",
     maxHistory: 4,
     wakeWord: "wake",
     sleepWord: "sleep",
@@ -118,6 +119,23 @@ export default class Ollama extends Service {
     }
   }
 
+  listModels() {
+    log.info("listModels")
+    try {
+      const oc = new OllamaClient({ host: this.config.url })
+      oc.list().then((models) => {
+        this.localModels = models?.models
+        // this.invoke("broadcastState") - bad idea, for a user trying to update a the model
+      })
+
+      log.info(`listModels ${JSON.stringify(this.localModels, null, 2)}`)
+      // this.invoke("broadcastState") - bad idea, for a user trying to update a the model
+    } catch (error: any) {
+      log.error(`Error listing models: ${error.message}`)
+    }
+    return this.localModels
+  }
+
   /**
    * Stops the timer that checks the Ollama service status.
    */
@@ -126,6 +144,11 @@ export default class Ollama extends Service {
       clearInterval(this.intervalId)
       this.intervalId = null
     }
+  }
+
+  onText(text: string): void {
+    log.info(`onText ${text}`)
+    this.chat(text)
   }
 
   /**
@@ -380,7 +403,8 @@ export default class Ollama extends Service {
   loadPrompts(): void {
     log.info("loadPrompts")
 
-    const promptsDir = path.join(Main.publicRoot, "repo", this.typeKey.toLowerCase(), "prompts")
+    const main = Main.getInstance()
+    const promptsDir = path.join(main.publicRoot, "repo", this.typeKey.toLowerCase(), "prompts")
     if (!fs.existsSync(promptsDir)) {
       log.error(`Prompts directory not found: ${promptsDir}`)
       return
@@ -405,6 +429,26 @@ export default class Ollama extends Service {
     log.info("Prompts loaded successfully")
   }
 
+  pullModel(model: string, stream: boolean = false) {
+    log.info(`pullModel ${model}`)
+    const oc = new OllamaClient({ host: this.config.url })
+    const pr: PullRequest = { model: model, insecure: true, stream: false }
+    if (stream) {
+      const pr: PullRequest & { stream: true } = { model: model, insecure: true, stream: true }
+      oc.pull(pr)
+    } else {
+      const pr: PullRequest & { stream: false } = { model: model, insecure: true, stream: false }
+      oc.pull(pr)
+        .then((response) => {
+          log.info(`Pull response: ${JSON.stringify(response)}`)
+          this.info(`Pull response: ${JSON.stringify(response)}`)
+        })
+        .catch((error) => {
+          log.error(`Pull error: ${error}`)
+        })
+    }
+  }
+
   startService(): void {
     super.startService()
     // not ready
@@ -427,6 +471,11 @@ export default class Ollama extends Service {
   }
 
   onImage(image: any): void {
+    // log.info(`onImage ${image}`)
+    this.generate([image])
+  }
+
+  onBase64Image(image: any): void {
     // log.info(`onImage ${image}`)
     this.generate([image])
   }

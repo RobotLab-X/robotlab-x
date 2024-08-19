@@ -256,6 +256,7 @@ const Dashboard = () => {
             />
             <Box sx={{ flexGrow: 1, overflow: "auto", padding: "16px" }}>
               <ServicePage
+                key={maximizedService}
                 fullname={maximizedService}
                 name={maximizedService.split("@")[0]}
                 id={maximizedService.split("@")[1]}

@@ -1,8 +1,12 @@
-typeKey: "PyVosk"
+args: ["-u", "proxy.py", "-i", "{{name}}", "-c", "{{serviceUrl}}"] # -u unbuffered output
+author: "GroG"
+categories: ["audio", "microphone", "sound", "speech"]
+typeKey: PyVosk
+proxyTypeKey: PyVosk
 title: "Vosk Speech Recognition"
 platform: "python"
 platformVersion: "3.10"
-description: "Vosk Speech recognition service"
+description: "Vosk Speech recognition service - Linux requires portaudio19-dev"
 version: "0.0.1"
 requirements:
   vosk: ">=0.3.45"
@@ -11,8 +15,5 @@ repoRequirements:
   - "Proxy"
   - "PyVosk"
 visible: true
-args: ["-u","proxy.py", "-i", "{{name}}", "-c", "{{serviceUrl}}"] # -u unbuffered output
-author: "GroG"
 license: "MIT"
-categories: ["audio", "microphone", "sound", "speech"]
 dependencies: null

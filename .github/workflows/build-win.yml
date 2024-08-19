@@ -34,7 +34,6 @@ jobs:
       - name: Install dependencies
         run: |
           yarn config set network-timeout 600000 -g
-          yarn config set registry https://registry.npm.taobao.org
           yarn install-all
 
       - name: Bump version
@@ -43,9 +42,6 @@ jobs:
           $BUILD_NUMBER = ${{ github.run_number }}
           $VERSION = "0.9.$BUILD_NUMBER"
           Write-Host "Bumping version to $VERSION"
-          npx json -I -f package.json -e "this.version='$VERSION'"
-          npx json -I -f server/package.json -e "this.version='$VERSION'"
-          npx json -I -f client/package.json -e "this.version='$VERSION'"
           echo "VERSION=0.9.${{ github.run_number }}" >> $GITHUB_ENV
 
       - name: Print server/package.json
@@ -71,11 +67,17 @@ jobs:
       - name: List dist/packages contents
         run: dir dist\\packages
 
+      # - name: Make version folder and move executable to that folder
+      #   run: mkdir -p artifact/RobotLab-X-0.9.${{ github.run_number }} && mv dist/packages/RobotLab-X-Setup-0.9.${{ github.run_number }}.exe artifact/RobotLab-X-0.9.${{ github.run_number }}
+
+
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: RobotLab-X-Setup-0.9.${{ github.run_number }}.exe
           path: dist/packages/RobotLab-X-Setup-0.9.${{ github.run_number }}.exe
+          retention-days: 5
+
 
   # release:
   #   needs: build

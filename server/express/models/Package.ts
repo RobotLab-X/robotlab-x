@@ -11,6 +11,7 @@ export default class Package {
   license: string | null = null // "MIT"
   platform: string | null = null // "node" | "python" | "java" | "go" | "chrome" | "electron" | "browser"
   platformVersion: string | null = null // "v12.18.3"
+  proxyTypeKey: string | null = null // TestService
   repoRequirements: string[] | null = [] // requirements.txt
   requirements: string[] | null = [] // pip requirements.txt
   title: string | null = null // Test Service

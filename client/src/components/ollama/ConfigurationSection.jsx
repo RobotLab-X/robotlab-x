@@ -15,41 +15,95 @@ import {
   Typography
 } from "@mui/material"
 import React, { useEffect, useState } from "react"
+import { useStore } from "store/store"
+import useSubscription from "store/useSubscription"
 import PromptCard from "./PromptCard"
 
-const ConfigurationSection = ({
-  config,
-  handleConfigChange,
-  handleSaveConfig,
-  handlePrev,
-  handleNext,
-  promptKeys,
-  currentPromptKey,
-  currentPrompt,
-  editMode,
-  setEditMode,
-  getBaseUrl,
-  name,
-  localModels,
-  availableModels
-}) => {
+const ConfigurationSection = ({ fullname }) => {
+  const { sendTo } = useStore()
+  const getBaseUrl = useStore((state) => state.getBaseUrl)
+  const [config, setConfig] = useState(null)
+  const [prompts, setPrompts] = useState({})
+  const [promptKeys, setPromptKeys] = useState([])
+  const [currentPromptIndex, setCurrentPromptIndex] = useState(0)
+  const [editMode, setEditMode] = useState(false)
   const [selectedModelDetails, setSelectedModelDetails] = useState({ name: "", description: "" })
+  const [selectedAvailableModel, setSelectedAvailableModel] = useState("")
 
-  const toggleEditMode = () => setEditMode(!editMode)
+  const service = useSubscription(fullname, "broadcastState", true)
 
   useEffect(() => {
-    const selectedModel =
-      availableModels.find((model) => model.name === config?.model) ||
-      localModels.find((model) => model.name === config?.model)
-    if (selectedModel) {
-      setSelectedModelDetails({
-        name: selectedModel.name,
-        description: selectedModel.description || JSON.stringify(selectedModel.details, null, 2)
-      })
-    } else {
-      setSelectedModelDetails({ name: "", description: "" })
+    if (service) {
+      setConfig(service.config)
+      setPrompts(service.prompts)
+      setPromptKeys(Object.keys(service.prompts))
     }
-  }, [config?.model, availableModels, localModels])
+  }, [service])
+
+  useEffect(() => {
+    if (config?.prompt) {
+      const cardIndex = promptKeys.indexOf(config.prompt)
+      if (cardIndex !== -1) {
+        setCurrentPromptIndex(cardIndex)
+      }
+    }
+  }, [config?.prompt, promptKeys])
+
+  useEffect(() => {
+    if (config) {
+      const selectedModel = service.localModels.find((model) => model.name === config.model)
+      if (selectedModel) {
+        setSelectedModelDetails({
+          name: selectedModel.name,
+          description: selectedModel.description || JSON.stringify(selectedModel.details, null, 2)
+        })
+      } else {
+        setSelectedModelDetails({ name: "", description: "" })
+      }
+    }
+  }, [config, service?.localModels])
+
+  const handleNext = () => {
+    setCurrentPromptIndex((prevIndex) => (prevIndex + 1) % promptKeys.length)
+  }
+
+  const handlePrev = () => {
+    setCurrentPromptIndex((prevIndex) => (prevIndex - 1 + promptKeys.length) % promptKeys.length)
+  }
+
+  const handleLocalModelList = () => {
+    sendTo(fullname, "listModels")
+  }
+
+  const currentPromptKey = promptKeys[currentPromptIndex]
+  const currentPrompt = prompts[currentPromptKey]
+
+  const handlePullModel = () => {
+    if (selectedAvailableModel) {
+      sendTo(fullname, "pullModel", selectedAvailableModel)
+    }
+  }
+
+  const handleSaveConfig = () => {
+    if (config) {
+      config.prompt = currentPromptKey
+      sendTo(fullname, "applyConfig", config)
+      sendTo(fullname, "saveConfig")
+      sendTo(fullname, "broadcastState")
+      setEditMode(false)
+    }
+  }
+
+  const handleConfigChange = (event) => {
+    const { name, value, type } = event.target
+    const newValue = type === "number" ? Number(value) : value
+    setConfig((prevConfig) => ({
+      ...prevConfig,
+      [name]: newValue
+    }))
+  }
+
+  const toggleEditMode = () => setEditMode(!editMode)
 
   return (
     <>
@@ -61,16 +115,17 @@ const ConfigurationSection = ({
         <Box sx={{ maxWidth: { xs: "100%", sm: "80%", md: "80%" } }}>
           <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
             <FormControl variant="outlined" sx={{ minWidth: 200, flex: 1 }}>
-              <InputLabel id="model-select-label">Model</InputLabel>
+              <InputLabel id="local-model-select-label">Local Model</InputLabel>
               <Select
-                labelId="model-select-label"
-                id="model-select"
+                labelId="local-model-select-label"
+                id="local-model-select"
                 name="model"
-                value={config?.model}
+                value={config?.model || ""}
                 onChange={handleConfigChange}
-                label="Model"
+                onClick={handleLocalModelList}
+                label="Local Model"
               >
-                {availableModels.concat(localModels).map((model) => (
+                {service.localModels.map((model) => (
                   <MenuItem key={model.name} value={model.name}>
                     {model.name}
                   </MenuItem>
@@ -86,6 +141,30 @@ const ConfigurationSection = ({
               </Card>
             )}
           </Box>
+          <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+            <FormControl variant="outlined" sx={{ minWidth: 200, flex: 1 }}>
+              <InputLabel id="available-model-select-label">Available Model</InputLabel>
+              <Select
+                labelId="available-model-select-label"
+                id="available-model-select"
+                name="availableModel"
+                value={selectedAvailableModel}
+                onChange={(event) => setSelectedAvailableModel(event.target.value)}
+                label="Available Model"
+              >
+                {service.availableModels.map((model) => (
+                  <MenuItem key={model.name} value={model.name}>
+                    {model.name} - {model.description}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            {selectedAvailableModel && (
+              <Button variant="contained" color="primary" onClick={handlePullModel} sx={{ ml: 2 }}>
+                Pull
+              </Button>
+            )}
+          </Box>
           <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
             <TextField
               label="URL"
@@ -93,7 +172,7 @@ const ConfigurationSection = ({
               variant="outlined"
               fullWidth
               margin="normal"
-              value={config?.url ?? ""}
+              value={config?.url || ""}
               onChange={handleConfigChange}
               sx={{ flex: 1 }}
             />
@@ -104,7 +183,7 @@ const ConfigurationSection = ({
               fullWidth
               margin="normal"
               type="number"
-              value={config?.maxHistory ?? 0}
+              value={config?.maxHistory || 0}
               onChange={handleConfigChange}
               sx={{ flex: 1 }}
             />
@@ -113,12 +192,7 @@ const ConfigurationSection = ({
             <IconButton onClick={handlePrev} disabled={promptKeys.length <= 1}>
               <ArrowBack />
             </IconButton>
-            <PromptCard
-              currentPromptKey={currentPromptKey}
-              currentPrompt={currentPrompt}
-              getBaseUrl={getBaseUrl}
-              name={name}
-            />
+            <PromptCard currentPromptKey={currentPromptKey} currentPrompt={currentPrompt} getBaseUrl={getBaseUrl} />
             <IconButton onClick={handleNext} disabled={promptKeys.length <= 1}>
               <ArrowForward />
             </IconButton>

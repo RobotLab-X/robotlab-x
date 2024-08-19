@@ -1,65 +1,66 @@
 import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined"
 import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined"
 import NotificationsOutlinedIcon from "@mui/icons-material/NotificationsOutlined"
-import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined"
-import StatusList from "../../components/StatusList"
-
+import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew"
 import SearchIcon from "@mui/icons-material/Search"
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined"
 import {
   Box,
   Button,
-  Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
+  DialogContentText,
   DialogTitle,
-  FormControlLabel,
   IconButton,
-  InputAdornment,
   TextField,
   Typography,
   useTheme
 } from "@mui/material"
+import InputAdornment from "@mui/material/InputAdornment"
 import { useProcessedMessage } from "hooks/useProcessedMessage"
-import React, { useContext, useState } from "react"
+import React, { useContext, useEffect, useState } from "react"
 import { useStore } from "store/store"
 import useServiceSubscription from "store/useServiceSubscription"
-import { ColorModeContext, tokens } from "../../theme"
+
+import { ColorModeContext } from "../../theme"
 
 const Topbar = () => {
-  const theme = useTheme()
-  const colors = tokens(theme.palette.mode)
-  const colorMode = useContext(ColorModeContext)
+  const [versions, setVersions] = useState({ appVersion: "", chrome: "", node: "", electron: "" })
   const [filter, setFilter] = useState("")
+  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false)
+  const [shutdownDialogOpen, setShutdownDialogOpen] = useState(false)
+
+  const theme = useTheme()
+  const colorMode = useContext(ColorModeContext)
   const remoteId = useStore((state) => state.defaultRemoteId)
-  const debug = useStore((state) => state.debug)
-  const setDebug = useStore((state) => state.setDebug)
   const sendTo = useStore((state) => state.sendTo)
 
   const serviceMsg = useServiceSubscription(`runtime@${remoteId}`)
   const service = useProcessedMessage(serviceMsg)
 
-  const [dialogOpen, setDialogOpen] = useState(false)
+  useEffect(() => {
+    // Fetch version information from the electron API
+    // BE AWARE ! - window.electron does not exist in browser !!!
+    const versionInfo = window?.electron?.getVersions()
+    setVersions(versionInfo)
+  }, [])
 
-  const statusListStyle = {
-    position: "absolute",
-    bottom: 160,
-    marginBottom: "16px",
-    width: "100%"
+  const handleShutdown = () => {
+    setShutdownDialogOpen(false)
+    console.log("Shutdown initiated")
+    sendTo("runtime", "exit")
   }
 
-  const handleDialogOpen = () => {
-    setDialogOpen(true)
+  const handleRestart = () => {
+    console.log("Restart initiated")
+    setShutdownDialogOpen(false)
+    sendTo("runtime", "relaunch")
   }
 
-  const handleDialogClose = () => {
-    setDialogOpen(false)
-  }
-
-  const handleCheckboxChange = (event) => {
-    setDebug(event.target.checked)
-    sendTo("runtime", "setDebug", event.target.checked)
+  const handleCancel = () => {
+    setShutdownDialogOpen(false)
+    console.log("Shutdown canceled")
   }
 
   const host = (service && Object.values(service?.hosts)[0]) || {}
@@ -89,43 +90,51 @@ const Topbar = () => {
 
       <Box display="flex" alignItems="center">
         <IconButton onClick={colorMode.toggleColorMode}>
-          {theme?.palette?.mode === "dark" ? <DarkModeOutlinedIcon /> : <LightModeOutlinedIcon />}
+          {theme.palette.mode === "dark" ? <DarkModeOutlinedIcon /> : <LightModeOutlinedIcon />}
         </IconButton>
         <IconButton>
           <NotificationsOutlinedIcon />
         </IconButton>
-        <IconButton onClick={handleDialogOpen}>
+        <IconButton onClick={() => setSettingsDialogOpen(true)}>
           <SettingsOutlinedIcon />
         </IconButton>
-        <IconButton>
-          <PersonOutlinedIcon />
+        <IconButton onClick={() => setShutdownDialogOpen(true)}>
+          <PowerSettingsNewIcon />
         </IconButton>
       </Box>
 
-      <Dialog open={dialogOpen} onClose={handleDialogClose}>
+      <Dialog open={settingsDialogOpen} onClose={() => setSettingsDialogOpen(false)}>
         <DialogTitle>Settings</DialogTitle>
         <DialogContent>
-          <FormControlLabel
-            control={<Checkbox checked={debug} onChange={handleCheckboxChange} name="debug" />}
-            label="Debug"
-          />
+          <Typography>App version: {versions?.appVersion}</Typography>
+          <Typography>Chrome version: {versions?.chrome}</Typography>
+          <Typography>Node.js version: {versions?.node}</Typography>
+          <Typography>Electron version: {versions?.electron}</Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleDialogClose} color="primary">
+          <Button onClick={() => setSettingsDialogOpen(false)} color="primary">
             Close
           </Button>
         </DialogActions>
       </Dialog>
 
-      {debug && (
-        <>
-          {" "}
-          <br />
-          <Box sx={statusListStyle}>
-            <StatusList />
-          </Box>
-        </>
-      )}
+      <Dialog open={shutdownDialogOpen} onClose={() => setShutdownDialogOpen(false)}>
+        <DialogTitle>Shutdown or Restart</DialogTitle>
+        <DialogContent>
+          <DialogContentText>Do you want to shutdown or restart the system?</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleShutdown} color="error">
+            Shutdown
+          </Button>
+          <Button onClick={handleRestart} color="primary" autoFocus>
+            Restart
+          </Button>
+          <Button onClick={handleCancel} color="primary">
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   )
 }

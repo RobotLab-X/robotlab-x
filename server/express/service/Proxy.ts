@@ -4,7 +4,7 @@ import fs from "fs"
 import path from "path"
 import { PythonShell } from "python-shell"
 import semver from "semver"
-import Main from "../../electron/ElectronStarter"
+import Main from "../../electron/Main"
 import { CodecUtil } from "../framework/CodecUtil"
 import { getLogger } from "../framework/Log"
 import { Repo } from "../framework/Repo"
@@ -29,6 +29,8 @@ export default class Proxy extends Service {
    * This is the type of the service that the proxy is proxying
    *
    */
+
+  // FIXEM - remove use pkg.proxyTypeKey
   public proxyTypeKey: string = null
 
   protected envName = ".venv"
@@ -71,13 +73,13 @@ export default class Proxy extends Service {
     public hostname: string
   ) {
     super(id, name, typeKey, version, hostname)
-    this.envPath = path.join(Main.publicRoot, "repo", this.typeKey.toLowerCase())
-    // this.envPath = path.join(Main.publicRoot, "repo", this.proxyTypeKey.toLowerCase())
   }
 
   startService(): void {
     super.startService()
-    log.info(`proxy starting service ${this.name} ${this.typeKey} ${this.version}`)
+    log.info(`proxy starting service ${this.name} ${this.pkg.proxyTypeKey} ${this.version}`)
+    const main = Main.getInstance()
+    this.envPath = path.join(main.publicRoot, "repo", this.pkg.proxyTypeKey.toLowerCase())
     this.ready = false // not ready until connected
     const runtime: RobotLabXRuntime = RobotLabXRuntime.getInstance()
 
@@ -202,8 +204,8 @@ export default class Proxy extends Service {
     let ret: any = null
 
     if (msg.data && msg.data.length > 0) {
-      // log.info(`--> ${msg.sender} --> ${msg.name}.${msg.method}(${JSON.stringify(msg.data)})`)
-      log.info(`--> ${msg.sender} --> ${msg.name}.${msg.method}(...)`)
+      log.info(`--> ${msg.sender} --> ${msg.name}.${msg.method}(${JSON.stringify(msg.data)})`)
+      // log.info(`--> ${msg.sender} --> ${msg.name}.${msg.method}(...)`)
     } else {
       log.info(`--> ${msg.sender} --> ${msg.name}.${msg.method}()`)
     }
@@ -277,24 +279,24 @@ export default class Proxy extends Service {
     try {
       // Get the default Python version
       const versionString = PythonShell.getVersionSync()
-      this.info(`Raw Python Version: ${versionString}`)
+      log.info(`Raw Python Version: ${versionString}`)
 
       // Parse the version string to get the semantic version
       const versionMatch = versionString.match(/Python (\d+\.\d+\.\d+)/)
       if (!versionMatch) {
-        this.error("Unable to parse Python version")
+        log.error("Unable to parse Python version")
         return
       }
 
       const currentVersion = versionMatch[1]
-      this.info(`Parsed Python Version: ${currentVersion}`)
+      log.info(`Parsed Python Version: ${currentVersion}`)
 
       // Compare the current version with the required version
       if (semver.gte(currentVersion, requiredVersion)) {
-        this.info(`Current Python version (${currentVersion}) is >= required version (${requiredVersion})`)
+        log.info(`Current Python version (${currentVersion}) is >= required version (${requiredVersion})`)
         this.pythonVersion = currentVersion
         this.pythonVersionOk = true
-        this.info(`Worky !`)
+        log.info(`Worky !`)
         this.invoke("broadcastState")
       } else {
         this.error(`Current Python version (${currentVersion}) is < required version (${requiredVersion})`)
@@ -331,16 +333,16 @@ export default class Proxy extends Service {
       PythonShell.runString(pythonCommand)
         .then((results) => {
           const versionString = results[0]
-          this.info(`Raw pip Version: ${versionString}`)
+          log.info(`Raw pip Version: ${versionString}`)
 
           // Normalize the version string to get the semantic version
           const currentVersion = this.normalizeVersion(versionString.trim())
-          this.info(`Normalized pip Version: ${currentVersion}`)
+          log.info(`Normalized pip Version: ${currentVersion}`)
 
           // Compare the current version with the required version
           if (semver.gte(currentVersion, requiredVersion)) {
-            this.info(`Current pip version (${currentVersion}) is >= required version (${requiredVersion})`)
-            this.info(`More Worky !`)
+            log.info(`Current pip version (${currentVersion}) is >= required version (${requiredVersion})`)
+            log.info(`More Worky !`)
             this.pipVersion = currentVersion
             this.pipVersionOk = true
             this.invoke("broadcastState")
@@ -362,9 +364,9 @@ export default class Proxy extends Service {
   installVirtualEnv() {
     return new Promise((resolve, reject) => {
       // Full path to the virtual environment
-      this.info(`envPath '${this.envPath}`)
+      log.info(`envPath '${this.envPath}`)
       const fullPath = path.join(this.envPath, this.envName)
-      this.info(`Creating virtual environment in '${fullPath}`)
+      log.info(`Creating virtual environment in '${fullPath}`)
 
       // Python script to create the virtual environment
       const pythonScript = `
@@ -384,7 +386,7 @@ print(result.stderr.decode(), file=sys.stderr)
           const activateScript = path.join(fullPath, process.platform === "win32" ? "Scripts" : "bin", "activate") // On Windows: 'Scripts' instead of 'bin'
           if (fs.existsSync(activateScript)) {
             this.venvOk = true
-            this.info(`Virtual environment '${this.envName}' created successfully at ${fullPath}`)
+            log.info(`Virtual environment '${this.envName}' created successfully at ${fullPath}`)
             resolve(`Virtual environment '${this.envName}' created successfully at ${fullPath}`)
 
             // So do not rely on the UI send order ...
@@ -420,11 +422,11 @@ print(result.stderr.decode(), file=sys.stderr)
       const command = pipPath
       const args = packageList
 
-      this.info(`${pipPath} ${args.join(" ")}`)
+      log.info(`${pipPath} ${args.join(" ")}`)
       const pipProcess = spawn(command, args)
 
       pipProcess.stdout.on("data", (data: Buffer) => {
-        this.info(`stdout: ${data.toString()}`)
+        log.info(`pip install stdout: ${data.toString()}`)
         if (
           data.toString().includes("Successfully installed") ||
           data.toString().includes("Requirement already satisfied")
@@ -438,11 +440,11 @@ print(result.stderr.decode(), file=sys.stderr)
         const str = data.toString()
         // this.error(`stderr: ${data.toString()}`)
         if (str.startsWith("ERROR:")) {
-          this.error(str)
+          this.error(`pip install stderr: ${str}`)
         } else if (str.startsWith("WARN:")) {
-          this.warn(str)
+          this.warn(`pip install stderr: ${str}`)
         } else {
-          this.info(str)
+          log.info(`pip install stderr: ${str}`)
         }
       })
 
@@ -468,11 +470,12 @@ print(result.stderr.decode(), file=sys.stderr)
 
       // THIS MUST BE FIXED !!!
 
+      const main = Main.getInstance()
       const searchReplace: Record<string, string> = {
         "{{name}}": this.name,
         "{{id}}": this.id,
         // this is runtimes serviceUrl - should proxy open a new one ?
-        "{{serviceUrl}}": Main.serviceUrl
+        "{{serviceUrl}}": main.serviceUrl
       }
 
       const args: string[] = []
@@ -491,22 +494,23 @@ print(result.stderr.decode(), file=sys.stderr)
       const pipPath = path.join(fullPath, process.platform === "win32" ? "Scripts" : "bin", "python")
       const command = pipPath
 
-      this.info(`${pipPath} ${args.join(" ")}`)
+      log.info(`${pipPath} ${args.join(" ")}`)
       const pipProcess = spawn(command, args, { cwd: this.pkg.cwd })
 
       pipProcess.stdout.on("data", (data: Buffer) => {
-        this.info(`stdout: ${data.toString()}`)
+        log.info(`proxy:stdout: ${data.toString()}`)
       })
 
       pipProcess.stderr.on("data", (data: Buffer) => {
         const str = data.toString()
         // this.error(`stderr: ${data.toString()}`)
         if (str.startsWith("ERROR:")) {
-          this.error(str)
+          this.error(`proxy:stderr: ${str}`)
         } else if (str.startsWith("WARN:")) {
-          this.warn(str)
+          this.warn(`proxy:stderr: ${str}`)
         } else {
-          this.info(str)
+          // log.info(str)
+          log.info(`proxy:stderr: ${str}`)
           // Check if the client has connected
           // This comes in on stderr because its "logging" from the client
           if (str.includes("Service started")) {
@@ -532,19 +536,20 @@ print(result.stderr.decode(), file=sys.stderr)
   }
 
   async installRepoRequirement(typeKey: string): Promise<string> {
-    this.info(`Installing repo package ${typeKey}`)
+    log.info(`Installing repo package ${typeKey}`)
     const rlx_pkg = CodecUtil.getPipPackageName(typeKey)
 
     const fullPath = path.join(this.envPath, this.envName)
-    const clientPath = path.join(`${Main.publicRoot}`, "repo", typeKey.toLowerCase(), rlx_pkg)
-    this.info(`Installing client ${clientPath} to ${fullPath}`)
+    const main = Main.getInstance()
+    const clientPath = path.join(`${main.publicRoot}`, "repo", typeKey.toLowerCase(), rlx_pkg)
+    log.info(`Installing client ${clientPath} to ${fullPath}`)
 
     return new Promise<string>((resolve, reject) => {
       const args = ["install", "-e", clientPath]
       const pipPath = path.join(fullPath, process.platform === "win32" ? "Scripts" : "bin", "pip")
       const command = pipPath
 
-      this.info(`${pipPath} ${args.join(" ")}`)
+      log.info(`${pipPath} ${args.join(" ")}`)
       const pipProcess = spawn(command, args)
 
       let stdoutData = ""
@@ -553,18 +558,20 @@ print(result.stderr.decode(), file=sys.stderr)
       pipProcess.stdout.on("data", (data: Buffer) => {
         const output = data.toString()
         stdoutData += output
-        this.info(`stdout: ${output}`)
+        // log.info(`stdout: ${output}`) To chatty
+        log.info(`pip install repo stdout: ${output}`)
       })
 
       pipProcess.stderr.on("data", (data: Buffer) => {
         const output = data.toString()
         stderrData += output
         if (output.startsWith("ERROR:")) {
-          this.error(output)
+          this.error(`pip install repo stderr: ${output}`)
         } else if (output.startsWith("WARN:")) {
-          this.warn(output)
+          this.warn(`pip install repo stderr: ${output}`)
         } else {
-          this.info(output)
+          // log.info(output) To chatty
+          log.info(`pip install repo stderr: ${output}`)
         }
       })
 
@@ -585,8 +592,17 @@ print(result.stderr.decode(), file=sys.stderr)
     })
   }
 
+  onConnectionClosed() {
+    //log.info(`onConnectionClosed`)
+    log.info(`onConnectionClosed`)
+    this.ready = false
+    this.clientConnectionState = "disconnected"
+    this.invoke("broadcastState")
+  }
+
   async installRepoRequirements(envName = ".venv", envPath = this.pkg.cwd): Promise<string[]> {
-    this.info(`This service requires the following repo packages: ${this.pkg.repoRequirements}`)
+    // log.info(`This service requires the following repo packages: ${this.pkg.repoRequirements}`)
+    log.info(`This service requires the following repo packages: ${this.pkg.repoRequirements}`)
 
     const results: string[] = []
     for (const typeKey of this.pkg.repoRequirements) {
@@ -599,16 +615,19 @@ print(result.stderr.decode(), file=sys.stderr)
       }
     }
 
-    this.info(`All packages installed successfully: ${results.join(", ")}`)
+    // log.info(`All packages installed successfully: ${results.join(", ")}`)
+    log.info(`All packages installed successfully: ${results.join(", ")}`)
 
     // FIXME - Repo should be a singleton, and "installing"
     // should be a method on the repo - add timestamp, version, etc
     // Repo.getInstance().savePackage(this.pkg)
-    this.info(`saving package ${this.pkg.typeKey}`)
+    log.info(`saving package ${this.pkg.typeKey}`)
     this.pkg.installed = true
     const repo = new Repo()
     repo.installPackage(this.pkg.typeKey)
-    this.info(`saved package ${this.pkg.typeKey}`)
+    log.info(`saved package ${this.pkg.typeKey}`)
+    this.installed = true
+    this.startProxy()
 
     return results
   }

@@ -18,6 +18,7 @@ import {
   Tooltip,
   Typography
 } from "@mui/material"
+import MessageRoutes from "components/MessageRoutes"
 import PkgDialog from "components/PkgDialog"
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 import ReactJson from "react-json-view"
@@ -30,6 +31,7 @@ const containerStyle2 = {}
 
 const ServicePage = ({ fullname, name, id }) => {
   const [pkgDialogOpen, setPkgDialogOpen] = useState(false)
+  const [messageRouteDialogOpen, setMessageRouteDialogOpen] = useState(false)
   const registered = useRegisteredService(fullname)
   const serviceMsg = useServiceSubscription(fullname)
   const service = useProcessedMessage(serviceMsg)
@@ -42,10 +44,13 @@ const ServicePage = ({ fullname, name, id }) => {
   const [openDelete, setOpenDelete] = useState(false)
   const navigate = useNavigate()
   const [AsyncPage, setAsyncPage] = useState(null)
+  const [loading, setLoading] = useState(true) // Temporary loading state
+  const remoteId = useStore((state) => state.defaultRemoteId)
 
   useEffect(() => {
-    if (resolvedType) {
-      const loadAsyncPage = async () => {
+    const loadAsyncPage = async () => {
+      setLoading(true)
+      if (resolvedType) {
         try {
           const LoadedPage = await loadable(() => import(`../service/${resolvedType}`))
           setAsyncPage(() => LoadedPage)
@@ -53,10 +58,11 @@ const ServicePage = ({ fullname, name, id }) => {
           setAsyncPage(() => () => <div>Service not found</div>)
         }
       }
-
-      loadAsyncPage()
+      setLoading(false)
     }
-  }, [resolvedType, fullname])
+
+    loadAsyncPage()
+  }, [resolvedType, fullname]) // Ensure this effect runs whenever `resolvedType` or `fullname` changes
 
   const handleDeleteClick = useCallback(() => {
     setOpenDelete(true)
@@ -74,6 +80,10 @@ const ServicePage = ({ fullname, name, id }) => {
 
   const handleSettingsClick = useCallback(() => {
     setShowJson((prev) => !prev)
+  }, [])
+
+  const handleMakeMessageRoute = useCallback(() => {
+    setMessageRouteDialogOpen(true)
   }, [])
 
   const handleSwaggerClick = useCallback(() => {
@@ -100,8 +110,8 @@ const ServicePage = ({ fullname, name, id }) => {
   }, [fullname, sendTo])
 
   const asyncPageMemo = useMemo(
-    () => AsyncPage && <AsyncPage page={resolvedType} name={name} id={id} fullname={fullname} />,
-    [AsyncPage, resolvedType, name, id, fullname]
+    () => !loading && AsyncPage && <AsyncPage page={resolvedType} name={name} id={id} fullname={fullname} />,
+    [AsyncPage, resolvedType, name, id, fullname, loading]
   )
 
   const jsonDisplayMemo = useMemo(
@@ -114,6 +124,8 @@ const ServicePage = ({ fullname, name, id }) => {
       ),
     [showJson, registered, service, fullname]
   )
+
+  const displayId = remoteId === id ? "" : `@${id}`
 
   return (
     <div className="service-content-div" style={containerStyle2}>
@@ -131,7 +143,14 @@ const ServicePage = ({ fullname, name, id }) => {
           <Box width={10} height={10} borderRadius="50%" bgcolor={service?.ready ? "green" : "red"} mr={1} />
         </Tooltip>
         {registered?.name}
-        <span style={{ color: "grey", margin: "0 8px" }}>@{registered?.id}</span>
+        <span style={{ color: "grey" }}>{displayId}</span>
+        <Tooltip title="Make message route">
+          {/*
+          <IconButton onClick={handleMakeMessageRoute} aria-label="api">
+            <SendIcon />
+          </IconButton>
+          */}
+        </Tooltip>
         <Tooltip title="Settings">
           <IconButton onClick={handleSettingsClick} aria-label="settings">
             <SettingsIcon />
@@ -193,8 +212,10 @@ const ServicePage = ({ fullname, name, id }) => {
           </Button>
         </DialogActions>
       </Dialog>
-
-      <PkgDialog dialogOpen={pkgDialogOpen} handleDialogClose={handlePkgDialogClose} fullname={service?.fullname} />
+      {service && (
+        <PkgDialog dialogOpen={pkgDialogOpen} handleDialogClose={handlePkgDialogClose} fullname={service.fullname} />
+      )}
+      {service && <MessageRoutes fullname={service.fullname} />}
     </div>
   )
 }

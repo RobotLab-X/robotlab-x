@@ -244,8 +244,8 @@ export default class Arduino extends Service {
     }
   }
 
-  servoWrite(pin: string, value: number): void {
-    log.info(`Servo writing to pin ${pin} value: ${value}`)
+  servoWrite(pin: string, angle: number, speed: number = null): void {
+    log.info(`Servo writing to pin ${pin} value: ${angle} speed: ${speed}`)
 
     // create a servo if it doesn't already exist
     if (this.ready && !this.servosImpl[pin]) {
@@ -256,14 +256,35 @@ export default class Arduino extends Service {
       this.servosImpl[pin] = servo
     } else if (this.ready && this.servosImpl[pin]) {
       // this.servosImpl[pin].to(value, 3000)  pos, [ms], [rate]
-      this.servosImpl[pin].to(value)
+
+      const servo = this.servosImpl[pin]
+      const currentAngle = servo.value
+
+      // Check if the specified angle is the same as the current angle
+      if (angle === currentAngle) {
+        log.info("Servo is already at the specified angle.")
+        return
+      }
+
+      if (speed !== null) {
+        // Calculate the distance to move and the time required based on speed
+        const distance = Math.abs(angle - currentAngle)
+        const ms = (distance / speed) * 1000
+
+        // Move the servo to the target angle over the calculated time
+        log.info(`Moving servo from ${servo.value} on pin ${pin} to ${angle} over ${ms} ms at ${speed} speed`)
+        servo.to(angle, ms, 500)
+      } else {
+        // Move the servo directly to the target angle
+        servo.to(angle)
+      }
     } else {
       log.error(`cannot write to servo ready: ${this.ready} servo: ${this.servosImpl[pin]}`)
     }
   }
 
   onServoMoveTo(servoMove: ServoMove): void {
-    this.servoWrite(servoMove.pin, servoMove.degrees)
+    this.servoWrite(servoMove.pin, servoMove.degrees, servoMove.speed)
   }
   toJSON() {
     return {

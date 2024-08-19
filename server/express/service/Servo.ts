@@ -120,6 +120,10 @@ export default class Servo extends Service {
     this.config.pin = pin
   }
 
+  setSpeed(speed: number): void {
+    this.config.speed = speed
+  }
+
   /**
    * Set the current rest position for the servo
    * @param rest - position to set the rest to

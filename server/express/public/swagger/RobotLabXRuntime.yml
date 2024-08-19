@@ -762,6 +762,51 @@ paths:
       responses:
         "200":
           description: getLaunchFiles method executed successfully
+  /saveLaunchFile:
+    put:
+      summary: Executes saveLaunchFile method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+                - type: string
+            example: []
+      responses:
+        "200":
+          description: saveLaunchFile method executed successfully
+  /getLaunchFile:
+    put:
+      summary: Executes getLaunchFile method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example: []
+      responses:
+        "200":
+          description: getLaunchFile method executed successfully
+  /getExamples:
+    put:
+      summary: Executes getExamples method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: getExamples method executed successfully
   /setDebug:
     put:
       summary: Executes setDebug method

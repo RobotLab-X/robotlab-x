@@ -2,10 +2,11 @@ import bodyParser from "body-parser"
 import cors from "cors"
 import express from "express"
 import http, { Server as HTTPServer } from "http"
+// import open from "open"
 import path from "path"
 import { v4 as uuidv4 } from "uuid"
 import { WebSocket, Server as WebSocketServer } from "ws"
-import Main from "../electron/ElectronStarter"
+import Main from "../electron/Main"
 import { getLogger } from "../express/framework/Log"
 import { CodecUtil } from "./framework/CodecUtil"
 import Service from "./framework/Service"
@@ -14,6 +15,8 @@ import Message from "./models/Message"
 import RobotLabXRuntime from "./service/RobotLabXRuntime"
 
 const session = require("express-session")
+// const open = require('open'); ESM 6 ONLY !!!
+
 const FileStore = require("session-file-store")(session)
 const apiPrefix = "/api/v1/services"
 
@@ -72,9 +75,6 @@ export default class Store {
       log.info(`setting port ${runtime.getConfig().port}`)
       store.express.set("port", runtime.getConfig().port)
 
-      // FIXME - need to appropriately switch https when asked
-      Main.serviceUrl = `http://localhost:${runtime.getConfig().port}`
-
       store.http.listen(runtime.getConfig().port)
       store.http.on("error", Store.onError)
       store.http.on("listening", Store.onListening)
@@ -112,6 +112,48 @@ export default class Store {
     } else {
       const bind = typeof addr === "string" ? `pipe ${addr}` : `port ${addr.port}`
       log.info(`listening on ${bind}`)
+
+      // FIXME in ElectonStarter.ts normalize
+      const url = process.env.ELECTRON_START_URL || "http://localhost:3001/"
+
+      // Would use npm "open" package - but it is ESM 6 only !!!
+      // if (!Main.getInstance().hasDisplay()) {
+      // FIXME - should be based on config
+      const startBrowser = false
+      if (startBrowser) {
+        try {
+          const { exec } = require("child_process")
+
+          let command
+
+          if (process.platform === "win32") {
+            command = `start ${url}`
+          } else if (process.platform === "darwin") {
+            command = `open ${url}`
+          } else if (process.platform === "linux") {
+            command = `xdg-open ${url}`
+          }
+
+          exec(command, (err: any) => {
+            if (err) {
+              console.error("Error opening the URL:", err)
+            } else {
+              console.log(`Opened ${url} in the default browser.`)
+            }
+          })
+
+          // Opening URL if DISPLAY
+          // open(url)
+          //   .then(() => {
+          //     log.info(`Opened ${url} in the default browser.`)
+          //   })
+          //   .catch((err: any) => {
+          //     log.error("Error opening the URL:", err)
+          //   })
+        } catch (error) {
+          console.error("Error importing child_process:", error)
+        }
+      }
     }
   }
 
@@ -187,6 +229,22 @@ export default class Store {
         // NOT REMOVING CONNECTION TO TEST FROM PYTHON SIDE
         // runtime.removeConnection(gatewayId)
         runtime.updateConnection(gatewayId, "disconnected")
+
+        // update all services belonging to this id and connection
+        runtime.getServiceNames().forEach((serviceName: string) => {
+          const service = runtime.getService(serviceName)
+          if (service?.id === gatewayId) {
+            if (service.invoke) {
+              service.invoke("onConnectionClosed")
+            } else {
+              log.error(`service ${serviceName} does not have an invoke method`)
+            }
+            // this removes all services associated with this connection id
+            // RobotLabXRuntime.getInstance().removeConnection(gatewayId)
+          }
+        })
+        RobotLabXRuntime.getInstance().setConnectionImpl(gatewayId, null)
+
         runtime.invoke("broadcastState")
       })
 
@@ -216,6 +274,15 @@ export default class Store {
         const remoteId = CodecUtil.getId(msg.sender)
         if (remoteId && remoteId !== this.runtime.getId()) {
           this.runtime.addRoute(remoteId, msg.gatewayId, msg.gateway)
+        }
+
+        if (!msg.name) {
+          log.error(`no name in msg ${JSON.stringify(msg)}`)
+        }
+
+        const id = CodecUtil.getId(msg.name)
+        if (!id) {
+          log.error(`msg not fully addressed ${JSON.stringify(msg)}`)
         }
 
         // log.info(`--> ws ${JSON.stringify(msg)}`)
@@ -310,10 +377,11 @@ export default class Store {
     this.express.use(bodyParser.urlencoded({ extended: false }))
 
     // Static file serving
-    this.express.use("/public", express.static(Main.publicRoot))
+    const main = Main.getInstance()
+    this.express.use("/public", express.static(main.publicRoot))
     this.express.use("/log", express.static(path.join(process.cwd(), "robotlab-x.log")))
-    this.express.use("/static", express.static(path.join(Main.distRoot, "client", "static")))
-    this.express.use("/manifest.json", express.static(path.join(Main.distRoot, "client", "manifest.json")))
+    this.express.use("/static", express.static(path.join(main.distRoot, "client", "static")))
+    this.express.use("/manifest.json", express.static(path.join(main.distRoot, "client", "manifest.json")))
 
     // TODO - REMOVE THIS !!! - this.express.use(`${apiPrefix}/*` should handle it
     this.express.use(`${apiPrefix}/runtime/register`, (req, res) => {
@@ -408,10 +476,10 @@ export default class Store {
         // res.sendFile(path.join(Main.distRoot, "client", "index.html"))
 
         // Serve the file based on the requested path
-        res.sendFile(path.join(Main.distRoot, "client", req.originalUrl), (err) => {
+        res.sendFile(path.join(main.distRoot, "client", req.originalUrl), (err) => {
           if (err) {
             // If the file does not exist, serve index.html
-            res.sendFile(path.join(Main.distRoot, "client", "index.html"))
+            res.sendFile(path.join(main.distRoot, "client", "index.html"))
           }
         })
       } else {

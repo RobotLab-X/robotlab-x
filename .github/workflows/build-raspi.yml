@@ -40,17 +40,9 @@ jobs:
           BUILD_NUMBER=${{ github.run_number }}
           VERSION="0.9.${BUILD_NUMBER}"
           echo "Bumping version to $VERSION"
-          jq --arg VERSION "$VERSION" '.version = $VERSION' package.json > package.json.tmp && mv package.json.tmp package.json
-          jq --arg VERSION "$VERSION" '.version = $VERSION' server/package.json > server/package.json.tmp && mv server/package.json.tmp server/package.json
-          jq --arg VERSION "$VERSION" '.version = $VERSION' client/package.json > client/package.json.tmp && mv client/package.json.tmp client/package.json
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           echo "VERSION=0.9.${{ github.run_number }}" >> $GITHUB_ENV
-
-        # temporarily disabled
-        # git add package.json server/package.json client/package.json
-        # git commit -m "Bump version to $VERSION"
-        # git push origin main
 
       # Run ESLint but ignore errors
       - name: Run ESLint
@@ -61,21 +53,40 @@ jobs:
           cd server
           yarn test
 
-      - name: Build
-        run: yarn build-linux
+      - name: PreBuild
+        run: yarn prebuild
 
-      - name: Set executable permissions
-        run: chmod +x dist/packages/RobotLab-X-0.9.${{ github.run_number }}.AppImage
+      - name: Build
+        run: yarn build-raspi
 
       - name: List dist/packages contents
         run: ls -l dist/packages
 
-      - name: Upload artifact
+      - name: Set executable permissions
+        run: chmod +x dist/packages/RobotLab-X-0.9.${{ github.run_number }}.AppImage
+
+      - name: Make version folder and move executable to that folder
+        run: mkdir -p artifact/RobotLab-X-0.9.${{ github.run_number }} && mv dist/packages/RobotLab-X-0.9.${{ github.run_number }}.AppImage artifact/RobotLab-X-0.9.${{ github.run_number }}/RobotLab-X-0.9.${{ github.run_number }}-arm64.AppImage
+
+      # - releases can be tar.gz not artifacts
+      # - name: Create tarball
+      #   run: tar -czvf artifact/RobotLab-X-0.9.${{ github.run_number }}.tar.gz -C artifact RobotLab-X-0.9.${{ github.run_number }}
+
+      - name: Upload tarball artifact
         uses: actions/upload-artifact@v3
         with:
-          name: RobotLab-X-0.9.${{ github.run_number }}.AppImage
-          path: dist/packages/RobotLab-X-0.9.${{ github.run_number }}.AppImage
+          name: RobotLab-X-0.9.${{ github.run_number }}-arm64.AppImage
+          path: artifact
+          retention-days: 5
 
+      # Uncomment the following lines to upload the .deb artifact
+      # - name: Upload .deb artifact
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: RobotLab-X-0.9.${{ github.run_number }}.deb
+      #     path: dist/packages/RobotLab-X-0.9.${{ github.run_number }}.deb
+
+  # Uncomment the following lines to enable the release step
   # release:
   #   needs: build
   #   runs-on: ubuntu-latest

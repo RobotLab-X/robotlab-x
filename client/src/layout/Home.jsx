@@ -82,7 +82,8 @@ function Home() {
           {selectedCard ? (
             <div>
               <ServicePage
-                fullname={`${selectedCard.name}@${selectedCard.id}`}
+                key={selectedCard.fullname} // Ensure the component is re-rendered when the selected card changes
+                fullname={selectedCard.fullname}
                 name={selectedCard.name}
                 id={selectedCard.id}
               />
