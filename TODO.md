@@ -1,7 +1,17 @@
 ## TODO
 
+### Make NoWorky Button
+* api
+
+### Run headless and run as a service
+* export ELECTRON_RUN_AS_NODE=1
+* service installs for all platforms
+* auto-update
+
+
 ### Ollama
 * enable streaming as an option
+
 
 * UI initialization should be
   * add listeners to runtime

@@ -38,7 +38,8 @@ export default class Ollama extends Service {
     wakeWord: "wake",
     sleepWord: "sleep",
     prompt: "ButlerBot",
-    defaultImagePrompt: "what is in this image?"
+    defaultImagePrompt: "what is in this image?",
+    stream: false
   }
 
   // loaded by Ollama.ts loadPrompts
@@ -264,22 +265,30 @@ export default class Ollama extends Service {
         request = {
           model: this.config.model,
           messages: messages,
-          stream: false
+          stream: this.config.stream
         }
         this.history.push(userMessage)
         this.invoke("publishRequest", request)
         log.info(`chat ${JSON.stringify(request)}`)
 
-        let response: ChatResponse = await oc.chat(request as ChatRequest & { stream: false })
-        this.history.push(response.message)
+        if (!this.config.stream) {
+          let response: ChatResponse = await oc.chat(request as ChatRequest & { stream: false })
+          this.history.push(response.message)
 
-        while (this.history.length > this.config.maxHistory) {
-          this.history.shift() // Remove the oldest record
+          while (this.history.length > this.config.maxHistory) {
+            this.history.shift() // Remove the oldest record
+          }
+
+          this.invoke("publishResponse", response)
+          this.invoke("publishChat", response.message.content)
+          this.invoke("publishText", response.message.content)
+        } else {
+          const response = await oc.chat(request as ChatRequest & { stream: true })
+          for await (const part of response) {
+            // process.stdout.write(part)
+            log.info(part)
+          }
         }
-
-        this.invoke("publishResponse", response)
-        this.invoke("publishChat", response.message.content)
-        this.invoke("publishText", response.message.content)
       } else {
         log.error("No default prompt")
       }
@@ -411,6 +420,10 @@ export default class Ollama extends Service {
 
   addInput(prompt: string, key: string, value: any): void {
     this.inputs[key] = value
+  }
+
+  onText(text: string): void {
+    this.chat(text)
   }
 
   onImage(image: any): void {
