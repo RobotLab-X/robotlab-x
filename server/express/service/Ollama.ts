@@ -466,10 +466,6 @@ export default class Ollama extends Service {
     this.inputs[key] = value
   }
 
-  onText(text: string): void {
-    this.chat(text)
-  }
-
   onImage(image: any): void {
     // log.info(`onImage ${image}`)
     this.generate([image])
