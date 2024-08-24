@@ -9,7 +9,7 @@ jest.mock("../../../electron/ElectronStarter", () => ({
   onReady: jest.fn(),
   tray: {}
 }))
-jest.mock("../../../express/framework/Log", () => ({
+jest.mock("../../../express/framework/LocalLog", () => ({
   getLogger: jest.fn().mockReturnValue({
     error: jest.fn(),
     info: jest.fn(),
@@ -86,7 +86,7 @@ describe("CodecUtil", () => {
 
     it("should log an error if type is null", () => {
       CodecUtil.getNpmPackageName(null)
-      const log = require("../../../express/framework/Log").getLogger()
+      const log = require("../../../express/framework/LocalLog").getLogger()
       expect(log.error).toHaveBeenCalledWith("Type is null")
     })
   })
@@ -98,7 +98,7 @@ describe("CodecUtil", () => {
 
     it("should log an error if type is null", () => {
       CodecUtil.getPipPackageName(null)
-      const log = require("../../../express/framework/Log").getLogger()
+      const log = require("../../../express/framework/LocalLog").getLogger()
       expect(log.error).toHaveBeenCalledWith("Type is null")
     })
   })

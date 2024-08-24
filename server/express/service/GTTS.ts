@@ -2,7 +2,7 @@ import crypto from "crypto"
 import fs from "fs"
 import path from "path"
 import Main from "../../electron/Main"
-import { getLogger } from "../framework/Log"
+import { getLogger } from "../framework/LocalLog"
 import Service from "../framework/Service"
 const gTTS = require("gtts")
 const player = require("play-sound")()

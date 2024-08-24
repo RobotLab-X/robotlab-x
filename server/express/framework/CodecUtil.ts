@@ -1,5 +1,5 @@
-import { getLogger } from "../framework/Log"
 import RobotLabXRuntime from "../service/RobotLabXRuntime"
+import { getLogger } from "./LocalLog"
 
 const log = getLogger("Proxy")
 

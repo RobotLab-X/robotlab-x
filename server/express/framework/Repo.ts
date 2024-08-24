@@ -4,7 +4,7 @@ import { default as yaml, default as YAML } from "yaml"
 import Main from "../../electron/Main"
 import Service from "../framework/Service"
 import Package from "../models/Package"
-import { getLogger } from "./Log"
+import { getLogger } from "./LocalLog"
 
 const log = getLogger("Repo")
 

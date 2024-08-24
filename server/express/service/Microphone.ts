@@ -2,7 +2,7 @@ import { execSync } from "child_process"
 import mic from "mic"
 import os from "os"
 import wav from "wav"
-import { getLogger } from "../framework/Log"
+import { getLogger } from "../framework/LocalLog"
 import Service from "../framework/Service"
 
 const log = getLogger("Microphone")

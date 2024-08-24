@@ -9,7 +9,7 @@ import Status from "../models/Status"
 import { SubscriptionListener } from "../models/SubscriptionListener"
 import RobotLabXRuntime from "../service/RobotLabXRuntime"
 import { CodecUtil } from "./CodecUtil"
-import { getLogger } from "./Log"
+import { getLogger } from "./LocalLog"
 
 const log = getLogger("Service")
 

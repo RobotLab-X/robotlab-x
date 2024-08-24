@@ -3,7 +3,7 @@ import { Board, Pin, Servo } from "johnny-five"
 import { platform } from "os"
 import { SerialPort } from "serialport"
 import { promisify } from "util"
-import { getLogger } from "../framework/Log"
+import { getLogger } from "../framework/LocalLog"
 import Service from "../framework/Service"
 import ServoMove from "../models/ServoMove"
 

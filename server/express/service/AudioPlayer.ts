@@ -1,5 +1,5 @@
 import { ipcMain } from "electron"
-import { getLogger } from "../framework/Log"
+import { getLogger } from "../framework/LocalLog"
 import Service from "../framework/Service"
 
 const log = getLogger("AudioPlayer")

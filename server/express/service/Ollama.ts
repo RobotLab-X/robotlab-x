@@ -13,7 +13,7 @@ import {
 import path from "path"
 import yaml from "yaml"
 import Main from "../../electron/Main"
-import { getLogger } from "../framework/Log"
+import { getLogger } from "../framework/LocalLog"
 import Service from "../framework/Service"
 
 // FIXME - should be an instance logger not a Type logger

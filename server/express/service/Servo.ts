@@ -1,4 +1,4 @@
-import { getLogger } from "../framework/Log"
+import { getLogger } from "../framework/LocalLog"
 import Service from "../framework/Service"
 import ServoMove from "../models/ServoMove"
 import RobotLabXRuntime from "./RobotLabXRuntime"

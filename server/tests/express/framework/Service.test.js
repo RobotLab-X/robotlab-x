@@ -9,7 +9,7 @@ jest.mock("../../../electron/ElectronStarter", () => ({
   tray: {}
 }))
 jest.mock("path")
-jest.mock("../../../express/framework/Log", () => ({
+jest.mock("../../../express/framework/LocalLog", () => ({
   getLogger: jest.fn().mockReturnValue({
     info: jest.fn(),
     error: jest.fn(),
@@ -32,7 +32,7 @@ jest.mock("../../../express/service/RobotLabXRuntime", () => ({
 
 const path = require("path")
 const Main = require("../../../electron/ElectronStarter")
-const { getLogger } = require("../../../express/framework/Log")
+const { getLogger } = require("../../../express/framework/LocalLog")
 const RobotLabXRuntime = require("../../../express/service/RobotLabXRuntime")
 const { CodecUtil } = require("../../../express/framework/CodecUtil")
 const Message = require("../../../express/models/Message")

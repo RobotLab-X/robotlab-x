@@ -1,5 +1,5 @@
 import WebSocket from "ws" // Import WebSocket module
-import { getLogger } from "../framework/Log"
+import { getLogger } from "../framework/LocalLog"
 import Service from "../framework/Service"
 import Message from "../models/Message"
 import MyRobotLabProxy from "../service/MyRobotLabProxy"

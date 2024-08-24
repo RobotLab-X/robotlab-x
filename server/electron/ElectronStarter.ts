@@ -1,7 +1,7 @@
 import Electron, { Menu, shell, Tray } from "electron"
 import path from "path"
 import "source-map-support/register"
-import { getLogger } from "../express/framework/Log"
+import { getLogger } from "../express/framework/LocalLog"
 import Main from "./Main"
 
 const { app, ipcMain } = require("electron")

@@ -10,7 +10,7 @@ import fs from "fs"
 import path from "path"
 import { Readable } from "stream"
 import Main from "../../electron/Main"
-import { getLogger } from "../framework/Log"
+import { getLogger } from "../framework/LocalLog"
 import Service from "../framework/Service"
 
 const log = getLogger("Polly")
