@@ -276,15 +276,6 @@ export default class Store {
           this.runtime.addRoute(remoteId, msg.gatewayId, msg.gateway)
         }
 
-        if (!msg.name) {
-          log.error(`no name in msg ${JSON.stringify(msg)}`)
-        }
-
-        const id = CodecUtil.getId(msg.name)
-        if (!id) {
-          log.error(`msg not fully addressed ${JSON.stringify(msg)}`)
-        }
-
         // log.info(`--> ws ${JSON.stringify(msg)}`)
         // log.info(`--> ws ${msg.name} ${msg.method}`)
         this.handleMessage(msg)
@@ -306,6 +297,15 @@ export default class Store {
    */
   public handleMessage(msg: Message) {
     try {
+      if (!msg.name) {
+        log.error(`no name in msg ${JSON.stringify(msg)}`)
+      }
+
+      const id = CodecUtil.getId(msg.name)
+      if (!id) {
+        log.error(`msg not fully addressed ${JSON.stringify(msg)}`)
+      }
+
       // log.info(`--> handleMessage ${msg.name}.${msg.method}`)
       // can you relay without having that service in this registry ... "yes"
       let fullName = CodecUtil.getFullName(msg.name)

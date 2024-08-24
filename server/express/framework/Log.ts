@@ -30,15 +30,13 @@ function formatModuleName(moduleName: string) {
   }
 }
 
-const logFormat = winston.format.printf(({ level, message, module }) => {
+const textFormat = winston.format.printf(({ level, message, module }) => {
   const formattedModule = formatModuleName(module)
   return `${level}[${formattedModule}]: ${message}`
 })
 
 // Lazy initialization for logFilePath
 export const getLogFilePath = () => {
-  // Root of logging check Main.root where other paths are set
-  // this function gets called before Main.main() so its path needs to be set
   let root = process.env.ROOT_DIR || process.cwd()
   let logFilePath: string | null = null
   logFilePath = path.join(root, "robotlab-x.log")
@@ -48,21 +46,33 @@ export const getLogFilePath = () => {
   }
   return logFilePath
 }
-// Create a logger instance
+
+// Custom format to rename fields and use epoch timestamp
+const customJsonFormat = winston.format.combine(
+  winston.format.timestamp({
+    format: () => Math.floor(Date.now() / 1000).toString() // Convert to string
+  }),
+  winston.format((info) => {
+    info.ts = info.timestamp // Rename 'timestamp' to 'ts'
+    delete info.timestamp // Remove original 'timestamp' field
+    info.msg = info.message // Rename 'message' to 'msg'
+    delete info.message // Remove original 'message' field
+    return info
+  })(),
+  winston.format.json()
+)
+
+// Create a logger instance with JSON format as default
 const log = winston.createLogger({
   levels: logLevels.levels,
+  format: customJsonFormat,
   transports: [
     new winston.transports.Console({
-      format: winston.format.combine(
-        winston.format.combine(winston.format.colorize(), winston.format.simple()),
-        logFormat
-      ),
-      level: "info" // default level for the console transport
+      level: "info"
     }),
     new winston.transports.File({
       filename: getLogFilePath(),
-      format: winston.format.combine(winston.format.timestamp(), winston.format.json(), logFormat),
-      level: "info" // default level for the file transport
+      level: "info"
     })
   ]
 })
@@ -75,6 +85,15 @@ export function getLogger(moduleName: string): winston.Logger {
   return log.child({ module: moduleName })
 }
 
-// log.info(`Log file path: ${getLogFilePath()}`)
+// Function to change the logging format
+export function setLogFormat(format: "json" | "text") {
+  const newFormat =
+    format === "json"
+      ? customJsonFormat // Use custom JSON format with renamed fields
+      : winston.format.combine(winston.format.timestamp(), textFormat)
+  log.transports.forEach((transport) => {
+    transport.format = newFormat
+  })
+}
 
 export { log }
