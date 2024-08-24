@@ -15,6 +15,7 @@ from enum import Enum, auto
 from rlx_pkg_proxy.codecutil import CodecUtil
 from rlx_pkg_proxy.message import Message
 from pathlib import Path
+from .rlx_logging import Logging
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("Service")
@@ -86,7 +87,7 @@ class Service:
         # needed when json definition of proxy switches to this service
         self.installed: bool = True
         self.config: any = None
-
+        logging_singleton = Logging(id=client_id)
         CodecUtil.id = self.client_id
 
     def get_remote_id(self, base_url):

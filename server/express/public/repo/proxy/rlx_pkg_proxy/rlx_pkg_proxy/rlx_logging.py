@@ -6,11 +6,11 @@ from typing import Optional
 class JsonFormatter(logging.Formatter):
     def format(self, record):
         log_record = {
-            'timestamp': self.formatTime(record, self.datefmt),
-            'level': record.levelname,
-            'message': record.getMessage(),
-            'name': record.name,
-            'pathname': record.pathname,
+            'ts': int(record.created),  # Convert the timestamp to epoch time and rename to 'ts'
+            'level': record.levelname.lower(),  # Convert the log level to lowercase
+            'msg': record.getMessage(),  # Rename 'message' to 'msg'
+            'module': record.name,  # Replace 'name' with 'module'
+            'filename': os.path.basename(record.pathname),  # Use only the filename
             'lineno': record.lineno,
         }
         return json.dumps(log_record)
@@ -36,11 +36,11 @@ class Logging:
 
     def setup_logging(self, log_file_path: str):
         logger = logging.getLogger()
-        logger.setLevel(logging.INFO)
+        logger.setLevel(logging.INFO)  # Set default logging level to INFO
 
         # Create a file handler
         file_handler = logging.FileHandler(log_file_path)
-        file_handler.setLevel(logging.INFO)
+        file_handler.setLevel(logging.INFO)  # Set file handler level to INFO
 
         # Create a custom JSON formatter
         json_formatter = JsonFormatter()
@@ -51,7 +51,7 @@ class Logging:
 
         # Optionally, add a console handler
         console_handler = logging.StreamHandler()
-        console_handler.setLevel(logging.INFO)
+        console_handler.setLevel(logging.INFO)  # Set console handler level to INFO
         console_handler.setFormatter(json_formatter)
         logger.addHandler(console_handler)
 
@@ -63,7 +63,7 @@ class Logging:
 
         # Create a new logger for the service
         service_logger = logging.getLogger(service_name)
-        service_logger.setLevel(logging.INFO)
+        service_logger.setLevel(logging.INFO)  # Set default logging level to INFO
 
         # Use the existing handlers of the base logger
         for handler in self.base_logger.handlers:

@@ -85,8 +85,9 @@ export default class Log extends Service {
         console.error(`Log.readLogFile: Error reading log file ${filePath} - ${err.message}`)
       } else {
         console.log(`Log.readLogFile: Read log file ${filePath}`)
-        this.invoke("publishLogs", data.split("\n"))
+        // this.invoke("publishLogs", data.split("\n"))
         // this.publishLogs(data.split("\n"))
+        this.collectLogs()
       }
     })
   }

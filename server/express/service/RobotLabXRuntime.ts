@@ -1349,4 +1349,9 @@ export default class RobotLabXRuntime extends Service {
     fs.writeFileSync(path.join(launchDir, filename), ldjs)
     return ldjs
   }
+
+  public onLogMessage(data: any): void {
+    // log.info(`onLogMessage ${msg.name} ${msg.method} ${msg.data}`)
+    log.info(`onLogMessage ${data}`)
+  }
 }
