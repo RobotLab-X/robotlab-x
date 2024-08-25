@@ -47,10 +47,10 @@ export const getLogFilePath = () => {
   return logFilePath
 }
 
-// Custom format to rename fields and use epoch timestamp
+// Custom format to rename fields and use millisecond epoch timestamp
 const customJsonFormat = winston.format.combine(
   winston.format.timestamp({
-    format: () => Math.floor(Date.now() / 1000).toString() // Convert to string
+    format: () => Date.now().toString() // Use millisecond epoch time
   }),
   winston.format((info) => {
     info.ts = info.timestamp // Rename 'timestamp' to 'ts'

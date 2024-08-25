@@ -1,15 +1,21 @@
 import ExpandLessIcon from "@mui/icons-material/ExpandLess"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
+import RefreshIcon from "@mui/icons-material/Refresh"
 import {
   Box,
-  Button,
+  FormControl,
+  IconButton,
+  InputLabel,
+  MenuItem,
   Paper,
+  Select,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
+  TableSortLabel,
   Typography
 } from "@mui/material"
 import React, { useState } from "react"
@@ -21,6 +27,8 @@ export default function Log({ fullname }) {
   console.info(`Log ${fullname}`)
 
   const [editMode, setEditMode] = useState(false)
+  const [logLevel, setLogLevel] = useState("debug")
+  const [sortOrder, setSortOrder] = useState("asc")
   const { sendTo } = useStore()
 
   const service = useSubscription(fullname, "broadcastState", true)
@@ -34,19 +42,29 @@ export default function Log({ fullname }) {
     sendTo(fullname, "refreshLogs")
   }
 
-  // FIXME put all Configuration in a Component
-  // can handle any config field change if the edit name matches the config name
-  const handleConfigChange = (event) => {
-    const { name, value, type } = event.target
-    const newValue = type === "number" ? Number(value) : value
+  const handleLogLevelChange = (event) => {
+    setLogLevel(event.target.value)
   }
 
-  const handleSaveConfig = () => {
-    // sendTo(fullname, "applyConfig", config)
-    // sendTo(fullname, "saveConfig")
-    // sendTo(fullname, "broadcastState")
-    setEditMode(false)
+  const handleSortChange = () => {
+    setSortOrder((prevOrder) => (prevOrder === "asc" ? "desc" : "asc"))
   }
+
+  // Determine which logs to show based on the selected log level
+  const filteredLogs = logBatch
+    ? logBatch.filter((log) => {
+        if (logLevel === "debug") return true
+        if (logLevel === "info") return log.level === "info" || log.level === "warn" || log.level === "error"
+        if (logLevel === "warn") return log.level === "warn" || log.level === "error"
+        if (logLevel === "error") return log.level === "error"
+        return false
+      })
+    : []
+
+  // Sort the filtered logs based on timestamp and sortOrder
+  const sortedLogs = filteredLogs.sort((a, b) => {
+    return sortOrder === "asc" ? a.ts - b.ts : b.ts - a.ts
+  })
 
   return (
     <>
@@ -55,20 +73,22 @@ export default function Log({ fullname }) {
         {editMode ? <ExpandLessIcon /> : <ExpandMoreIcon />}
       </h3>
       {editMode ? (
-        <Box sx={{ marginTop: 0.5, marginBottom: 0.5 }}>
-          <Typography sx={{ fontSize: "0.875rem" }}>Config here, date format, log level, source, etc</Typography>
+        <Box sx={{ mt: 0.25, mb: 0.25 }}>
+          <Typography sx={{ fontSize: "0.75rem", margin: 0 }}>
+            Config here, date format, log level, source, etc
+          </Typography>
         </Box>
       ) : null}
 
       {/* Display log files being read */}
-      <Box sx={{ mt: 1, mb: 1 }}>
-        <Typography variant="subtitle1" sx={{ fontWeight: "bold", fontSize: "0.875rem" }}>
+      <Box sx={{ mt: 0.25, mb: 0.25 }}>
+        <Typography variant="subtitle1" sx={{ fontWeight: "bold", fontSize: "0.75rem", margin: 0 }}>
           Log Files Being Read:
         </Typography>
         {service?.openLogFiles && (
-          <ul style={{ marginBottom: "0.5rem", fontSize: "0.875rem", marginTop: 0 }}>
+          <ul style={{ marginBottom: "0.25rem", fontSize: "0.75rem", marginTop: 0, paddingLeft: "1rem" }}>
             {service.openLogFiles.map((file, index) => (
-              <li key={index} style={{ marginBottom: "0.25rem" }}>
+              <li key={index} style={{ marginBottom: "0.1rem" }}>
                 {file}
               </li>
             ))}
@@ -76,26 +96,41 @@ export default function Log({ fullname }) {
         )}
       </Box>
 
+      {/* Log controls: Filter and Refresh */}
+      <Box sx={{ display: "flex", alignItems: "center", mt: 0.5, mb: 0.5 }}>
+        <FormControl sx={{ minWidth: 100, marginRight: 1 }}>
+          <InputLabel sx={{ fontSize: "0.75rem" }}>Log Level</InputLabel>
+          <Select value={logLevel} onChange={handleLogLevelChange} sx={{ fontSize: "0.75rem", height: "2rem" }}>
+            <MenuItem value="debug">Debug</MenuItem>
+            <MenuItem value="info">Info</MenuItem>
+            <MenuItem value="warn">Warn</MenuItem>
+            <MenuItem value="error">Error</MenuItem>
+          </Select>
+        </FormControl>
+        <IconButton onClick={handleRefreshLogs} size="small">
+          <RefreshIcon fontSize="small" />
+        </IconButton>
+      </Box>
+
       {/* Log Table */}
-      <Box sx={{ mt: 1, mb: 1 }}>
-        <Typography variant="h6" sx={{ fontSize: "1rem", marginBottom: "0.5rem" }}>
-          Logs
-        </Typography>
-        <Button
-          variant="contained"
-          onClick={handleRefreshLogs}
-          sx={{ mb: 1, fontSize: "0.875rem", padding: "0.25rem 0.5rem" }}
-        >
-          Refresh Logs
-        </Button>
+      <Box sx={{ mt: 0.25, mb: 0.25 }}>
         <TableContainer component={Paper} sx={{ boxShadow: "none", border: "none", margin: 0, padding: 0 }}>
           <Table sx={{ borderCollapse: "collapse", margin: 0, padding: 0 }}>
             <TableHead>
-              <TableRow sx={{ borderBottom: "none" }}>
-                <TableCell sx={{ borderBottom: "none", fontSize: "0.875rem", padding: "0.5rem" }}>Timestamp</TableCell>
-                <TableCell sx={{ borderBottom: "none", fontSize: "0.875rem", padding: "0.5rem" }}>Log Level</TableCell>
-                <TableCell sx={{ borderBottom: "none", fontSize: "0.875rem", padding: "0.5rem" }}>Source</TableCell>
-                <TableCell sx={{ borderBottom: "none", fontSize: "0.875rem", padding: "0.5rem" }}>Message</TableCell>
+              <TableRow sx={{ borderBottom: "none", height: "1rem" }}>
+                <TableCell sx={{ borderBottom: "none", fontSize: "0.75rem", padding: "0.1rem" }}>
+                  <TableSortLabel
+                    active
+                    direction={sortOrder}
+                    onClick={handleSortChange}
+                    sx={{ fontSize: "0.75rem", padding: "0.1rem" }}
+                  >
+                    Timestamp
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell sx={{ borderBottom: "none", fontSize: "0.75rem", padding: "0.1rem" }}>Log Level</TableCell>
+                <TableCell sx={{ borderBottom: "none", fontSize: "0.75rem", padding: "0.1rem" }}>Source</TableCell>
+                <TableCell sx={{ borderBottom: "none", fontSize: "0.75rem", padding: "0.1rem" }}>Message</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -105,10 +140,11 @@ export default function Log({ fullname }) {
                     key={index}
                     sx={{
                       backgroundColor: log.level === "error" ? "red" : log.level === "warn" ? "yellow" : "white",
-                      fontSize: "0.875rem",
-                      "& td, & th": { borderBottom: "none", padding: "0.5rem" },
+                      fontSize: "0.75rem",
+                      "& td, & th": { borderBottom: "none", padding: "0.1rem" },
                       margin: 0,
-                      padding: 0
+                      padding: 0,
+                      height: "1rem"
                     }}
                   >
                     <TableCell>{log.ts}</TableCell>

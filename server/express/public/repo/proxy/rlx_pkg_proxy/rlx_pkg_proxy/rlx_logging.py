@@ -6,7 +6,7 @@ from typing import Optional
 class JsonFormatter(logging.Formatter):
     def format(self, record):
         log_record = {
-            'ts': int(record.created),  # Convert the timestamp to epoch time and rename to 'ts'
+            'ts': int(record.created * 1000),  # Convert to millisecond epoch time and rename to 'ts'
             'level': record.levelname.lower(),  # Convert the log level to lowercase
             'msg': record.getMessage(),  # Rename 'message' to 'msg'
             'module': record.name,  # Replace 'name' with 'module'
