@@ -4,6 +4,7 @@ import Service from "../framework/Service"
 
 interface LogEntry {
   ts: number // Timestamp property for sorting
+  index: number // Index to track order of logs
   [key: string]: any // Other properties of the log entry
 }
 
@@ -20,7 +21,7 @@ export default class Log extends Service {
   private openLogFiles: string[] = []
   private fileWatchers = new Map<string, fs.FSWatcher>()
   private unifiedLog: LogEntry[] = [] // Unified sorted log
-  private lastPublishedIndex: number = 0 // Track the last published log index
+  private lastPublishedIndex: number = 0 // Index to track the last published log
   private lastReadPosition: number = 0 // Track the last read position in the file
 
   constructor(
@@ -37,7 +38,7 @@ export default class Log extends Service {
 
   public openLogFile(filePath: string): void {
     if (!this.openLogFiles.includes(filePath)) {
-      const watcher = fs.watch(filePath, (eventType, filename) => {
+      const watcher = fs.watch(filePath, (eventType) => {
         if (eventType === "change") {
           this.readLogFile(filePath)
         }
@@ -80,19 +81,22 @@ export default class Log extends Service {
 
         try {
           const logEntry = JSON.parse(line)
+          logEntry.index = this.unifiedLog.length // Assign an index to each log entry
           newLogs.push(logEntry)
         } catch (parseError: any) {
-          console.error(`Log.readLogFile: Failed to parse JSON log - Error: ${parseError.message} - Line: ${line}`)
-          // Optionally, log or store the malformed line for further analysis
+          console.error(`Log.readLogFile: Failed to parse JSON log - Error: ${parseError.message}`)
         }
       }
 
       // Merge new logs into the unified log and sort
-      this.unifiedLog.push(...newLogs)
-      this.unifiedLog.sort((a, b) => a.ts - b.ts)
+      if (newLogs.length > 0) {
+        this.unifiedLog.push(...newLogs)
+        this.unifiedLog.sort((a, b) => a.ts - b.ts)
 
-      // Update last read position to the end of the current size
-      this.lastReadPosition = currentSize
+        // Update last read position to the end of the current size
+        this.lastReadPosition = currentSize
+        console.log(`Read new logs, updating lastReadPosition to: ${this.lastReadPosition}`)
+      }
     })
 
     readStream.on("error", (err: any) => {
@@ -100,10 +104,16 @@ export default class Log extends Service {
     })
   }
 
-  public publishLogs(): LogEntry[] {
+  public publishLogs(logs: LogEntry[]): LogEntry[] {
+    console.log(`Log.publishLogs: Publishing ${logs.length} new log entries`)
+    return logs // Simply return the logs to be sent to the client
+  }
+
+  private getNewLogs(): LogEntry[] {
     const newLogs = this.unifiedLog.slice(this.lastPublishedIndex)
-    this.lastPublishedIndex = this.unifiedLog.length
-    console.log(`Log.publishLogs: Publishing ${newLogs.length} new log entries`)
+    if (newLogs.length > 0) {
+      this.lastPublishedIndex = this.unifiedLog.length // Update last published index
+    }
     return newLogs
   }
 
@@ -120,9 +130,10 @@ export default class Log extends Service {
     if (this.intervalId === null) {
       console.log(`Log.startLogging: Starting timer with interval ${this.config.intervalMs} ms`)
       this.intervalId = setInterval(() => {
-        // if (newLogs.length > 0) {
-        this.invoke("publishLogs")
-        // }
+        const newLogs = this.getNewLogs()
+        if (newLogs.length > 0) {
+          this.invoke("publishLogs", newLogs)
+        }
       }, this.config.intervalMs)
     } else {
       console.warn("Log.startLogging: Timer is already running")

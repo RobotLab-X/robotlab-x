@@ -29,21 +29,26 @@ export default function Log({ fullname }) {
   const [logLevel, setLogLevel] = useState("debug")
 
   // Access Zustand store methods and state
-  const { sendTo, logs, addLogs } = useStore()
+  const { sendTo, logs, addLogs, clearLogs } = useStore()
 
   const service = useSubscription(fullname, "broadcastState", true)
   const logBatch = useSubscription(fullname, "publishLogs")
 
+  console.log("Current logs:", logs) // Debugging output
+
   // Initialize Zustand store with the unifiedLog from the service only if the store is empty
   useEffect(() => {
     if (service?.unifiedLog && logs.length === 0) {
+      console.log("Initializing logs with unifiedLog:", service.unifiedLog) // Debugging output
       addLogs(service.unifiedLog)
     }
   }, [service, logs.length, addLogs])
 
   // Merge new log batches with the existing Zustand logs state
   useEffect(() => {
+    console.log("In useEffect logBatch:", logBatch) // Debugging output
     if (logBatch && logBatch.length > 0) {
+      console.log("Adding new logs:", logBatch) // Debugging output
       addLogs(logBatch)
     }
   }, [logBatch, addLogs])
@@ -57,9 +62,8 @@ export default function Log({ fullname }) {
   }
 
   const handleClearLogs = () => {
-    // Clear logs by resetting the Zustand logs array to empty
-    addLogs([]) // Reset to empty
-    sendTo(fullname, "clearLogs")
+    clearLogs()
+    // sendTo(fullname, "clearLogs")
   }
 
   const handleLogLevelChange = (event) => {

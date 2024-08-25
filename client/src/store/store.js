@@ -463,6 +463,18 @@ const store = (set, get) => ({
     set((state) => ({
       logs: [...state.logs, ...newLogs] // Append new logs to the existing log array
     })),
+  clearLogs: () =>
+    set(() => ({
+      logs: [
+        {
+          ts: new Date().getTime(),
+          level: "info",
+          msg: "Clearing logs",
+          module: "Log",
+          source: "Log"
+        }
+      ]
+    })),
 
   addToStatusList: (status) => {
     set((state) => {
