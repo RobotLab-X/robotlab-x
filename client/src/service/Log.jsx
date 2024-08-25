@@ -18,7 +18,7 @@ import {
   TableSortLabel,
   Typography
 } from "@mui/material"
-import React, { useState } from "react"
+import React, { useMemo, useState } from "react"
 import { useStore } from "store/store"
 import useSubscription from "store/useSubscription"
 
@@ -50,21 +50,29 @@ export default function Log({ fullname }) {
     setSortOrder((prevOrder) => (prevOrder === "asc" ? "desc" : "asc"))
   }
 
-  // Determine which logs to show based on the selected log level
-  const filteredLogs = logBatch
-    ? logBatch.filter((log) => {
-        if (logLevel === "debug") return true
-        if (logLevel === "info") return log.level === "info" || log.level === "warn" || log.level === "error"
-        if (logLevel === "warn") return log.level === "warn" || log.level === "error"
-        if (logLevel === "error") return log.level === "error"
-        return false
-      })
-    : []
+  // Memoize filtered logs to avoid unnecessary re-renders and duplicates
+  const filteredLogs = useMemo(() => {
+    if (!logBatch) return []
+
+    const levelOrder = ["debug", "info", "warn", "error"]
+    const selectedLevelIndex = levelOrder.indexOf(logLevel)
+
+    // Make a deep copy of logBatch to ensure we do not mutate the original
+    const logsCopy = [...logBatch]
+
+    return logsCopy.filter((log) => {
+      const logLevelIndex = levelOrder.indexOf(log.level)
+      return logLevelIndex >= selectedLevelIndex
+    })
+  }, [logBatch, logLevel])
 
   // Sort the filtered logs based on timestamp and sortOrder
-  const sortedLogs = filteredLogs.sort((a, b) => {
-    return sortOrder === "asc" ? a.ts - b.ts : b.ts - a.ts
-  })
+  const sortedLogs = useMemo(() => {
+    // Use a deep copy to avoid mutating the original filteredLogs
+    return [...filteredLogs].sort((a, b) => {
+      return sortOrder === "asc" ? a.ts - b.ts : b.ts - a.ts
+    })
+  }, [filteredLogs, sortOrder])
 
   return (
     <>
