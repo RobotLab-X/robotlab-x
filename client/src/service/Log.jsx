@@ -15,10 +15,9 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  TableSortLabel,
   Typography
 } from "@mui/material"
-import React, { useMemo, useState } from "react"
+import React, { useEffect, useMemo, useState } from "react"
 import { useStore } from "store/store"
 import useSubscription from "store/useSubscription"
 
@@ -28,11 +27,19 @@ export default function Log({ fullname }) {
 
   const [editMode, setEditMode] = useState(false)
   const [logLevel, setLogLevel] = useState("debug")
-  const [sortOrder, setSortOrder] = useState("asc")
   const { sendTo } = useStore()
 
+  // Maintain a local state to track log updates
+  const [localLogBatch, setLocalLogBatch] = useState([])
+
   const service = useSubscription(fullname, "broadcastState", true)
-  const logBatch = useSubscription(fullname, "publishLogs", true)
+  const logBatch = useSubscription(fullname, "publishLogs")
+
+  // Update local log state whenever logBatch changes
+  useEffect(() => {
+    console.log("Updating local log batch:", logBatch)
+    setLocalLogBatch(logBatch)
+  }, [logBatch])
 
   const toggleEditMode = () => {
     setEditMode(!editMode)
@@ -46,33 +53,22 @@ export default function Log({ fullname }) {
     setLogLevel(event.target.value)
   }
 
-  const handleSortChange = () => {
-    setSortOrder((prevOrder) => (prevOrder === "asc" ? "desc" : "asc"))
-  }
-
   // Memoize filtered logs to avoid unnecessary re-renders and duplicates
   const filteredLogs = useMemo(() => {
-    if (!logBatch) return []
+    if (!localLogBatch) return []
 
     const levelOrder = ["debug", "info", "warn", "error"]
     const selectedLevelIndex = levelOrder.indexOf(logLevel)
 
-    // Make a deep copy of logBatch to ensure we do not mutate the original
-    const logsCopy = [...logBatch]
-
-    return logsCopy.filter((log) => {
+    // Filter logs based on selected level
+    const result = localLogBatch.filter((log) => {
       const logLevelIndex = levelOrder.indexOf(log.level)
       return logLevelIndex >= selectedLevelIndex
     })
-  }, [logBatch, logLevel])
 
-  // Sort the filtered logs based on timestamp and sortOrder
-  const sortedLogs = useMemo(() => {
-    // Use a deep copy to avoid mutating the original filteredLogs
-    return [...filteredLogs].sort((a, b) => {
-      return sortOrder === "asc" ? a.ts - b.ts : b.ts - a.ts
-    })
-  }, [filteredLogs, sortOrder])
+    console.log("Filtered logs:", result) // Debugging output
+    return result
+  }, [localLogBatch, logLevel])
 
   return (
     <>
@@ -126,41 +122,31 @@ export default function Log({ fullname }) {
           <Table sx={{ borderCollapse: "collapse", margin: 0, padding: 0 }}>
             <TableHead>
               <TableRow sx={{ borderBottom: "none", height: "1rem" }}>
-                <TableCell sx={{ borderBottom: "none", fontSize: "0.75rem", padding: "0.1rem" }}>
-                  <TableSortLabel
-                    active
-                    direction={sortOrder}
-                    onClick={handleSortChange}
-                    sx={{ fontSize: "0.75rem", padding: "0.1rem" }}
-                  >
-                    Timestamp
-                  </TableSortLabel>
-                </TableCell>
+                <TableCell sx={{ borderBottom: "none", fontSize: "0.75rem", padding: "0.1rem" }}>Timestamp</TableCell>
                 <TableCell sx={{ borderBottom: "none", fontSize: "0.75rem", padding: "0.1rem" }}>Log Level</TableCell>
                 <TableCell sx={{ borderBottom: "none", fontSize: "0.75rem", padding: "0.1rem" }}>Source</TableCell>
                 <TableCell sx={{ borderBottom: "none", fontSize: "0.75rem", padding: "0.1rem" }}>Message</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {logBatch &&
-                logBatch.map((log, index) => (
-                  <TableRow
-                    key={index}
-                    sx={{
-                      backgroundColor: log.level === "error" ? "red" : log.level === "warn" ? "yellow" : "white",
-                      fontSize: "0.75rem",
-                      "& td, & th": { borderBottom: "none", padding: "0.1rem" },
-                      margin: 0,
-                      padding: 0,
-                      height: "1rem"
-                    }}
-                  >
-                    <TableCell>{log.ts}</TableCell>
-                    <TableCell>{log.level}</TableCell>
-                    <TableCell>{log.module}</TableCell>
-                    <TableCell>{log.msg}</TableCell>
-                  </TableRow>
-                ))}
+              {filteredLogs.map((log, index) => (
+                <TableRow
+                  key={index}
+                  sx={{
+                    backgroundColor: log.level === "error" ? "red" : log.level === "warn" ? "yellow" : "white",
+                    fontSize: "0.75rem",
+                    "& td, & th": { borderBottom: "none", padding: "0.1rem" },
+                    margin: 0,
+                    padding: 0,
+                    height: "1rem"
+                  }}
+                >
+                  <TableCell>{log.ts}</TableCell>
+                  <TableCell>{log.level}</TableCell>
+                  <TableCell>{log.module}</TableCell>
+                  <TableCell>{log.msg}</TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
         </TableContainer>

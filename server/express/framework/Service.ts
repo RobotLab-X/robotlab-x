@@ -226,15 +226,17 @@ export default class Service implements Gateway {
       const id = runtime.getId()
       let ret: any = null
 
-      if (msg.data && msg.data.length > 0) {
-        // log.info(`--> ${msg.sender} --> ${msg.name}.${msg.method}(${JSON.stringify(msg.data)})`)
-        if (msg.method === "addListener" || msg.method === "removeListener") {
-          log.info(`--> ${msg.sender} --> ${msg.name}.${msg.method}(${JSON.stringify(msg.data)})`)
+      if (msg.method !== "publishLogs" && msg.method !== "onLogs") {
+        if (msg.data && msg.data.length > 0) {
+          // log.info(`--> ${msg.sender} --> ${msg.name}.${msg.method}(${JSON.stringify(msg.data)})`)
+          if (msg.method === "addListener" || msg.method === "removeListener") {
+            log.info(`--> ${msg.sender} --> ${msg.name}.${msg.method}(${JSON.stringify(msg.data)})`)
+          } else {
+            log.info(`--> ${msg.sender} --> ${msg.name}.${msg.method}(...)`)
+          }
         } else {
-          log.info(`--> ${msg.sender} --> ${msg.name}.${msg.method}(...)`)
+          log.info(`--> ${msg.sender} --> ${msg.name}.${msg.method}()`)
         }
-      } else {
-        log.info(`--> ${msg.sender} --> ${msg.name}.${msg.method}()`)
       }
 
       // FIXME - building dynamic routes based on "registration"
@@ -257,7 +259,9 @@ export default class Service implements Gateway {
         // log.info(`sending message to ${msgFullName}.${msg.method}`)
         // this.gateway.send(msg)
         // const json = JSON.stringify(msg)
-        log.info(`<-- ${msgFullName}.${msg.method} <-- ${msg.sender}.${msg.method}`)
+        if (msg.method !== "publishLogs" && msg.method !== "onLogs") {
+          log.info(`<-- ${msgFullName}.${msg.method} <-- ${msg.sender}.${msg.method}`)
+        }
         // FIXME bork'd - need state information regarding connectivity of process/service, and its an "array" of connections
         // log.info(`connectionImpl / connections ${[...runtime.getClients().keys()]} `)
 
@@ -268,7 +272,7 @@ export default class Service implements Gateway {
           return null
         }
 
-        log.info(`gateway ${gateway.fullname} handling msg for id ${msgId}`)
+        // log.info(`gateway ${gateway.fullname} handling msg for id ${msgId}`)
 
         // TODO - implement synchronous blocking
         let blockingObject = gateway.sendRemote(msg)
