@@ -1,3 +1,4 @@
+import ClearIcon from "@mui/icons-material/Clear"
 import ExpandLessIcon from "@mui/icons-material/ExpandLess"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import RefreshIcon from "@mui/icons-material/Refresh"
@@ -54,6 +55,11 @@ export default function Log({ fullname }) {
 
   const handleRefreshLogs = () => {
     sendTo(fullname, "refreshLogs")
+  }
+
+  const handleClearLogs = () => {
+    setLocalLogBatch([])
+    sendTo(fullname, "clearLogs")
   }
 
   const handleLogLevelChange = (event) => {
@@ -117,6 +123,9 @@ export default function Log({ fullname }) {
         </FormControl>
         <IconButton onClick={handleRefreshLogs} size="small">
           <RefreshIcon fontSize="small" />
+        </IconButton>
+        <IconButton onClick={handleClearLogs} size="small">
+          <ClearIcon fontSize="small" />
         </IconButton>
       </Box>
 
