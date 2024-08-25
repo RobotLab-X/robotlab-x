@@ -23,6 +23,7 @@ export default class Log extends Service {
   private unifiedLog: LogEntry[] = [] // Unified sorted log
   private lastPublishedIndex: number = 0 // Index to track the last published log
   private lastReadPosition: number = 0 // Track the last read position in the file
+  private unifiedLogsPublished: number = 0 // Track the number of unified logs published
 
   constructor(
     public id: string,
@@ -105,7 +106,8 @@ export default class Log extends Service {
   }
 
   public publishLogs(logs: LogEntry[]): LogEntry[] {
-    console.log(`Log.publishLogs: Publishing ${logs.length} new log entries`)
+    this.unifiedLogsPublished += logs.length
+    console.log(`Log.publishLogs: Publishing ${logs.length} new log entries - ${this.unifiedLogsPublished} total`)
     return logs // Simply return the logs to be sent to the client
   }
 
