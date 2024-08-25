@@ -27,27 +27,26 @@ export default function Log({ fullname }) {
 
   const [editMode, setEditMode] = useState(false)
   const [logLevel, setLogLevel] = useState("debug")
-  const { sendTo } = useStore()
 
-  // Maintain a local state to track log updates
-  const [localLogBatch, setLocalLogBatch] = useState([])
+  // Access Zustand store methods and state
+  const { sendTo, logs, addLogs } = useStore()
 
   const service = useSubscription(fullname, "broadcastState", true)
   const logBatch = useSubscription(fullname, "publishLogs")
 
-  // Initialize local log state with the unifiedLog from the service only if localLogBatch is empty
+  // Initialize Zustand store with the unifiedLog from the service only if the store is empty
   useEffect(() => {
-    if (service?.unifiedLog && localLogBatch.length === 0) {
-      setLocalLogBatch(service.unifiedLog)
+    if (service?.unifiedLog && logs.length === 0) {
+      addLogs(service.unifiedLog)
     }
-  }, [service, localLogBatch.length])
+  }, [service, logs.length, addLogs])
 
-  // Merge new log batches with the existing local log state
+  // Merge new log batches with the existing Zustand logs state
   useEffect(() => {
     if (logBatch && logBatch.length > 0) {
-      setLocalLogBatch((prevLogs) => [...prevLogs, ...logBatch])
+      addLogs(logBatch)
     }
-  }, [logBatch])
+  }, [logBatch, addLogs])
 
   const toggleEditMode = () => {
     setEditMode(!editMode)
@@ -58,7 +57,8 @@ export default function Log({ fullname }) {
   }
 
   const handleClearLogs = () => {
-    setLocalLogBatch([])
+    // Clear logs by resetting the Zustand logs array to empty
+    addLogs([]) // Reset to empty
     sendTo(fullname, "clearLogs")
   }
 
@@ -68,17 +68,17 @@ export default function Log({ fullname }) {
 
   // Memoize filtered logs to avoid unnecessary re-renders and duplicates
   const filteredLogs = useMemo(() => {
-    if (!localLogBatch) return []
+    if (!logs) return []
 
     const levelOrder = ["debug", "info", "warn", "error"]
     const selectedLevelIndex = levelOrder.indexOf(logLevel)
 
     // Filter logs based on selected level
-    return localLogBatch.filter((log) => {
+    return logs.filter((log) => {
       const logLevelIndex = levelOrder.indexOf(log.level)
       return logLevelIndex >= selectedLevelIndex
     })
-  }, [localLogBatch, logLevel])
+  }, [logs, logLevel])
 
   return (
     <>
