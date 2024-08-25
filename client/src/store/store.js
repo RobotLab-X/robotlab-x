@@ -458,6 +458,12 @@ const store = (set, get) => ({
   setLayout: (newLayout) => set({ layout: newLayout }),
   saveLayout: (newLayout) => set({ layout: newLayout }),
 
+  logs: [],
+  addLogs: (newLogs) =>
+    set((state) => ({
+      logs: [...state.logs, ...newLogs] // Append new logs to the existing log array
+    })),
+
   addToStatusList: (status) => {
     set((state) => {
       const newStatusList = [...state.statusList, status]

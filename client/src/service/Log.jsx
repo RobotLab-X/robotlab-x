@@ -89,9 +89,9 @@ export default function Log({ fullname }) {
       ) : null}
 
       {/* Display log files being read */}
-      <Box sx={{ mt: 0.25, mb: 0.25 }}>
+      <Box sx={{ mt: 0.25, mb: 1.25 }}>
         <Typography variant="subtitle1" sx={{ fontWeight: "bold", fontSize: "0.75rem", margin: 0 }}>
-          Log Files Being Read:
+          Log Files:
         </Typography>
         {service?.openLogFiles && (
           <ul style={{ marginBottom: "0.25rem", fontSize: "0.75rem", marginTop: 0, paddingLeft: "1rem" }}>
