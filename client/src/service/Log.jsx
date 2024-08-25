@@ -12,8 +12,8 @@ import {
   TableRow,
   Typography
 } from "@mui/material"
-import React, { useState } from "react"
-import { useStore } from "store/store"
+import React, { useEffect, useState } from "react"
+import { useLogStore, useStore } from "store/store"
 import useSubscription from "store/useSubscription"
 
 // FIXME remove fullname with context provider
@@ -24,7 +24,9 @@ export default function Log({ fullname }) {
   const { sendTo } = useStore()
 
   const service = useSubscription(fullname, "broadcastState", true)
-  const logBatch = useSubscription(fullname, "publishLogs")
+  const logBatch = useSubscription(fullname, "publishLogs", true)
+
+  const addLogs = useLogStore((state) => state.addLogs) // Get the addLogs action
 
   const toggleEditMode = () => {
     setEditMode(!editMode)
@@ -34,17 +36,20 @@ export default function Log({ fullname }) {
     sendTo(fullname, "refreshLogs")
   }
 
+  // Use useEffect to handle changes in logBatch
+  useEffect(() => {
+    if (logBatch && logBatch.length > 0) {
+      addLogs(logBatch) // Add new logs to the Zustand store
+    }
+  }, [logBatch, addLogs]) // Dependencies include logBatch and addLogs
+
   // FIXME put all Configuration in a Component
-  // can handle any config field change if the edit name matches the config name
   const handleConfigChange = (event) => {
     const { name, value, type } = event.target
     const newValue = type === "number" ? Number(value) : value
   }
 
   const handleSaveConfig = () => {
-    // sendTo(fullname, "applyConfig", config)
-    // sendTo(fullname, "saveConfig")
-    // sendTo(fullname, "broadcastState")
     setEditMode(false)
   }
 
@@ -77,14 +82,15 @@ export default function Log({ fullname }) {
               </TableRow>
             </TableHead>
             <TableBody>
-              {logBatch.map((log, index) => (
-                <TableRow key={index}>
-                  <TableCell>{log.timestamp}</TableCell>
-                  <TableCell>{log.level}</TableCell>
-                  <TableCell>{log.source}</TableCell>
-                  <TableCell>{log.message}</TableCell>
-                </TableRow>
-              ))}
+              {logBatch &&
+                logBatch.map((log, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{log.timestamp}</TableCell>
+                    <TableCell>{log.level}</TableCell>
+                    <TableCell>{log.source}</TableCell>
+                    <TableCell>{log.message}</TableCell>
+                  </TableRow>
+                ))}
             </TableBody>
           </Table>
         </TableContainer>

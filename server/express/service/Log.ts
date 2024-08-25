@@ -101,6 +101,11 @@ export default class Log extends Service {
     return logs
   }
 
+  startService(): void {
+    super.startService()
+    this.startLogging()
+  }
+
   /**
    * Starts the log timer.
    * @param {number} [intervalMs] - The interval in milliseconds. If not provided, the existing intervalMs from the config is used.
@@ -113,7 +118,8 @@ export default class Log extends Service {
     if (this.intervalId === null) {
       console.log(`Log.startLogging: Starting timer with interval ${this.config.intervalMs} ms`)
       this.intervalId = setInterval(() => {
-        this.publishLogs(this.collectLogs())
+        // this.publishLogs(this.collectLogs())
+        this.invoke("publishLogs", this.collectLogs())
       }, this.config.intervalMs)
     } else {
       console.warn("Log.startLogging: Timer is already running")
