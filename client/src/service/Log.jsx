@@ -50,44 +50,52 @@ export default function Log({ fullname }) {
 
   return (
     <>
-      <h3 style={{ display: "flex", alignItems: "center", cursor: "pointer" }} onClick={toggleEditMode}>
+      <h3 style={{ display: "flex", alignItems: "center", cursor: "pointer", margin: 0 }} onClick={toggleEditMode}>
         Configuration
         {editMode ? <ExpandLessIcon /> : <ExpandMoreIcon />}
       </h3>
       {editMode ? (
-        <Box>
-          <Typography>Config here, date format, log level, source, etc</Typography>
+        <Box sx={{ marginTop: 0.5, marginBottom: 0.5 }}>
+          <Typography sx={{ fontSize: "0.875rem" }}>Config here, date format, log level, source, etc</Typography>
         </Box>
       ) : null}
 
       {/* Display log files being read */}
-      <Box mt={2}>
-        <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
+      <Box sx={{ mt: 1, mb: 1 }}>
+        <Typography variant="subtitle1" sx={{ fontWeight: "bold", fontSize: "0.875rem" }}>
           Log Files Being Read:
         </Typography>
         {service?.openLogFiles && (
-          <ul style={{ marginBottom: "1rem", fontSize: "0.875rem" }}>
+          <ul style={{ marginBottom: "0.5rem", fontSize: "0.875rem", marginTop: 0 }}>
             {service.openLogFiles.map((file, index) => (
-              <li key={index}>{file}</li>
+              <li key={index} style={{ marginBottom: "0.25rem" }}>
+                {file}
+              </li>
             ))}
           </ul>
         )}
       </Box>
 
       {/* Log Table */}
-      <Box mt={2}>
-        <Typography variant="h6">Logs</Typography>
-        <Button variant="contained" onClick={handleRefreshLogs} sx={{ mb: 2 }}>
+      <Box sx={{ mt: 1, mb: 1 }}>
+        <Typography variant="h6" sx={{ fontSize: "1rem", marginBottom: "0.5rem" }}>
+          Logs
+        </Typography>
+        <Button
+          variant="contained"
+          onClick={handleRefreshLogs}
+          sx={{ mb: 1, fontSize: "0.875rem", padding: "0.25rem 0.5rem" }}
+        >
           Refresh Logs
         </Button>
-        <TableContainer component={Paper} sx={{ boxShadow: "none", border: "none" }}>
-          <Table sx={{ borderCollapse: "collapse" }}>
+        <TableContainer component={Paper} sx={{ boxShadow: "none", border: "none", margin: 0, padding: 0 }}>
+          <Table sx={{ borderCollapse: "collapse", margin: 0, padding: 0 }}>
             <TableHead>
               <TableRow sx={{ borderBottom: "none" }}>
-                <TableCell sx={{ borderBottom: "none" }}>Timestamp</TableCell>
-                <TableCell sx={{ borderBottom: "none" }}>Log Level</TableCell>
-                <TableCell sx={{ borderBottom: "none" }}>Source</TableCell>
-                <TableCell sx={{ borderBottom: "none" }}>Message</TableCell>
+                <TableCell sx={{ borderBottom: "none", fontSize: "0.875rem", padding: "0.5rem" }}>Timestamp</TableCell>
+                <TableCell sx={{ borderBottom: "none", fontSize: "0.875rem", padding: "0.5rem" }}>Log Level</TableCell>
+                <TableCell sx={{ borderBottom: "none", fontSize: "0.875rem", padding: "0.5rem" }}>Source</TableCell>
+                <TableCell sx={{ borderBottom: "none", fontSize: "0.875rem", padding: "0.5rem" }}>Message</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -98,7 +106,9 @@ export default function Log({ fullname }) {
                     sx={{
                       backgroundColor: log.level === "error" ? "red" : log.level === "warn" ? "yellow" : "white",
                       fontSize: "0.875rem",
-                      "& td, & th": { borderBottom: "none", padding: "0.5rem" }
+                      "& td, & th": { borderBottom: "none", padding: "0.5rem" },
+                      margin: 0,
+                      padding: 0
                     }}
                   >
                     <TableCell>{log.ts}</TableCell>
