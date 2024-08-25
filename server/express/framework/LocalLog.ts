@@ -2,6 +2,8 @@ import fs from "fs"
 import path from "path"
 import winston from "winston"
 
+let logIndex = 0
+
 // Define custom levels and their corresponding colors
 const logLevels = {
   levels: {
@@ -53,6 +55,7 @@ const customJsonFormat = winston.format.combine(
     format: () => Date.now().toString() // Use millisecond epoch time
   }),
   winston.format((info) => {
+    info.id = logIndex++
     info.ts = info.timestamp // Rename 'timestamp' to 'ts'
     delete info.timestamp // Remove original 'timestamp' field
     info.msg = info.message // Rename 'message' to 'msg'

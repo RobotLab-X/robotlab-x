@@ -139,6 +139,7 @@ export default function Log({ fullname }) {
           <Table sx={{ borderCollapse: "collapse", margin: 0, padding: 0 }}>
             <TableHead>
               <TableRow sx={{ borderBottom: "none", height: "1rem" }}>
+                <TableCell sx={{ borderBottom: "none", fontSize: "0.75rem", padding: "0.1rem" }}>id</TableCell>
                 <TableCell sx={{ borderBottom: "none", fontSize: "0.75rem", padding: "0.1rem" }}>Timestamp</TableCell>
                 <TableCell sx={{ borderBottom: "none", fontSize: "0.75rem", padding: "0.1rem" }}>Log Level</TableCell>
                 <TableCell sx={{ borderBottom: "none", fontSize: "0.75rem", padding: "0.1rem" }}>Source</TableCell>
@@ -158,6 +159,7 @@ export default function Log({ fullname }) {
                     height: "1rem"
                   }}
                 >
+                  <TableCell>{log.id}</TableCell>
                   <TableCell>{log.ts}</TableCell>
                   <TableCell>{log.level}</TableCell>
                   <TableCell>{log.module}</TableCell>

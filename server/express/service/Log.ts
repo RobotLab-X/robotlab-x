@@ -16,7 +16,7 @@ interface LogEntry {
 export default class Log extends Service {
   private intervalId: NodeJS.Timeout | null = null
   config = {
-    intervalMs: 10000
+    intervalMs: 5000
   }
   private openLogFiles: string[] = []
   private fileWatchers = new Map<string, fs.FSWatcher>()
@@ -93,6 +93,17 @@ export default class Log extends Service {
       if (newLogs.length > 0) {
         this.unifiedLog.push(...newLogs)
         this.unifiedLog.sort((a, b) => a.ts - b.ts)
+
+        // Ensure unifiedLog does not exceed 500 entries
+        if (this.unifiedLog.length > 500) {
+          const excessLogs = this.unifiedLog.length - 500
+          this.unifiedLog.splice(0, excessLogs) // Remove the oldest logs
+
+          // Adjust the lastPublishedIndex to ensure it aligns with the current log window
+          this.lastPublishedIndex = Math.max(0, this.lastPublishedIndex - excessLogs)
+
+          console.log(`Removed ${excessLogs} oldest logs to maintain a 500-log window`)
+        }
 
         // Update last read position to the end of the current size
         this.lastReadPosition = currentSize
