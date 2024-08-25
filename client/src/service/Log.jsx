@@ -60,26 +60,47 @@ export default function Log({ fullname }) {
         </Box>
       ) : null}
 
+      {/* Display log files being read */}
+      <Box mt={2}>
+        <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
+          Log Files Being Read:
+        </Typography>
+        {service?.openLogFiles && (
+          <ul style={{ marginBottom: "1rem", fontSize: "0.875rem" }}>
+            {service.openLogFiles.map((file, index) => (
+              <li key={index}>{file}</li>
+            ))}
+          </ul>
+        )}
+      </Box>
+
       {/* Log Table */}
       <Box mt={2}>
         <Typography variant="h6">Logs</Typography>
-        <Button variant="contained" onClick={handleRefreshLogs} style={{ marginBottom: "1rem" }}>
+        <Button variant="contained" onClick={handleRefreshLogs} sx={{ mb: 2 }}>
           Refresh Logs
         </Button>
-        <TableContainer component={Paper}>
-          <Table>
+        <TableContainer component={Paper} sx={{ boxShadow: "none", border: "none" }}>
+          <Table sx={{ borderCollapse: "collapse" }}>
             <TableHead>
-              <TableRow>
-                <TableCell>Timestamp</TableCell>
-                <TableCell>Log Level</TableCell>
-                <TableCell>Source</TableCell>
-                <TableCell>Message</TableCell>
+              <TableRow sx={{ borderBottom: "none" }}>
+                <TableCell sx={{ borderBottom: "none" }}>Timestamp</TableCell>
+                <TableCell sx={{ borderBottom: "none" }}>Log Level</TableCell>
+                <TableCell sx={{ borderBottom: "none" }}>Source</TableCell>
+                <TableCell sx={{ borderBottom: "none" }}>Message</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {logBatch &&
                 logBatch.map((log, index) => (
-                  <TableRow key={index}>
+                  <TableRow
+                    key={index}
+                    sx={{
+                      backgroundColor: log.level === "error" ? "red" : log.level === "warn" ? "yellow" : "white",
+                      fontSize: "0.875rem",
+                      "& td, & th": { borderBottom: "none", padding: "0.5rem" }
+                    }}
+                  >
                     <TableCell>{log.ts}</TableCell>
                     <TableCell>{log.level}</TableCell>
                     <TableCell>{log.module}</TableCell>
