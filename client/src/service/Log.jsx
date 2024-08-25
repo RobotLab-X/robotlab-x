@@ -21,7 +21,6 @@ import React, { useEffect, useMemo, useState } from "react"
 import { useStore } from "store/store"
 import useSubscription from "store/useSubscription"
 
-// FIXME remove fullname with context provider
 export default function Log({ fullname }) {
   console.info(`Log ${fullname}`)
 
@@ -35,10 +34,18 @@ export default function Log({ fullname }) {
   const service = useSubscription(fullname, "broadcastState", true)
   const logBatch = useSubscription(fullname, "publishLogs")
 
-  // Update local log state whenever logBatch changes
+  // Initialize local log state with the unifiedLog from the service only if localLogBatch is empty
   useEffect(() => {
-    console.log("Updating local log batch:", logBatch)
-    setLocalLogBatch(logBatch)
+    if (service?.unifiedLog && localLogBatch.length === 0) {
+      setLocalLogBatch(service.unifiedLog)
+    }
+  }, [service, localLogBatch.length])
+
+  // Merge new log batches with the existing local log state
+  useEffect(() => {
+    if (logBatch && logBatch.length > 0) {
+      setLocalLogBatch((prevLogs) => [...prevLogs, ...logBatch])
+    }
   }, [logBatch])
 
   const toggleEditMode = () => {
@@ -61,13 +68,10 @@ export default function Log({ fullname }) {
     const selectedLevelIndex = levelOrder.indexOf(logLevel)
 
     // Filter logs based on selected level
-    const result = localLogBatch.filter((log) => {
+    return localLogBatch.filter((log) => {
       const logLevelIndex = levelOrder.indexOf(log.level)
       return logLevelIndex >= selectedLevelIndex
     })
-
-    console.log("Filtered logs:", result) // Debugging output
-    return result
   }, [localLogBatch, logLevel])
 
   return (

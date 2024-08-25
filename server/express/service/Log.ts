@@ -2,6 +2,11 @@ import fs from "fs"
 import path from "path"
 import Service from "../framework/Service"
 
+interface LogEntry {
+  ts: number // Timestamp property for sorting
+  [key: string]: any // Other properties of the log entry
+}
+
 /**
  * @class Log
  * @extends Service
@@ -14,7 +19,9 @@ export default class Log extends Service {
   }
   private openLogFiles: string[] = []
   private fileWatchers = new Map<string, fs.FSWatcher>()
-  private logStorage: Record<string, object[]> = {}
+  private unifiedLog: LogEntry[] = [] // Unified sorted log
+  private lastPublishedIndex: number = 0 // Track the last published log index
+  private lastReadPosition: number = 0 // Track the last read position in the file
 
   constructor(
     public id: string,
@@ -38,7 +45,6 @@ export default class Log extends Service {
 
       this.fileWatchers.set(filePath, watcher)
       this.openLogFiles.push(filePath)
-      this.logStorage[filePath] = [] // Initialize log storage for this file
       console.log(`Log.openLogFile: Opened log file ${filePath}`)
     } else {
       console.warn(`Log.openLogFile: Log file ${filePath} is already open`)
@@ -49,25 +55,35 @@ export default class Log extends Service {
     fs.readFile(filePath, "utf8", (err, data) => {
       if (err) {
         console.error(`Log.readLogFile: Error reading log file ${filePath} - ${err.message}`)
-      } else {
-        console.log(`Log.readLogFile: Read log file ${filePath}`)
-        // Parse JSON log entries and store them
-        try {
-          const logs = data
-            .split("\n")
-            .filter((line) => line.trim() !== "")
-            .map((line) => JSON.parse(line)) // Parse each line as JSON
-          this.logStorage[filePath].push(...logs)
-        } catch (parseError) {
-          console.error(`Log.readLogFile: Failed to parse JSON log `)
-        }
+        return
+      }
+
+      console.log(`Log.readLogFile: Read log file ${filePath}`)
+      const lines = data.split("\n")
+      const newLines = lines.slice(this.lastReadPosition)
+
+      if (newLines.length === 0) return
+
+      try {
+        const newLogs = newLines.filter((line) => line.trim() !== "").map((line) => JSON.parse(line) as LogEntry)
+
+        // Merge new logs into the unified log and sort
+        this.unifiedLog.push(...newLogs)
+        this.unifiedLog.sort((a, b) => a.ts - b.ts)
+
+        // Update last read position to the end of the file
+        this.lastReadPosition = lines.length
+      } catch (parseError) {
+        console.error(`Log.readLogFile: Failed to parse JSON log - `)
       }
     })
   }
 
-  public publishLogs(logs: object[]): object[] {
-    console.log(`Log.publishLogs: Publishing logs - ${logs.length} entries`)
-    return logs
+  public publishLogs(): LogEntry[] {
+    const newLogs = this.unifiedLog.slice(this.lastPublishedIndex)
+    this.lastPublishedIndex = this.unifiedLog.length
+    console.log(`Log.publishLogs: Publishing ${newLogs.length} new log entries`)
+    return newLogs
   }
 
   startService(): void {
@@ -83,9 +99,9 @@ export default class Log extends Service {
     if (this.intervalId === null) {
       console.log(`Log.startLogging: Starting timer with interval ${this.config.intervalMs} ms`)
       this.intervalId = setInterval(() => {
-        const collectedLogs = this.collectLogs()
-        if (collectedLogs.length > 0) {
-          this.invoke("publishLogs", collectedLogs)
+        const newLogs = this.publishLogs()
+        if (newLogs.length > 0) {
+          this.invoke("publishLogs", newLogs)
         }
       }, this.config.intervalMs)
     } else {
@@ -103,29 +119,26 @@ export default class Log extends Service {
     }
   }
 
-  private collectLogs(): object[] {
-    const allLogs: object[] = []
-
-    for (const [filePath, logs] of Object.entries(this.logStorage)) {
-      allLogs.push(...logs)
-      this.logStorage[filePath] = [] // Clear logs after collecting
-    }
-
-    return allLogs
-  }
-
   toJSON() {
     return {
       ...super.toJSON(),
-      openLogFiles: this.openLogFiles
+      openLogFiles: this.openLogFiles,
+      unifiedLog: this.unifiedLog
     }
+  }
+
+  broadcastState() {
+    console.error(`broadcastState - record count ${this.unifiedLog.length}`)
+    return this
   }
 
   stopService(): void {
     this.fileWatchers.forEach((watcher) => watcher.close())
     this.fileWatchers.clear()
     this.openLogFiles = []
-    this.logStorage = {} // Clear in-memory log storage
+    this.unifiedLog = [] // Clear unified log
+    this.lastPublishedIndex = 0
+    this.lastReadPosition = 0 // Reset read position
     this.stopLogging()
     super.stopService()
   }
