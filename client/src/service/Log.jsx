@@ -1,6 +1,7 @@
 import ClearIcon from "@mui/icons-material/Clear"
 import ExpandLessIcon from "@mui/icons-material/ExpandLess"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
+import PauseIcon from "@mui/icons-material/Pause"
 import RefreshIcon from "@mui/icons-material/Refresh"
 import {
   Box,
@@ -27,6 +28,7 @@ export default function Log({ fullname }) {
 
   const [editMode, setEditMode] = useState(false)
   const [logLevel, setLogLevel] = useState("debug")
+  const [isPaused, setIsPaused] = useState(false) // State to manage pause
 
   // Access Zustand store methods and state
   const { sendTo, logs, addLogs, clearLogs, setLogs, trimLogs } = useStore()
@@ -44,18 +46,22 @@ export default function Log({ fullname }) {
     }
   }, [service, logs.length, setLogs])
 
-  // Merge new log batches with the existing Zustand logs state
+  // Merge new log batches with the existing Zustand logs state, only if not paused
   useEffect(() => {
     console.log("In useEffect logBatch:", logBatch) // Debugging output
-    if (logBatch && logBatch.length > 0) {
+    if (!isPaused && logBatch && logBatch.length > 0) {
       console.log("Adding new logs:", logBatch) // Debugging output
       addLogs(logBatch)
       trimLogs() // Ensure logs do not exceed 500 entries
     }
-  }, [logBatch, addLogs, trimLogs])
+  }, [logBatch, addLogs, trimLogs, isPaused])
 
   const toggleEditMode = () => {
     setEditMode(!editMode)
+  }
+
+  const togglePause = () => {
+    setIsPaused(!isPaused)
   }
 
   const handleRefreshLogs = () => {
@@ -115,7 +121,7 @@ export default function Log({ fullname }) {
         )}
       </Box>
 
-      {/* Log controls: Filter and Refresh */}
+      {/* Log controls: Filter, Refresh, Pause */}
       <Box sx={{ display: "flex", alignItems: "center", mt: 0.5, mb: 0.5 }}>
         <FormControl sx={{ minWidth: 100, marginRight: 1 }}>
           <InputLabel sx={{ fontSize: "0.75rem" }}>Log Level</InputLabel>
@@ -132,19 +138,36 @@ export default function Log({ fullname }) {
         <IconButton onClick={handleClearLogs} size="small">
           <ClearIcon fontSize="small" />
         </IconButton>
+        <IconButton onClick={togglePause} size="small">
+          <PauseIcon fontSize="small" color={isPaused ? "secondary" : "inherit"} />
+        </IconButton>
       </Box>
 
       {/* Log Table */}
       <Box sx={{ mt: 0.25, mb: 0.25 }}>
-        <TableContainer component={Paper} sx={{ boxShadow: "none", border: "none", margin: 0, padding: 0 }}>
-          <Table sx={{ borderCollapse: "collapse", margin: 0, padding: 0 }}>
+        <TableContainer
+          component={Paper}
+          sx={{ boxShadow: "none", border: "none", margin: 0, padding: 0, maxWidth: "800px" }}
+        >
+          <Table sx={{ borderCollapse: "collapse", margin: 0, padding: 0, width: "100%" }}>
             <TableHead>
               <TableRow sx={{ borderBottom: "none", height: "1rem" }}>
                 <TableCell sx={{ borderBottom: "none", fontSize: "0.75rem", padding: "0.1rem" }}>id</TableCell>
                 <TableCell sx={{ borderBottom: "none", fontSize: "0.75rem", padding: "0.1rem" }}>Timestamp</TableCell>
                 <TableCell sx={{ borderBottom: "none", fontSize: "0.75rem", padding: "0.1rem" }}>Log Level</TableCell>
                 <TableCell sx={{ borderBottom: "none", fontSize: "0.75rem", padding: "0.1rem" }}>Source</TableCell>
-                <TableCell sx={{ borderBottom: "none", fontSize: "0.75rem", padding: "0.1rem" }}>Message</TableCell>
+                <TableCell
+                  sx={{
+                    borderBottom: "none",
+                    fontSize: "0.75rem",
+                    padding: "0.1rem",
+                    maxWidth: "800px", // Set maximum width
+                    overflowWrap: "break-word", // Allow wrapping
+                    wordBreak: "break-word" // Break long words
+                  }}
+                >
+                  Message
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -164,7 +187,15 @@ export default function Log({ fullname }) {
                   <TableCell>{log.ts}</TableCell>
                   <TableCell>{log.level}</TableCell>
                   <TableCell>{log.module}</TableCell>
-                  <TableCell>{log.msg}</TableCell>
+                  <TableCell
+                    sx={{
+                      maxWidth: "1200px", // Set maximum width for the message
+                      overflowWrap: "break-word", // Allow wrapping
+                      wordBreak: "break-word" // Break long words
+                    }}
+                  >
+                    {log.msg}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

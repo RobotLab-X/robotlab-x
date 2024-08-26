@@ -172,7 +172,6 @@ export default class Log extends Service {
   }
 
   broadcastState() {
-    console.error(`broadcastState - record count ${this.unifiedLog.length}`)
     return this
   }
 

@@ -1,7 +1,7 @@
 import ExpandLessIcon from "@mui/icons-material/ExpandLess"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import { Box, Button, TextField, Typography } from "@mui/material"
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { useStore } from "store/store"
 import useSubscription from "store/useSubscription"
 
@@ -10,10 +10,18 @@ export default function Clock({ fullname }) {
   console.info(`Clock ${fullname}`)
 
   const [editMode, setEditMode] = useState(false)
+  const [config, setConfig] = useState({ intervalMs: 1000 }) // Local state for configuration
   const { sendTo } = useStore()
 
   const service = useSubscription(fullname, "broadcastState", true)
   const timestamp = useSubscription(fullname, "publishEpoch")
+
+  // Initialize the config state with the service config when the component mounts
+  useEffect(() => {
+    if (service?.config) {
+      setConfig(service.config)
+    }
+  }, [service])
 
   const toggleEditMode = () => {
     setEditMode(!editMode)
@@ -27,17 +35,20 @@ export default function Clock({ fullname }) {
     sendTo(fullname, "stopClock")
   }
 
-  // FIXME put all Configuration in a Component
-  // can handle any config field change if the edit name matches the config name
+  // Handle any config field change if the edit name matches the config name
   const handleConfigChange = (event) => {
     const { name, value, type } = event.target
     const newValue = type === "number" ? Number(value) : value
+    setConfig((prevConfig) => ({
+      ...prevConfig,
+      [name]: newValue
+    }))
   }
 
   const handleSaveConfig = () => {
-    // sendTo(fullname, "applyConfig", config)
-    // sendTo(fullname, "saveConfig")
-    // sendTo(fullname, "broadcastState")
+    sendTo(fullname, "applyConfig", config)
+    sendTo(fullname, "saveConfig")
+    sendTo(fullname, "broadcastState")
     setEditMode(false)
   }
 
@@ -58,8 +69,9 @@ export default function Clock({ fullname }) {
               variant="outlined"
               fullWidth
               margin="normal"
-              value={service?.config?.intervalMs}
-              onChange={handleConfigChange}
+              type="number"
+              value={config.intervalMs}
+              onChange={handleConfigChange} // Update configuration state on change
               sx={{ flex: 1 }} // Ensure consistent width
             />
           </Box>
@@ -79,7 +91,7 @@ export default function Clock({ fullname }) {
             <br />
             <span style={{ fontFamily: "Orbitron, Arial, sans-serif" }}>{timestamp}</span>
             <br />
-            Interval {service?.config.intervalMs}&nbsp; (ms)
+            Interval {config.intervalMs}&nbsp; (ms)
           </Typography>
           <Box>
             <Button variant="contained" color="primary" onClick={handleStart}>
