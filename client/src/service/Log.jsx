@@ -29,7 +29,7 @@ export default function Log({ fullname }) {
   const [logLevel, setLogLevel] = useState("debug")
 
   // Access Zustand store methods and state
-  const { sendTo, logs, addLogs, clearLogs } = useStore()
+  const { sendTo, logs, addLogs, clearLogs, setLogs, trimLogs } = useStore()
 
   const service = useSubscription(fullname, "broadcastState", true)
   const logBatch = useSubscription(fullname, "publishLogs")
@@ -40,9 +40,9 @@ export default function Log({ fullname }) {
   useEffect(() => {
     if (service?.unifiedLog && logs.length === 0) {
       console.log("Initializing logs with unifiedLog:", service.unifiedLog) // Debugging output
-      addLogs(service.unifiedLog)
+      setLogs(service.unifiedLog)
     }
-  }, [service, logs.length, addLogs])
+  }, [service, logs.length, setLogs])
 
   // Merge new log batches with the existing Zustand logs state
   useEffect(() => {
@@ -50,8 +50,9 @@ export default function Log({ fullname }) {
     if (logBatch && logBatch.length > 0) {
       console.log("Adding new logs:", logBatch) // Debugging output
       addLogs(logBatch)
+      trimLogs() // Ensure logs do not exceed 500 entries
     }
-  }, [logBatch, addLogs])
+  }, [logBatch, addLogs, trimLogs])
 
   const toggleEditMode = () => {
     setEditMode(!editMode)

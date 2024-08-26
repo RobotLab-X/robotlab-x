@@ -460,9 +460,11 @@ const store = (set, get) => ({
 
   logs: [],
   addLogs: (newLogs) =>
-    set((state) => ({
-      logs: [...state.logs, ...newLogs] // Append new logs to the existing log array
-    })),
+    set((state) => {
+      const combinedLogs = [...state.logs, ...newLogs]
+      const trimmedLogs = combinedLogs.length > 500 ? combinedLogs.slice(-500) : combinedLogs
+      return { logs: trimmedLogs }
+    }),
   clearLogs: () =>
     set(() => ({
       logs: [
@@ -475,6 +477,14 @@ const store = (set, get) => ({
         }
       ]
     })),
+  setLogs: (logs) => set({ logs }), // Directly set logs
+  trimLogs: () =>
+    set((state) => {
+      if (state.logs.length > 500) {
+        return { logs: state.logs.slice(-500) }
+      }
+      return state
+    }),
 
   addToStatusList: (status) => {
     set((state) => {
