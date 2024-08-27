@@ -12,6 +12,7 @@ export default function Polly({ fullname }) {
   const [editMode, setEditMode] = useState(false)
   const [text, setText] = useState("")
   const [secretId, setSecretId] = useState("")
+  const [region, setRegion] = useState("")
   const [secretAccessKey, setSecretAccessKey] = useState("")
   const [selectedVoice, setSelectedVoice] = useState("")
   const [autoClear, setAutoClear] = useState(true) // State to control auto-clear functionality
@@ -27,6 +28,7 @@ export default function Polly({ fullname }) {
       setSecretId(service.config.secretId)
       setSecretAccessKey(service.config.secretAccessKey)
       setSelectedVoice(service.config.voice)
+      setRegion(service.config.region)
     }
   }, [service, fullname])
 
@@ -52,6 +54,8 @@ export default function Polly({ fullname }) {
       setSecretId(value)
     } else if (id === "secretAccessKey") {
       setSecretAccessKey(value)
+    } else if (id === "region") {
+      setRegion(value)
     }
   }
 
@@ -95,6 +99,17 @@ export default function Polly({ fullname }) {
               fullWidth
               margin="normal"
               value={secretAccessKey}
+              onChange={handleConfigChange}
+              sx={{ flex: 1 }} // Ensure consistent width
+            />
+            <TextField
+              label="Region"
+              id="region"
+              type="text"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              value={region}
               onChange={handleConfigChange}
               sx={{ flex: 1 }} // Ensure consistent width
             />
