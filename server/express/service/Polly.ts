@@ -28,7 +28,8 @@ export default class Polly extends Service {
     voice: "Joanna",
     secretAccessKey: null as string | null,
     secretId: null as string | null,
-    format: "mp3" as "mp3" | "ogg" | "pcm"
+    format: "mp3" as "mp3" | "ogg" | "pcm",
+    region: "us-east-1"
   }
 
   client: PollyClient | null = null
@@ -64,14 +65,13 @@ export default class Polly extends Service {
   }
 
   async initializePollyClient() {
-    if (!this.client) {
-      this.client = new PollyClient({
-        credentials: {
-          accessKeyId: this.config.secretId!,
-          secretAccessKey: this.config.secretAccessKey!
-        }
-      })
-    }
+    this.client = new PollyClient({
+      credentials: {
+        accessKeyId: this.config.secretId!,
+        secretAccessKey: this.config.secretAccessKey!
+      },
+      region: this.config.region
+    })
   }
 
   async fetchVoices() {
