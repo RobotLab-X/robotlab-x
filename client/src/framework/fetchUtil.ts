@@ -1,5 +1,5 @@
 async function fetchGetJson(origin: string, path: string) {
-  const url = `${origin}/${path}`
+  const url = `${origin}${path}`
   console.info(`GET ${url}`)
 
   try {

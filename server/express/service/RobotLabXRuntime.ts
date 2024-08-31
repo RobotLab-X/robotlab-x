@@ -362,8 +362,8 @@ export default class RobotLabXRuntime extends Service {
     // }
   }
 
-  static getLaunchDescription(launchFile: string): LaunchDescription {
-    log.info(`Starting launch file: ${launchFile}`)
+  static getLaunchDescription(launchPath: string): LaunchDescription {
+    log.info(`Starting launch file: ${launchPath}`)
 
     try {
       log.info(`cwd ${process.cwd()}`)
@@ -372,7 +372,7 @@ export default class RobotLabXRuntime extends Service {
       // const configPath = path.join(process.cwd(), "config", configSetName, launcher)
       const main = Main.getInstance()
 
-      const launchPath = path.join(main.distRoot, "launch", `${launchFile}`)
+      // const launchPath = path.join(main.distRoot, "launch", `${launchFile}`)
 
       log.info(`launchPath ${launchPath}`)
 
@@ -398,9 +398,9 @@ export default class RobotLabXRuntime extends Service {
       return launchDescription
     } catch (error) {
       if (error instanceof Error) {
-        log.error(`Error loading configuration for ${launchFile}: ${error.message}`)
+        log.error(`Error loading configuration for ${launchPath}: ${error.message}\nStack trace: ${error.stack}`)
       } else {
-        log.error(`An unknown error occurred while loading configuration for ${launchFile}`)
+        log.error(`An unknown error occurred while loading configuration for ${launchPath}`)
       }
       return null
     }
@@ -435,7 +435,7 @@ export default class RobotLabXRuntime extends Service {
       fs.writeFileSync(filePath, ld.serialize("js"))
     }
 
-    ld = RobotLabXRuntime.getLaunchDescription(launchFile)
+    ld = RobotLabXRuntime.getLaunchDescription(filePath)
 
     if (!ld) {
       log.error(`invalid launch description ${filePath} cannot start`)
@@ -510,9 +510,12 @@ export default class RobotLabXRuntime extends Service {
     log.info("started runtime")
   }
 
-  async start(launcher: string) {
-    log.info(`Starting launcher: ${launcher}`)
-    const launchDescription = RobotLabXRuntime.getLaunchDescription(launcher)
+  async start(shortLaunchName: string) {
+    log.info(`Starting launcher: ${shortLaunchName}`)
+    const main = Main.getInstance()
+    const filePath = path.join(main.distRoot, "launch", shortLaunchName)
+    log.info(`Starting file path: ${filePath}`)
+    const launchDescription = RobotLabXRuntime.getLaunchDescription(filePath)
     this.launch(launchDescription)
   }
 
@@ -989,13 +992,13 @@ export default class RobotLabXRuntime extends Service {
 
   getLaunchFiles(launchDir: string = path.join(Main.getInstance().distRoot, "launch")): any[] {
     const main = Main.getInstance()
-    log.info(`publishExamples scanning directory ${launchDir}`)
+    log.info(`getLaunchFiles scanning directory ${launchDir}`)
     const launchFiles: any[] = []
     fs.readdirSync(launchDir).forEach((file) => {
       if (file.endsWith(".js")) {
         let ld: LaunchDescription = null
         try {
-          const filePath = path.join("examples", file)
+          const filePath = path.join(launchDir, file)
           ld = RobotLabXRuntime.getLaunchDescription(filePath)
         } catch (error) {
           log.error(`error: ${error}`)

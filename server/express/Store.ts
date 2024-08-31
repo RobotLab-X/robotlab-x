@@ -301,10 +301,10 @@ export default class Store {
         log.error(`no name in msg ${JSON.stringify(msg)}`)
       }
 
-      const id = CodecUtil.getId(msg.name)
-      if (!id) {
-        log.error(`msg not fully addressed ${JSON.stringify(msg)}`)
-      }
+      // const id = CodecUtil.getId(msg.name)
+      // if (!id) {
+      //   log.error(`msg not fully addressed ${JSON.stringify(msg)}`)
+      // }
 
       // log.info(`--> handleMessage ${msg.name}.${msg.method}`)
       // can you relay without having that service in this registry ... "yes"

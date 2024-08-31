@@ -87,7 +87,7 @@ export class Repo {
       try {
         if (file.endsWith(".js")) {
           const servicePath = path.join(serviceDir, file)
-          log.info(`attempting to load:[${servicePath}]`)
+          log.debug(`attempting to load:[${servicePath}]`)
 
           const importedModule = require(servicePath)
           const ServiceClass = importedModule.default // Accessing the default export
@@ -102,7 +102,7 @@ export class Repo {
           }
 
           // Register each service with the filename (minus the extension) as key
-          log.info(`=======registering service type: ${serviceName}`)
+          log.debug(`=======registering service type: ${serviceName}`)
           this.services[serviceName] = ServiceClass
         }
       } catch (error) {

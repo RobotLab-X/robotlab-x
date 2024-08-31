@@ -168,7 +168,7 @@ export default class Main {
       log.info(`bootServer: argv: ${JSON.stringify(argv)}`)
 
       // start RobotLabXRuntime
-      let launchFile = argv.config ? argv.config : "default"
+      let launchFile = argv.config ? argv.config : "default.js"
       // must create instance before startServiceType to fix chicken egg problem
       let runtime: RobotLabXRuntime = RobotLabXRuntime.createInstance(launchFile)
 

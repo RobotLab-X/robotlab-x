@@ -146,6 +146,7 @@ export default class Service implements Gateway {
   }
 
   applyConfig(config: any) {
+    log.info(`applyConfig ${this.name} ${JSON.stringify(config)}`)
     this.config = config
   }
 
