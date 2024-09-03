@@ -2,7 +2,7 @@ args: ["-u", "proxy.py", "-i", "{{name}}", "-c", "{{serviceUrl}}"] # -u unbuffer
 author: "GroG"
 categories: ["audio", "microphone", "sound", "speech"]
 typeKey: PyVosk
-proxyTypeKey: PyVosk
+proxyTypeKey: Proxy
 title: "Vosk Speech Recognition"
 platform: "python"
 platformVersion: "3.10"

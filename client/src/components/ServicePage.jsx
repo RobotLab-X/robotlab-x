@@ -36,8 +36,9 @@ const ServicePage = ({ fullname, name, id }) => {
   const serviceMsg = useServiceSubscription(fullname)
   const service = useProcessedMessage(serviceMsg)
 
-  let resolvedType = registered.typeKey === "Proxy" ? registered.proxyTypeKey : registered.typeKey
+  let resolvedType = registered.typeKey === "Proxy" ? registered.pkg.typeKey : registered.typeKey
   resolvedType = resolvedType?.includes(".") ? "MyRobotLabProxy" : resolvedType
+  console.error(`resolvedType ${resolvedType}`)
   const { sendTo } = useStore()
   const getRepoUrl = useStore((state) => state.getRepoUrl)
   const [showJson, setShowJson] = useState(false)
@@ -129,28 +130,7 @@ const ServicePage = ({ fullname, name, id }) => {
 
   return (
     <div className="service-content-div" style={containerStyle2}>
-      <Typography variant="h4" component="div" sx={{ display: "flex", alignItems: "center" }}>
-        {resolvedType && resolvedType !== "MyRobotLabProxy" && (
-          <img
-            src={`${getRepoUrl()}/${resolvedType.toLowerCase()}/image.png`}
-            alt={registered?.name}
-            width="32"
-            style={{ verticalAlign: "middle" }}
-          />
-        )}
-        &nbsp;&nbsp;
-        <Tooltip title={service?.ready ? "Ready" : "Not Ready"}>
-          <Box width={10} height={10} borderRadius="50%" bgcolor={service?.ready ? "green" : "red"} mr={1} />
-        </Tooltip>
-        {registered?.name}
-        <span style={{ color: "grey" }}>{displayId}</span>
-        <Tooltip title="Make message route">
-          {/*
-          <IconButton onClick={handleMakeMessageRoute} aria-label="api">
-            <SendIcon />
-          </IconButton>
-          */}
-        </Tooltip>
+      <div style={{ display: "flex", alignItems: "center", marginBottom: "10px" }}>
         <Tooltip title="Settings">
           <IconButton onClick={handleSettingsClick} aria-label="settings">
             <SettingsIcon />
@@ -186,6 +166,24 @@ const ServicePage = ({ fullname, name, id }) => {
             <InfoIcon />
           </IconButton>
         </Tooltip>
+      </div>
+      <Typography variant="h4" component="div" sx={{ display: "flex", alignItems: "center" }}>
+        {resolvedType && resolvedType !== "MyRobotLabProxy" && (
+          <img
+            src={`${getRepoUrl()}/${resolvedType.toLowerCase()}/image.png`}
+            alt={registered?.name}
+            width="32"
+            style={{ verticalAlign: "middle" }}
+          />
+        )}
+        &nbsp;&nbsp;
+        <Tooltip title={service?.ready ? "Ready" : "Not Ready"}>
+          <Box width={10} height={10} borderRadius="50%" bgcolor={service?.ready ? "green" : "red"} mr={1} />
+        </Tooltip>
+        {registered?.name}
+        <span style={{ color: "grey" }}>
+          {displayId}&nbsp;{registered?.pkg?.title}
+        </span>
       </Typography>
 
       {asyncPageMemo}

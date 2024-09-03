@@ -426,8 +426,6 @@ const store = (set, get) => ({
     const registered = get().registry[fullname]
 
     let type = registered?.typeKey || "Unknown"
-    // if Proxy, then use the proxyTypeKey
-    const imgType = type === "Proxy" ? registered.proxyTypeKey : type
 
     return type
   },
@@ -437,7 +435,7 @@ const store = (set, get) => ({
 
     let type = registered?.typeKey || "Unknown"
     // if Proxy, then use the proxyTypeKey
-    const imgType = type === "Proxy" ? registered.proxyTypeKey : type
+    const imgType = type === "Proxy" ? registered.pkg.typeKey : type
 
     if (type === "MyRobotLabProxy") {
       return `${get().getRepoUrl()}/myrobotlabconnector/images/${registered.proxyTypeKey}.png`
@@ -448,6 +446,7 @@ const store = (set, get) => ({
         return `${get().getRepoUrl()}/unknown/image.png`
       }
     }
+    return `${get().getRepoUrl()}/${type.toLowerCase()}/image.png`
   },
 
   clearStatusList: () => {

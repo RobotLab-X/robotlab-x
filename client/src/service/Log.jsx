@@ -36,7 +36,7 @@ export default function Log({ fullname }) {
   const service = useSubscription(fullname, "broadcastState", true)
   const logBatch = useSubscription(fullname, "publishLogs")
 
-  console.log("Current logs:", logs) // Debugging output
+  // console.log("Current logs:", logs) // Debugging output
 
   // Initialize Zustand store with the unifiedLog from the service only if the store is empty
   useEffect(() => {
@@ -172,20 +172,19 @@ export default function Log({ fullname }) {
             </TableHead>
             <TableBody>
               {filteredLogs.map((log, index) => (
-                <TableRow
-                  key={index}
-                  sx={{
-                    backgroundColor: log.level === "error" ? "red" : log.level === "warn" ? "yellow" : "white",
-                    fontSize: "0.75rem",
-                    "& td, & th": { borderBottom: "none", padding: "0.1rem" },
-                    margin: 0,
-                    padding: 0,
-                    height: "1rem"
-                  }}
-                >
+                <TableRow key={index}>
                   <TableCell>{log.id}</TableCell>
                   <TableCell>{log.ts}</TableCell>
-                  <TableCell>{log.level}</TableCell>
+                  <TableCell
+                    sx={{
+                      color: log.level === "error" ? "red" : log.level === "warn" ? "orange" : "", // Color based on log level
+                      textAlign: "center", // Center text horizontally
+                      padding: "0.1rem",
+                      height: "1rem"
+                    }}
+                  >
+                    {log.level}
+                  </TableCell>
                   <TableCell>{log.module}</TableCell>
                   <TableCell
                     sx={{

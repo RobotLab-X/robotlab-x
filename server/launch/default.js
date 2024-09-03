@@ -4,7 +4,7 @@ const path = require("path")
 function generateLaunchDescription() {
   // const ld = new LaunchDescription()
   const ld = {
-    description: "Generated launch description",
+    description: "Default launch description",
     version: "0.0.1",
     actions: []
   }
@@ -17,8 +17,16 @@ function generateLaunchDescription() {
     listeners: {}
   }
 
+  const log = {
+    package: "log",
+    name: "log",
+    config: { intervalMs: 1000 },
+    listeners: {}
+  }
+
   // Add the node to the launch description
   ld.actions.push(runtime)
+  ld.actions.push(log)
 
   return ld
 }

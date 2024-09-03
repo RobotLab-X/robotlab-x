@@ -13,7 +13,6 @@ import Main from "../../electron/Main"
 import Store from "../Store"
 import { CodecUtil } from "../framework/CodecUtil"
 import { getLogger } from "../framework/LocalLog"
-import NameGenerator from "../framework/NameGenerator"
 import { Repo } from "../framework/Repo"
 import Service from "../framework/Service"
 import Gateway from "../interfaces/Gateway"
@@ -23,7 +22,6 @@ import Package from "../models/Package"
 import { ProcessData } from "../models/ProcessData"
 import RouteEntry from "../models/RouteEntry"
 import { ServiceTypeData } from "../models/ServiceTypeData"
-import Proxy from "../service/Proxy"
 import Unknown from "../service/Unknown"
 
 const log = getLogger("RobotLabXRuntime")
@@ -406,7 +404,13 @@ export default class RobotLabXRuntime extends Service {
     }
   }
 
+  // FIXME - reconcile with getInstance() plus defaulted launchFile
   static createInstance(launchFile: string): RobotLabXRuntime {
+    if (RobotLabXRuntime.instance) {
+      log.info(`RobotLabXRuntime.instance already exists`)
+      return RobotLabXRuntime.instance
+    }
+
     if (!launchFile) {
       log.error("launchFile is null")
       throw new Error("launchFile is null")
@@ -418,22 +422,6 @@ export default class RobotLabXRuntime extends Service {
 
     let ld: LaunchDescription = null
     let runtimeAction = null
-
-    if (!fs.existsSync(filePath)) {
-      log.info(`launch file ${filePath} not found, creating default launch file`)
-      const action = new LaunchAction("runtime", "robotlabxruntime", {
-        autoLaunch: "s1",
-        id: NameGenerator.getName(),
-        logLevel: "info",
-        port: 3001,
-        connect: []
-      })
-      ld = new LaunchDescription()
-      ld.description = "Generated default launch description"
-      ld.version = "0.0.1"
-      ld.actions.push(action)
-      fs.writeFileSync(filePath, ld.serialize("js"))
-    }
 
     ld = RobotLabXRuntime.getLaunchDescription(filePath)
 
@@ -449,7 +437,8 @@ export default class RobotLabXRuntime extends Service {
       log.error(`runtime action not found in ${filePath}`)
       throw new Error(`runtime action not found in ${filePath}`)
     }
-
+    // TODO - check if "first start" ... in a distributed environment there
+    // will  be proxy definitions of remote RobotLabXRuntimes
     let instance: RobotLabXRuntime = null
 
     if (!RobotLabXRuntime.instance) {
@@ -476,6 +465,9 @@ export default class RobotLabXRuntime extends Service {
         log.error(`Error creating data directory: ${err}`)
       }
     })
+
+    // process the rest of the launch file
+    instance.launch(ld)
 
     return RobotLabXRuntime.instance
   }
@@ -547,35 +539,13 @@ export default class RobotLabXRuntime extends Service {
 
       const targetDir = path.join(main.publicRoot, `repo/${action.package}`)
       const pkg: Package = this.getPackage(action.package)
-      const serviceType = pkg.typeKey
-      let name = null
+      let serviceType = pkg.typeKey
+      let name = action.name
       let id = null
 
       if (!pkg) {
         log.error(`package ${action.package} not found`)
         return
-      }
-
-      if (action.name.includes("@")) {
-        name = action.name.split("@")[0]
-      } else {
-        name = action.name
-      }
-
-      if (action.name.includes("@")) {
-        // explicit is highest priority
-        id = action.name.split("@")[1]
-      } else {
-        // derived id
-        if (!this.isPkgProxy(pkg)) {
-          id = this.getId()
-        } else {
-          if (pkg.typeKey === "RobotLabXUI") {
-            id = this.getId() + "." + name
-          } else {
-            id = name
-          }
-        }
       }
 
       let listeners: any = null
@@ -598,7 +568,28 @@ export default class RobotLabXRuntime extends Service {
         })
       }
 
-      const fullname = `${name}@${id}`
+      // derive fullname -
+      // if fullname is given use it
+      // if name w/o id is given add local id
+      let fullname = null
+
+      if (CodecUtil.getId(name)) {
+        // fullname was given
+        id = CodecUtil.getId(name)
+        fullname = name
+        name = CodecUtil.getShortName(name)
+      } else {
+        // fullname was not given
+        // id will either be local or if pkg.platform != "node" it will be remote
+        if (pkg.platform === "node") {
+          id = this.getId()
+        } else {
+          id = name
+        }
+        fullname = `${name}@${id}`
+      }
+
+      log.info(`=== launching fullname: ${fullname} name: ${name} id: ${id}`)
 
       let service: Service = this.getService(fullname)
 
@@ -636,30 +627,12 @@ export default class RobotLabXRuntime extends Service {
           log.info("system starting - local runtime already created")
           service = RobotLabXRuntime.instance
         } else {
-          if (!this.isPkgProxy(pkg)) {
-            // a native (in process) Node service, no Proxy needed
-            service = this.repo.getNewService(this.getId(), name, serviceType, pkg.version, this.getHostname())
-            this.info(`node process ${name} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
-          } else {
-            // Important, if the service is a python service, the id will be the same as the service name
-            // because it really "is" a remote service - hopefully proxied and using the robotlabx py client
-            // library
-
-            if (pkg.typeKey === "RobotLabXUI") {
-              service = this.repo.getNewService(
-                this.getId() + "." + name,
-                name,
-                "RobotLabXUI",
-                pkg.version,
-                this.getHostname()
-              )
-            } else {
-              service = this.repo.getNewService(name, name, "Proxy", pkg.version, this.getHostname())
-              let cast = service as Proxy
-              cast.proxyTypeKey = serviceType
-              this.info(`python process ${name} ${serviceType} ${pkg.platform} ${pkg.platformVersion}`)
-            }
+          if (id !== this.getId() && pkg.proxyTypeKey) {
+            // FIXME - serviceType = pkg.proxyTypeKey
+            serviceType = pkg.proxyTypeKey // "Proxy" "MRLProxy" or "GeneralProxy" ...
           }
+
+          service = this.repo.getNewService(id, name, serviceType, pkg.version, this.getHostname())
           service.pkg = pkg
           // check for config to be merged from action
           if (action.config) {
@@ -841,6 +814,39 @@ export default class RobotLabXRuntime extends Service {
     for (const [key, service] of Object.entries(registry)) {
       this.register(service)
     }
+  }
+
+  /**
+   * New external register method. All services registering through
+   * this method are "proxies" and are not local to this process.
+   *
+   * The typeKey they send are their type, and this instance determines
+   * the proxy type.
+   *
+   *
+   * @param fullname
+   * @param typeKey
+   * @returns
+   */
+  registerX(fullname: string, typeKey: string) {
+    log.error(`registerX ${fullname} ${typeKey}`)
+
+    // verify service does not already exist
+    if (this.getService(fullname)) {
+      log.error(`service ${fullname} already exists`)
+      return
+    }
+
+    // determin proxy type from typeKey
+
+    // possibilities include
+    // python proxy - PythonProxy
+    // remote service proxy - GeneralProxy
+
+    // launch proxy - add/update route table ?  add update connection ?
+
+    // const service = this.repo.getNewService(fullname, fullname, typeKey, "0.0.1", this.getHostname())
+    // this.register(service)
   }
 
   /**

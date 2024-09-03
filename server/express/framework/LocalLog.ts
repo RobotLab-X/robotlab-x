@@ -24,6 +24,11 @@ const logLevels = {
   }
 }
 
+const consoleLogFormat = winston.format.printf(({ level, msg, module }) => {
+  const formattedModule = formatModuleName(module)
+  return `${level}[${formattedModule}]: ${msg}`
+})
+
 function formatModuleName(moduleName: string) {
   if (moduleName.length > 8) {
     return moduleName.substring(0, 8) // Truncate to 8 characters
@@ -71,7 +76,11 @@ const log = winston.createLogger({
   format: customJsonFormat,
   transports: [
     new winston.transports.Console({
-      level: "info"
+      format: winston.format.combine(
+        winston.format.combine(winston.format.colorize(), winston.format.simple()),
+        consoleLogFormat
+      ),
+      level: "info" // default level for the console transport
     }),
     new winston.transports.File({
       filename: getLogFilePath(),

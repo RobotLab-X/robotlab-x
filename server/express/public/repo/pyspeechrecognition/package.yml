@@ -1,5 +1,5 @@
 typeKey: "PySpeechRecognition"
-proxyTypeKey: PySpeechRecognition
+proxyTypeKey: Proxy
 title: "Speech Recognition"
 platform: "python"
 platformVersion: "3.8"

@@ -7,7 +7,7 @@ license: "MIT"
 online: false
 platform: "node"
 platformVersion: "v20.9.0"
-title: "Log"
+title: "Logging Service"
 typeKey: "Log"
 version: "0.0.1"
 visible: true

@@ -95,6 +95,10 @@ class CodecUtil {
     }
     return `rlx_pkg_${type.toLowerCase()}`
   }
+
+  static getShortName(name: string): string {
+    return name.split("@")[0]
+  }
 }
 
 export { CodecUtil }

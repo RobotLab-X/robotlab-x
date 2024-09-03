@@ -26,6 +26,6 @@ requirements:
   scikit-learn: ""
 title: OpenCV Service
 typeKey: OpenCV
-proxyTypeKey: OpenCV
+proxyTypeKey: Proxy
 version: 0.0.1
 visible: true

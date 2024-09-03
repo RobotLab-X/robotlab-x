@@ -30,9 +30,6 @@ export default class Proxy extends Service {
    *
    */
 
-  // FIXEM - remove use pkg.proxyTypeKey
-  public proxyTypeKey: string = null
-
   protected envName = ".venv"
 
   protected envPath = null as string
@@ -77,12 +74,14 @@ export default class Proxy extends Service {
 
   startService(): void {
     super.startService()
-    log.info(`proxy starting service ${this.name} ${this.pkg.proxyTypeKey} ${this.version}`)
+    log.info(`proxy starting service ${this.name} ${this.pkg.typeKey} ${this.version}`)
     const main = Main.getInstance()
-    this.envPath = path.join(main.publicRoot, "repo", this.pkg.proxyTypeKey.toLowerCase())
+    this.envPath = path.join(main.publicRoot, "repo", this.pkg.typeKey.toLowerCase())
     this.ready = false // not ready until connected
     const runtime: RobotLabXRuntime = RobotLabXRuntime.getInstance()
 
+    // Proxy will register connection, so when actual
+    // service connects, this proxy will route messages correctly
     runtime.registerConnection(
       this.fullname,
       this.id,
@@ -262,7 +261,6 @@ export default class Proxy extends Service {
   toJSON() {
     return {
       ...super.toJSON(),
-      proxyTypeKey: this.proxyTypeKey,
       pythonVersion: this.pythonVersion,
       pythonVersionOk: this.pythonVersionOk,
       pipVersionOk: this.pipVersionOk,

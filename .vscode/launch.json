@@ -12,7 +12,7 @@
         "sourceMaps": true,
         "console": "integratedTerminal",
         "internalConsoleOptions": "neverOpen",
-        "args": ["--config", "default"],
+        "args": ["--config", "default.js"],
         "preLaunchTask": "build server"
       },
       {

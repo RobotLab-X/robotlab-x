@@ -29,6 +29,14 @@ yarn install-all
 yarn start-dev
 ```
 
+### OpenCV attach to RLX instance
+```bash
+cd /home/gperry/github/robotlab-x/server/express/public/repo/opencv/
+source .venv/bin/activate
+python -u proxy.py -i cv -c http://localhost:3001
+
+```
+
 
 ## License
 
