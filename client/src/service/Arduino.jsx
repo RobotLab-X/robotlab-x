@@ -1,6 +1,6 @@
 import ExpandLessIcon from "@mui/icons-material/ExpandLess"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
-import { Box, Button, FormControlLabel, Paper, Slider, Switch, TextField, Typography } from "@mui/material"
+import { Box, Button, FormControlLabel, Link, Paper, Slider, Switch, TextField, Typography } from "@mui/material"
 import React, { useState } from "react"
 import SerialPortSelector from "../components/serialport/SerialPortSelector"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
@@ -85,6 +85,11 @@ export default function Arduino({ id, fullname, name }) {
 
   return (
     <>
+      Arduino requires{" "}
+      <Link href="https://www.arduino.cc/reference/en/libraries/firmata/" target="_blank" rel="noopener noreferrer">
+        StandardFirmataPlus
+      </Link>{" "}
+      to be installed
       <h3 style={{ display: "flex", alignItems: "center", cursor: "pointer" }} onClick={toggleEditMode}>
         Configuration
         {editMode ? <ExpandLessIcon /> : <ExpandMoreIcon />}
@@ -111,7 +116,6 @@ export default function Arduino({ id, fullname, name }) {
           </Box>
         </Box>
       ) : null}
-
       <Box>
         <Paper elevation={3} sx={{ p: 2, m: 2 }}>
           <SerialPortSelector
