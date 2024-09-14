@@ -107,6 +107,9 @@ export class Repo {
         }
       } catch (error) {
         log.error(`Error loading service: ${error}`)
+        if (error instanceof Error) {
+          log.error(error.stack)
+        }
       }
     })
   }
@@ -117,6 +120,7 @@ export class Repo {
     version: string,
     hostname: string | null = null
   ): Service {
+    log.error(`getNewService name ${name} id ${id} serviceType ${serviceType}`)
     const ServiceClass = this.services[serviceType]
     if (!ServiceClass) {
       log.error(`No service found for type: ${serviceType} list of possible types: ${Object.keys(this.services)}`)

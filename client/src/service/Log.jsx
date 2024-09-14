@@ -172,7 +172,16 @@ export default function Log({ fullname }) {
             </TableHead>
             <TableBody>
               {filteredLogs.map((log, index) => (
-                <TableRow key={index}>
+                <TableRow
+                  key={index}
+                  sx={{
+                    fontSize: "0.75rem",
+                    "& td, & th": { borderBottom: "none", padding: "0.1rem" },
+                    margin: 0,
+                    padding: 0,
+                    height: "1rem"
+                  }}
+                >
                   <TableCell>{log.id}</TableCell>
                   <TableCell>{log.ts}</TableCell>
                   <TableCell
