@@ -20,6 +20,13 @@ jobs:
         node-version: [21.7.2]
 
     steps:
+
+      - name: Print system info
+        run: |
+          uname -a
+          lscpu
+          cat /etc/os-release
+
       - name: Checkout code
         uses: actions/checkout@v3
 
@@ -31,16 +38,12 @@ jobs:
       - name: Install Yarn
         run: npm install -g yarn
 
-      - name: Install NPX
-        run: npm install -g npx
-
       - name: Install dependencies
         run: yarn install-all
 
       # Add the electron-rebuild step here
       - name: Electron Rebuild for Native Modules
-        run: |
-          npx electron-rebuild
+        run: npx electron-rebuild --arch=arm64
 
       - name: Bump version
         id: bump_version
