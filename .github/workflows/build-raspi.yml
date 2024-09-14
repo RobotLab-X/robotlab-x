@@ -43,7 +43,7 @@ jobs:
 
       # Add the electron-rebuild step here
       - name: Electron Rebuild for Native Modules
-        run: npx electron-rebuild --arch=arm64
+        run: npx electron-rebuild --arch=arm64 --version=31.2.1
 
       - name: Bump version
         id: bump_version
