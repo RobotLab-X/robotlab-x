@@ -1,0 +1,12 @@
+author: "GroG"
+categories: ["docker"]
+dependencies: null
+description: "Docker interface"
+installed: true
+license: "MIT"
+platform: "node"
+platformVersion: "v20.9.0"
+title: "Docker"
+typeKey: "Docker"
+version: "0.0.1"
+visible: true

@@ -1,0 +1,19 @@
+typeKey: "OakD"
+title: "OakD DepthAI Camera"
+platform: "python"
+platformVersion: null
+description: "OakD depth camera for depth and object detection and face recognition."
+version: "0.0.1"
+cmd: "python"
+args: ["-u","start.py"] # -u unbuffered output
+requirements:
+  python: ">=3.6"
+  opencv-python: ">=4.10.0"
+author: "GroG"
+license: "MIT"
+categories:
+  - "ai"
+  - "camera"
+  - "face recognition"
+  - "object detection"
+dependencies: null

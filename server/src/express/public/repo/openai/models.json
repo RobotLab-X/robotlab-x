@@ -1,0 +1,190 @@
+[
+  {
+    "title": "llama3",
+    "description": "Meta Llama 3: The most capable openly available LLM to date"
+  },
+  {
+    "title": "phi3",
+    "description": "Phi-3 Mini is a 3.8B parameters, lightweight, state-of-the-art open model by Microsoft."
+  },
+  {
+    "title": "wizardlm2",
+    "description": "State of the art large language model from Microsoft AI with improved performance on complex chat, multilingual, reasoning and agent use cases."
+  },
+  {
+    "title": "mistral",
+    "description": "The 7B model released by Mistral AI, updated to version 0.2."
+  },
+  {
+    "title": "gemma",
+    "description": "Gemma is a family of lightweight, state-of-the-art open models built by Google DeepMind. Updated to version 1.1"
+  },
+  {
+    "title": "mixtral",
+    "description": "A set of Mixture of Experts (MoE) model with open weights by Mistral AI in 8x7b and 8x22b parameter sizes."
+  },
+  {
+    "title": "llama2",
+    "description": "Llama 2 is a collection of foundation language models ranging from 7B to 70B parameters."
+  },
+  {
+    "title": "codegemma",
+    "description": "CodeGemma is a collection of powerful, lightweight models that can perform a variety of coding tasks like fill-in-the-middle code completion, code generation, natural language understanding, mathematical reasoning, and instruction following."
+  },
+  {
+    "title": "command-r",
+    "description": "Command R is a Large Language Model optimized for conversational interaction and long context tasks."
+  },
+  {
+    "title": "command-r-plus",
+    "description": "Command R+ is a powerful, scalable large language model purpose-built to excel at real-world enterprise use cases."
+  },
+  {
+    "title": "llava",
+    "description": "🌋 LLaVA is a novel end-to-end trained large multimodal model that combines a vision encoder and Vicuna for general-purpose visual and language understanding. Updated to version 1.6."
+  },
+  {
+    "title": "dbrx",
+    "description": "DBRX is an open, general-purpose LLM created by Databricks."
+  },
+  {
+    "title": "codellama",
+    "description": "A large language model that can use text prompts to generate and discuss code."
+  },
+  {
+    "title": "qwen",
+    "description": "Qwen 1.5 is a series of large language models by Alibaba Cloud spanning from 0.5B to 110B parameters"
+  },
+  {
+    "title": "dolphin-mixtral",
+    "description": "Uncensored, 8x7b and 8x22b fine-tuned models based on the Mixtral mixture of experts models that excels at coding tasks. Created by Eric Hartford."
+  },
+  {
+    "title": "llama2-uncensored",
+    "description": "Uncensored Llama 2 model by George Sung and Jarrad Hope."
+  },
+  {
+    "title": "deepseek-coder",
+    "description": "DeepSeek Coder is a capable coding model trained on two trillion code and natural language tokens."
+  },
+  {
+    "title": "mistral-openorca",
+    "description": "Mistral OpenOrca is a 7 billion parameter model, fine-tuned on top of the Mistral 7B model using the OpenOrca dataset."
+  },
+  {
+    "title": "nomic-embed-text",
+    "description": "A high-performing open embedding model with a large token context window."
+  },
+  {
+    "title": "dolphin-mistral",
+    "description": "The uncensored Dolphin model based on Mistral that excels at coding tasks. Updated to version 2.8."
+  },
+  {
+    "title": "phi",
+    "description": "Phi-2: a 2.7B language model by Microsoft Research that demonstrates outstanding reasoning and language understanding capabilities."
+  },
+  {
+    "title": "orca-mini",
+    "description": "A general-purpose model ranging from 3 billion parameters to 70 billion, suitable for entry-level hardware."
+  },
+  {
+    "title": "nous-hermes2",
+    "description": "The powerful family of models by Nous Research that excels at scientific discussion and coding tasks."
+  },
+  {
+    "title": "zephyr",
+    "description": "Zephyr is a series of fine-tuned versions of the Mistral and Mixtral models that are trained to act as helpful assistants."
+  },
+  {
+    "title": "llama2-chinese",
+    "description": "Llama 2 based model fine-tuned to improve Chinese dialogue ability."
+  },
+  {
+    "title": "wizard-vicuna-uncensored",
+    "description": "Wizard Vicuna Uncensored is a 7B, 13B, and 30B parameter model based on Llama 2 uncensored by Eric Hartford."
+  },
+  {
+    "title": "starcoder2",
+    "description": "StarCoder2 is the next generation of transparently trained open code LLMs that comes in three sizes: 3B, 7B and 15B parameters."
+  },
+  {
+    "title": "vicuna",
+    "description": "General use chat model based on Llama and Llama 2 with 2K to 16K context sizes."
+  },
+  {
+    "title": "tinyllama",
+    "description": "The TinyLlama project is an open endeavor to train a compact 1.1B Llama model on 3 trillion tokens."
+  },
+  {
+    "title": "openhermes",
+    "description": "OpenHermes 2.5 is a 7B model fine-tuned by Teknium on Mistral with fully open datasets."
+  },
+  {
+    "title": "starcoder",
+    "description": "StarCoder is a code generation model trained on 80+ programming languages."
+  },
+  {
+    "title": "dolphin-llama3",
+    "description": "Dolphin 2.9 is a new model with 8B and 70B sizes by Eric Hartford based on Llama 3 that has a variety of instruction, conversational, and coding skills."
+  },
+  {
+    "title": "yi",
+    "description": "Yi 1.5 is a high-performing, bilingual language model."
+  },
+  {
+    "title": "openchat",
+    "description": "A family of open-source models trained on a wide variety of data, surpassing ChatGPT on various benchmarks. Updated to version 3.5-0106."
+  },
+  {
+    "title": "tinydolphin",
+    "description": "An experimental 1.1B parameter model trained on the new Dolphin 2.8 dataset by Eric Hartford and based on TinyLlama."
+  },
+  {
+    "title": "mxbai-embed-large",
+    "description": "State-of-the-art large embedding model from mixedbread.ai"
+  },
+  {
+    "title": "wizardcoder",
+    "description": "State-of-the-art code generation model"
+  },
+  {
+    "title": "stable-code",
+    "description": "Stable Code 3B is a coding model with instruct and code completion variants on par with models such as Code Llama 7B that are 2.5x larger."
+  },
+  {
+    "title": "neural-chat",
+    "description": "A fine-tuned model based on Mistral with good coverage of domain and language."
+  },
+  {
+    "title": "phind-codellama",
+    "description": "Code generation model based on Code Llama."
+  },
+  {
+    "title": "wizard-math",
+    "description": "Model focused on math and logic problems"
+  },
+  {
+    "title": "starling-lm",
+    "description": "Starling is a large language model trained by reinforcement learning from AI feedback focused on improving chatbot helpfulness."
+  },
+  {
+    "title": "falcon",
+    "description": "A large language model built by the Technology Innovation Institute (TII) for use in summarization, text generation, and chat bots."
+  },
+  {
+    "title": "dolphincoder",
+    "description": "A 7B and 15B uncensored variant of the Dolphin model family that excels at coding, based on StarCoder2."
+  },
+  {
+    "title": "nous-hermes",
+    "description": "General use models based on Llama and Llama 2 from Nous Research."
+  },
+  {
+    "title": "orca2",
+    "description": "Orca 2 is built by Microsoft research, and are a fine-tuned version of Meta's Llama 2 models. The model is designed to excel particularly in reasoning."
+  },
+  {
+    "title": "stablelm2",
+    "description": "Stable LM 2 is a state-of-the-art 1.6B and 12B parameter language model trained on multilingual data in English, Spanish, German, Italian, French, Portuguese, and Dutch."
+  }
+]

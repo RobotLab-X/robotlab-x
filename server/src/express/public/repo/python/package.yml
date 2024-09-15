@@ -1,0 +1,20 @@
+typeKey: "Python"
+title: "Python Service"
+platform: "python"
+platformVersion: null
+description: "Python programming interface."
+version: "0.0.1"
+cmd: "python"
+args: ["-u","start.py"] # -u unbuffered output
+interfaces:
+  restAPI:
+    - endpoint: "/api/v1/resource"
+      method: "GET"
+      description: "Retrieves list of resources."
+author: "GroG"
+license: "MIT"
+categories:
+  - "web"
+  - "testing"
+  - "ui"
+dependencies: null

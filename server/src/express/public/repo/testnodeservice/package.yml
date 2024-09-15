@@ -1,0 +1,10 @@
+typeKey: "TestNodeService"
+title: "Test Node Service"
+platform: "node"
+platformVersion: null
+description: "Node test service for testing!"
+version: "0.0.1"
+cmd: args: author: "GroG"
+license: "MIT"
+categories: ["web", "testing", "ui"]
+dependencies: null

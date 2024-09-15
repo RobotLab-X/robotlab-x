@@ -1,0 +1,13 @@
+author: "GroG"
+categories: ["logging", "log"]
+dependencies: null
+description: "A ingest logger for logs"
+installed: true
+license: "MIT"
+online: false
+platform: "node"
+platformVersion: "v20.9.0"
+title: "Logging Service"
+typeKey: "Log"
+version: "0.0.1"
+visible: true

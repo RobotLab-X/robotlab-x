@@ -1,0 +1,242 @@
+openapi: 3.0.3
+info:
+  title: API Documentation
+  version: 1.0.0
+servers:
+  - url: http://localhost:3001/v1
+    description: Local development server
+components:
+  schemas:
+    $schema: http://json-schema.org/draft-07/schema#
+    definitions:
+      A<object>:
+        description: An AsyncIterator which can be aborted
+        properties:
+          abortController: {}
+          doneCallback: {}
+          itr: {}
+        type: object
+      a:
+        properties:
+          fetch:
+            type: object
+          host:
+            type: string
+          proxy:
+            type: boolean
+        type: object
+    properties:
+      config:
+        $ref: "#/definitions/a"
+      fetch:
+        type: object
+      ongoingStreamedRequests:
+        items:
+          $ref: "#/definitions/A<object>"
+        type: array
+    type: object
+paths:
+  /startService:
+    put:
+      summary: Executes startService method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: startService method executed successfully
+  /stopService:
+    put:
+      summary: Executes stopService method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: stopService method executed successfully
+  /showAll:
+    put:
+      summary: Executes showAll method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: boolean
+            example: []
+      responses:
+        "200":
+          description: showAll method executed successfully
+  /ps:
+    put:
+      summary: Executes ps method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: ps method executed successfully
+  /publishPs:
+    put:
+      summary: Executes publishPs method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: publishPs method executed successfully
+  /createAndStartContainer:
+    put:
+      summary: Executes createAndStartContainer method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+                - type: string
+            example: []
+      responses:
+        "200":
+          description: createAndStartContainer method executed successfully
+  /deleteContainer:
+    put:
+      summary: Executes deleteContainer method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example: []
+      responses:
+        "200":
+          description: deleteContainer method executed successfully
+  /deleteImage:
+    put:
+      summary: Executes deleteImage method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example: []
+      responses:
+        "200":
+          description: deleteImage method executed successfully
+  /pullImage:
+    put:
+      summary: Executes pullImage method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example: []
+      responses:
+        "200":
+          description: pullImage method executed successfully
+  /getImages:
+    put:
+      summary: Executes getImages method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: getImages method executed successfully
+  /publishImages:
+    put:
+      summary: Executes publishImages method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: any
+            example: []
+      responses:
+        "200":
+          description: publishImages method executed successfully
+  /startPs:
+    put:
+      summary: Executes startPs method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: startPs method executed successfully
+  /stopPs:
+    put:
+      summary: Executes stopPs method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: stopPs method executed successfully
+  /toJSON:
+    put:
+      summary: Executes toJSON method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: toJSON method executed successfully
+tags: []

@@ -1,0 +1,15 @@
+typeKey: "TestPythonService"
+title: "Test Python Service"
+platform: "python"
+platformVersion: null
+description: "Python service for testing!"
+version: "0.0.1"
+cmd: "python"
+args: ["-u","start.py"] # -u unbuffered output
+author: "GroG"
+license: "MIT"
+categories:
+  - "web"
+  - "testing"
+  - "ui"
+dependencies: null

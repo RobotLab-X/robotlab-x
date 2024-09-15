@@ -1,0 +1,10 @@
+typeKey: "TestRosService"
+title: "Test Ros Service"
+platform: "ros"
+platformVersion: null
+description: "Ros test service for testing!"
+version: "0.0.1"
+cmd: args: author: "GroG"
+license: "MIT"
+categories: -"web" - "ros" - "testing" - "ui"
+dependencies: null

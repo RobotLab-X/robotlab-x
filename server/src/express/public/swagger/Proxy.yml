@@ -1,0 +1,265 @@
+openapi: 3.0.3
+info:
+  title: API Documentation
+  version: 1.0.0
+servers:
+  - url: http://localhost:3001/v1
+    description: Local development server
+components:
+  schemas:
+    $schema: http://json-schema.org/draft-07/schema#
+    definitions:
+      A<object>:
+        description: An AsyncIterator which can be aborted
+        properties:
+          abortController: {}
+          doneCallback: {}
+          itr: {}
+        type: object
+      a:
+        properties:
+          fetch:
+            type: object
+          host:
+            type: string
+          proxy:
+            type: boolean
+        type: object
+    properties:
+      config:
+        $ref: "#/definitions/a"
+      fetch:
+        type: object
+      ongoingStreamedRequests:
+        items:
+          $ref: "#/definitions/A<object>"
+        type: array
+    type: object
+paths:
+  /startService:
+    put:
+      summary: Executes startService method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: startService method executed successfully
+  /sendRemote:
+    put:
+      summary: Requesting to send a message to a remote process
+      description: Requesting to send a message to a remote process
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: Message
+            example: []
+      responses:
+        "200":
+          description: sendRemote method executed successfully
+  /invoke:
+    put:
+      summary: >-
+        Invoke on a Proxy has a very different meaning than invoke on a "local"
+        Service.
+
+        This Proxy is local and can assist in routing messages to a remote
+        service or installing
+
+        a client service on the same host.  However, since its process id is
+        different, it cannot
+
+        use Service.invoke.
+      description: >-
+        Invoke on a Proxy has a very different meaning than invoke on a "local"
+        Service.
+
+        This Proxy is local and can assist in routing messages to a remote
+        service or installing
+
+        a client service on the same host.  However, since its process id is
+        different, it cannot
+
+        use Service.invoke.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+                - type: any[]
+            example: []
+      responses:
+        "200":
+          description: invoke method executed successfully
+  /invokeMsg:
+    put:
+      summary: >-
+        Invoke a message on the remote service
+
+        Overloaded from Service, because for a proxy it means something
+        different
+      description: >-
+        Invoke a message on the remote service
+
+        Overloaded from Service, because for a proxy it means something
+        different
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: Message
+            example: []
+      responses:
+        "200":
+          description: invokeMsg method executed successfully
+  /toJSON:
+    put:
+      summary: Executes toJSON method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: toJSON method executed successfully
+  /checkPythonVersion:
+    put:
+      summary: Executes checkPythonVersion method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example: []
+      responses:
+        "200":
+          description: checkPythonVersion method executed successfully
+  /normalizeVersion:
+    put:
+      summary: Executes normalizeVersion method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example: []
+      responses:
+        "200":
+          description: normalizeVersion method executed successfully
+  /checkPipVersion:
+    put:
+      summary: |-
+        Check the pip version - part of necessary preparations
+        to install a python client
+      description: |-
+        Check the pip version - part of necessary preparations
+        to install a python client
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example: []
+      responses:
+        "200":
+          description: checkPipVersion method executed successfully
+  /installVirtualEnv:
+    put:
+      summary: Executes installVirtualEnv method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: installVirtualEnv method executed successfully
+  /installPipRequirements:
+    put:
+      summary: Executes installPipRequirements method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: "{}"
+            example: []
+      responses:
+        "200":
+          description: installPipRequirements method executed successfully
+  /startProxy:
+    put:
+      summary: Executes startProxy method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: "{}"
+            example: []
+      responses:
+        "200":
+          description: startProxy method executed successfully
+  /installRepoRequirement:
+    put:
+      summary: Executes installRepoRequirement method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example: []
+      responses:
+        "200":
+          description: installRepoRequirement method executed successfully
+  /installRepoRequirements:
+    put:
+      summary: Executes installRepoRequirements method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+                - type: string
+            example: []
+      responses:
+        "200":
+          description: installRepoRequirements method executed successfully
+tags: []

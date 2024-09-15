@@ -1,0 +1,13 @@
+typeKey: "Proxy"
+title: "Proxy"
+platform: "node" # should be null or Proxy or a new proxy field
+platformVersion: "v20.9.0"
+description: "Proxy service"
+version: "0.0.1"
+author: "GroG"
+license: "MIT"
+requirements:
+  websockets: ">=12.0"
+categories:
+- "proxy"
+dependencies: null

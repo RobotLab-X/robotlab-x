@@ -1,0 +1,228 @@
+openapi: 3.0.3
+info:
+  title: API Documentation
+  version: 1.0.0
+servers:
+  - url: http://localhost:3001/v1
+    description: Local development server
+components:
+  schemas:
+    $schema: http://json-schema.org/draft-07/schema#
+    definitions:
+      A<object>:
+        description: An AsyncIterator which can be aborted
+        properties:
+          abortController: {}
+          doneCallback: {}
+          itr: {}
+        type: object
+      a:
+        properties:
+          fetch:
+            type: object
+          host:
+            type: string
+          proxy:
+            type: boolean
+        type: object
+    properties:
+      config:
+        $ref: "#/definitions/a"
+      fetch:
+        type: object
+      ongoingStreamedRequests:
+        items:
+          $ref: "#/definitions/A<object>"
+        type: array
+    type: object
+paths:
+  /startService:
+    put:
+      summary: Executes startService method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: startService method executed successfully
+  /stopService:
+    put:
+      summary: Executes stopService method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: stopService method executed successfully
+  /applyConfig:
+    put:
+      summary: Executes applyConfig method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: any
+            example: []
+      responses:
+        "200":
+          description: applyConfig method executed successfully
+  /connect:
+    put:
+      summary: Executes connect method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example: []
+      responses:
+        "200":
+          description: connect method executed successfully
+  /disconnect:
+    put:
+      summary: Executes disconnect method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: disconnect method executed successfully
+  /getPorts:
+    put:
+      summary: Executes getPorts method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: getPorts method executed successfully
+  /getBoardInfo:
+    put:
+      summary: Executes getBoardInfo method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: getBoardInfo method executed successfully
+  /createPins:
+    put:
+      summary: Executes createPins method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: createPins method executed successfully
+  /getPins:
+    put:
+      summary: Executes getPins method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: getPins method executed successfully
+  /write:
+    put:
+      summary: Executes write method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: integer
+                - type: integer
+            example: []
+      responses:
+        "200":
+          description: write method executed successfully
+  /servoWrite:
+    put:
+      summary: Executes servoWrite method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+                - type: integer
+            example: []
+      responses:
+        "200":
+          description: servoWrite method executed successfully
+  /onServoMoveTo:
+    put:
+      summary: Executes onServoMoveTo method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: ServoMove
+            example: []
+      responses:
+        "200":
+          description: onServoMoveTo method executed successfully
+  /toJSON:
+    put:
+      summary: Executes toJSON method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: toJSON method executed successfully
+tags: []
