@@ -28,3 +28,4 @@ server/robotlab-x.log
 server/appData
 
 .env
+package-lock.json

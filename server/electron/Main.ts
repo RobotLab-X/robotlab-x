@@ -64,8 +64,10 @@ export default class Main {
       os.arch().includes("arm") ||
       (process.platform == "linux" && process.env.DISPLAY)
     ) {
+      log.info(`hasDisplay true`)
       return true
     }
+    log.info(`hasDisplay false`)
     return false
   }
 
