@@ -12,8 +12,8 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true,
-    "rootDir": "./"
+    "rootDir": "."
   },
-  "include": ["**/*.ts", "express/framework/LaunchAction.tpl", "express/framework/LaunchAction.js", "express/framework/LaunchDescription.tpl", "express/framework/LaunchDescription.js"],
+  "include": ["**/*.ts", "express/framework/LaunchAction.tpl", "express/framework/LaunchAction.js", "express/framework/LaunchDescription.tpl", "express/framework/LaunchDescription.js", "express/service/Unknown.ts"],
   "exclude": ["node_modules"]
 }

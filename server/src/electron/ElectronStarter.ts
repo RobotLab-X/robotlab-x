@@ -1,10 +1,10 @@
-import Electron, { Menu, shell, Tray } from "electron"
+import Electron, { app, Menu, shell, Tray } from "electron"
 import path from "path"
 import "source-map-support/register"
 import { getLogger } from "../express/framework/LocalLog"
 import Main from "./Main"
 
-const { app, ipcMain } = require("electron")
+const { ipcMain } = require("electron")
 const asar = require("asar")
 const fs = require("fs-extra")
 const minimist = require("minimist")
@@ -14,7 +14,7 @@ const { exec } = require("child_process")
 export default class ElectronStarter {
   // FIXME ! - all these statics are a bad idea
 
-  private static app: Electron.App
+  private static app: Electron.App = app
   private static BrowserWindow: typeof Electron.BrowserWindow
   public static mainWindow: Electron.BrowserWindow
   public static hiddenWindow: Electron.BrowserWindow
@@ -24,6 +24,7 @@ export default class ElectronStarter {
 
   public static main() {
     log.info("ElectronStarter.main")
+    log.info(`ElectronStarter.app ${app} ${ElectronStarter.app}`)
     ElectronStarter.BrowserWindow = Electron.BrowserWindow
     // when running as a service the following line might need to change
     // assignment of Electron.app to ElectronStarter.app - we should be done with direct Electron dependencies
@@ -100,7 +101,7 @@ export default class ElectronStarter {
             click: async () => {
               // Subscription required - send No Worky ! - implement !
               // await shell.openExternal("https://github.com/electron/electron/issues")
-              await shell.openExternal("https://discord.gg/5kuwceeS")
+              await shell.openExternal("https://discord.gg/dE4Y2HVnHA")
             }
           }
         ]

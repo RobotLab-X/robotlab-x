@@ -29,9 +29,6 @@ export default class Main {
   // user data directory separation from appData vs userData
   userData: string
 
-  // if app is running from app.asar mount
-  isPackaged: boolean
-
   // The root directory of the app in both development and production
   // in dev this is cwd in prod its where the asar is extracted/dist
   distRoot: string = null
@@ -56,6 +53,9 @@ export default class Main {
 
   logFilePath: string
 
+  // typeless reference to electron
+  electron: any
+
   // robotlabxruntime/package.yml
   pkg: any
 
@@ -74,6 +74,7 @@ export default class Main {
 
   relaunch(): void {
     log.info("Relaunching")
+    this.electron?.relaunch()
     // FIXME - shut down express gracefully ?
     // FIXME - if express "only" relaunch express "only"
   }
@@ -83,9 +84,13 @@ export default class Main {
       // first setup will be for dev
       this.argv = minimist(process.argv.slice(2), {
         default: {
-          distRoot: path.resolve("dist"),
-          publicRoot: path.resolve(path.join("src", "express", "public")),
-          launchFile: path.resolve(path.join("src", "launch", "default.js"))
+          // ALL DEV !
+          // distRoot: path.resolve("dist"),
+          // publicRoot: path.resolve(path.join("src", "express", "public")),
+          // launchFile: path.resolve(path.join("src", "launch", "default.js"))
+          distRoot: __dirname,
+          publicRoot: path.join(__dirname, "..", "express", "public"),
+          launchFile: path.join(__dirname, "..", "launch", "default.js")
         }
       })
 
@@ -95,8 +100,12 @@ export default class Main {
 
       log.info(`bootServer: argv: ${JSON.stringify(this.argv)}`)
 
+      // extract VFS
+      // new Pkg().extractVFS()
+
       // add version info
       log.info(`Starting RobotLab-X...`)
+      log.info(`__dirname: ${__dirname}`)
       log.info(`execPath: ${process.execPath}`)
       log.info(`Platform: ${process.platform}`)
       log.info(`Node.js Version: ${process.version}`)
@@ -117,9 +126,6 @@ export default class Main {
       log.info(`__dirname: ${__dirname}`)
 
       // check if running from an asar file mount
-      this.isPackaged = __dirname.includes("app.asar")
-      this.isPackaged = false
-      log.info(`isPackaged: ${this.isPackaged}`)
 
       // if prod everything is in cwd in dev everything is in cwd/dist to keep it clean
       // this.root = process.env.ROOT_DIR || (this.isPackaged ? process.cwd() : path.join(process.cwd(), "dist"))
@@ -133,9 +139,6 @@ export default class Main {
       log.info(`userData: ${this.userData}`)
 
       log.info(`distRoot: ${this.distRoot}`)
-
-      // FIXME - works for dev only at the moment
-      this.publicRoot = this.argv.publicRoot
 
       // immutable type and version information
       // should always exist
@@ -191,6 +194,14 @@ export default class Main {
 
       if (!this.hasDisplay()) {
         log.info("No display detected, starting express only")
+        // ExpressAdapter ???
+      } else {
+        log.info("Display detected, starting electron")
+        const { default: electron } = await import(path.join(__dirname, "ElectronStarter")) // ElectronStarter.ts
+        this.electron = electron
+        this.electron.main()
+        // ElectronMain.relaunch()
+        // main.app = ElectronMain.relaunch xxx
       }
 
       // goint to try express only
@@ -241,7 +252,6 @@ export default class Main {
     return {
       serviceUrl: this.serviceUrl,
       startUrl: this.startUrl,
-      isPackaged: this.isPackaged,
       distRoot: this.distRoot,
       publicRoot: this.publicRoot
     }

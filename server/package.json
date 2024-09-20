@@ -10,8 +10,13 @@
     "email": "grog@robotlab-x.com"
   },
   "pkg": {
+    "scripts": [
+      "node_modules/axios/dist/node/*"
+    ],
     "assets": [
-      "dist/**/*"
+      "dist/**/*",
+      "node_modules/@serialport/bindings-cpp/build/Release/*.node",
+      "node_modules/@serialport/bindings-cpp/prebuilds/**/*"
     ],
     "targets": [
       "node18-linux-x64"
@@ -22,6 +27,7 @@
   "scripts": {
     "build": "babel src --extensions '.ts,.js' --out-dir dist",
     "copy-public": "shx cp -rf express/public dist/express",
+    "electron-dev": "nodemon --exec \"yarn run build && cross-env electron --inspect ./dist/electron/Main.js\"",
     "test": "jest",
     "test-coverage": "nyc yarn run test",
     "generate-schemas": "typescript-json-schema tsconfig.json 'Ollama' --out schemas.json",
