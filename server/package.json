@@ -26,7 +26,7 @@
   "bin": "./dist/electron/Main.js",
   "scripts": {
     "build": "babel src --extensions '.ts,.js' --out-dir dist",
-    "copy-public": "shx cp -rf express/public dist/express",
+    "copy-public": "shx cp -rf src/express/public dist/express",
     "electron-dev": "nodemon --exec \"yarn run build && cross-env electron --inspect ./dist/electron/Main.js\"",
     "test": "jest",
     "test-coverage": "nyc yarn run test",
