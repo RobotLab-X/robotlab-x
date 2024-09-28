@@ -1045,7 +1045,7 @@ export default class RobotLabXRuntime extends Service {
    * FIXME - gatewayFullname: String,
    */
   registerConnection(gateway: string, gatewayId: string, url: string, inboundOutbound: string, ws: WebSocket) {
-    log.error(`==== registering connection gatewayId:${gatewayId} url:${url} i/o:${inboundOutbound} ====`)
+    log.info(`==== registering connection gatewayId:${gatewayId} url:${url} i/o:${inboundOutbound} ====`)
     // new connection, new route
     this.addRoute(gatewayId, gatewayId, gateway)
 
