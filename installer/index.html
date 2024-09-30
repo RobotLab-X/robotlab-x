@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RobotLab-X Installer</title>
+  <style>
+    body {
+      background-color: #0C161C;
+      color: #FCFDFC;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      flex-direction: column;
+    }
+
+    label,
+    input,
+    button,
+    h1 {
+      color: #FCFDFC;
+    }
+
+    button,
+    select {
+      background-color: #1F2A36;
+      color: #FCFDFC;
+      border: none;
+      padding: 10px;
+      cursor: pointer;
+      width: 100%;
+      height: 50px; /* Uniform button height */
+      border-radius: 8px; /* Rounded corners */
+    }
+
+    button:disabled {
+      background-color: #666;
+      cursor: not-allowed;
+    }
+
+    table {
+      border-spacing: 20px;
+      width: 80%; /* Ensure table takes 80% of the available space */
+    }
+
+    td {
+      padding: 10px;
+    }
+
+    .info {
+      color: #FCFDFC;
+    }
+
+    .system-info {
+      margin-top: 20px;
+      font-size: 14px;
+    }
+
+    pre {
+      background-color: #1F2A36;
+      color: #FCFDFC;
+      padding: 10px;
+      white-space: pre-wrap; /* Wrap text inside the pre tag */
+      word-wrap: break-word; /* Prevent long strings from overflowing */
+      overflow-y: auto; /* Add vertical scroll if content exceeds available space */
+      max-height: 200px; /* Limit max height of the output section */
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1 id="title">RobotLab-X Installer</h1>
+
+  <table>
+    <tr>
+      <td>
+        <select id="version-select" class="full-width">
+          <option disabled selected>Select Version</option>
+        </select>
+      </td>
+      <td>
+        <span class="info" id="selected-version"></span><br><br>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <button id="choose-dir" class="full-width">Choose Install Directory</button>
+      </td>
+      <td>
+        <span class="info" id="selected-directory">No Directory Selected</span>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <button id="install-btn" class="full-width" disabled>Install</button>
+      </td>
+      <td></td>
+    </tr>
+    <tr>
+      <!-- Add a row with colspan=2 to display the output neatly below the table -->
+      <td colspan="2">
+        <pre id="output"></pre>
+      </td>
+    </tr>
+  </table>
+
+  <div class="system-info">
+    <h3>System Information:</h3>
+    <pre id="system-details"></pre>
+  </div>
+
+  <script>
+    const { ipcRenderer } = require('electron')
+
+    const output = document.getElementById('output')
+    const versionSelect = document.getElementById('version-select')
+    const chooseDirButton = document.getElementById('choose-dir')
+    const selectedVersion = document.getElementById('selected-version')
+    const selectedDirectory = document.getElementById('selected-directory')
+    const installButton = document.getElementById('install-btn')
+    const titleElement = document.getElementById('title')
+    const systemDetailsElement = document.getElementById('system-details')
+
+    let currentVersion = null
+    let currentDirectory = null
+
+    // Function to check if both version and directory are selected
+    function checkInstallButton() {
+      if (currentVersion && currentDirectory) {
+        installButton.disabled = false
+      } else {
+        installButton.disabled = true
+      }
+    }
+
+    // Listen for the version from the main process
+    ipcRenderer.on('set-version', (event, version) => {
+      titleElement.textContent = `RobotLab-X Installer`
+      currentVersion = version
+      selectedVersion.textContent = `${version}`
+      checkInstallButton()
+    })
+
+    // Listen for the versions list from the main process
+    ipcRenderer.on('set-versions', (event, versions) => {
+      versions.forEach(version => {
+        const option = document.createElement('option')
+        option.value = version
+        option.textContent = version
+        versionSelect.appendChild(option)
+      })
+
+      versionSelect.addEventListener('change', () => {
+        currentVersion = versionSelect.value
+        selectedVersion.textContent = `${currentVersion}`
+        checkInstallButton()
+      })
+    })
+
+    chooseDirButton.addEventListener('click', () => {
+      // Trigger directory chooser in the main process
+      ipcRenderer.send('choose-directory')
+    })
+
+    ipcRenderer.on('directory-selected', (event, directory) => {
+      currentDirectory = directory
+      selectedDirectory.textContent = `Selected Directory: ${directory}`
+      checkInstallButton()
+    })
+
+    ipcRenderer.on('install-output', (event, data) => {
+      output.textContent += data + '\n'
+    })
+
+    ipcRenderer.on('install-error', (event, error) => {
+      output.textContent += 'Error: ' + error + '\n'
+    })
+
+    // Listen for system details from the main process
+    ipcRenderer.on('system-details', (event, systemDetails) => {
+      systemDetailsElement.textContent = JSON.stringify(systemDetails, null, 2)
+    })
+
+    // Handle the install button click
+    installButton.addEventListener('click', () => {
+      console.log('Install button clicked!')
+      output.textContent += 'Install button clicked!\n'
+
+      // Disable the install button to prevent multiple clicks
+      installButton.disabled = true
+
+      // Send the install event to the main process
+      ipcRenderer.send('install-package', { packageName: currentVersion, installDir: currentDirectory })
+    })
+
+    // Re-enable the install button after installation
+    ipcRenderer.on('install-complete', () => {
+      installButton.disabled = false
+      output.textContent += 'Installation completed!\n'
+    })
+  </script>
+
+</body>
+
+</html>
