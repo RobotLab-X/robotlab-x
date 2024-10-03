@@ -6,84 +6,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RobotLab-X Installer</title>
   <style>
-    body {
-      background-color: #0C161C;
-      color: #FCFDFC;
-      font-family: Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      flex-direction: column;
-    }
-
-    label,
-    input,
-    button,
-    h1 {
-      color: #FCFDFC;
-    }
-
     button,
     select {
-      background-color: #1F2A36;
-      color: #FCFDFC;
       border: none;
-      padding: 10px;
       cursor: pointer;
       width: 100%;
-      height: 50px;
-      /* Uniform button height */
+      height: 40px;
       border-radius: 8px;
-      /* Rounded corners */
-    }
-
-    button:disabled {
-      background-color: #666;
-      cursor: not-allowed;
-    }
-
-    table {
-      border-spacing: 20px;
-      width: 80%;
-      /* Ensure table takes 80% of the available space */
-    }
-
-    td {
-      padding: 10px;
-    }
-
-    .info {
-      color: #FCFDFC;
-    }
-
-    .system-info {
-      margin-top: 20px;
-      font-size: 14px;
-    }
-
-    pre {
-      background-color: #1F2A36;
-      color: #FCFDFC;
-      padding: 10px;
-      white-space: pre-wrap;
-      /* Wrap text inside the pre tag */
-      word-wrap: break-word;
-      /* Prevent long strings from overflowing */
-      overflow-y: auto;
-      /* Add vertical scroll if content exceeds available space */
-      max-height: 200px;
-      /* Limit max height of the output section */
     }
   </style>
 </head>
 
 <body>
-
-  <h1 id="title">RobotLab-X Installer</h1>
-
+  <img src="icon.png" alt="RobotLab-X" width="32" />
+  <h1 id="title"> RobotLab-X Installer</h1>
   <table>
+    <!--
     <tr>
       <td>
         <select id="version-select" class="full-width">
@@ -94,6 +32,7 @@
         <span class="info" id="selected-version"></span><br><br>
       </td>
     </tr>
+    -->
     <tr>
       <td>
         <button id="choose-dir" class="full-width">Choose Install Directory</button>
@@ -115,15 +54,14 @@
       </td>
     </tr>
   </table>
-
+  <!--
   <div class="system-info">
     <h3>System Information:</h3>
     <pre id="system-details"></pre>
   </div>
-
+-->
   <script>
     const { ipcRenderer } = require('electron')
-
     const output = document.getElementById('output')
     const versionSelect = document.getElementById('version-select')
     const chooseDirButton = document.getElementById('choose-dir')
@@ -211,7 +149,6 @@
       output.textContent += 'Installation completed!\n'
     })
   </script>
-
 </body>
 
 </html>
