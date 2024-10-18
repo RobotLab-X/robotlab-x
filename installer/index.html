@@ -6,11 +6,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RobotLab-X Installer</title>
   <style>
+    body {
+      background-color: #A85810;
+      color: #000;
+      font-family: Arial, sans-serif;
+      /* Off-black color */
+    }
+
     button,
     select {
-      border: none;
+      border: 2px solid #D2B48C;
+      /* Blue border */
       cursor: pointer;
-      width: 100%;
+      background-color: #80888a;
+      color: #000;
       height: 40px;
       border-radius: 8px;
     }
@@ -18,136 +27,106 @@
 </head>
 
 <body>
-  <img src="icon.png" alt="RobotLab-X" width="32" />
-  <h1 id="title"> RobotLab-X Installer</h1>
-  <table>
-    <!--
+
+  <table border="1" width="100%">
     <tr>
       <td>
-        <select id="version-select" class="full-width">
-          <option disabled selected>Select Version</option>
-        </select>
+        <img src="icon.png" alt="RobotLab-X" width="300" />
       </td>
-      <td>
-        <span class="info" id="selected-version"></span><br><br>
-      </td>
-    </tr>
-    -->
-    <tr>
-      <td>
-        <button id="choose-dir" class="full-width">Choose Install Directory</button>
-      </td>
-      <td>
-        <span class="info" id="selected-directory">No Directory Selected</span>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <button id="install-btn" class="full-width" disabled>Install</button>
-      </td>
-      <td></td>
-    </tr>
-    <tr>
-      <!-- Add a row with colspan=2 to display the output neatly below the table -->
-      <td colspan="2">
+      <td colspan="3" valign="top">
+        <h1 id="title">RobotLab-X Installer</h1>
+        <h3>v 0.0.9</h3>
         <pre id="output"></pre>
+
+
+
+
       </td>
+    </tr>
+    <tr>
+      <td><button id="choose-dir" class="full-width">Choose Install Directory</button></td>
+      <td colspan="2"><span class="info" id="selected-directory">No Directory Selected</span></td>
+      <td> <button id="install-btn" class="full-width" disabled>Install</button></td>
     </tr>
   </table>
-  <!--
-  <div class="system-info">
-    <h3>System Information:</h3>
-    <pre id="system-details"></pre>
-  </div>
--->
+
   <script>
-    const { ipcRenderer } = require('electron')
-    const output = document.getElementById('output')
-    const versionSelect = document.getElementById('version-select')
-    const chooseDirButton = document.getElementById('choose-dir')
-    const selectedVersion = document.getElementById('selected-version')
-    const selectedDirectory = document.getElementById('selected-directory')
-    const installButton = document.getElementById('install-btn')
-    const titleElement = document.getElementById('title')
-    const systemDetailsElement = document.getElementById('system-details')
+    const { ipcRenderer } = require('electron');
+    const output = document.getElementById('output');
+    const versionSelect = document.getElementById('version-select');
+    const chooseDirButton = document.getElementById('choose-dir');
+    const selectedVersion = document.getElementById('selected-version');
+    const selectedDirectory = document.getElementById('selected-directory');
+    const installButton = document.getElementById('install-btn');
+    const titleElement = document.getElementById('title');
+    const systemDetailsElement = document.getElementById('system-details');
 
-    let currentVersion = null
-    let currentDirectory = null
+    let currentVersion = null;
+    let currentDirectory = null;
 
-    // Function to check if both version and directory are selected
     function checkInstallButton() {
       if (currentVersion && currentDirectory) {
-        installButton.disabled = false
+        installButton.disabled = false;
       } else {
-        installButton.disabled = true
+        installButton.disabled = true;
       }
     }
 
-    // Listen for the version from the main process
     ipcRenderer.on('set-version', (event, version) => {
-      titleElement.textContent = `RobotLab-X Installer`
-      currentVersion = version
-      selectedVersion.textContent = `${version}`
-      checkInstallButton()
-    })
+      titleElement.textContent = `RobotLab-X Installer`;
+      currentVersion = version;
+      selectedVersion.textContent = `${version}`;
+      checkInstallButton();
+    });
 
-    // Listen for the versions list from the main process
     ipcRenderer.on('set-versions', (event, versions) => {
       versions.forEach(version => {
-        const option = document.createElement('option')
-        option.value = version
-        option.textContent = version
-        versionSelect.appendChild(option)
-      })
+        const option = document.createElement('option');
+        option.value = version;
+        option.textContent = version;
+        versionSelect.appendChild(option);
+      });
 
       versionSelect.addEventListener('change', () => {
-        currentVersion = versionSelect.value
-        selectedVersion.textContent = `${currentVersion}`
-        checkInstallButton()
-      })
-    })
+        currentVersion = versionSelect.value;
+        selectedVersion.textContent = `${currentVersion}`;
+        checkInstallButton();
+      });
+    });
 
     chooseDirButton.addEventListener('click', () => {
-      // Trigger directory chooser in the main process
-      ipcRenderer.send('choose-directory')
-    })
+      ipcRenderer.send('choose-directory');
+    });
 
     ipcRenderer.on('directory-selected', (event, directory) => {
-      currentDirectory = directory
-      selectedDirectory.textContent = `${directory}`
-      checkInstallButton()
-    })
+      currentDirectory = directory;
+      selectedDirectory.textContent = `${directory}`;
+      checkInstallButton();
+    });
 
     ipcRenderer.on('install-output', (event, data) => {
-      output.textContent += data + '\n'
-    })
+      output.textContent += data + '\n';
+    });
 
     ipcRenderer.on('install-error', (event, error) => {
-      output.textContent += 'Error: ' + error + '\n'
-    })
+      output.textContent += 'Error: ' + error + '\n';
+    });
 
-    // Listen for system details from the main process
     ipcRenderer.on('system-details', (event, systemDetails) => {
-      systemDetailsElement.textContent = JSON.stringify(systemDetails, null, 2)
-    })
+      systemDetailsElement.textContent = JSON.stringify(systemDetails, null, 2);
+    });
 
-    // Handle the install button click
     installButton.addEventListener('click', () => {
-      console.log('Install button clicked!')
-      output.textContent += 'Install button clicked!\n'
+      console.log('Install button clicked!');
+      output.textContent += 'Install button clicked!\n';
+      installButton.disabled = true;
+      ipcRenderer.send('install-package', { packageName: currentVersion, installDir: currentDirectory });
+    });
 
-      // Disable the install button to prevent multiple clicks
-      installButton.disabled = true
-
-      // Send the install event to the main process
-      ipcRenderer.send('install-package', { packageName: currentVersion, installDir: currentDirectory })
-    })
-
-    // Re-enable the install button after installation
     ipcRenderer.on('install-complete', () => {
-      installButton.disabled = false
-      output.textContent += 'Installation completed!\n'
-    })
+      installButton.disabled = false;
+      output.textContent += 'Installation completed!\n';
+    });
   </script>
 </body>
 
