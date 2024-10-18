@@ -10,18 +10,39 @@
       background-color: #A85810;
       color: #000;
       font-family: Arial, sans-serif;
-      /* Off-black color */
     }
 
     button,
     select {
       border: 2px solid #D2B48C;
-      /* Blue border */
       cursor: pointer;
       background-color: #80888a;
       color: #000;
       height: 40px;
       border-radius: 8px;
+    }
+
+    pre {
+      max-height: 150px;
+      /* Maximum height before scrolling */
+      max-width: 100%;
+      /* Set the maximum width to the table cell width */
+      overflow: auto;
+      /* Enable both horizontal and vertical scrollbars */
+      background-color: #A85810;
+      /* Match the background color of the body */
+      color: #000;
+      /* Ensure text is readable */
+      padding: 10px;
+      border: none;
+      /* Remove white outline */
+      white-space: pre-wrap;
+      /* Preserve whitespace and allow text to wrap */
+    }
+
+    #install-btn {
+      display: none;
+      /* Hidden initially */
     }
   </style>
 </head>
@@ -37,62 +58,33 @@
         <h1 id="title">RobotLab-X Installer</h1>
         <h3>v 0.0.9</h3>
         <pre id="output"></pre>
-
-
-
-
       </td>
     </tr>
     <tr>
       <td><button id="choose-dir" class="full-width">Choose Install Directory</button></td>
       <td colspan="2"><span class="info" id="selected-directory">No Directory Selected</span></td>
-      <td> <button id="install-btn" class="full-width" disabled>Install</button></td>
+      <td><button id="install-btn" class="full-width" disabled>Install</button></td>
     </tr>
   </table>
 
   <script>
     const { ipcRenderer } = require('electron');
     const output = document.getElementById('output');
-    const versionSelect = document.getElementById('version-select');
     const chooseDirButton = document.getElementById('choose-dir');
-    const selectedVersion = document.getElementById('selected-version');
     const selectedDirectory = document.getElementById('selected-directory');
     const installButton = document.getElementById('install-btn');
-    const titleElement = document.getElementById('title');
-    const systemDetailsElement = document.getElementById('system-details');
 
-    let currentVersion = null;
     let currentDirectory = null;
 
     function checkInstallButton() {
-      if (currentVersion && currentDirectory) {
+      if (currentDirectory) {
         installButton.disabled = false;
+        installButton.style.display = 'block'; // Show install button when directory is selected
       } else {
         installButton.disabled = true;
+        installButton.style.display = 'none'; // Hide install button
       }
     }
-
-    ipcRenderer.on('set-version', (event, version) => {
-      titleElement.textContent = `RobotLab-X Installer`;
-      currentVersion = version;
-      selectedVersion.textContent = `${version}`;
-      checkInstallButton();
-    });
-
-    ipcRenderer.on('set-versions', (event, versions) => {
-      versions.forEach(version => {
-        const option = document.createElement('option');
-        option.value = version;
-        option.textContent = version;
-        versionSelect.appendChild(option);
-      });
-
-      versionSelect.addEventListener('change', () => {
-        currentVersion = versionSelect.value;
-        selectedVersion.textContent = `${currentVersion}`;
-        checkInstallButton();
-      });
-    });
 
     chooseDirButton.addEventListener('click', () => {
       ipcRenderer.send('choose-directory');
@@ -112,15 +104,10 @@
       output.textContent += 'Error: ' + error + '\n';
     });
 
-    ipcRenderer.on('system-details', (event, systemDetails) => {
-      systemDetailsElement.textContent = JSON.stringify(systemDetails, null, 2);
-    });
-
     installButton.addEventListener('click', () => {
-      console.log('Install button clicked!');
       output.textContent += 'Install button clicked!\n';
       installButton.disabled = true;
-      ipcRenderer.send('install-package', { packageName: currentVersion, installDir: currentDirectory });
+      ipcRenderer.send('install-package', { installDir: currentDirectory });
     });
 
     ipcRenderer.on('install-complete', () => {
