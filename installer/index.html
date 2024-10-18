@@ -73,19 +73,26 @@
 
   <table border="1" width="100%">
     <tr>
-      <td>
+      <td width="300" rowspan="2">
         <img src="icon.png" alt="RobotLab-X" width="300" />
       </td>
       <td colspan="3" valign="top">
         <h1 id="title">RobotLab-X Installer</h1>
-        <h3>v 0.0.9</h3>
-        <pre id="output"></pre>
+
+        <pre id="output"></pre><br />
       </td>
+    </tr>
+    <tr>
+      <td colspan="3">Progress bar here</td>
     </tr>
     <tr>
       <td><button id="choose-dir" class="full-width">Choose Install Directory</button></td>
       <td colspan="2"><span class="info" id="selected-directory">No Directory Selected</span></td>
       <td><button id="install-btn" class="full-width" disabled>Install</button></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td colspan="3" align="center"><small>v 0.0.9</small></td>
     </tr>
   </table>
 
@@ -136,6 +143,35 @@
       installButton.disabled = false;
       output.textContent += 'Installation completed!\n';
     });
+
+    function scrollToBottom() {
+      output.scrollTop = output.scrollHeight;
+    }
+
+    ipcRenderer.on('install-output', (event, data) => {
+      output.textContent += data + '\n';
+      scrollToBottom(); // Scroll to bottom after new data
+    });
+
+    ipcRenderer.on('install-error', (event, error) => {
+      output.textContent += 'Error: ' + error + '\n';
+      scrollToBottom(); // Scroll to bottom after new error
+    });
+
+    installButton.addEventListener('click', () => {
+      output.textContent += 'Install button clicked!\n';
+      installButton.disabled = true;
+      ipcRenderer.send('install-package', { installDir: currentDirectory });
+      scrollToBottom(); // Scroll to bottom after button click
+    });
+
+    ipcRenderer.on('install-complete', () => {
+      installButton.disabled = false;
+      output.textContent += 'Installation completed!\n';
+      scrollToBottom(); // Scroll to bottom after install completion
+    });
+
+
   </script>
 </body>
 
