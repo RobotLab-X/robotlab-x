@@ -83,7 +83,9 @@
       </td>
     </tr>
     <tr>
-      <td colspan="3">Progress bar here</td>
+      <td colspan="3">
+        <progress id="progress-bar" value="0" max="100" style="width: 100%;"></progress>
+      </td>
     </tr>
     <tr>
       <td><button id="choose-dir" class="full-width">Choose Install Directory</button></td>
@@ -102,8 +104,10 @@
     const chooseDirButton = document.getElementById('choose-dir');
     const selectedDirectory = document.getElementById('selected-directory');
     const installButton = document.getElementById('install-btn');
+    const progressBar = document.getElementById('progress-bar');
 
     let currentDirectory = null;
+    let progressValue = 0; // Initialize progress value
 
     function checkInstallButton() {
       if (currentDirectory) {
@@ -127,6 +131,7 @@
 
     ipcRenderer.on('install-output', (event, data) => {
       output.textContent += data + '\n';
+      updateProgress(); // Update progress as output is generated
     });
 
     ipcRenderer.on('install-error', (event, error) => {
@@ -142,6 +147,7 @@
     ipcRenderer.on('install-complete', () => {
       installButton.disabled = false;
       output.textContent += 'Installation completed!\n';
+      progressBar.value = 100; // Set progress bar to 100% on completion
     });
 
     function scrollToBottom() {
@@ -168,9 +174,16 @@
     ipcRenderer.on('install-complete', () => {
       installButton.disabled = false;
       output.textContent += 'Installation completed!\n';
-      scrollToBottom(); // Scroll to bottom after install completion
+      progressBar.value = 100; // Set progress bar to 100% after install completion
     });
 
+    // Function to update progress
+    function updateProgress() {
+      // Simulate progress increase; in real cases, you'd calculate this based on installation steps
+      progressValue += 10;
+      if (progressValue > 100) progressValue = 100; // Cap at 100%
+      progressBar.value = progressValue;
+    }
 
   </script>
 </body>
