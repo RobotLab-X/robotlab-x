@@ -40,7 +40,12 @@
       /* Preserve whitespace and allow text to wrap */
     }
 
+
     #install-btn {
+      display: none;
+    }
+
+    #start-btn {
       display: none;
       /* Hidden initially */
     }
@@ -115,7 +120,10 @@
     </tr>
     <tr>
       <td></td>
-      <td colspan="3" align="center"><small>v 0.0.9</small></td>
+      <td colspan="3" align="center">
+        <button id="start-btn" class="full-width">Start RobotLab-X</button>
+        <small>v 0.0.9</small>
+      </td>
     </tr>
   </table>
 
@@ -125,6 +133,7 @@
     const chooseDirButton = document.getElementById('choose-dir');
     const selectedDirectory = document.getElementById('selected-directory');
     const installButton = document.getElementById('install-btn');
+    const startButton = document.getElementById('start-btn');
     const progressBar = document.getElementById('progress-bar');
 
     let currentDirectory = null;
@@ -153,8 +162,8 @@
 
     ipcRenderer.on('install-output', (event, data) => {
       output.textContent += data + '\n';
-      wordCount += countWords(data); // Count new words
-      updateProgress(); // Update progress based on word count
+      wordCount += countWords(data);
+      updateProgress();
       scrollToBottom();
     });
 
@@ -165,41 +174,43 @@
 
     installButton.addEventListener('click', () => {
       output.textContent += 'Install button clicked!\n';
-      installButton.disabled = true;
+      installButton.disabled = true; // Disable the install button when installation starts
       ipcRenderer.send('install-package', { installDir: currentDirectory });
       scrollToBottom();
     });
 
     ipcRenderer.on('install-complete', () => {
-      installButton.disabled = false;
+      installButton.style.display = 'none'; // Hide install button
+      startButton.style.display = 'block'; // Show start button
       output.textContent += 'Installation completed!\n';
-      progressBar.value = 100; // Set progress bar to 100% after install completion
+      progressBar.value = 100;
       scrollToBottom();
+    });
+
+    startButton.addEventListener('click', () => {
+      ipcRenderer.send('start-application');
     });
 
     function scrollToBottom() {
       output.scrollTop = output.scrollHeight;
     }
 
-    // Function to update progress
     function updateProgress() {
       if (output.textContent.includes('Installation completed!')) {
         progressBar.value = 100; // Complete when installation is done
       } else {
-        // Increment progress every 20 words
         const increment = Math.floor(wordCount / 40) * 10;
-        progressValue = Math.min(progressValue + increment, 100); // Cap progress at 100%
+        progressValue = Math.min(progressValue + increment, 100);
         progressBar.value = progressValue;
-        wordCount = 0; // Reset word count after incrementing progress
+        wordCount = 0;
       }
     }
 
-    // Helper function to count words in the added data
     function countWords(str) {
       return str.trim().split(/\s+/).length;
     }
-
   </script>
+
 </body>
 
 </html>

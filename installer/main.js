@@ -1,35 +1,31 @@
 const { app, BrowserWindow, ipcMain, dialog } = require("electron")
-const { spawn } = require("child_process") // Use spawn to stream stdout and stderr
+const { spawn } = require("child_process")
 const fs = require("fs")
 const path = require("path")
-const os = require("os") // Import the os module to gather system information
+const os = require("os")
 
 let mainWindow
 let robotlabxVersions = ["latest", "0.9.125", "0.9.124", "0.9.123"]
 let robotlabxVersion = "0.9.125"
-let selectedDirectory = null // Initialize as null to ensure proper functionality
+let selectedDirectory = null
 
-// Path to npm and node from the Electron app's node_modules
 const npmPath = path.join(__dirname, "node_modules", "npm", "bin", "npm-cli.js")
-const nodePath = process.execPath // Path to the node executable packaged with Electron
+const nodePath = process.execPath
 
 app.on("ready", () => {
   console.info("App ready")
   mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
-    // frame: false, // Remove the frame/title bar
-    // autoHideMenuBar: true,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false
     },
-    icon: path.join(__dirname, "icon.png") // Path to your icon
+    icon: path.join(__dirname, "icon.png")
   })
 
   mainWindow.loadFile("index.html")
 
-  // Send version and system details to the renderer once the window is ready
   mainWindow.webContents.on("did-finish-load", () => {
     console.info("did-finish-load")
     mainWindow.webContents.send("set-version", robotlabxVersion)
@@ -56,7 +52,6 @@ app.on("ready", () => {
   })
 })
 
-// Handle 'choose-directory' event
 ipcMain.on("choose-directory", (event) => {
   dialog
     .showOpenDialog(mainWindow, {
@@ -64,8 +59,8 @@ ipcMain.on("choose-directory", (event) => {
     })
     .then((result) => {
       if (!result.canceled && result.filePaths.length > 0) {
-        selectedDirectory = result.filePaths[0] // Set the selected directory
-        event.sender.send("directory-selected", selectedDirectory) // Send the selected directory back to the renderer
+        selectedDirectory = result.filePaths[0]
+        event.sender.send("directory-selected", selectedDirectory)
       } else {
         event.sender.send("install-error", "No directory selected")
       }
@@ -76,56 +71,92 @@ ipcMain.on("choose-directory", (event) => {
     })
 })
 
-// Handle 'install-package' event and perform git clone
-ipcMain.on("install-package", (event, { packageName, installDir }) => {
+ipcMain.on("install-package", (event, { installDir }) => {
   console.log(`Cloning RobotLab-X repository to ${installDir}`)
 
   let tag = robotlabxVersion
   let cloneDir = path.join(installDir, `robotlab-x-${tag}`)
 
-  // Git clone command
   const cloneProcess = spawn("git", ["clone", "--depth", "1", "https://github.com/RobotLab-X/robotlab-x.git", cloneDir])
 
-  // Stream stdout to renderer
   cloneProcess.stdout.on("data", (data) => {
     event.sender.send("install-output", `STDOUT: ${data}`)
   })
 
-  // Stream stderr to renderer
   cloneProcess.stderr.on("data", (data) => {
     event.sender.send("install-output", `STDERR: ${data}`)
   })
 
-  // When the clone process is finished, run npm install
   cloneProcess.on("close", (code) => {
     if (code === 0) {
       event.sender.send("install-output", "Git clone completed successfully!\n")
 
       console.info(`npm install in ${cloneDir} with node ${nodePath} and npm ${npmPath}`)
-      // Run npm install using the packed npm and node
-
-      // const npmInstallProcess = spawn(nodePath, [npmPath, "run", "install-all"], { cwd: cloneDir })
 
       const npmInstallProcess = spawn(nodePath, [npmPath, "run", "install-all"], {
         cwd: cloneDir,
         env: { ...process.env, ELECTRON_RUN_AS_NODE: "1" }
       })
 
-      // Stream stdout from npm install
       npmInstallProcess.stdout.on("data", (data) => {
         event.sender.send("install-output", `NPM STDOUT: ${data}`)
       })
 
-      // Stream stderr from npm install
       npmInstallProcess.stderr.on("data", (data) => {
         event.sender.send("install-output", `NPM STDERR: ${data}`)
       })
 
-      // When npm install is finished
       npmInstallProcess.on("close", (npmCode) => {
         if (npmCode === 0) {
           event.sender.send("install-output", "NPM install completed successfully!\n")
-          event.sender.send("install-complete") // Notify that installation is complete
+          event.sender.send("install-complete")
+
+          // client build and install
+          const clientBuildProcess = spawn(nodePath, [npmPath, "run", "build-client"], {
+            cwd: cloneDir,
+            env: { ...process.env, ELECTRON_RUN_AS_NODE: "1" }
+          })
+
+          clientBuildProcess.stdout.on("data", (data) => {
+            event.sender.send("install-output", `CLIENT BUILD STDOUT: ${data}`)
+          })
+
+          clientBuildProcess.stderr.on("data", (data) => {
+            event.sender.send("install-output", `CLIENT BUILD STDERR: ${data}`)
+          })
+
+          clientBuildProcess.on("close", (clientBuildCode) => {
+            if (clientBuildCode === 0) {
+              event.sender.send("install-output", "CLIENT BUILD completed successfully!\n")
+              event.sender.send("install-complete")
+
+              const clientInstallProcess = spawn(nodePath, [npmPath, "run", "install-client"], {
+                cwd: cloneDir,
+                env: { ...process.env, ELECTRON_RUN_AS_NODE: "1" }
+              })
+
+              clientInstallProcess.stdout.on("data", (data) => {
+                event.sender.send("install-output", `CLIENT INSTALL STDOUT: ${data}`)
+              })
+
+              clientInstallProcess.stderr.on("data", (data) => {
+                event.sender.send("install-output", `CLIENT INSTALL STDERR: ${data}`)
+              })
+
+              clientInstallProcess.on("close", (clientInstallCode) => {
+                if (clientInstallCode === 0) {
+                  event.sender.send("install-output", "CLIENT INSTALL completed successfully!\n")
+                  event.sender.send("install-complete")
+                } else {
+                  event.sender.send("install-output", `CLIENT INSTALL failed with code ${clientInstallCode}\n`)
+                  event.sender.send("install-error", `CLIENT INSTALL failed with code ${clientInstallCode}`)
+                }
+              })
+            } else {
+              event.sender.send("install-output", `CLIENT BUILD failed with code ${clientBuildCode}\n`)
+              event.sender.send("install-error", `CLIENT BUILD failed with code ${clientBuildCode}`)
+            }
+          })
         } else {
           event.sender.send("install-output", `NPM install failed with code ${npmCode}\n`)
           event.sender.send("install-error", `NPM install failed with code ${npmCode}`)
@@ -134,6 +165,33 @@ ipcMain.on("install-package", (event, { packageName, installDir }) => {
     } else {
       event.sender.send("install-output", `Git clone failed with code ${code}\n`)
       event.sender.send("install-error", `Git clone failed with code ${code}`)
+    }
+  })
+})
+
+ipcMain.on("start-application", () => {
+  console.log("Start button pressed, starting RobotLab-X...")
+
+  const npmInstallProcess = spawn(nodePath, [npmPath, "run", "install-all"], {
+    cwd: cloneDir,
+    env: { ...process.env, ELECTRON_RUN_AS_NODE: "1" }
+  })
+
+  npmInstallProcess.stdout.on("data", (data) => {
+    event.sender.send("install-output", `NPM STDOUT: ${data}`)
+  })
+
+  npmInstallProcess.stderr.on("data", (data) => {
+    event.sender.send("install-output", `NPM STDERR: ${data}`)
+  })
+
+  npmInstallProcess.on("close", (npmCode) => {
+    if (npmCode === 0) {
+      event.sender.send("install-output", "NPM install completed successfully!\n")
+      event.sender.send("install-complete")
+    } else {
+      event.sender.send("install-output", `NPM install failed with code ${npmCode}\n`)
+      event.sender.send("install-error", `NPM install failed with code ${npmCode}`)
     }
   })
 })
