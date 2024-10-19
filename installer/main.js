@@ -11,16 +11,34 @@ let selectedDirectory = null
 
 const npmPath = path.join(__dirname, "node_modules", "npm", "bin", "npm-cli.js")
 const nodePath = process.execPath
+let cloneDir = null
+
+// FIXME - this will need to change to be userDir or AppData dir
+const pidDir = path.join(__dirname, "pids")
+
+if (!fs.existsSync(pidDir)) {
+  fs.mkdirSync(pidDir)
+}
+
+console.info(`PID directory: ${pidDir}`)
+
+// Function to dynamically import ps-list and use it
+async function getPsList() {
+  const psList = await import("ps-list") // Dynamically import ps-list
+  return psList.default() // Ensure we call the default export (which is a function)
+}
 
 app.on("ready", () => {
   console.info("App ready")
   mainWindow = new BrowserWindow({
     width: 800,
-    height: 600,
+    height: 500,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false
     },
+    autoHideMenuBar: true,
+    // frame: false,
     icon: path.join(__dirname, "icon.png")
   })
 
@@ -75,7 +93,7 @@ ipcMain.on("install-package", (event, { installDir }) => {
   console.log(`Cloning RobotLab-X repository to ${installDir}`)
 
   let tag = robotlabxVersion
-  let cloneDir = path.join(installDir, `robotlab-x-${tag}`)
+  cloneDir = path.join(installDir, `robotlab-x-${tag}`)
 
   const cloneProcess = spawn("git", ["clone", "--depth", "1", "https://github.com/RobotLab-X/robotlab-x.git", cloneDir])
 
@@ -100,6 +118,9 @@ ipcMain.on("install-package", (event, { installDir }) => {
 
       npmInstallProcess.stdout.on("data", (data) => {
         event.sender.send("install-output", `NPM STDOUT: ${data}`)
+        if (data.includes("Building fresh packages")) {
+          event.sender.send("install-output", `CLIENT INSTALL STDOUT: This may take a while...`)
+        }
       })
 
       npmInstallProcess.stderr.on("data", (data) => {
@@ -109,7 +130,6 @@ ipcMain.on("install-package", (event, { installDir }) => {
       npmInstallProcess.on("close", (npmCode) => {
         if (npmCode === 0) {
           event.sender.send("install-output", "NPM install completed successfully!\n")
-          event.sender.send("install-complete")
 
           // client build and install
           const clientBuildProcess = spawn(nodePath, [npmPath, "run", "build-client"], {
@@ -119,6 +139,9 @@ ipcMain.on("install-package", (event, { installDir }) => {
 
           clientBuildProcess.stdout.on("data", (data) => {
             event.sender.send("install-output", `CLIENT BUILD STDOUT: ${data}`)
+            if (data.includes("production build")) {
+              event.sender.send("install-output", `CLIENT INSTALL STDOUT: This may take a while...`)
+            }
           })
 
           clientBuildProcess.stderr.on("data", (data) => {
@@ -128,7 +151,6 @@ ipcMain.on("install-package", (event, { installDir }) => {
           clientBuildProcess.on("close", (clientBuildCode) => {
             if (clientBuildCode === 0) {
               event.sender.send("install-output", "CLIENT BUILD completed successfully!\n")
-              event.sender.send("install-complete")
 
               const clientInstallProcess = spawn(nodePath, [npmPath, "run", "install-client"], {
                 cwd: cloneDir,
@@ -146,6 +168,7 @@ ipcMain.on("install-package", (event, { installDir }) => {
               clientInstallProcess.on("close", (clientInstallCode) => {
                 if (clientInstallCode === 0) {
                   event.sender.send("install-output", "CLIENT INSTALL completed successfully!\n")
+                  // install completed
                   event.sender.send("install-complete")
                 } else {
                   event.sender.send("install-output", `CLIENT INSTALL failed with code ${clientInstallCode}\n`)
@@ -169,29 +192,54 @@ ipcMain.on("install-package", (event, { installDir }) => {
   })
 })
 
-ipcMain.on("start-application", () => {
+ipcMain.on("start-application", (event) => {
   console.log("Start button pressed, starting RobotLab-X...")
-
-  const npmInstallProcess = spawn(nodePath, [npmPath, "run", "install-all"], {
-    cwd: cloneDir,
-    env: { ...process.env, ELECTRON_RUN_AS_NODE: "1" }
-  })
-
-  npmInstallProcess.stdout.on("data", (data) => {
-    event.sender.send("install-output", `NPM STDOUT: ${data}`)
-  })
-
-  npmInstallProcess.stderr.on("data", (data) => {
-    event.sender.send("install-output", `NPM STDERR: ${data}`)
-  })
-
-  npmInstallProcess.on("close", (npmCode) => {
-    if (npmCode === 0) {
-      event.sender.send("install-output", "NPM install completed successfully!\n")
-      event.sender.send("install-complete")
-    } else {
-      event.sender.send("install-output", `NPM install failed with code ${npmCode}\n`)
-      event.sender.send("install-error", `NPM install failed with code ${npmCode}`)
-    }
-  })
+  spawnChildProcess()
+  checkAliveProcesses()
 })
+
+// Function to check if child processes are still alive
+async function checkAliveProcesses() {
+  try {
+    // Get all the PID files from the directory
+    const pidFiles = fs.readdirSync(pidDir)
+
+    // Get a list of all running processes
+    const processes = await getPsList() // This should return an array
+
+    pidFiles.forEach((pidFile) => {
+      const pid = parseInt(pidFile.replace(".pid", ""), 10)
+
+      // Check if the process is still alive
+      const isAlive = processes.some((proc) => proc.pid === pid)
+
+      if (isAlive) {
+        console.log(`Child process with PID ${pid} is still alive.`)
+      } else {
+        console.log(`Child process with PID ${pid} is no longer running. Removing PID file.`)
+        fs.unlinkSync(path.join(pidDir, pidFile)) // Remove the PID file if the process is dead
+      }
+    })
+  } catch (error) {
+    console.error("Error checking processes:", error)
+  }
+}
+
+// Function to spawn a detached child process and save its PID
+function spawnChildProcess() {
+  const child = spawn(nodePath, [npmPath, "run", "electron-dev"], {
+    cwd: path.join(cloneDir, "server"),
+    env: { ...process.env, ELECTRON_RUN_AS_NODE: "1" },
+    detached: true,
+    stdio: "ignore"
+  })
+
+  // Save the child's PID in a file named after its PID
+  const pidFile = path.join(pidDir, `${child.pid}.pid`)
+  fs.writeFileSync(pidFile, String(child.pid))
+
+  // Detach the child so it runs independently
+  child.unref()
+
+  console.log(`Child process spawned with PID: ${child.pid}`)
+}
