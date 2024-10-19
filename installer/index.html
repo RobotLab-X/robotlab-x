@@ -14,7 +14,8 @@
 
     button,
     select {
-      border: 2px solid #D2B48C;
+      min-width: 150px;
+      border: 2px solid #000;
       cursor: pointer;
       background-color: #80888a;
       color: #000;
@@ -72,25 +73,52 @@
       /* Add space between thumb and track */
     }
 
+    #progress-bar {
+      display: none;
+    }
+
     /* Style the progress bar */
     progress {
       width: 100%;
       height: 20px;
       background-color: #A85810;
-      /* Same as body background color */
       border: 2px solid #000;
-      /* Add a black border */
+      border-radius: 10px;
+      /* Add rounded corners */
+      overflow: hidden;
+      /* Ensure the corners are clipped */
     }
 
     /* Style the progress value (the progress bar itself) */
     progress::-webkit-progress-value {
       background-color: #000;
-      /* The progress bar fill color (black) */
+      border-radius: 10px;
+      /* Match the corners */
     }
 
     progress::-moz-progress-bar {
       background-color: #000;
-      /* The progress bar fill color for Firefox */
+      border-radius: 10px;
+      /* Match the corners */
+    }
+
+    #installer-version {
+      position: fixed;
+      /* Position it relative to the viewport */
+      bottom: 10px;
+      /* Distance from the bottom of the page */
+      left: 50%;
+      /* Align horizontally to the middle */
+      transform: translateX(-50%);
+      /* Center the div by translating it left by 50% */
+      text-align: center;
+      /* Ensure text inside is centered */
+    }
+
+    pre {
+      min-height: 300px;
+      /* Sets a minimum height */
+      max-height: 500px;
     }
   </style>
 </head>
@@ -116,16 +144,11 @@
     <tr>
       <td><button id="choose-dir" class="full-width">Choose Install Directory</button></td>
       <td colspan="2"><span class="info" id="selected-directory">No Directory Selected</span></td>
-      <td><button id="install-btn" class="full-width" disabled>Install</button></td>
+      <td align="right"><button id="install-btn" class="full-width" disabled>Install</button><button id="start-btn"
+          class="full-width">Start</button></td>
     </tr>
-    <tr>
-      <td></td>
-      <td colspan="3" align="center">
-        <button id="start-btn" class="full-width">Start RobotLab-X</button>
-        <small>v 0.0.9</small>
-      </td>
-    </tr>
-  </table>
+  </table><br />
+  <div id="installer-version"><small>v 0.0.9</small></div>
 
   <script>
     const { ipcRenderer } = require('electron');
@@ -199,7 +222,7 @@
       if (output.textContent.includes('Installation completed!')) {
         progressBar.value = 100; // Complete when installation is done
       } else {
-        const increment = Math.floor(wordCount / 40) * 10;
+        const increment = Math.floor(wordCount / 30) * 10;
         progressValue = Math.min(progressValue + increment, 100);
         progressBar.value = progressValue;
         wordCount = 0;
@@ -209,6 +232,15 @@
     function countWords(str) {
       return str.trim().split(/\s+/).length;
     }
+
+    installButton.addEventListener('click', () => {
+      output.textContent += 'Install button clicked!\n';
+      installButton.disabled = true; // Disable the install button when installation starts
+      progressBar.style.display = 'block'; // Show the progress bar
+      ipcRenderer.send('install-package', { installDir: currentDirectory });
+      scrollToBottom();
+    });
+
   </script>
 
 </body>
