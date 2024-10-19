@@ -32,7 +32,7 @@ app.on("ready", () => {
   console.info("App ready")
   mainWindow = new BrowserWindow({
     width: 800,
-    height: 500,
+    height: 540,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false
