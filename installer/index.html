@@ -66,6 +66,27 @@
       border: 3px solid #A85810;
       /* Add space between thumb and track */
     }
+
+    /* Style the progress bar */
+    progress {
+      width: 100%;
+      height: 20px;
+      background-color: #A85810;
+      /* Same as body background color */
+      border: 2px solid #000;
+      /* Add a black border */
+    }
+
+    /* Style the progress value (the progress bar itself) */
+    progress::-webkit-progress-value {
+      background-color: #000;
+      /* The progress bar fill color (black) */
+    }
+
+    progress::-moz-progress-bar {
+      background-color: #000;
+      /* The progress bar fill color for Firefox */
+    }
   </style>
 </head>
 
@@ -84,7 +105,7 @@
     </tr>
     <tr>
       <td colspan="3">
-        <progress id="progress-bar" value="0" max="100" style="width: 100%;"></progress>
+        <progress id="progress-bar" value="0" max="100"></progress>
       </td>
     </tr>
     <tr>
@@ -107,7 +128,8 @@
     const progressBar = document.getElementById('progress-bar');
 
     let currentDirectory = null;
-    let progressValue = 0; // Initialize progress value
+    let progressValue = 0;
+    let wordCount = 0;
 
     function checkInstallButton() {
       if (currentDirectory) {
@@ -131,58 +153,50 @@
 
     ipcRenderer.on('install-output', (event, data) => {
       output.textContent += data + '\n';
-      updateProgress(); // Update progress as output is generated
+      wordCount += countWords(data); // Count new words
+      updateProgress(); // Update progress based on word count
+      scrollToBottom();
     });
 
     ipcRenderer.on('install-error', (event, error) => {
       output.textContent += 'Error: ' + error + '\n';
+      scrollToBottom();
     });
 
     installButton.addEventListener('click', () => {
       output.textContent += 'Install button clicked!\n';
       installButton.disabled = true;
       ipcRenderer.send('install-package', { installDir: currentDirectory });
-    });
-
-    ipcRenderer.on('install-complete', () => {
-      installButton.disabled = false;
-      output.textContent += 'Installation completed!\n';
-      progressBar.value = 100; // Set progress bar to 100% on completion
-    });
-
-    function scrollToBottom() {
-      output.scrollTop = output.scrollHeight;
-    }
-
-    ipcRenderer.on('install-output', (event, data) => {
-      output.textContent += data + '\n';
-      scrollToBottom(); // Scroll to bottom after new data
-    });
-
-    ipcRenderer.on('install-error', (event, error) => {
-      output.textContent += 'Error: ' + error + '\n';
-      scrollToBottom(); // Scroll to bottom after new error
-    });
-
-    installButton.addEventListener('click', () => {
-      output.textContent += 'Install button clicked!\n';
-      installButton.disabled = true;
-      ipcRenderer.send('install-package', { installDir: currentDirectory });
-      scrollToBottom(); // Scroll to bottom after button click
+      scrollToBottom();
     });
 
     ipcRenderer.on('install-complete', () => {
       installButton.disabled = false;
       output.textContent += 'Installation completed!\n';
       progressBar.value = 100; // Set progress bar to 100% after install completion
+      scrollToBottom();
     });
+
+    function scrollToBottom() {
+      output.scrollTop = output.scrollHeight;
+    }
 
     // Function to update progress
     function updateProgress() {
-      // Simulate progress increase; in real cases, you'd calculate this based on installation steps
-      progressValue += 10;
-      if (progressValue > 100) progressValue = 100; // Cap at 100%
-      progressBar.value = progressValue;
+      if (output.textContent.includes('Installation completed!')) {
+        progressBar.value = 100; // Complete when installation is done
+      } else {
+        // Increment progress every 20 words
+        const increment = Math.floor(wordCount / 40) * 10;
+        progressValue = Math.min(progressValue + increment, 100); // Cap progress at 100%
+        progressBar.value = progressValue;
+        wordCount = 0; // Reset word count after incrementing progress
+      }
+    }
+
+    // Helper function to count words in the added data
+    function countWords(str) {
+      return str.trim().split(/\s+/).length;
     }
 
   </script>

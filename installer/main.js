@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain, dialog } = require("electron")
 const { spawn } = require("child_process") // Use spawn to stream stdout and stderr
+const fs = require("fs")
 const path = require("path")
 const os = require("os") // Import the os module to gather system information
 
@@ -13,6 +14,7 @@ const npmPath = path.join(__dirname, "node_modules", "npm", "bin", "npm-cli.js")
 const nodePath = process.execPath // Path to the node executable packaged with Electron
 
 app.on("ready", () => {
+  console.info("App ready")
   mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
@@ -29,6 +31,7 @@ app.on("ready", () => {
 
   // Send version and system details to the renderer once the window is ready
   mainWindow.webContents.on("did-finish-load", () => {
+    console.info("did-finish-load")
     mainWindow.webContents.send("set-version", robotlabxVersion)
     mainWindow.webContents.send("set-versions", robotlabxVersions)
 
@@ -44,8 +47,12 @@ app.on("ready", () => {
       cpuCores: os.cpus().length
     }
 
+    console.info("system details", systemDetails)
     // Send system details to the renderer process
     mainWindow.webContents.send("system-details", systemDetails)
+
+    // list node_modules
+    console.info("node_modules", fs.readdirSync(path.join(__dirname, "node_modules")))
   })
 })
 
@@ -77,7 +84,7 @@ ipcMain.on("install-package", (event, { packageName, installDir }) => {
   let cloneDir = path.join(installDir, `robotlab-x-${tag}`)
 
   // Git clone command
-  const cloneProcess = spawn("git", ["clone", "https://github.com/RobotLab-X/robotlab-x.git", cloneDir])
+  const cloneProcess = spawn("git", ["clone", "--depth", "1", "https://github.com/RobotLab-X/robotlab-x.git", cloneDir])
 
   // Stream stdout to renderer
   cloneProcess.stdout.on("data", (data) => {
@@ -94,8 +101,15 @@ ipcMain.on("install-package", (event, { packageName, installDir }) => {
     if (code === 0) {
       event.sender.send("install-output", "Git clone completed successfully!\n")
 
+      console.info(`npm install in ${cloneDir} with node ${nodePath} and npm ${npmPath}`)
       // Run npm install using the packed npm and node
-      const npmInstallProcess = spawn(nodePath, [npmPath, "run", "install-all"], { cwd: cloneDir })
+
+      // const npmInstallProcess = spawn(nodePath, [npmPath, "run", "install-all"], { cwd: cloneDir })
+
+      const npmInstallProcess = spawn(nodePath, [npmPath, "run", "install-all"], {
+        cwd: cloneDir,
+        env: { ...process.env, ELECTRON_RUN_AS_NODE: "1" }
+      })
 
       // Stream stdout from npm install
       npmInstallProcess.stdout.on("data", (data) => {
