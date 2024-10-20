@@ -353,6 +353,8 @@ export default class Ollama extends Service {
 
       let response: GenerateResponse = await oc.generate(request as GenerateRequest & { stream: false })
 
+      // publishText needs fixing
+
       this.invoke("publishResponse", response)
       this.invoke("publishChat", response)
       this.invoke("publishText", response)

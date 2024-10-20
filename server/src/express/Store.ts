@@ -79,7 +79,7 @@ export default class Store {
       store.http.on("error", Store.onError)
       store.http.on("listening", Store.onListening)
     } else {
-      console.error("store instance already exists")
+      console.info("store instance already exists")
     }
     return Store.instance
   }
@@ -466,20 +466,21 @@ export default class Store {
 
     // Catch-all handler to serve index.html for client-side routing
     this.express.use((req, res, next) => {
-      if (
-        !req.originalUrl.startsWith(apiPrefix) &&
-        !req.originalUrl.startsWith("/public") &&
-        !req.originalUrl.startsWith("/log") &&
-        !req.originalUrl.startsWith("/static") &&
-        !req.originalUrl.startsWith("/manifest.json")
-      ) {
+      if (!req.originalUrl.startsWith(apiPrefix)) {
         // res.sendFile(path.join(Main.distRoot, "client", "index.html"))
 
         // Serve the file based on the requested path
-        res.sendFile(path.join(main.distRoot, "client", req.originalUrl), (err) => {
+        // let file = path.join(main.argv.distRoot, "client", req.originalUrl)
+        let file = path.join(__dirname, "..", "client", req.originalUrl)
+
+        log.info(`serving ${file}`)
+        res.sendFile(file, (err) => {
           if (err) {
             // If the file does not exist, serve index.html
-            res.sendFile(path.join(main.distRoot, "client", "index.html"))
+            //file = path.join(main.argv.distRoot, "client", "index.html")
+            file = path.join(__dirname, "..", "client", "index.html")
+            log.info(`serving index ${file}`)
+            res.sendFile(file)
           }
         })
       } else {

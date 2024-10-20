@@ -1,4 +1,3 @@
-import asar from "asar"
 import fs from "fs"
 import minimist from "minimist"
 import os from "os"
@@ -14,7 +13,12 @@ const log = getLogger("Main")
 export default class Main {
   static instance: Main
 
+  // FIXME - remove all configurable items - that can be set from the command line or file
+  // use argv directly
+
   args: string[]
+
+  argv: any = null
 
   // top of the tree
   root: string
@@ -24,9 +28,6 @@ export default class Main {
 
   // user data directory separation from appData vs userData
   userData: string
-
-  // if app is running from app.asar mount
-  isPackaged: boolean
 
   // The root directory of the app in both development and production
   // in dev this is cwd in prod its where the asar is extracted/dist
@@ -80,8 +81,33 @@ export default class Main {
 
   async run(): Promise<void> {
     try {
+      // first setup will be for dev
+      this.argv = minimist(process.argv.slice(2), {
+        default: {
+          // ALL DEV !
+          // distRoot: path.resolve("dist"),
+          // publicRoot: path.resolve(path.join("src", "express", "public")),
+          // launchFile: path.resolve(path.join("src", "launch", "default.js"))
+          distRoot: __dirname,
+          publicRoot: path.join(__dirname, "..", "express", "public"),
+          launchFile: path.join(__dirname, "..", "launch", "default.js")
+        }
+      })
+
+      // FIXME - this is stupid, use directly from argv
+      this.distRoot = this.argv.distRoot
+      this.publicRoot = this.argv.publicRoot
+
+      log.info(`bootServer: argv: ${JSON.stringify(this.argv)}`)
+
+      // extract VFS
+      // new Pkg().extractVFS()
+
       // add version info
       log.info(`Starting RobotLab-X...`)
+      log.info(`__dirname: ${__dirname}`)
+      log.info(`execPath: ${process.execPath}`)
+      log.info(`Platform: ${process.platform}`)
       log.info(`Node.js Version: ${process.version}`)
       log.info(`CWD: ${process.cwd()}`)
       log.info(`PID: ${process.pid}`)
@@ -90,7 +116,7 @@ export default class Main {
       log.info(`Architecture: ${os.arch()}`)
       log.info(`Hostname: ${os.hostname()}`)
       log.info(`Release: ${os.release()}`)
-      log.info(`Uptime: ${os.uptime()} seconds`)
+      log.info(`OS Uptime: ${os.uptime()} seconds`)
       log.info(`Total Memory: ${(os.totalmem() / 1024 ** 3).toFixed(2)} GB`)
       log.info(`Free Memory: ${(os.freemem() / 1024 ** 3).toFixed(2)} GB`)
       log.info(`CPUs: ${os.cpus().length}`)
@@ -100,8 +126,6 @@ export default class Main {
       log.info(`__dirname: ${__dirname}`)
 
       // check if running from an asar file mount
-      this.isPackaged = __dirname.includes("app.asar")
-      log.info(`isPackaged: ${this.isPackaged}`)
 
       // if prod everything is in cwd in dev everything is in cwd/dist to keep it clean
       // this.root = process.env.ROOT_DIR || (this.isPackaged ? process.cwd() : path.join(process.cwd(), "dist"))
@@ -114,21 +138,7 @@ export default class Main {
       this.userData = path.join(this.root, "robotlab-x")
       log.info(`userData: ${this.userData}`)
 
-      if (this.isPackaged) {
-        // i think electron-builder compresses all data in this path in the asar file
-        this.distRoot = path.join(this.userData, "dist")
-      } else {
-        // in dev we don't have an extracted resources directory
-        this.distRoot = path.join(this.root, "dist")
-      }
-
       log.info(`distRoot: ${this.distRoot}`)
-
-      // publicRoot is the path to the public directory - either the dist/express/public (prod) or the express/public (dev)
-      this.publicRoot = this.isPackaged
-        ? path.join(this.distRoot, "express", "public")
-        : path.join(process.cwd(), "express", "public")
-      log.info(`publicRoot: ${this.publicRoot}`)
 
       // immutable type and version information
       // should always exist
@@ -148,31 +158,16 @@ export default class Main {
       // FIXME this is not quite right
       this.logFilePath = getLogFilePath()
 
-      // extract if necessary
-      const asarPath = this.isPackaged ? path.join(process.resourcesPath, "app.asar") : null
-
-      if (asarPath) {
-        const extractPath = this.userData
-        // Extract the asar file if it hasn't been extracted already
-        if (!fs.existsSync(extractPath)) {
-          log.info(`extracting asar ${asarPath} ... to ${extractPath}`)
-          asar.extractAll(asarPath, extractPath)
-        }
-      }
-
       // root distRoot and publicRoot
       if (this.hasArg("--help")) {
         this.printHelp()
         return
       }
 
-      const argv = minimist(process.argv.slice(2))
-      log.info(`bootServer: argv: ${JSON.stringify(argv)}`)
-
       // start RobotLabXRuntime
-      let launchFile = argv.config ? argv.config : "default.js"
+      // let launchFile = this.argv.config ? this.argv.config : "default.js"
       // must create instance before startServiceType to fix chicken egg problem
-      let runtime: RobotLabXRuntime = RobotLabXRuntime.createInstance(launchFile)
+      let runtime: RobotLabXRuntime = RobotLabXRuntime.createInstance(this.argv.launchFile)
 
       runtime.startServiceType("runtime", "RobotLabXRuntime")
 
@@ -186,10 +181,6 @@ export default class Main {
       pd.hostname = host.hostname
       runtime.registerProcess(pd)
       runtime.register(runtime)
-
-      // start electron or express or both
-
-      // no electron if headless
 
       // load runtime config
 
@@ -255,20 +246,12 @@ export default class Main {
   // FIXME make conditional callbacks to electron
   setDebug(debug: boolean) {
     log.info(`Setting debug to ${debug}`)
-    if (debug) {
-      this.electron?.mainWindow.webContents.openDevTools()
-      this.electron?.hiddenWindow.webContents.openDevTools({ mode: "detach" })
-    } else {
-      this.electron?.mainWindow.webContents.closeDevTools()
-      this.electron?.hiddenWindow.webContents.closeDevTools()
-    }
   }
 
   public toJSON(): any {
     return {
       serviceUrl: this.serviceUrl,
       startUrl: this.startUrl,
-      isPackaged: this.isPackaged,
       distRoot: this.distRoot,
       publicRoot: this.publicRoot
     }

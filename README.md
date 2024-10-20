@@ -54,8 +54,58 @@ REACT_APP_BASE_URL="http://localhost:3001"
 GENERATE_SOURCEMAP=false
 ```
 
+### Headless
+```bash
+cd robotlab-x
+export  ELECTRON_RUN_AS_NODE=1 && ../RobotLab-X-0.9.42-arm64.AppImage ./dist/electron/Main.js
+```
+
 
 ## License
 
 This project is licensed under the [Mozilla Public License 2.0](https://www.mozilla.org/en-US/MPL/2.0/).
 
+## Pkg
+
+do not use official pkg its been archived
+use
+```bash
+npm install -g @yao-pkg/pkg
+```
+
+
+## Re-org
+
+### development
+```bash
+# express only
+node dist/electron/Main.js
+
+# electron + express
+node_modules/.bin/electron dist/electron/ElectronStarter.js
+
+
+
+```
+
+### production
+```bash
+cp -rf src/express/public dist/express/
+
+pkg .
+```
+
+
+```bash
+# linux
+export ELECTRON_RUN_AS_NODE=true
+unset ELECTRON_RUN_AS_NODE
+
+# windows
+set ELECTRON_RUN_AS_NODE=true
+set ELECTRON_RUN_AS_NODE=
+
+# powershell
+$env:ELECTRON_RUN_AS_NODE = "true"
+Remove-Item Env:ELECTRON_RUN_AS_NODE
+```

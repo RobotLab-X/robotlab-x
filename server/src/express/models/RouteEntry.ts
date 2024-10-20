@@ -6,6 +6,7 @@ export default class RouteEntry {
   constructor(remoteId: string, gatewayId: string, gateway: string) {
     this.remoteId = remoteId
     this.gatewayId = gatewayId
+    console.error(`RouteEntry gateway ${gateway}`)
     this.gateway = gateway
   }
 }

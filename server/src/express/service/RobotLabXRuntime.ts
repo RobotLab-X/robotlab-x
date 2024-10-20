@@ -360,8 +360,8 @@ export default class RobotLabXRuntime extends Service {
     // }
   }
 
-  static getLaunchDescription(launchPath: string): LaunchDescription {
-    log.info(`Starting launch file: ${launchPath}`)
+  static getLaunchDescription(launchFile: string): LaunchDescription {
+    log.info(`Starting launch file: ${launchFile}`)
 
     try {
       log.info(`cwd ${process.cwd()}`)
@@ -370,20 +370,20 @@ export default class RobotLabXRuntime extends Service {
       // const configPath = path.join(process.cwd(), "config", configSetName, launcher)
       const main = Main.getInstance()
 
-      // const launchPath = path.join(main.distRoot, "launch", `${launchFile}`)
-
-      log.info(`launchPath ${launchPath}`)
+      log.info(`launchFile ${launchFile}`)
 
       // delete cache
-      if (require.cache[require.resolve(launchPath)]) {
-        delete require.cache[require.resolve(launchPath)]
-        log.info("deleted cache")
-      }
+      log.info("deleting cache")
+      // if (require.cache[require.resolve(launchFile)]) {
+      //   delete require.cache[require.resolve(launchFile)]
+      //   log.info("deleted cache")
+      // }
 
-      delete require.cache[require.resolve(launchPath)]
+      log.info("require resolve import")
+      // delete require.cache[require.resolve(launchFile)]
 
-      // const configModule = await import(launchPath)
-      const configModule = require(launchPath)
+      // const configModule = await import(launchFile)
+      const configModule = require(launchFile)
       const generateLaunchDescription = configModule.generateLaunchDescription
 
       // Create an instance of the dynamically loaded configuration
@@ -396,9 +396,9 @@ export default class RobotLabXRuntime extends Service {
       return launchDescription
     } catch (error) {
       if (error instanceof Error) {
-        log.error(`Error loading configuration for ${launchPath}: ${error.message}\nStack trace: ${error.stack}`)
+        log.error(`Error loading configuration for ${launchFile}: ${error.message}\nStack trace: ${error.stack}`)
       } else {
-        log.error(`An unknown error occurred while loading configuration for ${launchPath}`)
+        log.error(`An unknown error occurred while loading configuration for ${launchFile}`)
       }
       return null
     }
@@ -406,36 +406,30 @@ export default class RobotLabXRuntime extends Service {
 
   // FIXME - reconcile with getInstance() plus defaulted launchFile
   static createInstance(launchFile: string): RobotLabXRuntime {
+    log.info(`RobotLabXRuntime.createInstance ${launchFile}`)
     if (RobotLabXRuntime.instance) {
       log.info(`RobotLabXRuntime.instance already exists`)
       return RobotLabXRuntime.instance
     }
 
-    if (!launchFile) {
-      log.error("launchFile is null")
-      throw new Error("launchFile is null")
-    }
-
     const main = Main.getInstance()
-
-    const filePath = path.join(main.distRoot, "launch", launchFile)
 
     let ld: LaunchDescription = null
     let runtimeAction = null
 
-    ld = RobotLabXRuntime.getLaunchDescription(filePath)
+    ld = RobotLabXRuntime.getLaunchDescription(launchFile)
 
     if (!ld) {
-      log.error(`invalid launch description ${filePath} cannot start`)
-      throw new Error(`invalid launch description ${filePath} cannot start`)
+      log.error(`invalid launch description ${launchFile} cannot start`)
+      throw new Error(`invalid launch description ${launchFile} cannot start`)
     }
 
     // find the runtime action
     runtimeAction = ld.actions.find((action) => action.package === "robotlabxruntime")
 
     if (!runtimeAction) {
-      log.error(`runtime action not found in ${filePath}`)
-      throw new Error(`runtime action not found in ${filePath}`)
+      log.error(`runtime action not found in ${launchFile}`)
+      throw new Error(`runtime action not found in ${launchFile}`)
     }
     // TODO - check if "first start" ... in a distributed environment there
     // will  be proxy definitions of remote RobotLabXRuntimes
@@ -449,11 +443,12 @@ export default class RobotLabXRuntime extends Service {
         "0.0.1",
         os.hostname()
       )
+      log.info(`RobotLabXRuntime.instance ${JSON.stringify(RobotLabXRuntime.instance)}`)
       instance = RobotLabXRuntime.instance
       instance.pkg = instance.getPackage("robotlabxruntime")
       Store.createInstance(RobotLabXRuntime.instance)
     } else {
-      log.error("RobotLabXRuntime instance already exists")
+      log.info("RobotLabXRuntime instance already exists")
     }
 
     // FIXME - have a Repo.createInstance() and have it load in Main
@@ -595,7 +590,7 @@ export default class RobotLabXRuntime extends Service {
 
       // service already exists
       if (service) {
-        log.warn(`service ${fullname} already exists`)
+        log.info(`service ${fullname} already exists`)
         if (action.config) {
           // Do not merge - replace
           // service.config = { ...service.config, ...action.config }
@@ -820,6 +815,7 @@ export default class RobotLabXRuntime extends Service {
    * New external register method. All services registering through
    * this method are "proxies" and are not local to this process.
    *
+   *
    * The typeKey they send are their type, and this instance determines
    * the proxy type.
    *
@@ -833,7 +829,7 @@ export default class RobotLabXRuntime extends Service {
 
     // verify service does not already exist
     if (this.getService(fullname)) {
-      log.error(`service ${fullname} already exists`)
+      log.info(`service ${fullname} already exists`)
       return
     }
 
@@ -878,19 +874,6 @@ export default class RobotLabXRuntime extends Service {
 
     Store.getInstance().register(`${service.name}@${service.id}`, service)
 
-    // add to config.registry launch action if appropriate
-    // FIXME - there still needs to be an "originating id" for a Proxy service !
-    // if (
-    //   service.name !== "runtime" &&
-    //   (service.id === this.id || (service.id !== this.id && service.typeKey !== "Proxy"))
-    // ) {
-    //   this.config.registry.push({
-    //     name: service.name,
-    //     package: service?.pkg?.typeKey.toLowerCase(),
-    //     config: service.config
-    //   })
-    // }
-
     this.invoke("registered", service)
 
     // FIXME you got things registering to getRegistry
@@ -909,11 +892,6 @@ export default class RobotLabXRuntime extends Service {
   }
 
   getRepo() {
-    // const repoBasePath = path.join(__dirname, "../public/repo")
-    // log.info(`getting repo with base path: ${repoBasePath}`)
-    // const repoMap = this.repo.processRepoDirectory(repoBasePath)
-    // // convert the Map to an Object to send as JSON
-    // const repoObject = Object.fromEntries(repoMap)
     return this.repo.getRepo()
   }
 
@@ -1089,7 +1067,7 @@ export default class RobotLabXRuntime extends Service {
   }
 
   updateConnection(gatewayId: string, state: string) {
-    log.info(`updating connection ${gatewayId} state ${state}`)
+    log.error(`updating connection ${gatewayId} state ${state}`)
     this.connections[`${gatewayId}`].state = state
   }
 

@@ -15,7 +15,7 @@ export default class Unknown extends Service {
     public version: string,
     public hostname: string
   ) {
-    super(id, name, typeKey, version, hostname) // Call the base class constructor if needed
+    super(id, name, typeKey, version, hostname)
   }
 
   /**

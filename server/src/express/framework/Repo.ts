@@ -83,16 +83,28 @@ export class Repo {
   loadServices() {
     const serviceDir = path.join(__dirname, "..", "service")
     const files = fs.readdirSync(serviceDir)
+    let serviceName: string | null = null
     files.forEach((file) => {
       try {
         if (file.endsWith(".js")) {
           const servicePath = path.join(serviceDir, file)
           log.debug(`attempting to load:[${servicePath}]`)
 
-          const importedModule = require(servicePath)
-          const ServiceClass = importedModule.default // Accessing the default export
+          let importedModule = null
+          let ServiceClass = null
 
-          const serviceName = file.replace(".js", "")
+          try {
+            importedModule = require(servicePath)
+            ServiceClass = importedModule.default // Accessing the default export
+          } catch (error) {
+            log.error(`Error loading module from ${servicePath}: ${error}`)
+            if (error instanceof Error) {
+              log.error(error.stack)
+            }
+            return
+          }
+
+          serviceName = file.replace(".js", "")
 
           if (typeof ServiceClass !== "function") {
             log.error(`Loaded module from ${servicePath} is not a constructor: ${typeof ServiceClass}`)
@@ -102,11 +114,11 @@ export class Repo {
           }
 
           // Register each service with the filename (minus the extension) as key
-          log.debug(`=======registering service type: ${serviceName}`)
+          log.info(`======= Repo registered service type: ${serviceName} ========`)
           this.services[serviceName] = ServiceClass
         }
       } catch (error) {
-        log.error(`Error loading service: ${error}`)
+        log.error(`Error loading service ${serviceName}: ${error}`)
         if (error instanceof Error) {
           log.error(error.stack)
         }
@@ -120,7 +132,7 @@ export class Repo {
     version: string,
     hostname: string | null = null
   ): Service {
-    log.error(`getNewService name ${name} id ${id} serviceType ${serviceType}`)
+    log.info(`getNewService name ${name} id ${id} serviceType ${serviceType}`)
     const ServiceClass = this.services[serviceType]
     if (!ServiceClass) {
       log.error(`No service found for type: ${serviceType} list of possible types: ${Object.keys(this.services)}`)

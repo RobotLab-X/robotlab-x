@@ -1,0 +1,15 @@
+author: "GroG"
+categories:
+- "microcontroller"
+- "servo"
+- "sensor"
+- "i2c"
+dependencies: null
+description: "A great microcontroller project"
+license: "MIT"
+platform: "node"
+platformVersion: "v20.9.0"
+title: "Arduino"
+typeKey: "Arduino"
+version: "0.0.1"
+visible: true

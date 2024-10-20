@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RobotLab-X Installer</title>
+  <style>
+    body {
+      background-color: #A85810;
+      color: #000;
+      font-family: Arial, sans-serif;
+    }
+
+    button,
+    select {
+      min-width: 150px;
+      border: 2px solid #000;
+      cursor: pointer;
+      background-color: #80888a;
+      color: #000;
+      height: 40px;
+      border-radius: 8px;
+    }
+
+    pre {
+      max-height: 150px;
+      /* Maximum height before scrolling */
+      max-width: 100%;
+      /* Set the maximum width to the table cell width */
+      overflow: auto;
+      /* Enable both horizontal and vertical scrollbars */
+      background-color: #A85810;
+      /* Match the background color of the body */
+      color: #000;
+      /* Ensure text is readable */
+      padding: 10px;
+      border: none;
+      /* Remove white outline */
+      white-space: pre-wrap;
+      /* Preserve whitespace and allow text to wrap */
+    }
+
+
+    #install-btn {
+      display: none;
+    }
+
+    #start-btn {
+      display: none;
+      /* Hidden initially */
+    }
+
+    /* Scrollbar styles */
+    pre::-webkit-scrollbar {
+      width: 12px;
+      /* Set the width of the scrollbar */
+      height: 12px;
+      /* Set the height for horizontal scrollbar */
+    }
+
+    pre::-webkit-scrollbar-track {
+      background: #A85810;
+      /* Match the background color of the body */
+    }
+
+    pre::-webkit-scrollbar-thumb {
+      background-color: #80888a;
+      /* The color of the draggable part of the scrollbar */
+      border-radius: 10px;
+      /* Round the scrollbar thumb */
+      border: 3px solid #A85810;
+      /* Add space between thumb and track */
+    }
+
+    #progress-bar {
+      display: none;
+    }
+
+    /* Style the progress bar */
+    progress {
+      width: 100%;
+      height: 20px;
+      background-color: #A85810;
+      border: 2px solid #000;
+      border-radius: 10px;
+      /* Add rounded corners */
+      overflow: hidden;
+      /* Ensure the corners are clipped */
+    }
+
+    /* Style the progress value (the progress bar itself) */
+    progress::-webkit-progress-value {
+      background-color: #000;
+      border-radius: 10px;
+      /* Match the corners */
+    }
+
+    progress::-moz-progress-bar {
+      background-color: #000;
+      border-radius: 10px;
+      /* Match the corners */
+    }
+
+    #installer-version {
+      position: fixed;
+      /* Position it relative to the viewport */
+      bottom: 10px;
+      /* Distance from the bottom of the page */
+      left: 50%;
+      /* Align horizontally to the middle */
+      transform: translateX(-50%);
+      /* Center the div by translating it left by 50% */
+      text-align: center;
+      /* Ensure text inside is centered */
+    }
+  </style>
+</head>
+
+<body>
+
+  <table border="0" width="780px">
+    <tr>
+      <td width="300" rowspan="2">
+        <img src="icon.png" alt="RobotLab-X" width="300" />
+      </td>
+      <td colspan="3" valign="top">
+        <h1 id="title">RobotLab-X Installer</h1>
+
+        <pre id="output"></pre><br />
+      </td>
+    </tr>
+    <tr>
+      <td colspan="3">
+        <progress id="progress-bar" value="0" max="100"></progress>
+      </td>
+    </tr>
+    <tr>
+      <td><button id="choose-dir" class="full-width">Choose Install Directory</button></td>
+      <td colspan="2"><span class="info" id="selected-directory">No Directory Selected</span></td>
+      <td><button id="install-btn" class="full-width">Install</button><button id="start-btn"
+          class="full-width">Start</button></td>
+    </tr>
+  </table><br />
+  <div id="installer-version"><small>v 0.0.9</small></div>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+    const output = document.getElementById('output');
+    const chooseDirButton = document.getElementById('choose-dir');
+    const selectedDirectory = document.getElementById('selected-directory');
+    const installButton = document.getElementById('install-btn');
+    const startButton = document.getElementById('start-btn');
+    const progressBar = document.getElementById('progress-bar');
+
+    let currentDirectory = null;
+    let progressValue = 0;
+    let wordCount = 0;
+
+    function checkInstallButton() {
+      if (currentDirectory) {
+        installButton.disabled = false;
+        installButton.style.display = 'block'; // Show install button when directory is selected
+      } else {
+        installButton.disabled = true;
+        installButton.style.display = 'none'; // Hide install button
+      }
+    }
+
+    chooseDirButton.addEventListener('click', () => {
+      ipcRenderer.send('choose-directory');
+    });
+
+    ipcRenderer.on('directory-selected', (event, directory) => {
+      currentDirectory = directory;
+      selectedDirectory.textContent = `${directory}`;
+      checkInstallButton();
+    });
+
+    ipcRenderer.on('install-output', (event, data) => {
+      output.textContent += data + '\n';
+      wordCount += countWords(data);
+      updateProgress();
+      scrollToBottom();
+    });
+
+    ipcRenderer.on('install-error', (event, error) => {
+      output.textContent += 'Error: ' + error + '\n';
+      scrollToBottom();
+    });
+
+    installButton.addEventListener('click', () => {
+      output.textContent += 'Install button clicked!\n';
+      installButton.disabled = true; // Disable the install button when installation starts
+      ipcRenderer.send('install-package', { installDir: currentDirectory });
+      scrollToBottom();
+    });
+
+    ipcRenderer.on('install-complete', () => {
+      installButton.style.display = 'none'; // Hide install button
+      startButton.style.display = 'block'; // Show start button
+      output.textContent += 'Installation completed!\n';
+      progressBar.value = 100;
+      scrollToBottom();
+    });
+
+    startButton.addEventListener('click', () => {
+      ipcRenderer.send('start-application');
+    });
+
+    function scrollToBottom() {
+      output.scrollTop = output.scrollHeight;
+    }
+
+    function updateProgress() {
+      if (output.textContent.includes('Installation completed!')) {
+        progressBar.value = 100; // Complete when installation is done
+      } else {
+        const increment = Math.floor(wordCount / 30) * 10;
+        progressValue = Math.min(progressValue + increment, 100);
+        progressBar.value = progressValue;
+        wordCount = 0;
+      }
+    }
+
+    function countWords(str) {
+      return str.trim().split(/\s+/).length;
+    }
+
+    installButton.addEventListener('click', () => {
+      output.textContent += 'Install button clicked!\n';
+      installButton.disabled = true; // Disable the install button when installation starts
+      progressBar.style.display = 'block'; // Show the progress bar
+      ipcRenderer.send('install-package', { installDir: currentDirectory });
+      scrollToBottom();
+    });
+
+  </script>
+
+</body>
+
+</html>
