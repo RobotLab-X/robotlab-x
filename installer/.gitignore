@@ -38,3 +38,6 @@ temp/
 
 # TypeScript
 *.tsbuildinfo
+
+
+pids
