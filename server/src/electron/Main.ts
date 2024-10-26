@@ -88,7 +88,7 @@ export default class Main {
           // distRoot: path.resolve("dist"),
           // publicRoot: path.resolve(path.join("src", "express", "public")),
           // launchFile: path.resolve(path.join("src", "launch", "default.js"))
-          distRoot: __dirname,
+          distRoot: path.join(__dirname, ".."),
           publicRoot: path.join(__dirname, "..", "express", "public"),
           launchFile: path.join(__dirname, "..", "launch", "default.js")
         }

@@ -1,6 +1,6 @@
 jest.mock("electron", () => require("@mocks/electron"))
 
-jest.mock("../../../electron/ElectronStarter", () => ({
+jest.mock("@electron/ElectronStarter", () => ({
   publicRoot: "/mocked/express/root",
   app: {
     on: jest.fn()
@@ -9,7 +9,7 @@ jest.mock("../../../electron/ElectronStarter", () => ({
   onReady: jest.fn(),
   tray: {}
 }))
-jest.mock("../../../express/framework/LocalLog", () => ({
+jest.mock("@express/framework/LocalLog", () => ({
   getLogger: jest.fn().mockReturnValue({
     error: jest.fn(),
     info: jest.fn(),
@@ -17,14 +17,14 @@ jest.mock("../../../express/framework/LocalLog", () => ({
     debug: jest.fn()
   })
 }))
-jest.mock("../../../express/service/RobotLabXRuntime", () => ({
+jest.mock("@express/service/RobotLabXRuntime", () => ({
   getInstance: jest.fn().mockReturnValue({
     getId: jest.fn().mockReturnValue("mockedRuntimeId")
   })
 }))
 
-const { CodecUtil } = require("../../../express/framework/CodecUtil")
-const RobotLabXRuntime = require("../../../express/service/RobotLabXRuntime")
+const { CodecUtil } = require("@express/framework/CodecUtil")
+const RobotLabXRuntime = require("@express/service/RobotLabXRuntime")
 
 describe("CodecUtil", () => {
   describe("getFullName", () => {
@@ -86,7 +86,7 @@ describe("CodecUtil", () => {
 
     it("should log an error if type is null", () => {
       CodecUtil.getNpmPackageName(null)
-      const log = require("../../../express/framework/LocalLog").getLogger()
+      const log = require("@express/framework/LocalLog").getLogger()
       expect(log.error).toHaveBeenCalledWith("Type is null")
     })
   })
@@ -98,7 +98,7 @@ describe("CodecUtil", () => {
 
     it("should log an error if type is null", () => {
       CodecUtil.getPipPackageName(null)
-      const log = require("../../../express/framework/LocalLog").getLogger()
+      const log = require("@express/framework/LocalLog").getLogger()
       expect(log.error).toHaveBeenCalledWith("Type is null")
     })
   })

@@ -126,6 +126,28 @@
   },
   "jest": {
     "preset": "ts-jest",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "collectCoverageFrom": [
+      "src/**/*.{js,jsx,ts,tsx}",
+      "!<rootDir>/node_modules/",
+      "!<rootDir>/src/index.tsx",
+      "!<rootDir>/src/serviceWorker.ts",
+      "!<rootDir>/src/App.tsx",
+      "!<rootDir>/src/Routes.tsx",
+      "!src/**/types.ts",
+      "!src/**/*.d.ts"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 75,
+        "functions": 75,
+        "lines": 75,
+        "statements": 75
+      }
+    },
+    "moduleNameMapper": {
+      "^@electron/(.*)$": "<rootDir>/dist/electron/$1",
+      "^@express/(.*)$": "<rootDir>/dist/express/$1"
+    }
   }
 }
