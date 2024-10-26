@@ -152,11 +152,12 @@ const ConfigurationSection = ({ fullname }) => {
                 onChange={(event) => setSelectedAvailableModel(event.target.value)}
                 label="Available Model"
               >
-                {service.availableModels.map((model) => (
-                  <MenuItem key={model.name} value={model.name}>
-                    {model.name} - {model.description}
-                  </MenuItem>
-                ))}
+                {service.availableModels &&
+                  service.availableModels.map((model) => (
+                    <MenuItem key={model.name} value={model.name}>
+                      {model.name} - {model.description}
+                    </MenuItem>
+                  ))}
               </Select>
             </FormControl>
             {selectedAvailableModel && (

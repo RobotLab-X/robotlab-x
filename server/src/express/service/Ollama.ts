@@ -1,5 +1,4 @@
 import axios from "axios"
-import cheerio from "cheerio"
 import fs from "fs"
 import {
   ChatRequest,
@@ -480,26 +479,11 @@ export default class Ollama extends Service {
 
   async scrapeLibrary() {
     try {
-      const url = "https://ollama.com/library"
+      // waiting for official api from here - https://github.com/ollama/ollama/issues/1070
+      const url = "https://ollama-models.zwz.workers.dev/"
       const { data } = await axios.get(url)
-      const $ = cheerio.load(data)
-
-      const models: Model[] = []
-
-      $("#repo li").each((index, element) => {
-        const modelName = $(element).find("h2").text().trim()
-        let modelDescription = $(element).find("div.flex.flex-col.space-y-2").text().trim()
-
-        // Filter out multiple newline characters
-        modelDescription = modelDescription.replace(/\n+/g, " ")
-
-        models.push({ name: modelName, description: modelDescription })
-      })
-
-      // Sort models by name
-      models.sort((a, b) => a.name.localeCompare(b.name))
-
-      this.availableModels = models
+      log.info(`scrapeLibrary ${JSON.stringify(data)}`)
+      this.availableModels = data?.models
       console.log(this.availableModels)
     } catch (error) {
       console.error(`Error fetching the URL: ${error}`)
