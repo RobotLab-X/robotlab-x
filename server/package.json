@@ -23,22 +23,19 @@
     },
     "mac": {
       "target": [
-        "dmg",
-        "zip"
+        "dmg"
       ],
       "category": "public.app-category.developer-tools"
     },
     "win": {
       "target": [
-        "nsis",
-        "zip"
+        "portable"
       ]
     },
     "linux": {
-      "icon": "dist/client/favicon.ico",
+      "icon": "dist/client/logo.png",
       "target": [
-        "AppImage",
-        "zip"
+        "AppImage"
       ],
       "category": "Development"
     }
