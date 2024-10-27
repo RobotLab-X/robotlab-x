@@ -54,6 +54,14 @@ jobs:
       - name: Build Server
         run: yarn build-server
 
+      - name: pwd
+        run: cd
+        shell: cmd
+
+      - name: dir
+        run: dir
+        shell: cmd
+
       # - name: Run tests
       #   run: |
       #     cd server
