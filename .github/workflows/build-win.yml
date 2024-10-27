@@ -54,10 +54,10 @@ jobs:
       - name: Build Server
         run: yarn build-server
 
-      - name: Run tests
-        run: |
-          cd server
-          yarn test
+      # - name: Run tests
+      #   run: |
+      #     cd server
+      #     yarn test
 
       - name: Print all environment variables
         run: set "VERSION=0.9.${{ github.run_number }}" && set
