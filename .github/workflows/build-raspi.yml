@@ -64,6 +64,9 @@ jobs:
       - name: Run ESLint
         run: yarn lint || true
 
+      - name: Build Server
+        run: yarn build-server
+
       - name: Run tests
         run: |
           cd server
