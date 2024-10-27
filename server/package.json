@@ -19,31 +19,38 @@
       "package.json"
     ],
     "directories": {
-      "output": "dist/packages",
       "buildResources": "build"
     },
     "mac": {
       "target": [
         "dmg"
       ],
-      "category": "public.app-category.developer-tools"
-    },
+      "artifactName": "RobotLab-X-0.0.0.dmg"    },
     "win": {
       "target": [
         "portable"
-      ]
+      ],
+      "artifactName": "RobotLab-X-0.0.0.exe"
     },
     "linux": {
       "icon": "dist/client/logo.png",
       "target": [
         "AppImage"
       ],
-      "category": "Development"
+      "artifactName": "RobotLab-X-0.0.0.AppImage"
+    },
+    "extraMetadata": {
+      "raspi": {
+        "linux": {
+          "artifactName": "RobotLab-X-0.0.0-armv7l.AppImage"
+        }
+      }
     }
   },
   "scripts": {
     "build": "babel src --extensions '.ts,.js' --out-dir dist",
     "copy-public": "shx cp -rf src/express/public dist/express",
+    "prebuild": "node prebuild.js",
     "electron-dev": "nodemon --exec \"yarn run build && cross-env electron --inspect ./dist/electron/Main.js\"",
     "test": "jest",
     "test-coverage": "nyc jest",
