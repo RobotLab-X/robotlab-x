@@ -58,8 +58,8 @@ jobs:
           cd server
           yarn test
 
-      - name: Build
-        run: yarn build-mac
+      - name: Package
+        run: yarn package-mac
 
       - name: List dist/packages contents
         run: ls -l dist/packages

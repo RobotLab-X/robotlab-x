@@ -69,11 +69,8 @@ jobs:
           cd server
           yarn test
 
-      - name: PreBuild
-        run: yarn prebuild
-
-      - name: Build
-        run: yarn build-raspi
+      - name: Package
+        run: yarn package-raspi
 
       - name: List dist/packages contents
         run: ls -l dist/packages

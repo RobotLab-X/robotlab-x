@@ -60,8 +60,8 @@ jobs:
         run: set "VERSION=0.9.${{ github.run_number }}" && set
         shell: cmd
 
-      - name: Build the Electron app for Windows
-        run: set "VERSION=0.9.${{ github.run_number }}" && yarn build-win
+      - name: Package the Electron app for Windows
+        run: set "VERSION=0.9.${{ github.run_number }}" && yarn package-win
         shell: cmd
 
       - name: List dist/packages contents

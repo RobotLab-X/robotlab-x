@@ -53,11 +53,8 @@ jobs:
           cd server
           yarn test
 
-      - name: PreBuild
-        run: yarn prebuild
-
-      - name: Build
-        run: yarn build-linux
+      - name: Package
+        run: yarn package-linux
 
       - name: List dist/packages contents
         run: ls -l dist/packages
