@@ -20,7 +20,7 @@
     ],
     "directories": {
       "buildResources": "build",
-      "output": "dist/packages"
+      "output": "../dist/packages"
     },
     "mac": {
       "target": [
@@ -35,6 +35,7 @@
     },
     "linux": {
       "icon": "dist/client/logo.png",
+      "category": "Development",
       "target": [
         "AppImage"
       ],
