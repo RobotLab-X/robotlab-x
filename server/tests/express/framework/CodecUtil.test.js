@@ -1,6 +1,8 @@
+const path = require("path")
+
 jest.mock("electron", () => require("@mocks/electron"))
 
-jest.mock("@electron/ElectronStarter", () => ({
+jest.mock(path.join("@electron/ElectronStarter"), () => ({
   publicRoot: "/mocked/express/root",
   app: {
     on: jest.fn()
@@ -23,8 +25,8 @@ jest.mock("@express/service/RobotLabXRuntime", () => ({
   })
 }))
 
-const { CodecUtil } = require("@express/framework/CodecUtil")
-const RobotLabXRuntime = require("@express/service/RobotLabXRuntime")
+const { CodecUtil } = require(path.join("@express/framework/CodecUtil"))
+const RobotLabXRuntime = require(path.join("@express/service/RobotLabXRuntime"))
 
 describe("CodecUtil", () => {
   describe("getFullName", () => {
