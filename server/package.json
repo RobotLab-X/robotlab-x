@@ -61,7 +61,9 @@
     "generate-pkg-file": "node generatePkgFile.js",
     "package-win": "yarn run build && electron-builder --windows",
     "package-mac": "yarn run build && electron-builder --mac",
-    "package-linux": "yarn run build && electron-builder --linux"
+    "package-linux": "yarn run build && electron-builder --linux",
+    "package-raspi": "yarn build && yarn copy-public && yarn generate-pkg-file && npx electron-rebuild --arch=arm64 && electron-builder -l --arm64"
+
   },
   "include": [
     "src/**/*.ts"
