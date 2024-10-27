@@ -5,7 +5,7 @@ const yaml = require("yaml")
 const git = simpleGit()
 
 const version = process.env.VERSION || "0.0.0"
-const inputFilePath = path.join(__dirname, "express", "public", "repo", "robotlabxruntime", "package.yml")
+const inputFilePath = path.join(__dirname, "src", "express", "public", "repo", "robotlabxruntime", "package.yml")
 const outputFilePath = path.join(__dirname, "dist", "express", "public", "repo", "robotlabxruntime", "package.yml")
 
 async function generateVersionFile() {
