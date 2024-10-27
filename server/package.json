@@ -12,6 +12,7 @@
   "build": {
     "appId": "com.robotlab-x-0.0.0",
     "productName": "RobotLab-X-0.0.0",
+    "category": "Development",
     "files": [
       "dist/**/*",
       "!src/express/public/repo/**/*cache/**/*",
@@ -19,7 +20,8 @@
       "package.json"
     ],
     "directories": {
-      "buildResources": "build"
+      "buildResources": "build",
+      "output": "dist/packages"
     },
     "mac": {
       "target": [
