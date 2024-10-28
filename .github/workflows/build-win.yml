@@ -36,7 +36,7 @@ jobs:
         run: |
           yarn config set network-timeout 600000 -g
           yarn install-all
-          shell: cmd
+        shell: cmd
 
       - name: Bump version
         id: bump_version
