@@ -53,6 +53,7 @@ jobs:
 
       - name: Build Server
         run: yarn build-server
+        shell: cmd
 
       - name: pwd
         run: cd
