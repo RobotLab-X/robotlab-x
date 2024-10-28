@@ -41,10 +41,9 @@ jobs:
       - name: Bump version
         id: bump_version
         run: |
-          $BUILD_NUMBER = ${{ github.run_number }}
-          $VERSION = "0.9.$BUILD_NUMBER"
-          Write-Host "Bumping version to $VERSION"
-          echo "VERSION=0.9.${{ github.run_number }}" >> $GITHUB_ENV
+          set BUILD_NUMBER=%GITHUB_RUN_NUMBER%
+          set VERSION=0.9.%BUILD_NUMBER%
+          echo VERSION=0.9.%BUILD_NUMBER%>> %GITHUB_ENV%
         shell: cmd
 
       - name: Print server/package.json
