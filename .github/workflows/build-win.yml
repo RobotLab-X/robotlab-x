@@ -30,13 +30,11 @@ jobs:
 
       - name: Install Yarn
         run: npm install -g yarn json
-        shell: cmd
 
       - name: Install dependencies
         run: |
           yarn config set network-timeout 600000 -g
           yarn install-all
-        shell: cmd
 
       - name: Bump version
         id: bump_version
@@ -52,11 +50,9 @@ jobs:
 
       - name: Run ESLint
         run: yarn lint || true
-        shell: cmd
 
       - name: Build Server
         run: yarn build-server
-        shell: cmd
 
       - name: pwd
         run: cd
@@ -67,7 +63,6 @@ jobs:
         shell: cmd
 
       - name: Run tests
-        shell: cmd
         run: |
           cd server
           yarn test
