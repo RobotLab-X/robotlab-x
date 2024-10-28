@@ -30,11 +30,13 @@ jobs:
 
       - name: Install Yarn
         run: npm install -g yarn json
+        shell: cmd
 
       - name: Install dependencies
         run: |
           yarn config set network-timeout 600000 -g
           yarn install-all
+          shell: cmd
 
       - name: Bump version
         id: bump_version
@@ -43,6 +45,7 @@ jobs:
           $VERSION = "0.9.$BUILD_NUMBER"
           Write-Host "Bumping version to $VERSION"
           echo "VERSION=0.9.${{ github.run_number }}" >> $GITHUB_ENV
+        shell: cmd
 
       - name: Print server/package.json
         run: type server\\package.json
@@ -50,9 +53,11 @@ jobs:
 
       - name: Run ESLint
         run: yarn lint || true
+        shell: cmd
 
       - name: Build Server
         run: yarn build-server
+        shell: cmd
 
       - name: pwd
         run: cd
@@ -62,10 +67,11 @@ jobs:
         run: dir
         shell: cmd
 
-      # - name: Run tests
-      #   run: |
-      #     cd server
-      #     yarn test
+      - name: Run tests
+        shell: cmd
+        run: |
+          cd server
+          yarn test
 
       - name: Print all environment variables
         run: set "VERSION=0.9.${{ github.run_number }}" && set
@@ -77,6 +83,7 @@ jobs:
 
       - name: List dist/packages contents
         run: dir dist\\packages
+        shell: cmd
 
       # - name: Make version folder and move executable to that folder
       #   run: mkdir -p artifact/RobotLab-X-0.9.${{ github.run_number }} && mv dist/packages/RobotLab-X-Setup-0.9.${{ github.run_number }}.exe artifact/RobotLab-X-0.9.${{ github.run_number }}
