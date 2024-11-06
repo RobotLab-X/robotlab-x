@@ -3,3 +3,4 @@ installed.txt
 .venv
 cache
 pkg
+data

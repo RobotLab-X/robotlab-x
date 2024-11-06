@@ -23,7 +23,7 @@ export default class Main {
   // top of the tree
   root: string
 
-  // electron's appData directory
+  // electron's appData directory - FIXME - remove if possible
   appData: string
 
   // user data directory separation from appData vs userData
@@ -32,6 +32,7 @@ export default class Main {
   // The root directory of the app in both development and production
   // in dev this is cwd in prod its where the asar is extracted/dist
   distRoot: string = null
+
   // The root directory of the express server in both development and production
   // although this location is different depending on dev or prod
   publicRoot: string = null
@@ -83,20 +84,24 @@ export default class Main {
     try {
       // first setup will be for dev
       this.argv = minimist(process.argv.slice(2), {
+        // 3 important roots
+
+        // FIXME - be able to override defaults
         default: {
-          // ALL DEV !
-          // distRoot: path.resolve("dist"),
-          // publicRoot: path.resolve(path.join("src", "express", "public")),
-          // launchFile: path.resolve(path.join("src", "launch", "default.js"))
-          distRoot: path.join(__dirname, ".."),
-          publicRoot: path.join(__dirname, "..", "express", "public"),
+          // distRoot: path.join(__dirname, ".."),
+          // publicRoot: path.join(__dirname, "..", "express", "public"),
           launchFile: path.join(__dirname, "..", "launch", "default.js")
         }
       })
 
-      // FIXME - this is stupid, use directly from argv
-      this.distRoot = this.argv.distRoot
-      this.publicRoot = this.argv.publicRoot
+      // FIXME - overridable by args ?
+      // set early, do not modify later
+      this.distRoot = path.resolve(process.env.DISTROOT || "dist")
+      this.publicRoot = path.resolve(process.env.PUBLICROOT || path.join(this.distRoot, "express", "public"))
+      this.userData = path.resolve(process.env.USERDATA || path.join(process.cwd(), "data"))
+
+      // FIXME - remove if possible
+      this.appData = path.resolve(process.env.USERDATA || path.join(process.cwd(), "data"))
 
       log.info(`bootServer: argv: ${JSON.stringify(this.argv)}`)
 
@@ -106,6 +111,9 @@ export default class Main {
       // add version info
       log.info(`Starting RobotLab-X...`)
       log.info(`__dirname: ${__dirname}`)
+      log.info(`DISTROOT: ${this.distRoot}`)
+      log.info(`PUBLICROOT: ${this.publicRoot}`)
+      log.info(`USERDATA: ${this.userData}`)
       log.info(`execPath: ${process.execPath}`)
       log.info(`Platform: ${process.platform}`)
       log.info(`Node.js Version: ${process.version}`)
@@ -120,24 +128,7 @@ export default class Main {
       log.info(`Total Memory: ${(os.totalmem() / 1024 ** 3).toFixed(2)} GB`)
       log.info(`Free Memory: ${(os.freemem() / 1024 ** 3).toFixed(2)} GB`)
       log.info(`CPUs: ${os.cpus().length}`)
-      // log.info("Environment Variables:")
-      // log.info(JSON.stringify(process.env))
-
-      log.info(`__dirname: ${__dirname}`)
-
-      // check if running from an asar file mount
-
-      // if prod everything is in cwd in dev everything is in cwd/dist to keep it clean
-      // this.root = process.env.ROOT_DIR || (this.isPackaged ? process.cwd() : path.join(process.cwd(), "dist"))
-      this.root = process.env.ROOT_DIR || process.cwd()
-      log.info(`root: ${this.root}`)
-
-      this.appData = path.join(this.root, "appData")
       log.info(`appData: ${this.appData}`)
-
-      this.userData = path.join(this.root, "robotlab-x")
-      log.info(`userData: ${this.userData}`)
-
       log.info(`distRoot: ${this.distRoot}`)
 
       // immutable type and version information

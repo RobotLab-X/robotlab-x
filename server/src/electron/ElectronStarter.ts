@@ -165,7 +165,7 @@ export default class ElectronStarter {
     })
 
     // ElectronStarter.hiddenWindow.loadURL(`${ElectronStarter.startUrl}/hidden.html`)
-    ElectronStarter.hiddenWindow.loadFile(path.join(__dirname, "hidden.html"))
+    ElectronStarter.hiddenWindow.loadFile(path.join(main.publicRoot, "repo", "robotlabxruntime", "hidden.html"))
     // ElectronStarter.hiddenWindow.webContents.openDevTools({ mode: "detach" })
 
     // IPC handlers from renderers --to--> main process
