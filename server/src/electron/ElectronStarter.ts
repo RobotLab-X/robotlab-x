@@ -147,6 +147,10 @@ export default class ElectronStarter {
     })
     // FIXME - Set in Store.ts !!!! not here
     // FIXME - startUrl is not correct when packaged
+
+    // FIXME - in prod startUrl = http://localhost:3001/
+    // in dev startUrl = http://localhost:3000/
+
     log.info(`onReady: loadURL ${main.startUrl}`)
     ElectronStarter.mainWindow.loadURL(main.startUrl)
     ElectronStarter.mainWindow.on("closed", ElectronStarter.onClose)
