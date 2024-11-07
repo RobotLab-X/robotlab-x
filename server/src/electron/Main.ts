@@ -10,6 +10,8 @@ import RobotLabXRuntime from "../express/service/RobotLabXRuntime"
 
 const log = getLogger("Main")
 
+require("dotenv").config()
+
 export default class Main {
   static instance: Main
 
@@ -82,7 +84,16 @@ export default class Main {
 
   async run(): Promise<void> {
     try {
-      // first setup will be for dev
+      // FIXME - overridable by args ?
+      // set early, do not modify later
+      this.distRoot = path.resolve(process.env.DISTROOT || "dist")
+      this.publicRoot = path.resolve(process.env.PUBLICROOT || path.join(this.distRoot, "express", "public"))
+      this.userData = path.resolve(process.env.USERDATA || path.join(process.cwd(), "data"))
+      // FIXME - remove if possible
+      this.appData = path.resolve(process.env.USERDATA || path.join(process.cwd(), "data"))
+
+      log.info(`bootServer: argv: ${JSON.stringify(this.argv)}`)
+
       this.argv = minimist(process.argv.slice(2), {
         // 3 important roots
 
@@ -90,20 +101,9 @@ export default class Main {
         default: {
           // distRoot: path.join(__dirname, ".."),
           // publicRoot: path.join(__dirname, "..", "express", "public"),
-          launchFile: path.join(__dirname, "..", "launch", "default.js")
+          launchFile: path.join(this.publicRoot, "repo", "robotlabxruntime", "launch", "default.js")
         }
       })
-
-      // FIXME - overridable by args ?
-      // set early, do not modify later
-      this.distRoot = path.resolve(process.env.DISTROOT || "dist")
-      this.publicRoot = path.resolve(process.env.PUBLICROOT || path.join(this.distRoot, "express", "public"))
-      this.userData = path.resolve(process.env.USERDATA || path.join(process.cwd(), "data"))
-
-      // FIXME - remove if possible
-      this.appData = path.resolve(process.env.USERDATA || path.join(process.cwd(), "data"))
-
-      log.info(`bootServer: argv: ${JSON.stringify(this.argv)}`)
 
       // extract VFS
       // new Pkg().extractVFS()

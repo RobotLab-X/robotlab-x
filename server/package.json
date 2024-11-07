@@ -26,7 +26,8 @@
       "target": [
         "dmg"
       ],
-      "artifactName": "RobotLab-X-0.0.0.dmg"    },
+      "artifactName": "RobotLab-X-0.0.0.dmg"
+    },
     "win": {
       "target": [
         "portable"
@@ -63,7 +64,6 @@
     "package-mac": "yarn run build && electron-builder --mac",
     "package-linux": "yarn run build && electron-builder --linux",
     "package-raspi": "yarn build && yarn copy-public && yarn generate-pkg-file && npx electron-rebuild --arch=arm64 && electron-builder -l --arm64"
-
   },
   "include": [
     "src/**/*.ts"
@@ -72,9 +72,6 @@
     "node_modules"
   ],
   "devDependencies": {
-    "@types/johnny-five": "^2.1.9",
-    "@types/node": "^20.11.30",
-    "@types/serialport": "^8.0.5",
     "@babel/cli": "^7.25.6",
     "@babel/core": "^7.25.2",
     "@babel/plugin-proposal-class-properties": "^7.18.6",
@@ -86,8 +83,11 @@
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/jest": "^29.5.12",
+    "@types/johnny-five": "^2.1.9",
     "@types/minimist": "^1.2.5",
+    "@types/node": "^20.11.30",
     "@types/semver": "^7.5.8",
+    "@types/serialport": "^8.0.5",
     "@types/uuid": "^9.0.8",
     "@types/ws": "^8.5.10",
     "@types/yaml": "^1.9.7",
@@ -106,12 +106,13 @@
     "yarn": "^1.22.22"
   },
   "dependencies": {
-    "asar": "^3.2.0",
     "@aws-sdk/client-polly": "^3.620.0",
+    "asar": "^3.2.0",
     "axios": "1.7.7",
     "cheerio": "^1.0.0-rc.12",
     "cors": "^2.8.5",
     "dockerode": "^4.0.2",
+    "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "express-session": "^1.18.0",
     "firmata": "^2.3.0",
