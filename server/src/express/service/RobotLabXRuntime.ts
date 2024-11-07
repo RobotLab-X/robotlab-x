@@ -974,7 +974,9 @@ export default class RobotLabXRuntime extends Service {
     return conn
   }
 
-  getLaunchFiles(launchDir: string = path.join(Main.getInstance().distRoot, "launch")): any[] {
+  getLaunchFiles(
+    launchDir: string = path.join(Main.getInstance().publicRoot, "repo", "robotlabxruntime", "launch")
+  ): any[] {
     const main = Main.getInstance()
     log.info(`getLaunchFiles scanning directory ${launchDir}`)
     const launchFiles: any[] = []

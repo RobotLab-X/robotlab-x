@@ -1,6 +1,7 @@
 import { Box, Card, CardContent, Typography } from "@mui/material"
 import React from "react"
-import ReactJson from "react-json-view"
+import JsonView from "react18-json-view"
+import "react18-json-view/src/style.css"
 
 const PromptCard = ({ currentPromptKey, currentPrompt, getBaseUrl, name }) => (
   <Card sx={{ minWidth: 275, mx: 2 }}>
@@ -41,7 +42,7 @@ const PromptCard = ({ currentPromptKey, currentPrompt, getBaseUrl, name }) => (
       </Typography>
       <Typography variant="subtitle1" component="span" color="textSecondary">
         {currentPrompt?.tools && (
-          <ReactJson
+          <JsonView
             src={currentPrompt.tools}
             name="tools"
             displayDataTypes={false}

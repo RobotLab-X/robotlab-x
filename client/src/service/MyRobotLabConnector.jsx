@@ -6,7 +6,8 @@ import TextField from "@mui/material/TextField"
 import Typography from "@mui/material/Typography"
 import useService from "framework/useService"
 import React, { useState } from "react"
-import ReactJson from "react-json-view"
+import JsonView from "react18-json-view"
+import "react18-json-view/src/style.css"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
 import { useStore } from "../store/store"
 import useServiceSubscription from "../store/useServiceSubscription"
@@ -77,7 +78,7 @@ export default function MyRobotLabConnector({ name, fullname, id }) {
           )}
         </Box>
         {publishMessage && (
-          <ReactJson src={publishMessage} name="service" displayDataTypes={false} displayObjectSize={false} />
+          <JsonView src={publishMessage} name="service" displayDataTypes={false} displayObjectSize={false} />
         )}
       </Grid>
     </Grid>

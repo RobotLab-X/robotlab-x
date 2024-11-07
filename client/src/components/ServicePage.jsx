@@ -21,8 +21,9 @@ import {
 import MessageRoutes from "components/MessageRoutes"
 import PkgDialog from "components/PkgDialog"
 import React, { useCallback, useEffect, useMemo, useState } from "react"
-import ReactJson from "react-json-view"
 import { useNavigate } from "react-router-dom"
+import JsonView from "react18-json-view"
+import "react18-json-view/src/style.css"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
 import { useRegisteredService, useStore } from "../store/store"
 import useServiceSubscription from "../store/useServiceSubscription"
@@ -119,8 +120,8 @@ const ServicePage = ({ fullname, name, id }) => {
     () =>
       showJson && (
         <>
-          <ReactJson src={registered} name="registered" displayDataTypes={false} displayObjectSize={false} />
-          <ReactJson src={service} name="service" displayDataTypes={false} displayObjectSize={false} />
+          <JsonView src={registered} name="registered" displayDataTypes={false} displayObjectSize={false} />
+          <JsonView src={service} name="service" displayDataTypes={false} displayObjectSize={false} />
         </>
       ),
     [showJson, registered, service, fullname]

@@ -2,7 +2,8 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import { Box, IconButton } from "@mui/material"
 import React, { useState } from "react"
-import ReactJson from "react-json-view"
+import JsonView from "react18-json-view"
+import "react18-json-view/src/style.css"
 import { useStore } from "../../store/store"
 
 const ChatHistory = ({ chatHistory }) => {
@@ -83,7 +84,7 @@ const ChatHistory = ({ chatHistory }) => {
               </Box>
               {expandedChats[index] && (
                 <Box sx={{ mt: 1, ml: 4 }}>
-                  <ReactJson
+                  <JsonView
                     src={chat}
                     name={null}
                     displayDataTypes={false}

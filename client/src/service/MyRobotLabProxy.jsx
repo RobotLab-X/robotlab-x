@@ -1,6 +1,7 @@
 // MyRobotLabProxy.jsx
 import React, { useState } from "react"
-import ReactJson from "react-json-view"
+import JsonView from "react18-json-view"
+import "react18-json-view/src/style.css"
 import Clock from "../components/myrobotlabconnector/Clock"
 import ProgramAB from "../components/myrobotlabconnector/ProgramAB"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
@@ -64,10 +65,10 @@ export default function MyRobotLabProxy({ name, fullname, id }) {
           style={{ verticalAlign: "middle" }}
         />
       )}
-      {proxy && <ReactJson src={proxy} name="proxy" displayDataTypes={false} displayObjectSize={false} />}
+      {proxy && <JsonView src={proxy} name="proxy" displayDataTypes={false} displayObjectSize={false} />}
 
       {/*
-      <ReactJson src={proxy} name="proxyMsg" displayDataTypes={false} displayObjectSize={false} />
+      <JsonView src={proxy} name="proxyMsg" displayDataTypes={false} displayObjectSize={false} />
       */}
 
       {service?.serviceType?.simpleName === "Clock" && (

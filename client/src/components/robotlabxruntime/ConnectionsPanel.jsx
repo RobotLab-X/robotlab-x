@@ -2,7 +2,8 @@ import { East, West } from "@mui/icons-material"
 import { Box, Card, CardActionArea, CardContent, Grid, Tooltip, Typography } from "@mui/material"
 import RouteTable from "components/RouteTable"
 import React from "react"
-import ReactJson from "react-json-view"
+import JsonView from "react18-json-view"
+import "react18-json-view/src/style.css"
 
 const ConnectionsPanel = ({ connectionArray, service, handleHostClick, routeTableArray, debug }) => {
   return (
@@ -52,13 +53,13 @@ const ConnectionsPanel = ({ connectionArray, service, handleHostClick, routeTabl
           )}
           {debug && (
             <>
-              <ReactJson
+              <JsonView
                 src={service?.connections}
                 name="connections"
                 displayDataTypes={false}
                 displayObjectSize={false}
               />
-              <ReactJson
+              <JsonView
                 src={service?.routeTable}
                 name="routeTableArray"
                 displayDataTypes={false}
