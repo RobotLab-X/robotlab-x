@@ -71,7 +71,7 @@
     "@nivo/pie": "^0.87.0",
     "@pmndrs/assets": "^1.6.0",
     "@react-three/drei": "^9.115.0",
-    "@react-three/fiber": "^8.17.17",
+    "@react-three/fiber": "^8.17.10",
     "@react-three/xr": "^5.7.1",
     "@reduxjs/toolkit": "^1.8.5",
     "@testing-library/dom": "^10.3.1",
@@ -140,10 +140,6 @@
     "react-terminal-ui": "^1.2.0",
     "swagger-ui-react": "^5.17.14",
     "ua-parser-js": "^1.0.37",
-    "uuid": "^9.0.1",
-    "xterm-for-react": "^1.0.4"
-  },
-  "resolutions": {
-    "strip-ansi": "6.0.1"
+    "uuid": "^9.0.1"
   }
 }

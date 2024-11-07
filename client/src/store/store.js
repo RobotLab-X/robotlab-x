@@ -61,8 +61,8 @@ const store = (set, get) => ({
   },
 
   getBaseUrl() {
-    // const baseUrl = process.env.REACT_APP_BASE_URL || window.location.origin
-    const baseUrl = window.location.origin
+    const baseUrl = process.env.REACT_APP_BASE_URL || window.location.origin
+    // const baseUrl = window.location.origin
     return baseUrl
   },
 
