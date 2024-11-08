@@ -109,3 +109,10 @@ set ELECTRON_RUN_AS_NODE=
 $env:ELECTRON_RUN_AS_NODE = "true"
 Remove-Item Env:ELECTRON_RUN_AS_NODE
 ```
+
+
+## Serial Rebuild
+```bash
+yarn add electron-rebuild --dev
+yarn electron-rebuild
+```

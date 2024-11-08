@@ -32,8 +32,5 @@
     "simple-git": "^3.25.0",
     "wait-on": "^5.2.0"
   },
-  "resolutions": {
-    "string-width": "4.2.3"
-  },
   "dependencies": {}
 }
