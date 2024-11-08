@@ -151,6 +151,8 @@ export default class ElectronStarter {
     // FIXME - in prod startUrl = http://localhost:3001/
     // in dev startUrl = http://localhost:3000/
 
+    ElectronStarter.mainWindow.setTitle(`RobotLab-X ${main.version}`)
+
     log.info(`onReady: loadURL ${main.startUrl}`)
     ElectronStarter.mainWindow.loadURL(main.startUrl)
     ElectronStarter.mainWindow.on("closed", ElectronStarter.onClose)

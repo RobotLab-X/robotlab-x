@@ -11,6 +11,7 @@ import RobotLabXRuntime from "../express/service/RobotLabXRuntime"
 const log = getLogger("Main")
 
 require("dotenv").config()
+const asar = require("asar")
 
 export default class Main {
   static instance: Main
@@ -25,7 +26,7 @@ export default class Main {
   // top of the tree
   root: string
 
-  // electron's appData directory - FIXME - remove if possible
+  // contents of the asar file unpacked - when running in packaged mode
   appData: string
 
   // user data directory separation from appData vs userData
@@ -49,6 +50,9 @@ export default class Main {
   // prod Main.startUrl = "http://localhost:3000"
   serviceUrl: string
 
+  // isAsar is true if we are running in asar mode
+  isAsar: boolean = false
+
   /**
    * BrowserWindow.loadURL() will use this URL to load the app
    */
@@ -61,6 +65,8 @@ export default class Main {
 
   // robotlabxruntime/package.yml
   pkg: any
+
+  version: string = "0.0.0"
 
   hasDisplay(): boolean {
     if (
@@ -83,10 +89,38 @@ export default class Main {
   }
 
   async run(): Promise<void> {
+    log.info(`Starting RobotLab-X...`)
+    // FIXME - set version !!!
+    log.info(`__dirname: ${__dirname}`)
+    this.appData = this.getAppDataPath()
+    log.info(`getAppDataPath: ${this.appData}`)
+
     try {
+      // Check if 'app.asar' is in the path
+      if (__dirname.includes("app.asar")) {
+        this.isAsar = true
+        // Find the parent directory of 'app.asar'
+        const asarDir = path.resolve(__dirname.split("app.asar")[0], "app.asar")
+        const extractPath = this.appData
+
+        // Ensure the extractPath directory exists
+        if (!fs.existsSync(extractPath)) {
+          fs.mkdirSync(extractPath)
+        }
+
+        // Extract all contents of app.asar to appData
+        asar.extractAll(asarDir, extractPath)
+        log.info("Extracted app.asar to appData folder successfully.")
+      } else {
+        log.info("app.asar not found in the current path.")
+      }
       // FIXME - overridable by args ?
       // set early, do not modify later
       this.distRoot = path.resolve(process.env.DISTROOT || "dist")
+      // packaged asar mode override
+      if (this.isAsar) {
+        this.distRoot = path.resolve(process.env.DISTROOT || path.join(this.appData, "dist"))
+      }
       this.publicRoot = path.resolve(process.env.PUBLICROOT || path.join(this.distRoot, "express", "public"))
       this.userData = path.resolve(process.env.USERDATA || path.join(process.cwd(), "data"))
       // FIXME - remove if possible
@@ -109,8 +143,6 @@ export default class Main {
       // new Pkg().extractVFS()
 
       // add version info
-      log.info(`Starting RobotLab-X...`)
-      log.info(`__dirname: ${__dirname}`)
       log.info(`DISTROOT: ${this.distRoot}`)
       log.info(`PUBLICROOT: ${this.publicRoot}`)
       log.info(`USERDATA: ${this.userData}`)
@@ -237,6 +269,27 @@ export default class Main {
   // FIXME make conditional callbacks to electron
   setDebug(debug: boolean) {
     log.info(`Setting debug to ${debug}`)
+  }
+
+  public getAppDataPath(): string {
+    let appDataPath
+
+    switch (process.platform) {
+      case "win32":
+        appDataPath = process.env.APPDATA || path.join(os.homedir(), "AppData", "Roaming")
+        break
+      case "darwin":
+        appDataPath = path.join(os.homedir(), "Library", "Application Support")
+        break
+      case "linux":
+        appDataPath = process.env.XDG_CONFIG_HOME || path.join(os.homedir(), ".config")
+        break
+      default:
+        throw new Error("Unsupported platform")
+    }
+
+    // Combine with your app's name for a unique userData directory
+    return path.join(appDataPath, `robotlab-x-${this.version}`)
   }
 
   public toJSON(): any {

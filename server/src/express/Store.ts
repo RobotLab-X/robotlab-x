@@ -467,18 +467,16 @@ export default class Store {
     // Catch-all handler to serve index.html for client-side routing
     this.express.use((req, res, next) => {
       if (!req.originalUrl.startsWith(apiPrefix)) {
-        // res.sendFile(path.join(Main.distRoot, "client", "index.html"))
+        let main = Main.getInstance()
 
-        // Serve the file based on the requested path
-        // let file = path.join(main.argv.distRoot, "client", req.originalUrl)
-        let file = path.join(__dirname, "..", "client", req.originalUrl)
+        let file = path.join(main.distRoot, "client", req.originalUrl)
 
         log.info(`serving ${file}`)
         res.sendFile(file, (err) => {
           if (err) {
             // If the file does not exist, serve index.html
             //file = path.join(main.argv.distRoot, "client", "index.html")
-            file = path.join(__dirname, "..", "client", "index.html")
+            file = path.join(main.distRoot, "client", "index.html")
             log.info(`serving index ${file}`)
             res.sendFile(file)
           }

@@ -54,16 +54,17 @@
     "build": "babel src --extensions '.ts,.js' --out-dir dist",
     "copy-public": "shx cp -rf src/express/public dist/express",
     "prebuild": "node prebuild.js",
-    "electron-dev": "nodemon --exec \"yarn run build && cross-env electron --inspect ./dist/electron/Main.js\"",
+    "electron-dev": "nodemon --exec \"yarn build && cross-env electron --inspect ./dist/electron/Main.js\"",
     "test": "jest",
     "test-coverage": "nyc jest",
     "generate-schemas": "typescript-json-schema tsconfig.json 'Ollama' --out schemas.json",
     "generate-swagger": "node generate-swagger-paths.js",
     "generate-pkg-file": "node generatePkgFile.js",
-    "package-win": "yarn run build && electron-builder --windows",
-    "package-mac": "yarn run build && electron-builder --mac",
-    "package-linux": "yarn run build && electron-builder --linux",
-    "package-raspi": "yarn build && yarn copy-public && yarn generate-pkg-file && npx electron-rebuild --arch=arm64 && electron-builder -l --arm64"
+    "package": "yarn build && yarn copy-public",
+    "package-win": "yarn package && electron-builder --windows",
+    "package-mac": "yarn package && electron-builder --mac",
+    "package-linux": "yarn package && electron-builder --linux",
+    "package-raspi": "yarn package && npx electron-rebuild --arch=arm64 && electron-builder -l --arm64"
   },
   "include": [
     "src/**/*.ts"
