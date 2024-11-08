@@ -500,7 +500,7 @@ export default class RobotLabXRuntime extends Service {
   async start(shortLaunchName: string) {
     log.info(`Starting launcher: ${shortLaunchName}`)
     const main = Main.getInstance()
-    const filePath = path.join(main.distRoot, "launch", shortLaunchName)
+    const filePath = path.join(main.publicRoot, "repo", "robotlabxruntime", "launch", shortLaunchName)
     log.info(`Starting file path: ${filePath}`)
     const launchDescription = RobotLabXRuntime.getLaunchDescription(filePath)
     this.launch(launchDescription)
@@ -975,7 +975,7 @@ export default class RobotLabXRuntime extends Service {
   }
 
   getLaunchFiles(
-    launchDir: string = path.join(Main.getInstance().publicRoot, "repo", "robotlabxruntime", "launch")
+    launchDir: string = path.join(Main.getInstance().publicRoot, "repo", "robotlabxruntime", "launch") // FIXME default should be users launch dir not systems
   ): any[] {
     const main = Main.getInstance()
     log.info(`getLaunchFiles scanning directory ${launchDir}`)
@@ -990,7 +990,7 @@ export default class RobotLabXRuntime extends Service {
           log.error(`error: ${error}`)
         }
         launchFiles.push({
-          imageUrl: path.join(main.publicRoot, "repo", "examples", file),
+          imageUrl: path.join(launchDir, file),
           description: ld?.description,
           path: file
         })
@@ -1007,7 +1007,7 @@ export default class RobotLabXRuntime extends Service {
     }
 
     const main = Main.getInstance()
-    const launchDir = path.join(main.distRoot, path.join("launch", fileName))
+    const launchDir = path.join(main.publicRoot, "repo", "robotlabxruntime", "launch", fileName)
     log.info(`saveLaunchFile saving to ${launchDir}`)
     fs.writeFileSync(launchDir, content, "utf8")
   }
@@ -1019,14 +1019,16 @@ export default class RobotLabXRuntime extends Service {
       fileName = fileName + ".js"
     }
     const main = Main.getInstance()
-    const launchDir = path.join(main.distRoot, path.join("launch", fileName))
+    const launchDir = path.join(main.publicRoot, "repo", "robotlabxruntime", "launch", fileName)
     log.info(`publishLaunchFiles scanning directory ${launchDir}`)
     const launchFile = fs.readFileSync(launchDir, "utf8")
     return launchFile
   }
 
   getExamples(): any[] {
-    return this.getLaunchFiles(path.join(Main.getInstance().distRoot, "launch", "examples"))
+    return this.getLaunchFiles(
+      path.join(Main.getInstance().publicRoot, "repo", "robotlabxruntime", "launch", "examples")
+    )
   }
 
   setDebug(debug: boolean) {
