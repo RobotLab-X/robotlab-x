@@ -18,6 +18,9 @@
       "!**/*.map",
       "package.json"
     ],
+    "asarUnpack": [
+      "node_modules/@serialport/**"
+    ],
     "directories": {
       "buildResources": "build",
       "output": "../dist/packages"
