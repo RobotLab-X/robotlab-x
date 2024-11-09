@@ -42,15 +42,15 @@ jobs:
       - name: Install dependencies
         run: yarn install-all
 
-      - name: Bump version
-        id: bump_version
-        run: |
-          BUILD_NUMBER=${{ github.run_number }}
-          VERSION="0.9.${BUILD_NUMBER}"
-          echo "Bumping version to $VERSION"
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          echo "VERSION=0.9.${{ github.run_number }}" >> $GITHUB_ENV
+      # - name: Bump version
+      #   id: bump_version
+      #   run: |
+      #     BUILD_NUMBER=${{ github.run_number }}
+      #     VERSION="0.9.${BUILD_NUMBER}"
+      #     echo "Bumping version to $VERSION"
+      #     git config --global user.name "github-actions[bot]"
+      #     git config --global user.email "github-actions[bot]@users.noreply.github.com"
+      #     echo "VERSION=0.9.${{ github.run_number }}" >> $GITHUB_ENV
 
       # Run ESLint but ignore errors
       - name: Run ESLint
