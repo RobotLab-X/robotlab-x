@@ -15,8 +15,6 @@ jobs:
       - name: Generate Version Number
         id: set-version
         run: echo "version=0.9.$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
-      - name: Output Version
-        run: echo "Version generated: $VERSION"
 
   build-windows:
     needs: generate-version
