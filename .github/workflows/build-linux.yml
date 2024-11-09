@@ -17,11 +17,13 @@ jobs:
 
     env:
       CI: false
-      VERSION: ${{ inputs.version }}  # Set VERSION for all steps in the build job
 
     steps:
-      - name: Print all environment variables
-        run: printenv  # Print all environment variables to stdout for debugging
+      - name: Set VERSION environment variable
+        run: |
+          echo "VERSION=${{ inputs.version }}" >> $GITHUB_ENV
+          echo "All environment variables:"
+          printenv
 
       - name: Checkout code
         uses: actions/checkout@v3
