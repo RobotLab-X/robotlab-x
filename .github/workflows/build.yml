@@ -16,14 +16,14 @@ jobs:
         id: set-version
         run: echo "version=0.9.$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
 
-  build-windows:
-    needs: generate-version
-    uses: ./.github/workflows/build-win.yml
-    with:
-      version: ${{ needs.generate-version.outputs.version }}
-
-  # build-linux:
+  # build-windows:
   #   needs: generate-version
-  #   uses: ./.github/workflows/build-linux.yml
+  #   uses: ./.github/workflows/build-win.yml
   #   with:
   #     version: ${{ needs.generate-version.outputs.version }}
+
+  build-linux:
+    needs: generate-version
+    uses: ./.github/workflows/build-linux.yml
+    with:
+      version: ${{ needs.generate-version.outputs.version }}
