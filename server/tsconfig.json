@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "rootDir": "src",
     "module": "commonjs",
     "target": "es6",
     "outDir": "dist",
@@ -12,8 +13,16 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true,
-    "rootDir": "."
   },
-  "include": ["**/*.ts", "express/framework/LaunchAction.tpl", "express/framework/LaunchAction.js", "express/framework/LaunchDescription.tpl", "express/framework/LaunchDescription.js", "express/service/Unknown.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "src/**/*.ts",
+    "src/express/framework/LaunchAction.tpl",
+    "src/express/framework/LaunchAction.js",
+    "src/express/framework/LaunchDescription.tpl",
+    "src/express/framework/LaunchDescription.js",
+    "src/express/service/Unknown.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
