@@ -7,10 +7,6 @@ on:
         required: true
         type: string
 
-env:
-  CI: false
-  VERSION: ${{ inputs.version }}
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,7 +15,14 @@ jobs:
       matrix:
         node-version: [20.18.0]
 
+    env:
+      CI: false
+      VERSION: ${{ inputs.version }}  # Set VERSION for all steps in the build job
+
     steps:
+      - name: Print all environment variables
+        run: printenv  # Print all environment variables to stdout for debugging
+
       - name: Checkout code
         uses: actions/checkout@v3
 
@@ -53,7 +56,7 @@ jobs:
 
       # Mark the output file as executable
       - name: Make output file executable
-        run: chmod +x dist/packages/RobotLab-X-${{ inputs.version }}-x86_64.AppImage
+        run: chmod +x dist/packages/RobotLab-X-${{ env.VERSION }}-x86_64.AppImage
 
       # Upload to Amazon S3
       - name: Upload to Amazon S3
@@ -62,4 +65,4 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
         run: |
-          aws s3 cp dist/packages/RobotLab-X-${{ inputs.version }}-x86_64.AppImage s3://your-bucket-name/path/to/folder/
+          aws s3 cp dist/packages/RobotLab-X-${{ env.VERSION }}-x86_64.AppImage s3://your-bucket-name/path/to/folder/
