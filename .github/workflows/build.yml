@@ -1,4 +1,3 @@
-# .github/workflows/build.yml
 name: Main Build Workflow
 
 on:
@@ -14,16 +13,25 @@ jobs:
     steps:
       - name: Generate Version Number
         id: set-version
-        run: echo "version=0.9.$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
+        run: |
+          VERSION="0.9.${{ github.run_number }}"
+          echo "version=$VERSION" >> $GITHUB_ENV
+          echo "Generated version: $VERSION"
+        # Output the version to stdout and to the job output
+        shell: bash
+      - name: Set version output
+        run: echo "::set-output name=version::$VERSION"
+        shell: bash
 
-  # build-windows:
-  #   needs: generate-version
-  #   uses: ./.github/workflows/build-win.yml
-  #   with:
-  #     version: ${{ needs.generate-version.outputs.version }}
 
   build-linux:
     needs: generate-version
     uses: ./.github/workflows/build-linux.yml
     with:
       version: ${{ needs.generate-version.outputs.version }}
+
+  # build-windows:
+  #   needs: generate-version
+  #   uses: ./.github/workflows/build-win.yml
+  #   with:
+  #     version: ${{ needs.generate-version.outputs.version }}
