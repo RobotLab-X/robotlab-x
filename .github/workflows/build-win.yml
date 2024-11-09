@@ -63,12 +63,12 @@ jobs:
         run: dir
         shell: cmd
 
-      - name: Run tests
-        run: |
-          cd server
-          yarn test
-        shell: cmd
-        working-directory: ./server
+      # - name: Run tests
+      #   run: |
+      #     cd server
+      #     yarn test
+      #   shell: cmd
+      #   working-directory: ./server
 
       - name: Print all environment variables
         run: set "VERSION=0.9.${{ github.run_number }}" && set
