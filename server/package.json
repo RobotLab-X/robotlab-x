@@ -60,7 +60,7 @@
   "generate-schemas": "typescript-json-schema tsconfig.json 'Ollama' --out schemas.json",
   "generate-swagger": "node generate-swagger-paths.js",
   "generate-pkg-file": "node generatePkgFile.js",
-  "package": "yarn build && yarn copy-public",
+  "package": "yarn prebuild &&yarn build && yarn copy-public",
   "package-linux": "yarn package && npx electron-rebuild --arch=x64 && electron-builder --linux --x64",
   "package-linux-arm": "yarn package && npx electron-rebuild --arch=armv7l && electron-builder --linux --armv7l",
   "package-linux-arm64": "yarn package && npx electron-rebuild --arch=arm64 && electron-builder --linux --arm64",
