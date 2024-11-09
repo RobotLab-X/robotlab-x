@@ -27,3 +27,7 @@ yarn-error.log
 server/robotlab-x.log
 server/appData
 package-lock.json
+
+
+data
+robotlab-x.log
