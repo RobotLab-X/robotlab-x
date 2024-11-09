@@ -1,0 +1,31 @@
+# .github/workflows/build.yml
+name: Main Build Workflow
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  generate-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.set-version.outputs.version }}
+    steps:
+      - name: Generate Version Number
+        id: set-version
+        run: echo "version=0.9.$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
+      - name: Output Version
+        run: echo "Version generated: $VERSION"
+
+  build-windows:
+    needs: generate-version
+    uses: ./.github/workflows/build-win.yml
+    with:
+      version: ${{ needs.generate-version.outputs.version }}
+
+  build-linux:
+    needs: generate-version
+    uses: ./.github/workflows/build-linux.yml
+    with:
+      version: ${{ needs.generate-version.outputs.version }}

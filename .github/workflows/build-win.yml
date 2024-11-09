@@ -1,12 +1,20 @@
 name: Windows Build and Package RobotLab-X
 
+
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+
+# on:
+#   push:
+#     branches:
+#       - main
+#   pull_request:
+#     branches:
+#       - main
 
 # env:
 #   CI: false
@@ -70,13 +78,13 @@ jobs:
       #   shell: cmd
       #   working-directory: ./server
 
-      - name: Print all environment variables
-        run: set "VERSION=0.9.${{ github.run_number }}" && set
-        shell: cmd
+      # - name: Print all environment variables
+      #   run: set "VERSION=0.9.${{ github.run_number }}" && set
+      #   shell: cmd
 
-      - name: Package the Electron app for Windows
-        run: set "VERSION=0.9.${{ github.run_number }}" && yarn package-win
-        shell: cmd
+      # - name: Package the Electron app for Windows
+      #   run: set "VERSION=0.9.${{ github.run_number }}" && yarn package-win
+      #   shell: cmd
 
       - name: List dist/packages contents
         run: dir dist\\packages
