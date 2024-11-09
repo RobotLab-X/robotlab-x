@@ -67,6 +67,7 @@ jobs:
         run: |
           cd server
           yarn test
+        shell: cmd
 
       - name: Print all environment variables
         run: set "VERSION=0.9.${{ github.run_number }}" && set
