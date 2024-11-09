@@ -15,7 +15,7 @@
     "install-client": "shx mkdir -p server/dist/ && shx rm -rf server/dist/client && shx mv client/build server/dist/client",
     "package-win": "cd server && yarn package-win",
     "package-linux": "cd server && yarn package-linux",
-    "package-raspi": "cd server && yarn package-raspi",
+    "package-raspi": "cd server && yarn package-linux-arm64",
     "package-mac": "cd server && yarn package-mac",
     "test": "cd client && yarn test-no-watch && cd ../server && yarn test",
     "test-coverage": "cd client && yarn test-coverage && cd ../server && yarn test-coverage",

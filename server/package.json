@@ -10,65 +10,64 @@
     "email": "grog@robotlab-x.com"
   },
   "build": {
-    "appId": "com.robotlab-x-0.0.0",
-    "productName": "RobotLab-X-0.0.0",
-    "files": [
-      "dist/**/*",
-      "!src/express/public/repo/**/*cache/**/*",
-      "!**/*.map",
-      "package.json"
+  "appId": "com.robotlab-x-0.0.0",
+  "productName": "RobotLab-X-0.0.0",
+  "files": [
+    "dist/**/*",
+    "!src/express/public/repo/**/*cache/**/*",
+    "!**/*.map",
+    "package.json"
+  ],
+  "asarUnpack": [
+    "node_modules/@serialport/**"
+  ],
+  "directories": {
+    "buildResources": "build",
+    "output": "../dist/packages"
+  },
+  "mac": {
+    "target": [
+      "dmg",
+      "zip"
     ],
-    "asarUnpack": [
-      "node_modules/@serialport/**"
+    "artifactName": "RobotLab-X-0.0.0-mac.dmg"
+  },
+  "win": {
+    "target": [
+      "portable"
     ],
-    "directories": {
-      "buildResources": "build",
-      "output": "../dist/packages"
-    },
-    "mac": {
-      "target": [
-        "dmg"
-      ],
-      "artifactName": "RobotLab-X-0.0.0.dmg"
-    },
-    "win": {
-      "target": [
-        "portable"
-      ],
-      "artifactName": "RobotLab-X-0.0.0.exe"
-    },
-    "linux": {
-      "icon": "dist/client/logo.png",
-      "category": "Development",
-      "target": [
-        "AppImage"
-      ],
-      "artifactName": "RobotLab-X-0.0.0.AppImage"
-    },
-    "extraMetadata": {
-      "raspi": {
-        "linux": {
-          "artifactName": "RobotLab-X-0.0.0-armv7l.AppImage"
-        }
+    "artifactName": "RobotLab-X-0.0.0-win.exe"
+  },
+  "linux": {
+    "icon": "dist/client/logo.png",
+    "category": "Development",
+    "target": [
+      {
+        "target": "AppImage",
+        "arch": ["arm64", "x64"]
       }
-    }
-  },
-  "scripts": {
-    "build": "babel src --extensions '.ts,.js' --out-dir dist",
-    "copy-public": "shx cp -rf src/express/public dist/express",
-    "prebuild": "node prebuild.js",
-    "electron-dev": "nodemon --exec \"yarn build && cross-env electron --inspect ./dist/electron/Main.js\"",
-    "test": "jest",
-    "test-coverage": "nyc jest",
-    "generate-schemas": "typescript-json-schema tsconfig.json 'Ollama' --out schemas.json",
-    "generate-swagger": "node generate-swagger-paths.js",
-    "generate-pkg-file": "node generatePkgFile.js",
-    "package": "yarn build && yarn copy-public",
-    "package-win": "yarn package && electron-builder --windows",
-    "package-mac": "yarn package && electron-builder --mac",
-    "package-linux": "yarn package && electron-builder --linux",
-    "package-raspi": "yarn package && npx electron-rebuild --arch=arm64 && electron-builder -l --arm64"
-  },
+    ],
+    "artifactName": "RobotLab-X-0.0.0-${arch}.AppImage"
+  }
+},
+"scripts": {
+  "build": "babel src --extensions '.ts,.js' --out-dir dist",
+  "copy-public": "shx cp -rf src/express/public dist/express",
+  "prebuild": "node prebuild.js",
+  "electron-dev": "nodemon --exec \"yarn build && cross-env electron --inspect ./dist/electron/Main.js\"",
+  "test": "jest",
+  "test-coverage": "nyc jest",
+  "generate-schemas": "typescript-json-schema tsconfig.json 'Ollama' --out schemas.json",
+  "generate-swagger": "node generate-swagger-paths.js",
+  "generate-pkg-file": "node generatePkgFile.js",
+  "package": "yarn build && yarn copy-public",
+  "package-linux": "yarn package && npx electron-rebuild --arch=x64 && electron-builder --linux --x64",
+  "package-linux-arm": "yarn package && npx electron-rebuild --arch=armv7l && electron-builder --linux --armv7l",
+  "package-linux-arm64": "yarn package && npx electron-rebuild --arch=arm64 && electron-builder --linux --arm64",
+  "package-win": "yarn package && npx electron-rebuild --arch=x64 && electron-builder --windows",
+  "package-mac": "yarn package && npx electron-rebuild --arch=x64 && electron-builder --mac"
+}
+,
   "include": [
     "src/**/*.ts"
   ],
