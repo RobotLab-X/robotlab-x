@@ -24,8 +24,8 @@ jobs:
     with:
       version: ${{ needs.generate-version.outputs.version }}
 
-  build-linux:
-    needs: generate-version
-    uses: ./.github/workflows/build-linux.yml
-    with:
-      version: ${{ needs.generate-version.outputs.version }}
+  # build-linux:
+  #   needs: generate-version
+  #   uses: ./.github/workflows/build-linux.yml
+  #   with:
+  #     version: ${{ needs.generate-version.outputs.version }}
