@@ -51,7 +51,7 @@
     }
   },
   "scripts": {
-    "build": "babel src --extensions '.ts,.js' --out-dir dist",
+    "build": " cross-env babel src --extensions '.ts,.js' --out-dir dist",
     "copy-public": "shx cp -rf src/express/public dist/express",
     "prebuild": "node prebuild.js",
     "electron-dev": "nodemon --exec \"yarn build && cross-env electron --inspect ./dist/electron/Main.js\"",
@@ -79,7 +79,7 @@
     "@babel/plugin-proposal-private-methods": "^7.18.6",
     "@babel/plugin-transform-typescript": "^7.25.2",
     "@babel/preset-env": "^7.25.4",
-    "@babel/preset-typescript": "^7.24.7",
+    "@babel/preset-typescript": "^7.26.0",
     "@microsoft/tsdoc": "^0.15.0",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
