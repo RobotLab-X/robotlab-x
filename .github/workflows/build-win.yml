@@ -70,9 +70,8 @@ jobs:
       #   run: set "VERSION=0.9.${{ github.run_number }}" && set
       #   shell: cmd
 
-      # - name: Package the Electron app for Windows
-      #   run: set "VERSION=0.9.${{ github.run_number }}" && yarn package-win
-      #   shell: cmd
+      - name: Package
+        run: yarn package-win
 
       - name: List dist/packages contents
         run: dir dist\\packages
@@ -87,6 +86,6 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: us-east-1
         run: |
-          aws s3 cp dist/packages/RobotLab-X-${{ env.VERSION }}-x86_64.AppImage s3://robotlab-x-repo/RobotLab-X-${{ env.VERSION }}-x86_64.AppImage
+          aws s3 cp dist/packages/RobotLab-X-${{ env.VERSION }}-win.exe s3://robotlab-x-repo/RobotLab-X-${{ env.VERSION }}-win.exe
 
 
