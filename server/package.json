@@ -51,9 +51,9 @@
     }
 },
 "scripts": {
-  "build": "cross-env babel src --extensions '.ts,.js' --out-dir dist --source-maps inline",
+  "build": "cross-env babel src --extensions '.ts,.js' --out-dir dist --source-maps inline  && shx cp package.json dist/electron/package.json",
   "copy-public": "shx cp -rf src/express/public dist/express",
-  "prebuild": "node prebuild.js && cp package.json dist/electron/package.json",
+  "prebuild": "node prebuild.js",
   "electron-dev": "nodemon --exec \"yarn build && cross-env electron --inspect ./dist/electron/Main.js\"",
   "test": "jest",
   "test-coverage": "nyc jest",
