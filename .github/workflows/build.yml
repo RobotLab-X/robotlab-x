@@ -28,9 +28,23 @@ jobs:
       version: ${{ needs.generate-version.outputs.version }}
 
 
-  # build-windows:
-  #   needs: generate-version
-  #   uses: ./.github/workflows/build-win.yml
-  #   secrets: inherit
-  #   with:
-  #     version: ${{ needs.generate-version.outputs.version }}
+  build-windows:
+    needs: generate-version
+    uses: ./.github/workflows/build-win.yml
+    secrets: inherit
+    with:
+      version: ${{ needs.generate-version.outputs.version }}
+
+
+
+
+  #     - name: Create Release
+  #       id: create_release
+  #       uses: actions/create-release@v1
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       with:
+  #         tag_name: v${{ env.VERSION }}
+  #         release_name: Release v${{ env.VERSION }}
+  #         draft: false
+  #         prerelease: false

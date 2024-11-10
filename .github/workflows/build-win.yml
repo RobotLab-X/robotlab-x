@@ -8,17 +8,6 @@ on:
         required: true
         type: string
 
-# on:
-#   push:
-#     branches:
-#       - main
-#   pull_request:
-#     branches:
-#       - main
-
-# env:
-#   CI: false
-
 jobs:
   build:
     runs-on: windows-latest
@@ -27,7 +16,18 @@ jobs:
       matrix:
         node-version: [20.18.0]
 
+    env:
+      CI: false
+
     steps:
+      - name: Verify Version Input and Set Environment Variable
+        run: |
+          echo VERSION=${{ inputs.version }} >> %GITHUB_ENV%
+          echo Passed version is: ${{ inputs.version }}
+          echo All environment variables:
+          set
+        shell: cmd
+
       - name: Checkout code
         uses: actions/checkout@v3
 
@@ -37,24 +37,10 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: Install Yarn
-        run: npm install -g yarn json
+        run: npm install -g yarn
 
       - name: Install dependencies
-        run: |
-          yarn config set network-timeout 600000 -g
-          yarn install-all
-
-      - name: Bump version
-        id: bump_version
-        run: |
-          set BUILD_NUMBER=%GITHUB_RUN_NUMBER%
-          set VERSION=0.9.%BUILD_NUMBER%
-          echo VERSION=0.9.%BUILD_NUMBER%>> %GITHUB_ENV%
-        shell: cmd
-
-      - name: Print server/package.json
-        run: type server\\package.json
-        shell: cmd
+        run: yarn install-all
 
       - name: Run ESLint
         run: yarn lint || true
@@ -93,44 +79,12 @@ jobs:
       # - name: Make version folder and move executable to that folder
       #   run: mkdir -p artifact/RobotLab-X-0.9.${{ github.run_number }} && mv dist/packages/RobotLab-X-Setup-0.9.${{ github.run_number }}.exe artifact/RobotLab-X-0.9.${{ github.run_number }}
 
+      - name: Upload to Amazon S3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-1
+        run: |
+          aws s3 cp dist/packages/RobotLab-X-${{ env.VERSION }}-x86_64.AppImage s3://robotlab-x-repo/RobotLab-X-${{ env.VERSION }}-x86_64.AppImage
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: RobotLab-X-Setup-0.9.${{ github.run_number }}.exe
-          path: dist/packages/RobotLab-X-Setup-0.9.${{ github.run_number }}.exe
-          retention-days: 5
-
-
-  # release:
-  #   needs: build
-  #   runs-on: ubuntu-latest
-
-  #   steps:
-  #     - name: Download artifact
-  #       uses: actions/download-artifact@v3
-  #       with:
-  #         name: RobotLab-X-${{ env.VERSION }}.exe
-  #         path: dist/
-
-  #     - name: Create Release
-  #       id: create_release
-  #       uses: actions/create-release@v1
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #       with:
-  #         tag_name: v${{ env.VERSION }}
-  #         release_name: Release v${{ env.VERSION }}
-  #         draft: false
-  #         prerelease: false
-
-  #     - name: Upload Release Asset
-  #       uses: actions/upload-release-asset@v1
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #       with:
-  #         upload_url: ${{ steps.create_release.outputs.upload_url }}
-  #         asset_path: dist/packages/RobotLab-X-${{ env.VERSION }}.exe
-  #         asset_name: RobotLab-X-${{ env.VERSION }}.exe
-  #         asset_content_type: application/octet-stream
 
