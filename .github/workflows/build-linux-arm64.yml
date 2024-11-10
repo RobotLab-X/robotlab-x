@@ -15,6 +15,10 @@ jobs:
       matrix:
         node-version: [20.18.0]
 
+    env:
+      CI: false
+
+
     steps:
 
       - name: Set up QEMU
