@@ -63,18 +63,18 @@ jobs:
         run: chmod +x dist/packages/RobotLab-X-${{ env.VERSION }}-x86_64.AppImage
 
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: 'us-east-1'
+      # - name: Configure AWS credentials
+      #   uses: aws-actions/configure-aws-credentials@v4
+      #   with:
+      #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      #     aws-region: 'us-east-1'
 
-      - name: Upload artifacts to AWS S3
-        uses: usualdesigner/s3-artifact-upload@main
-        with:
-          bucket-name: 'robotlab-x-repo'
-          file: 'dist/packages/RobotLab-X-${{ env.VERSION }}-x86_64.AppImage'
+      # - name: Upload artifacts to AWS S3
+      #   uses: usualdesigner/s3-artifact-upload@main
+      #   with:
+      #     bucket-name: 'robotlab-x-repo'
+      #     file: 'dist/packages/RobotLab-X-${{ env.VERSION }}-x86_64.AppImage'
 
       #   # Upload to Amazon S3
       # - uses: jakejarvis/s3-sync-action@master
@@ -95,13 +95,13 @@ jobs:
       #     source: 's3://some-bucket/something-remote'
       #     dest: './something-local'
 
-      # # Upload to Amazon S3
-      # - name: Upload to Amazon S3
-      #   env:
-      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      #     AWS_REGION: us-east-1
-      #   run: |
-      #     aws s3 cp dist/packages/RobotLab-X-${{ env.VERSION }}-x86_64.AppImage s3://robotlab-x-repo/RobotLab-X-${{ env.VERSION }}-x86_64.AppImage
+      # Upload to Amazon S3
+      - name: Upload to Amazon S3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-1
+        run: |
+          aws s3 cp dist/packages/RobotLab-X-${{ env.VERSION }}-x86_64.AppImage s3://robotlab-x-repo/RobotLab-X-${{ env.VERSION }}-x86_64.AppImage
 
 
