@@ -22,8 +22,8 @@ jobs:
     steps:
       - name: Verify Version Input and Set Environment Variable
         run: |
-          echo VERSION=${{ inputs.version }} >> %GITHUB_ENV%
-          echo Passed version is: ${{ inputs.version }}
+          echo VERSION=${{ inputs.version }}>> %GITHUB_ENV%
+          echo Passed version is: [${{ inputs.version }}]
           echo All environment variables:
           set
         shell: cmd
