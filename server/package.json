@@ -63,7 +63,7 @@
   "package": "yarn prebuild && yarn build && yarn copy-public",
   "package-linux": "yarn package && npx electron-rebuild --arch=x64 && electron-builder --linux AppImage --x64",
   "package-linux-arm": "yarn package && npx electron-rebuild --arch=armv7l && electron-builder --linux --armv7l",
-  "package-linux-arm64": "yarn package && npx electron-rebuild --arch=arm64 && electron-builder --linux AppImage --arm64",
+  "package-linux-arm64": "yarn package && npx electron-rebuild --arch=arm64 --force && electron-builder --linux AppImage --arm64",
   "package-win": "yarn package && npx electron-rebuild --arch=x64 && electron-builder --windows",
   "package-mac": "yarn package && npx electron-rebuild --arch=x64 && electron-builder --mac"
 }

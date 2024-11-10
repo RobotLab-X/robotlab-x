@@ -16,8 +16,8 @@ jobs:
         run: |
           BUILD_NUMBER=$(( $GITHUB_RUN_NUMBER + 160 ))
           VERSION="0.9.${BUILD_NUMBER}"
-          echo "Generated version: $VERSION"
-          echo "::set-output name=version::$VERSION"
+          echo "Generated version: ${VERSION}"
+          echo "::set-output name=version::${VERSION}"
         shell: bash
 
   build-linux:
