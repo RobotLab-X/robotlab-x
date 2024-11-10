@@ -18,6 +18,10 @@ jobs:
     env:
       CI: false
 
+    permissions:
+      id-token: write
+      contents: read
+
     steps:
       - name: Verify Version Input and Set Environment Variable
         run: |
