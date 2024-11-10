@@ -1,5 +1,5 @@
 {
-  "name": "robotlab-x-0.0.0",
+  "name": "robotlab-x",
   "version": "0.0.0",
   "description": "Modern robotics framework with a focus on visualization",
   "license": "MPL-2.0",
@@ -10,45 +10,45 @@
     "email": "grog@robotlab-x.com"
   },
   "build": {
-  "appId": "com.robotlab-x-0.0.0",
-  "productName": "RobotLab-X-0.0.0",
-  "files": [
-    "dist/**/*",
-    "!src/express/public/repo/**/*cache/**/*",
-    "!**/*.map",
-    "package.json"
-  ],
-  "asarUnpack": [
-    "node_modules/@serialport/**"
-  ],
-  "directories": {
-    "buildResources": "build",
-    "output": "../dist/packages"
-  },
-  "mac": {
-    "target": [
-      "dmg",
-      "zip"
+    "appId": "com.robotlab-x-0.0.0",
+    "productName": "RobotLab-X-0.0.0",
+    "files": [
+      "dist/**/*",
+      "!src/express/public/repo/**/*cache/**/*",
+      "!**/*.map",
+      "package.json"
     ],
-    "artifactName": "RobotLab-X-0.0.0-mac.dmg"
-  },
-  "win": {
-    "target": [
-      "portable"
+    "asarUnpack": [
+      "node_modules/@serialport/**"
     ],
-    "artifactName": "RobotLab-X-0.0.0-win.exe"
-  },
-  "linux": {
-    "icon": "dist/client/logo.png",
-    "category": "Development",
-    "target": [
-      {
-        "target": "AppImage",
-        "arch": ["arm64", "x64"]
-      }
-    ],
-    "artifactName": "RobotLab-X-0.0.0-${arch}.AppImage"
-  }
+    "directories": {
+      "buildResources": "build",
+      "output": "../dist/packages"
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "artifactName": "RobotLab-X-0.0.0-mac.dmg"
+    },
+    "win": {
+      "target": [
+        "portable"
+      ],
+      "artifactName": "RobotLab-X-0.0.0-win.exe"
+    },
+    "linux": {
+      "icon": "dist/client/logo.png",
+      "category": "Development",
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["arm64", "x64"]
+        }
+      ],
+      "artifactName": "RobotLab-X-0.0.0-${arch}.AppImage"
+    }
 },
 "scripts": {
   "build": "cross-env babel src --extensions '.ts,.js' --out-dir dist",
