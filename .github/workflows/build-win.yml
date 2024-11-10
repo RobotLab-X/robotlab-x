@@ -47,6 +47,11 @@ jobs:
       - name: Run ESLint
         run: yarn lint || true
 
+      - name: Build and Install Client
+        run: |
+          yarn build-client
+          yarn install-client
+
       - name: Build Server
         run: yarn build-server
         shell: cmd
@@ -74,6 +79,10 @@ jobs:
         run: yarn package-win
         shell: cmd
 
+      - name: Print VERSION with Brackets
+        run: echo "VERSION is [${{ env.VERSION }}]"
+        shell: cmd
+
       - name: List dist/packages contents
         run: dir dist\\packages
         shell: cmd
@@ -84,6 +93,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: us-east-1
         run: |
-          aws s3 cp dist/packages/RobotLab-X-${{env.VERSION}}-win.exe s3://robotlab-x-repo/RobotLab-X-${{env.VERSION}}-win.exe
+          aws s3 cp "dist/packages/RobotLab-X-${{env.VERSION}}-win.exe" "s3://robotlab-x-repo/RobotLab-X-${{env.VERSION}}-win.exe"
+        shell: cmd
 
 
