@@ -62,7 +62,7 @@ jobs:
       - name: Make output file executable
         run: chmod +x dist/packages/RobotLab-X-${{ env.VERSION }}-x86_64.AppImage
 
-      # Upload to Amazon S3
+      # try again
       - name: Upload to Amazon S3
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
