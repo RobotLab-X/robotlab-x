@@ -22,7 +22,7 @@ jobs:
     steps:
       - name: Verify Version Input and Set Environment Variable
         run: |
-          echo VERSION=${{ inputs.version }} | set /p= >> %GITHUB_ENV%
+          echo VERSION=${{ inputs.version }} >> %GITHUB_ENV%
           echo Passed version is: ${{ inputs.version }}
           echo All environment variables:
           set
@@ -47,9 +47,9 @@ jobs:
       - name: Run ESLint
         run: yarn lint || true
 
-      - name: Build Server
-        run: yarn build-server
-        shell: cmd
+      # - name: Build Server
+      #   run: yarn build-server
+      #   shell: cmd
 
       - name: pwd
         run: cd
@@ -72,6 +72,7 @@ jobs:
 
       - name: Package
         run: yarn package-win
+        shell: cmd
 
       - name: List dist/packages contents
         run: dir dist\\packages
