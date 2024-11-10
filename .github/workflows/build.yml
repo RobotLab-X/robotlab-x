@@ -37,16 +37,16 @@ jobs:
         run: npm install -g yarn
 
       - name: Install dependencies
-        run: cd client && yarn install
+        run: yarn install-all
 
-      - name: Run ESLint
-        run: yarn lint || true
+      # - name: Run ESLint
+      #   run: yarn lint || true
 
-      - name: Build and Install Client
-        run: |
-          yarn build-client
-          yarn install-client
+      - name: Build Client
+        run: yarn build-client
 
+      - name: Install Client
+        run: yarn install-client
 
   build-linux:
     needs: generate-version
