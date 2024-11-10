@@ -62,57 +62,24 @@ jobs:
           yarn test
 
       - name: Package
-        run: yarn package-raspi
+        run: yarn package-linux-arm64
 
       - name: List dist/packages contents
         run: ls -l dist/packages
 
-      - name: Set executable permissions
-        run: chmod +x dist/packages/RobotLab-X-0.9.${{ github.run_number }}.AppImage
+      # Mark the output file as executable
+      - name: Make output file executable
+        run: chmod +x dist/packages/RobotLab-X-${{ env.VERSION }}-arm64.AppImage
 
-      - name: Make version folder and move executable to that folder
-        run: mkdir -p artifact/RobotLab-X-0.9.${{ github.run_number }} && mv dist/packages/RobotLab-X-0.9.${{ github.run_number }}.AppImage artifact/RobotLab-X-0.9.${{ github.run_number }}/RobotLab-X-0.9.${{ github.run_number }}-arm64.AppImage
+      # - name: Make version folder and move executable to that folder
+      #   run: mkdir -p artifact/RobotLab-X-0.9.${{ github.run_number }} && mv dist/packages/RobotLab-X-0.9.${{ github.run_number }}.AppImage artifact/RobotLab-X-0.9.${{ github.run_number }}/RobotLab-X-0.9.${{ github.run_number }}-arm64.AppImage
 
-      # - releases can be tar.gz not artifacts
-      # - name: Create tarball
-      #   run: tar -czvf artifact/RobotLab-X-0.9.${{ github.run_number }}.tar.gz -C artifact RobotLab-X-0.9.${{ github.run_number }}
+      - name: Upload to Amazon S3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-1
+        run: |
+          aws s3 cp dist/packages/RobotLab-X-${{ env.VERSION }}-arm64.AppImage s3://robotlab-x-repo/RobotLab-X-${{ env.VERSION }}-arm64.AppImage
 
-      - name: Upload tarball artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: RobotLab-X-0.9.${{ github.run_number }}-arm64.AppImage
-          path: artifact
-          retention-days: 15
-
-      # Uncomment the following lines to upload the .deb artifact
-      # - name: Upload .deb artifact
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: RobotLab-X-0.9.${{ github.run_number }}.deb
-      #     path: dist/packages/RobotLab-X-0.9.${{ github.run_number }}.deb
-
-  # Uncomment the following lines to enable the release step
-  # release:
-  #   needs: build
-  #   runs-on: ubuntu-latest
-
-  #   steps:
-  #     - name: Download artifact
-  #       uses: actions/download-artifact@v3
-  #       with:
-  #         name: RobotLab-X-${{ env.VERSION }}.AppImage
-  #         path: dist/
-
-  #     - name: Create Release
-  #       id: create_release
-  #       uses: actions/create-release@v1
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #       with:
-  #         tag_name: v${{ env.VERSION }}
-  #         release_name: Release v${{ env.VERSION }}
-  #         draft: false
-  #         prerelease: false
-
-  #     - name: Upload Release Asset
 
