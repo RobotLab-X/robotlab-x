@@ -20,6 +20,12 @@ jobs:
           echo "::set-output name=version::${VERSION}"
         shell: bash
 
+      - name: Build and Install Client
+        run: |
+          yarn build-client
+          yarn install-client
+
+
   build-linux:
     needs: generate-version
     uses: ./.github/workflows/build-linux.yml

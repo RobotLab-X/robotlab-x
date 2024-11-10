@@ -65,7 +65,7 @@ jobs:
 
       # Mark the output file as executable
       - name: Make output file executable
-        run: chmod +x dist/packages/RobotLab-X-${{ env.VERSION }}-x86_64.AppImage
+        run: chmod +x "dist/packages/RobotLab-X-${{ env.VERSION }}-x86_64.AppImage"
 
       - name: Upload to Amazon S3
         env:
@@ -73,6 +73,6 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: us-east-1
         run: |
-          aws s3 cp dist/packages/RobotLab-X-${{ env.VERSION }}-x86_64.AppImage s3://robotlab-x-repo/RobotLab-X-${{ env.VERSION }}-x86_64.AppImage
+          aws s3 cp "dist/packages/RobotLab-X-${{ env.VERSION }}-x86_64.AppImage" "s3://robotlab-x-repo/RobotLab-X-${{ env.VERSION }}-x86_64.AppImage"
 
 
