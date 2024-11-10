@@ -1,15 +1,11 @@
-name: Raspi Build and Package RobotLab-X
+name: Linux Arm64 Build and Package RobotLab-X
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
-
-env:
-  CI: false
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
 
 jobs:
   build:
@@ -32,6 +28,14 @@ jobs:
           lscpu
           cat /etc/os-release
 
+      - name: Verify Version Input and Set Environment Variable
+        run: |
+          echo "VERSION=${{ inputs.version }}" >> $GITHUB_ENV
+          echo "Passed version is: ${{ inputs.version }}"
+          echo "All environment variables:"
+          printenv
+        shell: bash
+
       - name: Checkout code
         uses: actions/checkout@v3
 
@@ -46,21 +50,6 @@ jobs:
       - name: Install dependencies
         run: yarn install-all
 
-      # Add the electron-rebuild step here
-      # - name: Electron Rebuild for Native Modules
-      #   run: npx electron-rebuild --arch=arm64 --version=31.2.1
-
-      - name: Bump version
-        id: bump_version
-        run: |
-          BUILD_NUMBER=${{ github.run_number }}
-          VERSION="0.9.${BUILD_NUMBER}"
-          echo "Bumping version to $VERSION"
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          echo "VERSION=0.9.${{ github.run_number }}" >> $GITHUB_ENV
-
-      # Run ESLint but ignore errors
       - name: Run ESLint
         run: yarn lint || true
 

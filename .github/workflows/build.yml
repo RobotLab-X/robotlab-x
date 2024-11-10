@@ -27,6 +27,12 @@ jobs:
     with:
       version: ${{ needs.generate-version.outputs.version }}
 
+  build-linux-arm64:
+    needs: generate-version
+    uses: ./.github/workflows/build-linux-arm64.yml
+    secrets: inherit
+    with:
+      version: ${{ needs.generate-version.outputs.version }}
 
   build-windows:
     needs: generate-version

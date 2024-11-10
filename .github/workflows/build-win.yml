@@ -77,15 +77,12 @@ jobs:
         run: dir dist\\packages
         shell: cmd
 
-      # - name: Make version folder and move executable to that folder
-      #   run: mkdir -p artifact/RobotLab-X-0.9.${{ github.run_number }} && mv dist/packages/RobotLab-X-Setup-0.9.${{ github.run_number }}.exe artifact/RobotLab-X-0.9.${{ github.run_number }}
-
       - name: Upload to Amazon S3
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: us-east-1
         run: |
-          aws s3 cp dist/packages/RobotLab-X-${{ env.VERSION }}-win.exe s3://robotlab-x-repo/RobotLab-X-${{ env.VERSION }}-win.exe
+          aws s3 cp dist/packages/RobotLab-X-${{env.VERSION}}-win.exe s3://robotlab-x-repo/RobotLab-X-${{env.VERSION}}-win.exe
 
 
