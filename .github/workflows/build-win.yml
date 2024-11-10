@@ -83,6 +83,17 @@ jobs:
         run: echo "VERSION is [${{ env.VERSION }}]"
         shell: cmd
 
+      - name: Create versioned folder and move artifact
+        run: |
+          mkdir dist\\packages\\robotlab-x-${{ env.VERSION }}
+          move dist\\packages\\robotlab-x-${{ env.VERSION }}-win.exe dist\\packages\\robotlab-x-${{ env.VERSION }}\\
+        shell: cmd
+
+      - name: Zip the versioned folder
+        run: |
+          powershell Compress-Archive -Path dist\\packages\\robotlab-x-${{ env.VERSION }} -DestinationPath dist\\packages\\robotlab-x-${{ env.VERSION }}-win.zip
+        shell: cmd
+
       - name: List dist/packages contents
         run: dir dist\\packages
         shell: cmd
@@ -93,7 +104,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: us-east-1
         run: |
-          aws s3 cp "dist/packages/RobotLab-X-${{env.VERSION}}-win.exe" "s3://robotlab-x-repo/RobotLab-X-${{env.VERSION}}-win.exe"
+          aws s3 cp "dist/packages/robotlab-x-${{env.VERSION}}-win.exe" "s3://robotlab-x-repo/robotlab-x-${{env.VERSION}}-win.exe"
         shell: cmd
 
 

@@ -117,11 +117,12 @@ export default class Main {
         // Ensure the extractPath directory exists
         if (!fs.existsSync(extractPath)) {
           fs.mkdirSync(extractPath)
+          // Extract all contents of app.asar to appData
+          asar.extractAll(asarDir, extractPath)
+          log.info("Extracted app.asar to appData folder successfully.")
+        } else {
+          log.info(`app.asar already extracted to ${extractPath}`)
         }
-
-        // Extract all contents of app.asar to appData
-        asar.extractAll(asarDir, extractPath)
-        log.info("Extracted app.asar to appData folder successfully.")
       } else {
         log.info("app.asar not found in the current path.")
       }

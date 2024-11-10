@@ -11,7 +11,7 @@
   },
   "build": {
     "appId": "com.robotlab-x-0.0.0",
-    "productName": "RobotLab-X-0.0.0",
+    "productName": "robotlab-x-0.0.0",
     "files": [
       "dist/**/*",
       "!src/express/public/repo/**/*cache/**/*",
@@ -30,13 +30,13 @@
         "dmg",
         "zip"
       ],
-      "artifactName": "RobotLab-X-0.0.0-mac.dmg"
+      "artifactName": "robotlab-x-0.0.0-mac.dmg"
     },
     "win": {
       "target": [
         "portable"
       ],
-      "artifactName": "RobotLab-X-0.0.0-win.exe"
+      "artifactName": "robotlab-x-0.0.0-win.exe"
     },
     "linux": {
       "icon": "dist/client/logo.png",
@@ -47,7 +47,7 @@
           "arch": ["arm64", "x64"]
         }
       ],
-      "artifactName": "RobotLab-X-0.0.0-${arch}.AppImage"
+      "artifactName": "robotlab-x-0.0.0-${arch}.AppImage"
     }
 },
 "scripts": {

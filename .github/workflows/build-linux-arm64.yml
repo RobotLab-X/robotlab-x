@@ -76,15 +76,21 @@ jobs:
       - name: Package
         run: yarn package-linux-arm64
 
+      - name: Make output file executable
+        run: chmod +x "dist/packages/robotlab-x-${{ env.VERSION }}-arm64.AppImage"
+
+      - name: Create versioned folder and move artifact
+        run: |
+          mkdir -p "dist/packages/robotLab-X-${{ env.VERSION }}"
+          mv "dist/packages/robotlab-x-${{ env.VERSION }}-arm64.AppImage" "dist/packages/robotLab-X-${{ env.VERSION }}/"
+
+      - name: Zip the versioned folder
+        run: |
+          cd dist/packages
+          zip -r "robotlab-X-${{ env.VERSION }}-linux-arm64.zip" "robotLab-X-${{ env.VERSION }}"
+
       - name: List dist/packages contents
         run: ls -l dist/packages
-
-      # Mark the output file as executable
-      - name: Make output file executable
-        run: chmod +x "dist/packages/RobotLab-X-${{ env.VERSION }}-arm64.AppImage"
-
-      # - name: Make version folder and move executable to that folder
-      #   run: mkdir -p artifact/RobotLab-X-0.9.${{ github.run_number }} && mv dist/packages/RobotLab-X-0.9.${{ github.run_number }}.AppImage artifact/RobotLab-X-0.9.${{ github.run_number }}/RobotLab-X-0.9.${{ github.run_number }}-arm64.AppImage
 
       - name: Upload to Amazon S3
         env:
@@ -92,6 +98,6 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: us-east-1
         run: |
-          aws s3 cp "dist/packages/RobotLab-X-${{ env.VERSION }}-arm64.AppImage" "s3://robotlab-x-repo/RobotLab-X-${{ env.VERSION }}-arm64.AppImage"
+          aws s3 cp "dist/packages/robotlab-X-${{ env.VERSION }}-linux-arm64.zip" "s3://robotlab-x-repo/robotlab-X-${{ env.VERSION }}-linux-arm64.zip"
 
 
