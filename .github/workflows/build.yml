@@ -23,6 +23,7 @@ jobs:
   build-linux:
     needs: generate-version
     uses: ./.github/workflows/build-linux.yml
+    secrets: inherit
     with:
       version: ${{ needs.generate-version.outputs.version }}
 
@@ -30,5 +31,6 @@ jobs:
   # build-windows:
   #   needs: generate-version
   #   uses: ./.github/workflows/build-win.yml
+  #   secrets: inherit
   #   with:
   #     version: ${{ needs.generate-version.outputs.version }}
