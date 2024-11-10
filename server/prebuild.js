@@ -1,7 +1,7 @@
 const fs = require("fs")
 const path = require("path")
 
-const version = process.env.VERSION || "0.0.0"
+const version = (process.env.VERSION || "0.0.0").trim()
 
 // Load the package.json
 const packageJsonPath = path.join(__dirname, "package.json")
