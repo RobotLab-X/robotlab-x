@@ -3,7 +3,7 @@
     "configurations": [
       {
         "name": "server",
-        "cwd":"${workspaceFolder}/server",
+        "cwd": "${workspaceFolder}/server",
         "type": "node",
         "request": "launch",
         "runtimeExecutable": "${workspaceFolder}/server/node_modules/.bin/electron",
@@ -13,8 +13,14 @@
         "console": "integratedTerminal",
         "internalConsoleOptions": "neverOpen",
         "args": ["--config", "default.js"],
-        "preLaunchTask": "build server"
-      },
+        "preLaunchTask": "build server",
+        "autoAttachChildProcesses": true,
+        "sourceMapPathOverrides": {
+            "webpack:///./*": "${workspaceFolder}/server/*",
+            "babel:///*": "*",
+            "*/src/*": "${workspaceFolder}/server/src/*"
+        }
+    },
       {
         "type": "node",
         "request": "launch",

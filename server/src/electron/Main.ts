@@ -68,6 +68,8 @@ export default class Main {
 
   version: string = "0.0.0"
 
+  packageData: any
+
   hasDisplay(): boolean {
     if (
       process.platform.startsWith("win") ||
@@ -90,8 +92,17 @@ export default class Main {
 
   async run(): Promise<void> {
     log.info(`Starting RobotLab-X...`)
-    // FIXME - set version !!!
     log.info(`__dirname: ${__dirname}`)
+    const packageJsonPath = path.join(__dirname, "package.json")
+
+    try {
+      this.packageData = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8"))
+      console.log(`App Name: ${this.packageData.name}, Version: ${this.packageData.version}`)
+      this.version = this.packageData.version
+    } catch (error: any) {
+      console.error(`Failed to load package.json: ${error.message}`)
+    }
+
     this.appData = this.getAppDataPath()
     log.info(`getAppDataPath: ${this.appData}`)
 
