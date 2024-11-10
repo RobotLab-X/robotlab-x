@@ -62,7 +62,7 @@ jobs:
       - name: Make output file executable
         run: chmod +x dist/packages/RobotLab-X-${{ env.VERSION }}-x86_64.AppImage
 
-
+        # Upload to Amazon S3
       - uses: jakejarvis/s3-sync-action@master
         with:
           args: --acl public-read --follow-symlinks --delete
