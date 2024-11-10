@@ -19,11 +19,13 @@ jobs:
       CI: false
 
     steps:
-      - name: Set VERSION environment variable
+      - name: Verify Version Input and Set Environment Variable
         run: |
           echo "VERSION=${{ inputs.version }}" >> $GITHUB_ENV
+          echo "Passed version is: ${{ inputs.version }}"
           echo "All environment variables:"
           printenv
+        shell: bash
 
       - name: Checkout code
         uses: actions/checkout@v3
