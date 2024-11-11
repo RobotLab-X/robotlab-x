@@ -1328,7 +1328,7 @@ export default class RobotLabXRuntime extends Service {
 
     // make launch directory if it doesn't exist
     const main = Main.getInstance()
-    const launchDir = path.join(main.distRoot, "launch")
+    const launchDir = path.join(main.userData, "launch")
     if (!fs.existsSync(launchDir)) {
       fs.mkdirSync(launchDir, { recursive: true })
     }

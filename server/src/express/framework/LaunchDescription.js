@@ -1,5 +1,6 @@
 // FIXME - remove all Node serverside code
 // serialize must return strings
+import Main from "../../electron/Main"
 
 const fs = require("fs")
 const path = require("path")
@@ -49,7 +50,11 @@ class LaunchDescription {
   }
 
   toLDJS() {
-    const ldtpl = fs.readFileSync(path.join(__dirname, "LaunchDescription.tpl"), "utf8")
+    const main = Main.getInstance()
+    const ldtpl = fs.readFileSync(
+      path.join(main.publicRoot, "repo", "robotlabxruntime", "framework", "LaunchDescription.tpl"),
+      "utf8"
+    )
 
     let launchActions = ""
     let addNodesData = ""
@@ -60,7 +65,10 @@ class LaunchDescription {
     for (const [key, launchAction] of Object.entries(this.actions)) {
       const safeName = launchAction.name.replaceAll(".", "_").replaceAll("@", "_").replaceAll("-", "_")
       console.log(`key ${key} s ${launchAction}`)
-      let lsdAction = fs.readFileSync(path.join(__dirname, "LaunchAction.tpl"), "utf8")
+      let lsdAction = fs.readFileSync(
+        path.join(main.publicRoot, "repo", "robotlabxruntime", "framework", "LaunchAction.tpl"),
+        "utf8"
+      )
       lsdAction = lsdAction.replaceAll("{{name}}", launchAction.name).replaceAll("{{safeName}}", safeName)
       // lsdAction = lsdAction.replace("{{config}}", JSON.stringify(s.config))  Maybe Future?
       lsdAction = lsdAction.replaceAll("{{package}}", launchAction.package)

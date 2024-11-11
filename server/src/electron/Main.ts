@@ -135,8 +135,12 @@ export default class Main {
       }
       this.publicRoot = path.resolve(process.env.PUBLICROOT || path.join(this.distRoot, "express", "public"))
       this.userData = path.resolve(process.env.USERDATA || path.join(process.cwd(), "data"))
+      if (!fs.existsSync(this.userData)) {
+        fs.mkdirSync(this.userData)
+      }
+
       // FIXME - remove if possible
-      this.appData = path.resolve(process.env.USERDATA || path.join(process.cwd(), "data"))
+      // this.appData = path.resolve(process.env.USERDATA || path.join(process.cwd(), "data"))
 
       log.info(`bootServer: argv: ${JSON.stringify(this.argv)}`)
 

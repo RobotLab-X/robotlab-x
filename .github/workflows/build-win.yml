@@ -104,7 +104,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: us-east-1
         run: |
-          aws s3 cp "dist/packages/robotlab-x-${{env.VERSION}}-win.exe" "s3://robotlab-x-repo/robotlab-x-${{env.VERSION}}-win.exe"
+          aws s3 cp "dist/packages/robotlab-x-${{env.VERSION}}-win.zip" "s3://robotlab-x-repo/robotlab-x-${{env.VERSION}}-win.zip"
         shell: cmd
 
 
