@@ -497,10 +497,20 @@ export default class RobotLabXRuntime extends Service {
     log.info("started runtime")
   }
 
+  /**
+   * Starts a launch file - expects short name of the launch file
+   * file must be in the userData/launch directory
+   * @param shortLaunchName
+   */
   async start(shortLaunchName: string) {
     log.info(`Starting launcher: ${shortLaunchName}`)
     const main = Main.getInstance()
-    const filePath = path.join(main.publicRoot, "repo", "robotlabxruntime", "launch", shortLaunchName)
+    let filePath = null
+    if (path.isAbsolute(shortLaunchName)) {
+      filePath = shortLaunchName
+    } else {
+      filePath = path.join(main.userData, "launch", shortLaunchName)
+    }
     log.info(`Starting file path: ${filePath}`)
     const launchDescription = RobotLabXRuntime.getLaunchDescription(filePath)
     this.launch(launchDescription)
@@ -974,9 +984,7 @@ export default class RobotLabXRuntime extends Service {
     return conn
   }
 
-  getLaunchFiles(
-    launchDir: string = path.join(Main.getInstance().publicRoot, "repo", "robotlabxruntime", "launch") // FIXME default should be users launch dir not systems
-  ): any[] {
+  getLaunchFiles(launchDir: string = path.join(Main.getInstance().userData, "launch")): any[] {
     const main = Main.getInstance()
     log.info(`getLaunchFiles scanning directory ${launchDir}`)
     const launchFiles: any[] = []
@@ -990,9 +998,9 @@ export default class RobotLabXRuntime extends Service {
           log.error(`error: ${error}`)
         }
         launchFiles.push({
-          imageUrl: path.join(launchDir, file),
           description: ld?.description,
-          path: file
+          path: file,
+          file: path.join(launchDir, file)
         })
       }
     })
@@ -1007,7 +1015,7 @@ export default class RobotLabXRuntime extends Service {
     }
 
     const main = Main.getInstance()
-    const launchDir = path.join(main.publicRoot, "repo", "robotlabxruntime", "launch", fileName)
+    const launchDir = path.join(main.userData, "launch", fileName)
     log.info(`saveLaunchFile saving to ${launchDir}`)
     fs.writeFileSync(launchDir, content, "utf8")
   }
@@ -1015,13 +1023,16 @@ export default class RobotLabXRuntime extends Service {
   getLaunchFile(fileName: string): any {
     log.info(`getLaunchFile ${fileName}`)
 
+    // FIXME - file must be explicit path, additionally
+    // for security it should be checked with allowed paths .e.g
+    // the userData launch directory
+
     if (!fileName.toLowerCase().endsWith(".js")) {
       fileName = fileName + ".js"
     }
-    const main = Main.getInstance()
-    const launchDir = path.join(main.publicRoot, "repo", "robotlabxruntime", "launch", fileName)
-    log.info(`publishLaunchFiles scanning directory ${launchDir}`)
-    const launchFile = fs.readFileSync(launchDir, "utf8")
+    // const main = Main.getInstance()
+    // const launchDir = path.join(main.userData, "launch", fileName)
+    const launchFile = fs.readFileSync(fileName, "utf8")
     return launchFile
   }
 

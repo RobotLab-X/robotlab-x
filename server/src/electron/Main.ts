@@ -139,9 +139,6 @@ export default class Main {
         fs.mkdirSync(this.userData)
       }
 
-      // FIXME - remove if possible
-      // this.appData = path.resolve(process.env.USERDATA || path.join(process.cwd(), "data"))
-
       log.info(`bootServer: argv: ${JSON.stringify(this.argv)}`)
 
       this.argv = minimist(process.argv.slice(2), {
@@ -149,9 +146,7 @@ export default class Main {
 
         // FIXME - be able to override defaults
         default: {
-          // distRoot: path.join(__dirname, ".."),
-          // publicRoot: path.join(__dirname, "..", "express", "public"),
-          launchFile: path.join(this.publicRoot, "repo", "robotlabxruntime", "launch", "default.js")
+          launchFile: path.join(this.userData, "launch", "default.js")
         }
       })
 
@@ -201,6 +196,36 @@ export default class Main {
       if (this.hasArg("--help")) {
         this.printHelp()
         return
+      }
+
+      // launchFile: path.join(this.publicRoot, "repo", "robotlabxruntime", "launch", "default.js")
+
+      let defaultLaunchFile = path.join(this.userData, "launch", "default.js")
+
+      if (!fs.existsSync(defaultLaunchFile)) {
+        fs.mkdirSync(path.join(this.userData, "launch"))
+        fs.writeFileSync(
+          defaultLaunchFile,
+          fs.readFileSync(path.join(this.publicRoot, "repo", "robotlabxruntime", "launch", "default.js"), "utf8"),
+          "utf8"
+        )
+      }
+
+      // check if start.yml exists and if there is an autoLaunch
+      let startYmlPath = path.join(this.userData, "start.yml")
+      if (fs.existsSync(startYmlPath)) {
+        let startYml = yaml.parse(fs.readFileSync(startYmlPath, "utf8"))
+        if (startYml.autoLaunch) {
+          log.info(`start.yml found ${startYmlPath}`)
+          this.argv.launchFile = startYml.launchFile
+        }
+      } else {
+        log.info(`start.yml not found in ${startYmlPath}`)
+        let ymlstr = yaml.stringify({
+          autoLaunch: false,
+          launchFile: path.relative(process.cwd(), path.join(this.userData, "launch", "default.js"))
+        })
+        fs.writeFileSync(startYmlPath, ymlstr, "utf8")
       }
 
       // start RobotLabXRuntime

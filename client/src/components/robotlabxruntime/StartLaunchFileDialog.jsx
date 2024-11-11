@@ -37,7 +37,7 @@ export default function StartLaunchFileDialog({ fullname, open, onClose, launchF
   // TODO !!! - make this get("saveLaunchFile", filename, content) or put/post("saveLaunchFile", filename, content)
   useEffect(() => {
     if (selectedFile) {
-      const filename = isExampleFile ? `examples%2F${selectedFile}` : selectedFile
+      const filename = encodeURIComponent(selectedFile)
       const url = `${getApiUrl()}/${fullname}/getLaunchFile/"${filename}"`
       console.log("Fetching file content from URL:", url)
       fetch(url)
@@ -66,11 +66,7 @@ export default function StartLaunchFileDialog({ fullname, open, onClose, launchF
   }
 
   const handleLaunch = () => {
-    if (isExampleFile) {
-      sendTo(fullname, "start", `examples/${selectedFile}`)
-    } else {
-      sendTo(fullname, "start", selectedFile)
-    }
+    sendTo(fullname, "start", selectedFile)    
     onClose()
   }
 
@@ -153,8 +149,8 @@ export default function StartLaunchFileDialog({ fullname, open, onClose, launchF
                     <ListItem
                       button
                       key={index}
-                      selected={selectedFile === file.path}
-                      onClick={() => handleFileClick(file.path)}
+                      selected={selectedFile === file.file}
+                      onClick={() => handleFileClick(file.file)}
                     >
                       <div
                         style={{
