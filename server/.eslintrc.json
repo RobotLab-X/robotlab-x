@@ -1,0 +1,23 @@
+{
+  "parser": "@typescript-eslint/parser",
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:prettier/recommended" // Use Prettier if needed
+  ],
+  "plugins": ["@typescript-eslint", "prettier"],
+  "rules": {
+    "semi": ["error", "never"], // Enforce no semicolons
+    "@typescript-eslint/semi": ["error", "never"], // Apply to TypeScript files
+    "prettier/prettier": [
+      "error",
+      {
+        "semi": false // Disable semicolons in Prettier as well
+      }
+    ]
+  },
+  "env": {
+    "browser": true,
+    "node": true
+  }
+}
