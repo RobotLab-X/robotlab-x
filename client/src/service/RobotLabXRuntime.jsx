@@ -1,7 +1,6 @@
 import ExpandLessIcon from "@mui/icons-material/ExpandLess"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
-import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined"
-import { IconButton, Paper, Tab, Table, TableBody, TableCell, TableRow, Tabs, Typography } from "@mui/material"
+import { Paper, Tab, Table, TableBody, TableCell, TableRow, Tabs, Typography } from "@mui/material"
 import ConnectionsPanel from "components/robotlabxruntime/ConnectionsPanel"
 import HostsPanel from "components/robotlabxruntime/HostsPanel"
 import ProcessesPanel from "components/robotlabxruntime/ProcessesPanel"
@@ -47,7 +46,7 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
   return (
     <>
       <h3 style={{ display: "flex", alignItems: "center", cursor: "pointer" }} onClick={toggleEditMode}>
-        Configuration
+        Info
         {editMode ? <ExpandLessIcon /> : <ExpandMoreIcon />}
       </h3>
       {editMode && (
@@ -55,19 +54,6 @@ export default function RobotLabXRuntime({ name, fullname, id }) {
           <Paper style={{ display: "inline-block", overflowX: "auto", margin: "2px" }}>
             <Table size="small" aria-label="a dense table">
               <TableBody>
-                <TableRow>
-                  <TableCell colSpan={"2"}>
-                    <Typography>Configuration Set</Typography>
-                  </TableCell>
-                  <TableCell colSpan={"2"}>
-                    <Typography>
-                      {service?.configName}
-                      <IconButton type="button" onClick={() => setConfigurationDialogOpen(true)}>
-                        <SettingsOutlinedIcon />
-                      </IconButton>
-                    </Typography>
-                  </TableCell>
-                </TableRow>
                 <TableRow>
                   <TableCell>
                     <Typography>Hostname</Typography>

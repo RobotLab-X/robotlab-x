@@ -93,9 +93,6 @@ export default class RobotLabXRuntime extends Service {
 
   // OVERRIDES Service.ts
   config = {
-    autoLaunch: true,
-    // cannot be null !!! - should be in topBar
-    launchFile: "default.js",
     id: null as string,
     logLevel: "info",
     port: 3001,
@@ -1327,14 +1324,12 @@ export default class RobotLabXRuntime extends Service {
         listeners = {}
       }
 
-      if (service.typeKey !== "RobotLabXUI") {
-        ld.addNode({
-          package: service.typeKey.toLowerCase(),
-          name: service.name,
-          config: service.config,
-          listeners: listeners
-        })
-      }
+      ld.addNode({
+        package: service.typeKey.toLowerCase(),
+        name: service.name,
+        config: service.config,
+        listeners: listeners
+      })
     }
 
     // make launch directory if it doesn't exist

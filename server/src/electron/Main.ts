@@ -198,12 +198,14 @@ export default class Main {
         return
       }
 
-      // launchFile: path.join(this.publicRoot, "repo", "robotlabxruntime", "launch", "default.js")
+      // create data launch directory
+      if (!fs.existsSync(this.userData)) {
+        fs.mkdirSync(this.userData, { recursive: true })
+      }
 
       let defaultLaunchFile = path.join(this.userData, "launch", "default.js")
 
       if (!fs.existsSync(defaultLaunchFile)) {
-        fs.mkdirSync(path.join(this.userData, "launch"))
         fs.writeFileSync(
           defaultLaunchFile,
           fs.readFileSync(path.join(this.publicRoot, "repo", "robotlabxruntime", "launch", "default.js"), "utf8"),
@@ -217,7 +219,11 @@ export default class Main {
         let startYml = yaml.parse(fs.readFileSync(startYmlPath, "utf8"))
         if (startYml.autoLaunch) {
           log.info(`start.yml found ${startYmlPath}`)
-          this.argv.launchFile = startYml.launchFile
+          this.argv.launchFile = path.resolve(startYml.launchFile)
+          if (!fs.existsSync(this.argv.launchFile)) {
+            log.error(`start.yml launchFile ${this.argv.launchFile} not found`)
+            this.argv.launchFile = path.join(this.userData, "launch", "default.js")
+          }
         }
       } else {
         log.info(`start.yml not found in ${startYmlPath}`)

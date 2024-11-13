@@ -13,7 +13,7 @@ function generateLaunchDescription() {
   const runtime = {
     package: "robotlabxruntime",
     name: "runtime",
-    config: { autoLaunch: true, id: "rlx", launchFile: "default.js", logLevel: "info", port: 3001, connect: [] },
+    config: { autoLaunch: true, id: "rlx", logLevel: "info", port: 3001, connect: [] },
     listeners: {}
   }
 

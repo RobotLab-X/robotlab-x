@@ -12,8 +12,6 @@ const writeFileAsync = util.promisify(fs.writeFile)
 const readdirAsync = util.promisify(fs.readdir)
 const statAsync = util.promisify(fs.stat)
 
-const openScripts = {}
-
 /**
  * @class Node
  * @extends Service
@@ -24,6 +22,13 @@ export default class Node extends Service {
    * @property {NodeConfig} config - The configuration for the node service.
    */
   config = {}
+
+  /**
+   * @property {Record<string, { content: string }>} openScripts - Dictionary of open scripts with their content.
+   */
+  openScripts: Record<string, { content: string }> = {}
+
+  lastScannedFiles: string[] = []
 
   /**
    * Creates an instance of Node.
@@ -41,13 +46,62 @@ export default class Node extends Service {
     public hostname: string
   ) {
     super(id, name, typeKey, version, hostname)
+    this.scanDirectory()
   }
 
   /**
-   * Stops the Node service.
+   * Adds a script to openScripts by loading its content if it's a .js file.
+   * @param {string} filePath - The path of the JavaScript file to open.
+   * @returns {Promise<void>} A promise that resolves when the file is added to openScripts.
    */
-  stopService(): void {
-    super.stopService()
+  async openScript(filePath: string): Promise<void> {
+    if (path.extname(filePath) !== ".js") {
+      log.error(`File ${filePath} is not a .js file`)
+      throw new Error("Only JavaScript files (.js) can be opened")
+    }
+
+    try {
+      const content = await readFileAsync(filePath, "utf8")
+      this.openScripts[filePath] = { content }
+      log.info(`Script ${filePath} opened successfully`)
+    } catch (error) {
+      log.error(`Error opening script ${filePath}: ${error}`)
+      throw error
+    }
+  }
+
+  /**
+   * Saves the content of an open script to the file system.
+   * @param {string} filePath - The path of the script to save.
+   * @returns {Promise<void>} A promise that resolves when the script is saved.
+   */
+  async saveScript(filePath: string): Promise<void> {
+    const script = this.openScripts[filePath]
+    if (!script) {
+      log.error(`Script ${filePath} is not open`)
+      throw new Error(`Script ${filePath} is not open`)
+    }
+
+    try {
+      await writeFileAsync(filePath, script.content, "utf8")
+      log.info(`Script ${filePath} saved successfully`)
+    } catch (error) {
+      log.error(`Error saving script ${filePath}: ${error}`)
+      throw error
+    }
+  }
+
+  /**
+   * Closes a script by removing it from openScripts.
+   * @param {string} filePath - The path of the script to close.
+   */
+  closeScript(filePath: string): void {
+    if (this.openScripts[filePath]) {
+      delete this.openScripts[filePath]
+      log.info(`Script ${filePath} closed successfully`)
+    } else {
+      log.warn(`Script ${filePath} is not open`)
+    }
   }
 
   /**
@@ -55,10 +109,11 @@ export default class Node extends Service {
    * @param {string} directoryPath - The path of the directory to scan.
    * @returns {Promise<string[]>} A promise that resolves to an array of file paths.
    */
-  async scanDirectory(directoryPath: string = "."): Promise<string[]> {
+  async scanDirectory(directoryPath: string = "."): Promise<string[] | null> {
     try {
       const files = await readdirAsync(directoryPath)
-      return files.map((file) => path.join(directoryPath, file))
+      this.lastScannedFiles = files.map((file) => path.join(directoryPath, file))
+      return this.lastScannedFiles
     } catch (error) {
       log.error(`Error scanning directory ${directoryPath}: ${error}`)
       throw error
@@ -132,7 +187,9 @@ export default class Node extends Service {
    */
   toJSON() {
     return {
-      ...super.toJSON()
+      ...super.toJSON(),
+      openScripts: Object.keys(this.openScripts), // Serialize only the keys of openScripts
+      lastScannedFiles: this.lastScannedFiles
     }
   }
 }
