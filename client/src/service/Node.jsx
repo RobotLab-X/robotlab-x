@@ -23,6 +23,7 @@ export default function Node({ fullname }) {
   useEffect(() => {
     async function fetchFileTree() {
       // const files = await getScripts()
+      console.info(`lastScannedFiles ${service?.lastScannedFiles}`)
       setFileTree(service?.lastScannedFiles)
     }
     // fetchFileTree()
