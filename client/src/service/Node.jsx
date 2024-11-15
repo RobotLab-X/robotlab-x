@@ -3,9 +3,8 @@ import "ace-builds/src-noconflict/ace"
 import "ace-builds/src-noconflict/ext-language_tools"
 import "ace-builds/src-noconflict/mode-javascript"
 import "ace-builds/src-noconflict/theme-monokai"
-import React, { useEffect, useState } from "react"
+import React, { useState } from "react"
 import AceEditor from "react-ace"
-
 import { Treebeard } from "react-treebeard"
 import useStore from "store/store"
 import useSubscription from "store/useSubscription"
@@ -13,21 +12,25 @@ import useSubscription from "store/useSubscription"
 export default function Node({ fullname }) {
   console.info(`Node ${fullname}`)
 
-  const [fileTree, setFileTree] = useState({})
+  const [fileTree, setFileTree] = useState({
+    name: "scripts",
+    toggled: true,
+    children: [
+      { name: "script1.js", path: "scripts/script1.js" },
+      { name: "script2.js", path: "scripts/script2.js" },
+      {
+        name: "nested",
+        children: [
+          { name: "script3.js", path: "scripts/nested/script3.js" },
+          { name: "script4.js", path: "scripts/nested/script4.js" }
+        ]
+      }
+    ]
+  })
   const [expanded, setExpanded] = useState(false)
   const { sendTo } = useStore()
   const [selectedScript, setSelectedScript] = useState(null)
   const service = useSubscription(fullname, "broadcastState", true)
-
-  // Load the file tree on mount
-  useEffect(() => {
-    async function fetchFileTree() {
-      // const files = await getScripts()
-      console.info(`lastScannedFiles ${service?.lastScannedFiles}`)
-      setFileTree(service?.lastScannedFiles)
-    }
-    // fetchFileTree()
-  }, [])
 
   // Handler to toggle the file browser
   const toggleFileBrowser = () => setExpanded(!expanded)
@@ -74,7 +77,16 @@ export default function Node({ fullname }) {
   const handleTabChange = (event, newFilePath) => setSelectedScript(newFilePath)
 
   // Render the file tree structure
-  const renderFileTree = (data) => <Treebeard data={data} onToggle={({ node }) => handleOpenScript(node.path)} />
+  const renderFileTree = (data) => (
+    <Treebeard
+      data={data}
+      onToggle={(node, toggled) => {
+        node.toggled = toggled
+        if (node.path) handleOpenScript(node.path)
+        setFileTree({ ...fileTree })
+      }}
+    />
+  )
 
   return (
     <Box display="flex" height="100%">
@@ -115,7 +127,7 @@ export default function Node({ fullname }) {
         {selectedScript && (
           <AceEditor
             mode="javascript"
-            theme="github"
+            theme="monokai"
             value={service?.openScripts[selectedScript]?.content || ""}
             onChange={(newContent) =>
               setOpenScripts((prev) => ({

@@ -9,6 +9,7 @@ import path from "path"
 import { send } from "process"
 import { v4 as uuidv4 } from "uuid"
 import { WebSocket } from "ws"
+import yaml from "yaml"
 import Main from "../../electron/Main"
 import Store from "../Store"
 import { CodecUtil } from "../framework/CodecUtil"
@@ -62,6 +63,8 @@ export default class RobotLabXRuntime extends Service {
   // local packages
   protected types: { [id: string]: ServiceTypeData } = {}
 
+  protected main: Main = Main.getInstance()
+
   /**
    * routeTable - a map of process ids to their immediate connections
    * id's to connection clientIds (should be array of uuids ?)
@@ -87,7 +90,7 @@ export default class RobotLabXRuntime extends Service {
       defaultRoute: this.defaultRoute,
       routeTable: this.routeTable,
       types: this.types,
-      main: Main.getInstance().toJSON()
+      main: this.main.toJSON()
     }
   }
 
@@ -388,7 +391,7 @@ export default class RobotLabXRuntime extends Service {
       log.info("generated launchDescription")
 
       // Process the configuration - this example just logs the loaded configuration
-      // xxx this will need to be fixed
+      // this will need to be fixed
       log.info(`Loaded configuration with ${launchDescription?.actions?.length} actions.`)
       return launchDescription
     } catch (error) {
@@ -1233,6 +1236,23 @@ export default class RobotLabXRuntime extends Service {
     return services
   }
 
+  setAutoLaunch(filename: string, autolaunch: boolean): void {
+    log.info(`setAutoLaunch ${filename} ${autolaunch}`)
+
+    if (!filename.toLowerCase().endsWith(".js")) {
+      filename = filename + ".js"
+    }
+
+    let f = path.join(this.main.userData, "launch", filename)
+
+    let startYmlPath = path.join(this.main.userData, "start.yml")
+    const ymlstr = yaml.stringify({
+      autoLaunch: autolaunch,
+      launchFile: f
+    })
+    fs.writeFileSync(startYmlPath, ymlstr, "utf8")
+  }
+
   /**
    * Build LaunchDescription from running services
    */
@@ -1267,22 +1287,12 @@ export default class RobotLabXRuntime extends Service {
       const serviceName = serviceNames[i]
       const service: Service = this.getLatestServiceData(serviceName)
 
-      // if (service.name === "runtime") {
-      //   continue
-      // }
+      // TODO filter remote "non-locally" started services - proxies
 
-      if (service.typeKey === "RobotLabXRuntime") {
-        // immutable
+      if (service.typeKey == null || service.typeKey === "RobotLabXUI") {
+        log.info(`skipping service ${service.name} has no package not responsible for serializing`)
         continue
       }
-
-      // FIXME - responsible for local proxies, but not remote proxies,
-      // nor connected services - how to distinguish ?
-
-      // if (service.pkg === null) {
-      //   log.warn(`skipping service ${service.name} has no package not responsible for serializing`)
-      //   continue
-      // }
 
       log.info(`adding service ${service.fullname} ${service.name} ${service.typeKey}`)
 

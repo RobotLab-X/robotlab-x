@@ -52,10 +52,8 @@ const ServicesPanel = ({ id, fullname, name }) => {
   const handleSave = (filename, autolaunch) => {
     console.info(`Saving launch file as: ${filename}`)
     setSaveLaunchFileDialogOpen(false)
-    if (autolaunch) {
-      sendTo(fullname, "applyConfigValue", "autoLaunch", filename)
-    }
     sendTo(fullname, "saveAll", filename)
+    sendTo(fullname, "setAutoLaunch", filename, autolaunch)
   }
 
   return (

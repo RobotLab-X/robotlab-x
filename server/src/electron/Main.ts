@@ -206,6 +206,13 @@ export default class Main {
       let defaultLaunchFile = path.join(this.userData, "launch", "default.js")
 
       if (!fs.existsSync(defaultLaunchFile)) {
+        const dirPath = path.dirname(defaultLaunchFile)
+
+        // Ensure the directory exists
+        if (!fs.existsSync(dirPath)) {
+          fs.mkdirSync(dirPath, { recursive: true })
+        }
+
         fs.writeFileSync(
           defaultLaunchFile,
           fs.readFileSync(path.join(this.publicRoot, "repo", "robotlabxruntime", "launch", "default.js"), "utf8"),

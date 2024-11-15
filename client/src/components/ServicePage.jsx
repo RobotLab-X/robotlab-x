@@ -39,7 +39,7 @@ const ServicePage = ({ fullname, name, id }) => {
 
   let resolvedType = registered.typeKey === "Proxy" ? registered.pkg.typeKey : registered.typeKey
   resolvedType = resolvedType?.includes(".") ? "MyRobotLabProxy" : resolvedType
-  console.error(`resolvedType ${resolvedType}`)
+  console.info(`resolvedType ${resolvedType}`)
   const { sendTo } = useStore()
   const getRepoUrl = useStore((state) => state.getRepoUrl)
   const [showJson, setShowJson] = useState(false)

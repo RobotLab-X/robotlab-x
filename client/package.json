@@ -138,6 +138,7 @@
     "react-split-pane": "^0.1.92",
     "react-step-wizard": "^5.3.11",
     "react-terminal-ui": "^1.2.0",
+    "react-treebeard": "^3.2.4",
     "react18-json-view": "^0.2.8",
     "swagger-ui-react": "^5.17.14",
     "ua-parser-js": "^1.0.37",
