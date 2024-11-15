@@ -51,6 +51,12 @@ jobs:
       - name: Install Client
         run: yarn install-client
 
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: client-artifact
+          path: server/dist/client
+
   build-linux:
     needs: generate-version
     uses: ./.github/workflows/build-linux.yml
