@@ -16,7 +16,7 @@ export default function Node({ fullname }) {
   const [expanded, setExpanded] = useState(false)
   const { sendTo } = useStore()
   const [selectedScript, setSelectedScript] = useState(null)
-  const fileTree = useSubscription(fullname, "scanDirectory")
+  const fileTree = useSubscription(fullname, "publishFileTree", true)
 
   // Handler to toggle the file browser
   const toggleFileBrowser = () => setExpanded(!expanded)
@@ -62,15 +62,38 @@ export default function Node({ fullname }) {
   // Handler for tab change
   const handleTabChange = (event, newFilePath) => setSelectedScript(newFilePath)
 
+  // Handler for directory selection in file tree
+  const handleDirectorySelect = (nodeId) => {
+    const selectedNode = findNodeById(fileTree, nodeId)
+    if (selectedNode && selectedNode.isDirectory) {
+      sendTo(fullname, "scanDirectory", nodeId)
+      console.info(`Directory selected: ${nodeId}`)
+    }
+  }
+
+  // Utility to find a node by its ID in the file tree
+  const findNodeById = (nodes, id) => {
+    for (const node of nodes) {
+      if (node.id === id) return node
+      if (node.children) {
+        const found = findNodeById(node.children, id)
+        if (found) return found
+      }
+    }
+    return null
+  }
+
   // Render the file tree structure
-  const renderFileTree = (data) => <RichTreeView items={data} />
+  const renderFileTree = (data) => (
+    <RichTreeView items={data} onNodeSelect={(event, nodeId) => handleDirectorySelect(nodeId)} />
+  )
 
   return (
     <Box display="flex" height="100%">
       {/* Collapsible File Browser */}
       <Box width={expanded ? "25%" : "5%"} display="flex" flexDirection="column">
         <Button onClick={toggleFileBrowser}>{expanded ? "Collapse" : "Expand"} Browser</Button>
-        {expanded && renderFileTree(service?.fileTree || [])}
+        {expanded && renderFileTree(fileTree || [])}
       </Box>
 
       {/* Main Editor Section */}

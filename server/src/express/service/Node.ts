@@ -1,4 +1,4 @@
-import fs from "fs/promises"
+import fs from "fs"
 import path from "path"
 import util from "util"
 import Main from "../../electron/Main"
@@ -59,7 +59,7 @@ export default class Node extends Service {
   ) {
     super(id, name, typeKey, version, hostname)
     let main = Main.getInstance()
-    // this.scanDirectory(path.join(main.userData, "types", "Node", "scripts"))
+    this.scanDirectory(path.join(main.userData, "types", "Node", "scripts"))
   }
 
   /**
@@ -118,45 +118,44 @@ export default class Node extends Service {
   }
 
   /**
-   * Scans a directory and merges it with the fileTree.
+   * Scans a directory synchronously and merges it with the fileTree.
    * @param {string} directoryPath - The path of the directory to scan.
-   * @returns {Promise<FileTreeNode[]>} A promise that resolves to the updated fileTree.
+   * @returns {FileTreeNode[]} The updated fileTree.
    */
-  async scanDirectory(
+  scanDirectory(
     directoryPath: string = path.join(Main.getInstance().userData, "types", "Node", "scripts")
-  ): Promise<FileTreeNode[]> {
+  ): FileTreeNode[] {
     try {
       const absolutePath = path.resolve(directoryPath)
-      const files = await fs.readdir(absolutePath, { withFileTypes: true })
+      const files = fs.readdirSync(absolutePath, { withFileTypes: true })
 
-      const children: FileTreeNode[] = await Promise.all(
-        files.map(async (file): Promise<FileTreeNode> => {
-          const filePath = path.join(absolutePath, file.name)
-          const stats = await fs.stat(filePath) // Get file stats
-          return {
-            id: filePath, // Use absolute path as the ID
-            label: file.name,
-            isDirectory: file.isDirectory(),
-            modifiedDate: stats.mtime, // Last modified date
-            creationDate: stats.birthtime, // Creation date
-            children: file.isDirectory() ? [] : undefined // Initially empty for directories
-          }
-        })
-      )
+      const children: FileTreeNode[] = files.map((file): FileTreeNode => {
+        const filePath = path.join(absolutePath, file.name)
+        const stats = fs.statSync(filePath) // Get file stats synchronously
+        return {
+          id: filePath, // Use absolute path as the ID
+          label: file.name,
+          isDirectory: file.isDirectory(),
+          modifiedDate: stats.mtime, // Last modified date
+          creationDate: stats.birthtime, // Creation date
+          children: file.isDirectory() ? [] : undefined // Initially empty for directories
+        }
+      })
 
       const newTree: FileTreeNode = {
         id: absolutePath, // Use absolute path as the ID
         label: path.basename(absolutePath),
         isDirectory: true, // The scanned directory is always a directory
-        modifiedDate: (await fs.stat(absolutePath)).mtime, // Last modified date of the directory
-        creationDate: (await fs.stat(absolutePath)).birthtime, // Creation date of the directory
+        modifiedDate: fs.statSync(absolutePath).mtime, // Last modified date of the directory
+        creationDate: fs.statSync(absolutePath).birthtime, // Creation date of the directory
         children
       }
 
       // Merge the new directory into the existing fileTree
       this.mergeFileTree(this.fileTree, newTree)
 
-      this.invoke("scannedDirectory", directoryPath, this.fileTree)
+      // fileTree possibly modified - publish results
+      this.invoke("publishFileTree", this.fileTree)
       return this.fileTree
     } catch (error) {
       console.error(`Error scanning directory ${directoryPath}:`, error)
@@ -201,22 +200,24 @@ export default class Node extends Service {
     }
   }
 
-  scannedDirectory(directory: string, files: string[]): any {
-    log.info(`scannedDirectory ${directory} ${files}`)
-    return { directory: directory, files: files }
+  publishFileTree(): any {
+    return this.fileTree
+  }
+
+  getFileTree(): any {
+    return this.fileTree
   }
 
   /**
-   * Gets the contents of a file.
+   * Gets the contents of a file synchronously.
    * @param {string} filePath - The path of the file.
-   * @returns {Promise<string>} A promise that resolves to the file contents.
+   * @returns {string} The file contents.
    */
-  async getFile(filePath: string): Promise<string> {
+  getFile(filePath: string): string {
     try {
-      const data = await fs.readFile(filePath, "utf8") // Correct method from 'fs/promises'
+      const data = fs.readFileSync(filePath, "utf8") // Use readFileSync for synchronous reading
       return data
     } catch (error) {
-      // Safely handle error typing
       if (error instanceof Error) {
         log.error(`Error reading file ${filePath}: ${error.message}`)
       } else {
@@ -225,6 +226,7 @@ export default class Node extends Service {
       throw error
     }
   }
+
   /**
    * Writes data to a file.
    * @param {string} filePath - The path of the file.
@@ -242,13 +244,12 @@ export default class Node extends Service {
   }
 
   /**
-   * Deletes a file.
+   * Deletes a file synchronously.
    * @param {string} filePath - The path of the file to delete.
-   * @returns {Promise<void>} A promise that resolves when the file is deleted.
    */
-  async deleteFile(filePath: string): Promise<void> {
+  deleteFile(filePath: string): void {
     try {
-      await fs.unlink(filePath) // Directly call unlink from fs/promises
+      fs.unlinkSync(filePath) // Use unlinkSync for synchronous deletion
       log.info(`File deleted successfully at ${filePath}`)
     } catch (error) {
       if (error instanceof Error) {
@@ -261,13 +262,13 @@ export default class Node extends Service {
   }
 
   /**
-   * Checks if a file exists.
+   * Checks if a file exists synchronously.
    * @param {string} filePath - The path of the file to check.
-   * @returns {Promise<boolean>} A promise that resolves to true if the file exists, otherwise false.
+   * @returns {boolean} True if the file exists, otherwise false.
    */
-  async fileExists(filePath: string): Promise<boolean> {
+  fileExists(filePath: string): boolean {
     try {
-      await fs.stat(filePath) // No second argument is required
+      fs.statSync(filePath) // Use statSync to check file existence
       return true
     } catch {
       return false
