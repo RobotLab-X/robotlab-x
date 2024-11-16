@@ -1,32 +1,46 @@
 import { Box, Button, Tab, Tabs } from "@mui/material"
+import { RichTreeView } from "@mui/x-tree-view/RichTreeView"
 import "ace-builds/src-noconflict/ace"
 import "ace-builds/src-noconflict/ext-language_tools"
 import "ace-builds/src-noconflict/mode-javascript"
 import "ace-builds/src-noconflict/theme-monokai"
 import React, { useState } from "react"
 import AceEditor from "react-ace"
-import { Treebeard } from "react-treebeard"
 import useStore from "store/store"
 import useSubscription from "store/useSubscription"
 
 export default function Node({ fullname }) {
   console.info(`Node ${fullname}`)
 
-  const [fileTree, setFileTree] = useState({
-    name: "scripts",
-    toggled: true,
-    children: [
-      { name: "script1.js", path: "scripts/script1.js" },
-      { name: "script2.js", path: "scripts/script2.js" },
-      {
-        name: "nested",
-        children: [
-          { name: "script3.js", path: "scripts/nested/script3.js" },
-          { name: "script4.js", path: "scripts/nested/script4.js" }
-        ]
-      }
-    ]
-  })
+  const [fileTree, setFileTree] = useState([
+    {
+      id: "grid",
+      label: "Data Grid",
+      children: [
+        { id: "grid-community", label: "@mui/x-data-grid" },
+        { id: "grid-pro", label: "@mui/x-data-grid-pro" },
+        { id: "grid-premium", label: "@mui/x-data-grid-premium" }
+      ]
+    },
+    {
+      id: "pickers",
+      label: "Date and Time Pickers",
+      children: [
+        { id: "pickers-community", label: "@mui/x-date-pickers" },
+        { id: "pickers-pro", label: "@mui/x-date-pickers-pro" }
+      ]
+    },
+    {
+      id: "charts",
+      label: "Charts",
+      children: [{ id: "charts-community", label: "@mui/x-charts" }]
+    },
+    {
+      id: "tree-view",
+      label: "Tree View",
+      children: [{ id: "tree-view-community", label: "@mui/x-tree-view" }]
+    }
+  ])
   const [expanded, setExpanded] = useState(false)
   const { sendTo } = useStore()
   const [selectedScript, setSelectedScript] = useState(null)
@@ -77,16 +91,7 @@ export default function Node({ fullname }) {
   const handleTabChange = (event, newFilePath) => setSelectedScript(newFilePath)
 
   // Render the file tree structure
-  const renderFileTree = (data) => (
-    <Treebeard
-      data={data}
-      onToggle={(node, toggled) => {
-        node.toggled = toggled
-        if (node.path) handleOpenScript(node.path)
-        setFileTree({ ...fileTree })
-      }}
-    />
-  )
+  const renderFileTree = (data) => <RichTreeView items={data} />
 
   return (
     <Box display="flex" height="100%">
