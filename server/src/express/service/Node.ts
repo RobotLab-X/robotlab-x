@@ -14,11 +14,13 @@ const readdirAsync = util.promisify(fs.readdir)
 const statAsync = util.promisify(fs.stat)
 
 interface FileTreeNode {
-  id: string
-  label: string
-  children?: FileTreeNode[]
+  id: string // Absolute path
+  label: string // Name of the file or directory
+  isDirectory: boolean // Whether the node is a directory
+  modifiedDate: Date // Last modified date
+  creationDate: Date // Creation date
+  children?: FileTreeNode[] // Children for directories
 }
-
 /**
  * @class Node
  * @extends Service
@@ -127,23 +129,27 @@ export default class Node extends Service {
       const absolutePath = path.resolve(directoryPath)
       const files = await fs.readdir(absolutePath, { withFileTypes: true })
 
-      const children: FileTreeNode[] = files.map((file): FileTreeNode => {
-        const filePath = path.join(absolutePath, file.name)
-        return file.isDirectory()
-          ? {
-              id: filePath, // Use absolute path as the ID
-              label: file.name,
-              children: [] // Initially empty; will be populated later when clicked
-            }
-          : {
-              id: filePath, // Use absolute path as the ID
-              label: file.name
-            }
-      })
+      const children: FileTreeNode[] = await Promise.all(
+        files.map(async (file): Promise<FileTreeNode> => {
+          const filePath = path.join(absolutePath, file.name)
+          const stats = await fs.stat(filePath) // Get file stats
+          return {
+            id: filePath, // Use absolute path as the ID
+            label: file.name,
+            isDirectory: file.isDirectory(),
+            modifiedDate: stats.mtime, // Last modified date
+            creationDate: stats.birthtime, // Creation date
+            children: file.isDirectory() ? [] : undefined // Initially empty for directories
+          }
+        })
+      )
 
       const newTree: FileTreeNode = {
         id: absolutePath, // Use absolute path as the ID
         label: path.basename(absolutePath),
+        isDirectory: true, // The scanned directory is always a directory
+        modifiedDate: (await fs.stat(absolutePath)).mtime, // Last modified date of the directory
+        creationDate: (await fs.stat(absolutePath)).birthtime, // Creation date of the directory
         children
       }
 
