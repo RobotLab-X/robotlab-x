@@ -12,39 +12,11 @@ import useSubscription from "store/useSubscription"
 export default function Node({ fullname }) {
   console.info(`Node ${fullname}`)
 
-  const [fileTree, setFileTree] = useState([
-    {
-      id: "grid",
-      label: "Data Grid",
-      children: [
-        { id: "grid-community", label: "@mui/x-data-grid" },
-        { id: "grid-pro", label: "@mui/x-data-grid-pro" },
-        { id: "grid-premium", label: "@mui/x-data-grid-premium" }
-      ]
-    },
-    {
-      id: "pickers",
-      label: "Date and Time Pickers",
-      children: [
-        { id: "pickers-community", label: "@mui/x-date-pickers" },
-        { id: "pickers-pro", label: "@mui/x-date-pickers-pro" }
-      ]
-    },
-    {
-      id: "charts",
-      label: "Charts",
-      children: [{ id: "charts-community", label: "@mui/x-charts" }]
-    },
-    {
-      id: "tree-view",
-      label: "Tree View",
-      children: [{ id: "tree-view-community", label: "@mui/x-tree-view" }]
-    }
-  ])
+  const service = useSubscription(fullname, "broadcastState", true)
   const [expanded, setExpanded] = useState(false)
   const { sendTo } = useStore()
   const [selectedScript, setSelectedScript] = useState(null)
-  const service = useSubscription(fullname, "broadcastState", true)
+  const fileTree = useSubscription(fullname, "scanDirectory")
 
   // Handler to toggle the file browser
   const toggleFileBrowser = () => setExpanded(!expanded)
@@ -98,7 +70,7 @@ export default function Node({ fullname }) {
       {/* Collapsible File Browser */}
       <Box width={expanded ? "25%" : "5%"} display="flex" flexDirection="column">
         <Button onClick={toggleFileBrowser}>{expanded ? "Collapse" : "Expand"} Browser</Button>
-        {expanded && renderFileTree(fileTree)}
+        {expanded && renderFileTree(service?.fileTree || [])}
       </Box>
 
       {/* Main Editor Section */}
