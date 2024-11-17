@@ -90,31 +90,30 @@ export default function Node({ fullname }) {
     <Box display="flex" height="100%">
       {/* Collapsible File Browser */}
       <Box width={expanded ? "25%" : "5%"} display="flex" flexDirection="column">
-        <IconButton onClick={toggleFileBrowser}>{expanded ? <ChevronLeft /> : <ChevronRight />}</IconButton>
+        <Box display="flex" alignItems="center" padding={1}>
+          <IconButton onClick={toggleFileBrowser}>{expanded ? <ChevronLeft /> : <ChevronRight />}</IconButton>
+          <Tooltip title="Save">
+            <IconButton onClick={() => handleSaveScript(selectedScript)}>
+              <Save />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Run">
+            <IconButton onClick={() => sendTo(fullname, "runScript", selectedScript)}>
+              <PlayArrow />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Delete">
+            <IconButton onClick={() => sendTo(fullname, "deleteScript", selectedScript)}>
+              <Delete />
+            </IconButton>
+          </Tooltip>
+        </Box>
         {expanded && renderFileTree(fileTree || [])}
       </Box>
+
       {/* Main Editor Section */}
       <Box width={expanded ? "75%" : "95%"} display="flex" flexDirection="column" flexGrow={1}>
         {/* Toolbar for actions */}
-        {selectedScript && (
-          <Box display="flex" alignItems="center" padding={1}>
-            <Tooltip title="Save">
-              <IconButton onClick={() => handleSaveScript(selectedScript)}>
-                <Save />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Run">
-              <IconButton onClick={() => sendTo(fullname, "runScript", selectedScript)}>
-                <PlayArrow />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Delete">
-              <IconButton onClick={() => sendTo(fullname, "deleteScript", selectedScript)}>
-                <Delete />
-              </IconButton>
-            </Tooltip>
-          </Box>
-        )}
         {/* Tabs for open scripts */}
         {openScripts && Object.keys(openScripts).length > 0 && (
           <Tabs value={selectedScript || Object.keys(openScripts)[0]} onChange={handleTabChange}>

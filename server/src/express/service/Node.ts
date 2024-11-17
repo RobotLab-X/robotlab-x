@@ -300,6 +300,76 @@ export default class Node extends Service {
   }
 
   /**
+   * Runs a JavaScript script in the same application context and publishes its console output.
+   * @param {string} filePath - The path of the script to run.
+   */
+  async runScript(filePath: string): Promise<void> {
+    const script = this.openScripts[filePath]
+    if (!script) {
+      log.error(`Script ${filePath} is not open and cannot be run`)
+      throw new Error(`Script ${filePath} is not open`)
+    }
+
+    try {
+      // Capture console output
+      const consoleOutput: string[] = []
+      const originalConsole = console
+
+      const captureConsole = {
+        log: (...args: any[]) => {
+          const message = args.join(" ")
+          consoleOutput.push(message)
+          originalConsole.log(message)
+        },
+        error: (...args: any[]) => {
+          const message = args.join(" ")
+          consoleOutput.push(`ERROR: ${message}`)
+          originalConsole.error(message)
+        },
+        warn: (...args: any[]) => {
+          const message = args.join(" ")
+          consoleOutput.push(`WARN: ${message}`)
+          originalConsole.warn(message)
+        },
+        info: (...args: any[]) => {
+          const message = args.join(" ")
+          consoleOutput.push(`INFO: ${message}`)
+          originalConsole.info(message)
+        }
+      }
+
+      // Temporarily replace the global console with the capturing console
+      global.console = captureConsole
+
+      this.invoke("publishConsole", { filePath, consoleOutput })
+
+      try {
+        // Execute the script directly
+        const scriptFunction = new Function(script.content)
+        scriptFunction()
+      } finally {
+        // Restore the original console
+        global.console = originalConsole
+      }
+
+      log.info(`Script ${filePath} ran successfully`)
+    } catch (error: any) {
+      log.error(`Error running script ${filePath}: ${error}`)
+      throw error
+    }
+  }
+
+  /**
+   * Publishes console output for a specific script.
+   * @param {string} filePath - The path of the script.
+   * @param {string[]} output - The console output to publish.
+   */
+  publishConsole(filePath: string, output: string[]): string[] {
+    log.info(`Console output published for script ${filePath}`)
+    return output
+  }
+
+  /**
    * Serializes the Node instance to JSON.
    * Excludes intervalId from serialization.
    * @returns {object} The serialized Node instance.
