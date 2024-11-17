@@ -16,21 +16,15 @@ export default function Node({ fullname }) {
   const [expanded, setExpanded] = useState(false)
   const { sendTo } = useStore()
   const [selectedScript, setSelectedScript] = useState(null)
-  const [openScripts, setOpenScripts] = useState({}) // Stores open scripts and their content
   const fileTree = useSubscription(fullname, "publishFileTree", true)
+  const openScripts = useSubscription(fullname, "publishOpenScripts", true)
 
   // Handler to toggle the file browser
   const toggleFileBrowser = () => setExpanded(!expanded)
 
   // Handler to open a script in a new tab
   const handleOpenScript = async (filePath, label) => {
-    if (!openScripts[filePath]) {
-      const content = await sendTo(fullname, "openScript", filePath) // Fetch script content
-      setOpenScripts((prev) => ({
-        ...prev,
-        [filePath]: { label, content }
-      }))
-    }
+    sendTo(fullname, "openScript", filePath) // Fetch script content
     setSelectedScript(filePath)
   }
 
@@ -45,10 +39,7 @@ export default function Node({ fullname }) {
   // Handler to close a script
   const handleCloseScript = (filePath) => {
     const { [filePath]: _, ...remainingScripts } = openScripts
-    setOpenScripts(remainingScripts)
-    if (selectedScript === filePath) {
-      setSelectedScript(Object.keys(remainingScripts)[0] || null)
-    }
+    setSelectedScript(Object.keys(remainingScripts)[0] || null)
   }
 
   // Handler for tab change
@@ -94,7 +85,7 @@ export default function Node({ fullname }) {
       {/* Main Editor Section */}
       <Box width={expanded ? "75%" : "95%"} display="flex" flexDirection="column" flexGrow={1}>
         {/* Tabs for open scripts */}
-        {Object.keys(openScripts).length > 0 && (
+        {openScripts && Object.keys(openScripts).length > 0 && (
           <Tabs value={selectedScript} onChange={handleTabChange}>
             {Object.keys(openScripts).map((filePath) => (
               <Tab key={filePath} label={openScripts[filePath].label} value={filePath} />
@@ -113,11 +104,11 @@ export default function Node({ fullname }) {
         )}
 
         {/* Ace Editor for script content */}
-        {selectedScript && openScripts[selectedScript] && (
+        {selectedScript && openScripts[selectedScript]?.content && (
           <AceEditor
             mode="javascript"
             theme="monokai"
-            value={openScripts[selectedScript].content}
+            value={openScripts[selectedScript]?.content || "// No content available"}
             onChange={(newContent) =>
               setOpenScripts((prev) => ({
                 ...prev,

@@ -76,6 +76,7 @@ export default class Node extends Service {
     try {
       const content: any = await readFileAsync(filePath, "utf8")
       this.openScripts[filePath] = { content }
+      this.invoke("publishOpenScripts")
       log.info(`Script ${filePath} opened successfully`)
     } catch (error) {
       log.error(`Error opening script ${filePath}: ${error}`)
@@ -204,6 +205,10 @@ export default class Node extends Service {
     return this.fileTree
   }
 
+  publishOpenScripts(): any {
+    return this.openScripts
+  }
+
   getFileTree(): any {
     return this.fileTree
   }
@@ -283,7 +288,8 @@ export default class Node extends Service {
   toJSON() {
     return {
       ...super.toJSON(),
-      openScripts: Object.keys(this.openScripts), // Serialize only the keys of openScripts
+      // openScripts: Object.keys(this.openScripts), // Serialize only the keys of openScripts
+      openScripts: this.openScripts,
       fileTree: this.fileTree
     }
   }
