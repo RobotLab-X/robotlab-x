@@ -7,6 +7,7 @@ import "ace-builds/src-noconflict/mode-javascript"
 import "ace-builds/src-noconflict/theme-monokai"
 import React, { useState } from "react"
 import AceEditor from "react-ace"
+import "react-resizable/css/styles.css"
 import useStore from "store/store"
 import useSubscription from "store/useSubscription"
 
@@ -19,6 +20,18 @@ export default function Node({ fullname }) {
   const [selectedScript, setSelectedScript] = useState(null)
   const fileTree = useSubscription(fullname, "publishFileTree", true)
   const openScripts = useSubscription(fullname, "publishOpenScripts", true)
+  const publishConsole = useSubscription(fullname, "publishConsole")
+  // const [consoleLog, setConsoleLog] = useState([])
+
+  // useEffect(() => {
+  //   if (publishConsole) {
+  //     // Append new message only if it's not already in the consoleLog
+  //     setConsoleLog((prevLog) => {
+  //       if (prevLog[prevLog.length - 1] === publishConsole) return prevLog // Prevent duplicates
+  //       return [...prevLog, publishConsole]
+  //     })
+  //   }
+  // }, [publishConsole]) // Trigger effect whenever publishConsole changes
 
   // Handler to toggle the file browser
   const toggleFileBrowser = () => setExpanded(!expanded)
@@ -87,86 +100,101 @@ export default function Node({ fullname }) {
   }
 
   return (
-    <Box display="flex" height="100%">
-      {/* Collapsible File Browser */}
-      <Box width={expanded ? "25%" : "5%"} display="flex" flexDirection="column">
-        <Box display="flex" alignItems="center" padding={1}>
-          <IconButton onClick={toggleFileBrowser}>{expanded ? <ChevronLeft /> : <ChevronRight />}</IconButton>
-          <Tooltip title="Save">
-            <IconButton onClick={() => handleSaveScript(selectedScript)}>
-              <Save />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Run">
-            <IconButton onClick={() => sendTo(fullname, "runScript", selectedScript)}>
-              <PlayArrow />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Delete">
-            <IconButton onClick={() => sendTo(fullname, "deleteScript", selectedScript)}>
-              <Delete />
-            </IconButton>
-          </Tooltip>
-        </Box>
-        {expanded && renderFileTree(fileTree || [])}
-      </Box>
-
-      {/* Main Editor Section */}
-      <Box width={expanded ? "75%" : "95%"} display="flex" flexDirection="column" flexGrow={1}>
-        {/* Toolbar and Tabs Section */}
-        <Box display="flex" flexDirection="column">
-          {/* Toolbar */}
+    <>
+      <Box display="flex" height="100%">
+        {/* Collapsible File Browser */}
+        <Box width={expanded ? "15%" : "0%"} display="flex" flexDirection="column">
           <Box display="flex" alignItems="center" padding={1}>
-            &nbsp;
+            <IconButton onClick={toggleFileBrowser}>{expanded ? <ChevronLeft /> : <ChevronRight />}</IconButton>
+            <Tooltip title="Save">
+              <IconButton onClick={() => handleSaveScript(selectedScript)}>
+                <Save />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Run">
+              <IconButton onClick={() => sendTo(fullname, "runScript", selectedScript)}>
+                <PlayArrow />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Delete">
+              <IconButton onClick={() => sendTo(fullname, "deleteScript", selectedScript)}>
+                <Delete />
+              </IconButton>
+            </Tooltip>
           </Box>
-          {/* Tabs */}
-          {openScripts && Object.keys(openScripts).length > 0 && (
-            <Tabs value={selectedScript || Object.keys(openScripts)[0]} onChange={handleTabChange}>
-              {Object.keys(openScripts).map((filePath) => {
-                const fileName = getFileName(filePath) // Extract the file name cross-platform
-                return (
-                  <Tab
-                    key={filePath}
-                    label={
-                      <Box display="flex" alignItems="center">
-                        {fileName}
-                        <IconButton
-                          size="small"
-                          onClick={(e) => {
-                            e.stopPropagation() // Prevent tab switching on close
-                            handleCloseScript(filePath) // Notify server and close tab
-                          }}
-                        >
-                          <Close fontSize="small" />
-                        </IconButton>
-                      </Box>
-                    }
-                    value={filePath}
-                    sx={{
-                      textTransform: "none" // Prevent uppercase transformation
-                    }}
-                  />
-                )
-              })}
-            </Tabs>
-          )}
+          {expanded && renderFileTree(fileTree || [])}
         </Box>
-        {/* Ace Editor for script content */}
-        {selectedScript && openScripts[selectedScript]?.content && (
-          <AceEditor
-            mode="javascript"
-            theme="monokai"
-            value={openScripts[selectedScript]?.content || "// No content available"}
-            onChange={handleEditorChange}
-            name="script-editor"
-            editorProps={{ $blockScrolling: true }}
-            width="100%"
+
+        {/* Main Editor Section */}
+        <Box width={expanded ? "85%" : "100%"} display="flex" flexDirection="column" flexGrow={1}>
+          {/* Toolbar and Tabs Section */}
+          <Box display="flex" flexDirection="column">
+            {/* Toolbar */}
+            <Box display="flex" alignItems="center" padding={1}>
+              &nbsp;
+            </Box>
+            {/* Tabs */}
+            {openScripts && Object.keys(openScripts).length > 0 && (
+              <Tabs value={selectedScript || Object.keys(openScripts)[0]} onChange={handleTabChange}>
+                {Object.keys(openScripts).map((filePath) => {
+                  const fileName = getFileName(filePath) // Extract the file name cross-platform
+                  return (
+                    <Tab
+                      key={filePath}
+                      label={
+                        <Box display="flex" alignItems="center">
+                          {fileName}
+                          <IconButton
+                            size="small"
+                            onClick={(e) => {
+                              e.stopPropagation() // Prevent tab switching on close
+                              handleCloseScript(filePath) // Notify server and close tab
+                            }}
+                          >
+                            <Close fontSize="small" />
+                          </IconButton>
+                        </Box>
+                      }
+                      value={filePath}
+                      sx={{
+                        textTransform: "none" // Prevent uppercase transformation
+                      }}
+                    />
+                  )
+                })}
+              </Tabs>
+            )}
+          </Box>
+          {/* Ace Editor for script content */}
+          {selectedScript && openScripts[selectedScript]?.content && (
+            <AceEditor
+              mode="javascript"
+              theme="monokai"
+              value={openScripts[selectedScript]?.content || "// No content available"}
+              onChange={handleEditorChange}
+              name="script-editor"
+              editorProps={{ $blockScrolling: true }}
+              width="100%"
+              height="100%"
+              minLines={50} // Set a minimum of 50 lines
+              maxLines={Infinity}
+            />
+          )}
+          {/* Console Area */}
+          <Box
+            component="pre"
+            bgcolor="#272822"
+            color="#C2E4D7"
+            overflow="auto"
             height="100%"
-            minLines={50} // Set a minimum of 50 lines
-            maxLines={Infinity}
-          />
-        )}
+            padding={0}
+            fontFamily="monospace"
+          >
+            {/* Replace with actual console content */}
+            {publishConsole}
+          </Box>
+        </Box>
       </Box>
-    </Box>
+    </>
   )
 }

@@ -1,5 +1,6 @@
 import fs from "fs"
 import path from "path"
+import { Writable } from "stream"
 import util from "util"
 import Main from "../../electron/Main"
 import { getLogger } from "../framework/LocalLog"
@@ -311,49 +312,35 @@ export default class Node extends Service {
     }
 
     try {
-      // Capture console output
-      const consoleOutput: string[] = []
-      const originalConsole = console
-
-      const captureConsole = {
-        log: (...args: any[]) => {
-          const message = args.join(" ")
-          consoleOutput.push(message)
-          originalConsole.log(message)
-        },
-        error: (...args: any[]) => {
-          const message = args.join(" ")
-          consoleOutput.push(`ERROR: ${message}`)
-          originalConsole.error(message)
-        },
-        warn: (...args: any[]) => {
-          const message = args.join(" ")
-          consoleOutput.push(`WARN: ${message}`)
-          originalConsole.warn(message)
-        },
-        info: (...args: any[]) => {
-          const message = args.join(" ")
-          consoleOutput.push(`INFO: ${message}`)
-          originalConsole.info(message)
+      // Create a writable stream to capture console output
+      const outputStream = new Writable({
+        write: (chunk, encoding, callback) => {
+          const message = chunk.toString().trim()
+          this.invoke("publishConsole", filePath, message)
+          log.info(`[Script Output] ${message}`) // Optional: Log locally
+          callback()
         }
-      }
+      })
 
-      // Temporarily replace the global console with the capturing console
-      global.console = captureConsole
+      // Create a custom console using the writable stream
+      const customConsole = new console.Console(outputStream)
 
-      this.invoke("publishConsole", { filePath, consoleOutput })
+      // Replace global console with custom console
+      const originalConsole = global.console
+      global.console = customConsole
 
       try {
-        // Execute the script directly
+        // Execute the script content
         const scriptFunction = new Function(script.content)
         scriptFunction()
       } finally {
-        // Restore the original console
+        // Restore the original console after execution
         global.console = originalConsole
       }
 
       log.info(`Script ${filePath} ran successfully`)
     } catch (error: any) {
+      this.invoke("publishConsole", { filePath, message: `ERROR: ${error.message || error}` })
       log.error(`Error running script ${filePath}: ${error}`)
       throw error
     }
@@ -364,8 +351,8 @@ export default class Node extends Service {
    * @param {string} filePath - The path of the script.
    * @param {string[]} output - The console output to publish.
    */
-  publishConsole(filePath: string, output: string[]): string[] {
-    log.info(`Console output published for script ${filePath}`)
+  publishConsole(filePath: string, output: string): string {
+    log.info(`Console output published for script ${filePath} ${output}`)
     return output
   }
 
