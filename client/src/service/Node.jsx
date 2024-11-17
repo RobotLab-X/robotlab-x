@@ -37,12 +37,12 @@ export default function Node({ fullname }) {
     }
   }
 
-  // Handler to close a script
   const handleCloseScript = (filePath) => {
-    const { [filePath]: _, ...remainingScripts } = openScripts
-    setSelectedScript(Object.keys(remainingScripts)[0] || null)
+    sendTo(fullname, "closeScript", filePath)
+    sendTo(fullname, "publishOpenScripts")
+    delete openScripts[filePath] // Remove the closed script locally
+    setSelectedScript(Object.keys(openScripts)[0] || null)
   }
-
   // Handler for tab change
   const handleTabChange = (event, newFilePath) => setSelectedScript(newFilePath)
 
@@ -126,7 +126,7 @@ export default function Node({ fullname }) {
                         size="small"
                         onClick={(e) => {
                           e.stopPropagation() // Prevent tab switching on close
-                          handleCloseScript(filePath)
+                          handleCloseScript(filePath) // Notify server and close tab
                         }}
                       >
                         <Close fontSize="small" />
