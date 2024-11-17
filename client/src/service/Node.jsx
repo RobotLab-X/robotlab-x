@@ -16,47 +16,39 @@ export default function Node({ fullname }) {
   const [expanded, setExpanded] = useState(false)
   const { sendTo } = useStore()
   const [selectedScript, setSelectedScript] = useState(null)
+  const [openScripts, setOpenScripts] = useState({}) // Stores open scripts and their content
   const fileTree = useSubscription(fullname, "publishFileTree", true)
 
   // Handler to toggle the file browser
   const toggleFileBrowser = () => setExpanded(!expanded)
 
   // Handler to open a script in a new tab
-  const handleOpenScript = async (filePath) => {
-    const content = await openScript(filePath)
-    setOpenScripts((prev) => ({
-      ...prev,
-      [filePath]: { content }
-    }))
+  const handleOpenScript = async (filePath, label) => {
+    if (!openScripts[filePath]) {
+      const content = await sendTo(fullname, "openScript", filePath) // Fetch script content
+      setOpenScripts((prev) => ({
+        ...prev,
+        [filePath]: { label, content }
+      }))
+    }
     setSelectedScript(filePath)
   }
 
   // Handler to save the currently selected script
   const handleSaveScript = async (filePath) => {
-    if (service?.openScripts[filePath]) {
-      sendTo(fullname, "saveScript", filePath, service?.openScripts[filePath].content)
+    if (openScripts[filePath]) {
+      sendTo(fullname, "saveScript", filePath, openScripts[filePath].content)
       console.info(`Script ${filePath} saved`)
     }
   }
 
   // Handler to close a script
   const handleCloseScript = (filePath) => {
-    const newOpenScripts = { ...service?.openScripts }
-    delete newOpenScripts[filePath]
-    setOpenScripts(newOpenScripts)
-    if (selectedScript === filePath) setSelectedScript(null)
-  }
-
-  // Handler to delete a script
-  const handleDeleteScript = async (filePath) => {
-    sendTo(fullname, "deleteScript", filePath)
-    handleCloseScript(filePath)
-  }
-
-  // Handler to run a script
-  const handleRunScript = async (filePath) => {
-    sendTo(fullname, "runScript", filePath)
-    console.info(`Script ${filePath} running`)
+    const { [filePath]: _, ...remainingScripts } = openScripts
+    setOpenScripts(remainingScripts)
+    if (selectedScript === filePath) {
+      setSelectedScript(Object.keys(remainingScripts)[0] || null)
+    }
   }
 
   // Handler for tab change
@@ -74,12 +66,15 @@ export default function Node({ fullname }) {
     return null
   }
 
+  // Handle item click in the file tree
   const handleItemClick = (event, nodeId) => {
-    console.info(`Item clicked: ${nodeId}`)
     const selectedNode = findNodeById(fileTree, nodeId)
-    if (selectedNode && selectedNode.isDirectory) {
-      sendTo(fullname, "scanDirectory", nodeId)
-      console.info(`Directory selected: ${nodeId}`)
+    if (selectedNode) {
+      if (selectedNode.isDirectory) {
+        sendTo(fullname, "scanDirectory", nodeId)
+      } else {
+        handleOpenScript(nodeId, selectedNode.label)
+      }
     }
   }
 
@@ -97,42 +92,36 @@ export default function Node({ fullname }) {
       </Box>
 
       {/* Main Editor Section */}
-      <Box width="75%" display="flex" flexDirection="column" flexGrow={1}>
+      <Box width={expanded ? "75%" : "95%"} display="flex" flexDirection="column" flexGrow={1}>
         {/* Tabs for open scripts */}
-        {Object.keys(service?.openScripts || {}).length > 0 && (
-          <Tabs value={selectedScript || Object.keys(service?.openScripts)[0]} onChange={handleTabChange}>
-            {Object.keys(service?.openScripts || {}).map((filePath) => (
-              <Tab key={filePath} label={filePath} value={filePath} />
+        {Object.keys(openScripts).length > 0 && (
+          <Tabs value={selectedScript} onChange={handleTabChange}>
+            {Object.keys(openScripts).map((filePath) => (
+              <Tab key={filePath} label={openScripts[filePath].label} value={filePath} />
             ))}
           </Tabs>
         )}
 
         {/* Script Action Buttons */}
-        <Box display="flex" justifyContent="space-between" padding={1}>
-          <Button onClick={() => handleSaveScript(selectedScript)} disabled={!selectedScript}>
-            Save
-          </Button>
-          <Button onClick={() => handleRunScript(selectedScript)} disabled={!selectedScript}>
-            Run
-          </Button>
-          <Button onClick={() => handleCloseScript(selectedScript)} disabled={!selectedScript}>
-            Close
-          </Button>
-          <Button onClick={() => handleDeleteScript(selectedScript)} disabled={!selectedScript}>
-            Delete
-          </Button>
-        </Box>
+        {selectedScript && (
+          <Box display="flex" justifyContent="space-between" padding={1}>
+            <Button onClick={() => handleSaveScript(selectedScript)}>Save</Button>
+            <Button onClick={() => sendTo(fullname, "runScript", selectedScript)}>Run</Button>
+            <Button onClick={() => handleCloseScript(selectedScript)}>Close</Button>
+            <Button onClick={() => sendTo(fullname, "deleteScript", selectedScript)}>Delete</Button>
+          </Box>
+        )}
 
         {/* Ace Editor for script content */}
-        {selectedScript && (
+        {selectedScript && openScripts[selectedScript] && (
           <AceEditor
             mode="javascript"
             theme="monokai"
-            value={service?.openScripts[selectedScript]?.content || ""}
+            value={openScripts[selectedScript].content}
             onChange={(newContent) =>
               setOpenScripts((prev) => ({
                 ...prev,
-                [selectedScript]: { content: newContent }
+                [selectedScript]: { ...prev[selectedScript], content: newContent }
               }))
             }
             name="script-editor"
