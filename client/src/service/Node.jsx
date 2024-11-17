@@ -62,15 +62,6 @@ export default function Node({ fullname }) {
   // Handler for tab change
   const handleTabChange = (event, newFilePath) => setSelectedScript(newFilePath)
 
-  // Handler for directory selection in file tree
-  const handleDirectorySelect = (nodeId) => {
-    const selectedNode = findNodeById(fileTree, nodeId)
-    if (selectedNode && selectedNode.isDirectory) {
-      sendTo(fullname, "scanDirectory", nodeId)
-      console.info(`Directory selected: ${nodeId}`)
-    }
-  }
-
   // Utility to find a node by its ID in the file tree
   const findNodeById = (nodes, id) => {
     for (const node of nodes) {
@@ -83,9 +74,18 @@ export default function Node({ fullname }) {
     return null
   }
 
+  const handleItemClick = (event, nodeId) => {
+    console.info(`Item clicked: ${nodeId}`)
+    const selectedNode = findNodeById(fileTree, nodeId)
+    if (selectedNode && selectedNode.isDirectory) {
+      sendTo(fullname, "scanDirectory", nodeId)
+      console.info(`Directory selected: ${nodeId}`)
+    }
+  }
+
   // Render the file tree structure
   const renderFileTree = (data) => (
-    <RichTreeView items={data} onNodeSelect={(event, nodeId) => handleDirectorySelect(nodeId)} />
+    <RichTreeView items={data} onItemClick={(event, nodeId) => handleItemClick(event, nodeId)} />
   )
 
   return (
