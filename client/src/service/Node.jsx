@@ -189,10 +189,7 @@ export default function Node({ fullname }) {
             height="100%"
             padding={0}
             fontFamily="monospace"
-          >
-            {/* Replace with actual console content */}
-            {publishConsole}
-          </Box>
+          ></Box>
         </Box>
       </Box>
     </>
