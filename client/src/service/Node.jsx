@@ -30,9 +30,13 @@ export default function Node({ fullname }) {
   }
 
   // Handler to save the currently selected script
-  const handleSaveScript = (filePath) => {
+  const handleSaveScript = (filePath, newContent) => {
     if (openScripts[filePath]) {
-      sendTo(fullname, "saveScript", filePath, openScripts[filePath].content)
+      if (newContent) {
+        sendTo(fullname, "saveScript", filePath, newContent)
+      } else {
+        sendTo(fullname, "saveScript", filePath, openScripts[filePath].content)
+      }
       console.info(`Script ${filePath} saved`)
     }
   }
@@ -79,7 +83,7 @@ export default function Node({ fullname }) {
 
   const handleEditorChange = (newContent) => {
     console.info(`Editor content changed: ${selectedScript} ${newContent}`)
-    sendTo(fullname, "updateScript", selectedScript, newContent)
+    sendTo(fullname, "saveScript", selectedScript, newContent)
   }
 
   return (

@@ -90,6 +90,7 @@ export default class Node extends Service {
    * @param content is the new content of the script.
    */
   async updateScript(filePath: string, content: string): Promise<void> {
+    console.info(`updateScript ${filePath} ${content}`)
     const script = this.openScripts[filePath]
     if (!script) {
       log.error(`Script ${filePath} is not open`)
@@ -104,7 +105,7 @@ export default class Node extends Service {
    * @param {string} filePath - The path of the script to save.
    * @returns {Promise<void>} A promise that resolves when the script is saved.
    */
-  async saveScript(filePath: string): Promise<void> {
+  async saveScript(filePath: string, content: string): Promise<void> {
     const script = this.openScripts[filePath]
     if (!script) {
       log.error(`Script ${filePath} is not open`)
@@ -112,8 +113,11 @@ export default class Node extends Service {
     }
 
     try {
+      if (content) {
+        script.content = content
+      }
       await writeFileAsync(filePath, script.content, "utf8")
-      log.info(`Script ${filePath} saved successfully`)
+      log.info(`Script ${filePath} ${content} saved successfully`)
     } catch (error) {
       log.error(`Error saving script ${filePath}: ${error}`)
       throw error
