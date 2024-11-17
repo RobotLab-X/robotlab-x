@@ -113,38 +113,44 @@ export default function Node({ fullname }) {
 
       {/* Main Editor Section */}
       <Box width={expanded ? "75%" : "95%"} display="flex" flexDirection="column" flexGrow={1}>
-        {/* Toolbar for actions */}
-        {/* Tabs for open scripts */}
-        {openScripts && Object.keys(openScripts).length > 0 && (
-          <Tabs value={selectedScript || Object.keys(openScripts)[0]} onChange={handleTabChange}>
-            {Object.keys(openScripts).map((filePath) => {
-              const fileName = getFileName(filePath) // Extract the file name cross-platform
-              return (
-                <Tab
-                  key={filePath}
-                  label={
-                    <Box display="flex" alignItems="center">
-                      {fileName}
-                      <IconButton
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation() // Prevent tab switching on close
-                          handleCloseScript(filePath) // Notify server and close tab
-                        }}
-                      >
-                        <Close fontSize="small" />
-                      </IconButton>
-                    </Box>
-                  }
-                  value={filePath}
-                  sx={{
-                    textTransform: "none" // Prevent uppercase transformation
-                  }}
-                />
-              )
-            })}
-          </Tabs>
-        )}
+        {/* Toolbar and Tabs Section */}
+        <Box display="flex" flexDirection="column">
+          {/* Toolbar */}
+          <Box display="flex" alignItems="center" padding={1}>
+            &nbsp;
+          </Box>
+          {/* Tabs */}
+          {openScripts && Object.keys(openScripts).length > 0 && (
+            <Tabs value={selectedScript || Object.keys(openScripts)[0]} onChange={handleTabChange}>
+              {Object.keys(openScripts).map((filePath) => {
+                const fileName = getFileName(filePath) // Extract the file name cross-platform
+                return (
+                  <Tab
+                    key={filePath}
+                    label={
+                      <Box display="flex" alignItems="center">
+                        {fileName}
+                        <IconButton
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation() // Prevent tab switching on close
+                            handleCloseScript(filePath) // Notify server and close tab
+                          }}
+                        >
+                          <Close fontSize="small" />
+                        </IconButton>
+                      </Box>
+                    }
+                    value={filePath}
+                    sx={{
+                      textTransform: "none" // Prevent uppercase transformation
+                    }}
+                  />
+                )
+              })}
+            </Tabs>
+          )}
+        </Box>
         {/* Ace Editor for script content */}
         {selectedScript && openScripts[selectedScript]?.content && (
           <AceEditor
