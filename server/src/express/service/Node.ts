@@ -169,34 +169,34 @@ export default class Node extends Service {
    * @param {FileTreeNode} newTree - The new subtree to merge.
    */
   private mergeFileTree(existingTree: FileTreeNode[], newTree: FileTreeNode): void {
-    // Check if the node already exists in the current level of the tree
-    const existingNode = existingTree.find((node) => node.id === newTree.id)
-
-    if (existingNode) {
-      // If the node exists, merge its children
-      newTree.children?.forEach((child) => {
-        const existingChild = existingNode.children?.find((c) => c.id === child.id)
-        if (!existingChild) {
-          existingNode.children = existingNode.children || []
-          existingNode.children.push(child)
-        } else if (child.children) {
-          // Recursively merge child nodes
-          this.mergeFileTree(existingNode.children, child)
-        }
-      })
-    } else {
-      // If the node does not exist, search deeper to find the correct parent
-      for (const node of existingTree) {
+    const findNode = (tree: FileTreeNode[], id: string): FileTreeNode | undefined => {
+      for (const node of tree) {
+        if (node.id === id) return node
         if (node.children) {
-          this.mergeFileTree(node.children, newTree)
-          // Stop further recursion if the newTree was merged into the existingTree
-          if (node.children.some((child) => child.id === newTree.id)) {
-            return
-          }
+          const found = findNode(node.children, id)
+          if (found) return found
         }
       }
-      // Add the node to the current level only if it does not belong elsewhere
-      existingTree.push(newTree)
+      return undefined
+    }
+
+    const mergeNodes = (existingNode: FileTreeNode, newNode: FileTreeNode): void => {
+      if (!existingNode.children) existingNode.children = []
+      newNode.children?.forEach((newChild) => {
+        const existingChild = existingNode.children!.find((child) => child.id === newChild.id)
+        if (existingChild) {
+          mergeNodes(existingChild, newChild) // Recursively merge child nodes
+        } else {
+          existingNode.children!.push(newChild) // Add new child if it doesn't exist
+        }
+      })
+    }
+
+    const rootNode = findNode(existingTree, newTree.id)
+    if (rootNode) {
+      mergeNodes(rootNode, newTree) // Merge into the existing root node
+    } else {
+      existingTree.push(newTree) // Add as a new root if not found
     }
   }
 
