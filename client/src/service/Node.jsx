@@ -1,5 +1,5 @@
-import { ChevronLeft, ChevronRight } from "@mui/icons-material"
-import { Box, Button, Tab, Tabs } from "@mui/material"
+import { ChevronLeft, ChevronRight, Close, Delete, PlayArrow, Save } from "@mui/icons-material"
+import { Box, IconButton, Tab, Tabs, Tooltip } from "@mui/material"
 import { RichTreeView } from "@mui/x-tree-view/RichTreeView"
 import "ace-builds/src-noconflict/ace"
 import "ace-builds/src-noconflict/ext-language_tools"
@@ -30,7 +30,7 @@ export default function Node({ fullname }) {
   }
 
   // Handler to save the currently selected script
-  const handleSaveScript = async (filePath) => {
+  const handleSaveScript = (filePath) => {
     if (openScripts[filePath]) {
       sendTo(fullname, "saveScript", filePath, openScripts[filePath].content)
       console.info(`Script ${filePath} saved`)
@@ -43,7 +43,7 @@ export default function Node({ fullname }) {
     setSelectedScript(Object.keys(remainingScripts)[0] || null)
   }
 
-  // Handler for   change
+  // Handler for tab change
   const handleTabChange = (event, newFilePath) => setSelectedScript(newFilePath)
 
   // Utility to find a node by its ID in the file tree
@@ -86,11 +86,31 @@ export default function Node({ fullname }) {
     <Box display="flex" height="100%">
       {/* Collapsible File Browser */}
       <Box width={expanded ? "25%" : "5%"} display="flex" flexDirection="column">
-        <Button onClick={toggleFileBrowser} startIcon={expanded ? <ChevronLeft /> : <ChevronRight />}></Button>
+        <IconButton onClick={toggleFileBrowser}>{expanded ? <ChevronLeft /> : <ChevronRight />}</IconButton>
         {expanded && renderFileTree(fileTree || [])}
       </Box>
       {/* Main Editor Section */}
       <Box width={expanded ? "75%" : "95%"} display="flex" flexDirection="column" flexGrow={1}>
+        {/* Toolbar for actions */}
+        {selectedScript && (
+          <Box display="flex" alignItems="center" padding={1}>
+            <Tooltip title="Save">
+              <IconButton onClick={() => handleSaveScript(selectedScript)}>
+                <Save />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Run">
+              <IconButton onClick={() => sendTo(fullname, "runScript", selectedScript)}>
+                <PlayArrow />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Delete">
+              <IconButton onClick={() => sendTo(fullname, "deleteScript", selectedScript)}>
+                <Delete />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        )}
         {/* Tabs for open scripts */}
         {openScripts && Object.keys(openScripts).length > 0 && (
           <Tabs value={selectedScript || Object.keys(openScripts)[0]} onChange={handleTabChange}>
@@ -99,7 +119,20 @@ export default function Node({ fullname }) {
               return (
                 <Tab
                   key={filePath}
-                  label={fileName}
+                  label={
+                    <Box display="flex" alignItems="center">
+                      {fileName}
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation() // Prevent tab switching on close
+                          handleCloseScript(filePath)
+                        }}
+                      >
+                        <Close fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  }
                   value={filePath}
                   sx={{
                     textTransform: "none" // Prevent uppercase transformation
@@ -123,15 +156,6 @@ export default function Node({ fullname }) {
             minLines={50} // Set a minimum of 50 lines
             maxLines={Infinity}
           />
-        )}
-        <br />
-        {selectedScript && (
-          <Box display="flex" justifyContent="space-between" padding={1}>
-            <Button onClick={() => handleSaveScript(selectedScript)}>Save</Button>
-            <Button onClick={() => sendTo(fullname, "runScript", selectedScript)}>Run</Button>
-            <Button onClick={() => handleCloseScript(selectedScript)}>Close</Button>
-            <Button onClick={() => sendTo(fullname, "deleteScript", selectedScript)}>Delete</Button>
-          </Box>
         )}
       </Box>
     </Box>
