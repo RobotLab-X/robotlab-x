@@ -1,3 +1,4 @@
+import { ChevronLeft, ChevronRight } from "@mui/icons-material"
 import { Box, Button, Tab, Tabs } from "@mui/material"
 import { RichTreeView } from "@mui/x-tree-view/RichTreeView"
 import "ace-builds/src-noconflict/ace"
@@ -76,11 +77,16 @@ export default function Node({ fullname }) {
 
   const getFileName = (filePath) => filePath.split(/[/\\]/).pop()
 
+  const handleEditorChange = (newContent) => {
+    console.info(`Editor content changed: ${selectedScript} ${newContent}`)
+    sendTo(fullname, "updateScript", selectedScript, newContent)
+  }
+
   return (
     <Box display="flex" height="100%">
       {/* Collapsible File Browser */}
       <Box width={expanded ? "25%" : "5%"} display="flex" flexDirection="column">
-        <Button onClick={toggleFileBrowser}>{expanded ? "Collapse" : "Expand"} Browser</Button>
+        <Button onClick={toggleFileBrowser} startIcon={expanded ? <ChevronLeft /> : <ChevronRight />}></Button>
         {expanded && renderFileTree(fileTree || [])}
       </Box>
       {/* Main Editor Section */}
@@ -109,12 +115,7 @@ export default function Node({ fullname }) {
             mode="javascript"
             theme="monokai"
             value={openScripts[selectedScript]?.content || "// No content available"}
-            onChange={(newContent) =>
-              setOpenScripts((prev) => ({
-                ...prev,
-                [selectedScript]: { ...prev[selectedScript], content: newContent }
-              }))
-            }
+            onChange={handleEditorChange}
             name="script-editor"
             editorProps={{ $blockScrolling: true }}
             width="100%"

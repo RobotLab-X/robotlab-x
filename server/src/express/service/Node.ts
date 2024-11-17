@@ -85,6 +85,21 @@ export default class Node extends Service {
   }
 
   /**
+   * Updates the content of an open script.
+   * @param filePath is the path of the script to update.
+   * @param content is the new content of the script.
+   */
+  async updateScript(filePath: string, content: string): Promise<void> {
+    const script = this.openScripts[filePath]
+    if (!script) {
+      log.error(`Script ${filePath} is not open`)
+      throw new Error(`Script ${filePath} is not open`)
+    }
+
+    script.content = content
+  }
+
+  /**
    * Saves the content of an open script to the file system.
    * @param {string} filePath - The path of the script to save.
    * @returns {Promise<void>} A promise that resolves when the script is saved.
