@@ -42,7 +42,7 @@ export default function Node({ fullname }) {
     setSelectedScript(Object.keys(remainingScripts)[0] || null)
   }
 
-  // Handler for tab change
+  // Handler for   change
   const handleTabChange = (event, newFilePath) => setSelectedScript(newFilePath)
 
   // Utility to find a node by its ID in the file tree
@@ -74,6 +74,8 @@ export default function Node({ fullname }) {
     <RichTreeView items={data} onItemClick={(event, nodeId) => handleItemClick(event, nodeId)} />
   )
 
+  const getFileName = (filePath) => filePath.split(/[/\\]/).pop()
+
   return (
     <Box display="flex" height="100%">
       {/* Collapsible File Browser */}
@@ -81,28 +83,26 @@ export default function Node({ fullname }) {
         <Button onClick={toggleFileBrowser}>{expanded ? "Collapse" : "Expand"} Browser</Button>
         {expanded && renderFileTree(fileTree || [])}
       </Box>
-
       {/* Main Editor Section */}
       <Box width={expanded ? "75%" : "95%"} display="flex" flexDirection="column" flexGrow={1}>
         {/* Tabs for open scripts */}
         {openScripts && Object.keys(openScripts).length > 0 && (
-          <Tabs value={selectedScript} onChange={handleTabChange}>
-            {Object.keys(openScripts).map((filePath) => (
-              <Tab key={filePath} label={openScripts[filePath].label} value={filePath} />
-            ))}
+          <Tabs value={selectedScript || Object.keys(openScripts)[0]} onChange={handleTabChange}>
+            {Object.keys(openScripts).map((filePath) => {
+              const fileName = getFileName(filePath) // Extract the file name cross-platform
+              return (
+                <Tab
+                  key={filePath}
+                  label={fileName}
+                  value={filePath}
+                  sx={{
+                    textTransform: "none" // Prevent uppercase transformation
+                  }}
+                />
+              )
+            })}
           </Tabs>
         )}
-
-        {/* Script Action Buttons */}
-        {selectedScript && (
-          <Box display="flex" justifyContent="space-between" padding={1}>
-            <Button onClick={() => handleSaveScript(selectedScript)}>Save</Button>
-            <Button onClick={() => sendTo(fullname, "runScript", selectedScript)}>Run</Button>
-            <Button onClick={() => handleCloseScript(selectedScript)}>Close</Button>
-            <Button onClick={() => sendTo(fullname, "deleteScript", selectedScript)}>Delete</Button>
-          </Box>
-        )}
-
         {/* Ace Editor for script content */}
         {selectedScript && openScripts[selectedScript]?.content && (
           <AceEditor
@@ -119,7 +119,18 @@ export default function Node({ fullname }) {
             editorProps={{ $blockScrolling: true }}
             width="100%"
             height="100%"
+            minLines={50} // Set a minimum of 50 lines
+            maxLines={Infinity}
           />
+        )}
+        <br />
+        {selectedScript && (
+          <Box display="flex" justifyContent="space-between" padding={1}>
+            <Button onClick={() => handleSaveScript(selectedScript)}>Save</Button>
+            <Button onClick={() => sendTo(fullname, "runScript", selectedScript)}>Run</Button>
+            <Button onClick={() => handleCloseScript(selectedScript)}>Close</Button>
+            <Button onClick={() => sendTo(fullname, "deleteScript", selectedScript)}>Delete</Button>
+          </Box>
         )}
       </Box>
     </Box>
