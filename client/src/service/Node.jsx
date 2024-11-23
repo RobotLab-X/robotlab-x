@@ -26,17 +26,32 @@ export default function Node({ fullname }) {
   const keyName = `${fullname}.console`
   const clientConsoleLogs = useStore((state) => state.getRecords(keyName)(state))
 
+  // init logs
+  useEffect(() => {
+    if (!service?.consoleLogs) return
+    addRecords(keyName, service?.consoleLogs)
+  }, [service?.consoleLogs])
+
+  useEffect(() => {
+    if (openScripts && Object.keys(openScripts).length > 0) {
+      setExpanded(false) // Collapse the file browser if there are open scripts
+      setSelectedScript(Object.keys(openScripts)[0]) // Select the first script
+    } else {
+      setExpanded(true) // Expand the file browser if there are no open scripts
+    }
+  }, [service?.consoleLogs])
+
   useEffect(() => {
     if (consoleRef.current) {
       consoleRef.current.scrollTop = consoleRef.current.scrollHeight
     }
   }, [clientConsoleLogs])
 
-  // init logs
   useEffect(() => {
-    if (!service?.consoleLogs) return
-    addRecords(keyName, service?.consoleLogs)
-  }, [])
+    if (!selectedScript && openScripts && Object.keys(openScripts).length > 0) {
+      setSelectedScript(Object.keys(openScripts)[0])
+    }
+  }, [selectedScript, openScripts])
 
   // Handle new logBatch messages
   useEffect(() => {
