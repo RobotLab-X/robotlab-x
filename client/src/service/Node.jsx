@@ -267,24 +267,19 @@ export default function Node({ fullname }) {
           >
             {clientConsoleLogs &&
               clientConsoleLogs.map((log, index) => (
-                <div
-                  key={index}
-                  dangerouslySetInnerHTML={{
-                    __html: ansiConverter.toHtml(log.message) // Convert ANSI to HTML
-                  }}
-                />
+                <>
+                  <span
+                    key={index}
+                    dangerouslySetInnerHTML={{
+                      __html: ansiConverter.toHtml(log.message) // Convert ANSI to HTML
+                    }}
+                  />
+                  <br />
+                </>
               ))}
           </Box>
         </Box>
       </Box>
-
-      {clientConsoleLogs &&
-        clientConsoleLogs.map((log, index) => (
-          <>
-            {log.message}
-            <br />
-          </>
-        ))}
     </>
   )
 }
