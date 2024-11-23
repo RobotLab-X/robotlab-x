@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Close, Delete, PlayArrow, Save } from "@mui/icons-material"
+import { ChevronLeft, ChevronRight, Delete, PlayArrow, Save } from "@mui/icons-material"
 import ClearIcon from "@mui/icons-material/Clear"
 import { Box, IconButton, Tab, Tabs, Tooltip, Typography } from "@mui/material"
 import { RichTreeView } from "@mui/x-tree-view/RichTreeView"
@@ -160,15 +160,22 @@ export default function Node({ fullname }) {
                       label={
                         <Box display="flex" alignItems="center">
                           {fileName}
-                          <IconButton
-                            size="small"
+                          <span
+                            style={{
+                              marginLeft: "8px",
+                              cursor: "pointer",
+                              color: "gray", // Close icon color
+                              fontSize: "16px", // Size of the close icon
+                              display: "flex",
+                              alignItems: "center"
+                            }}
                             onClick={(e) => {
                               e.stopPropagation() // Prevent tab switching on close
                               handleCloseScript(filePath) // Notify server and close tab
                             }}
                           >
-                            <Close fontSize="small" />
-                          </IconButton>
+                            ✖
+                          </span>
                         </Box>
                       }
                       value={filePath}
