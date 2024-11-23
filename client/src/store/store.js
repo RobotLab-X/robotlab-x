@@ -34,9 +34,66 @@ const store = (set, get) => ({
 
   name: "ui",
 
+  /**
+   * The window of logs of the logging service
+   */
+  logs: [],
+
+  debug: false,
+
+  // dashboard layout
+  layout: {},
+
   // you can't use get inside the initial state to compute derived values
   // because get relies on the store being fully initialized
   fullname: `ui@${browser.name.toLowerCase()}`,
+
+  /**
+   * dictionary of services with initial registered state
+   */
+  registry: {},
+
+  /**
+   * dictionary of services with latest state
+   */
+  services: {},
+
+  /**
+   * @type {Service} repo - The service repository of types
+   * @description This is a dictionary of service types, keyed by the simple name of the service. typeKey@version
+   */
+  repo: {},
+
+  /**
+   * @type {WebSocket} socket - The websocket connection
+   */
+  socket: null,
+
+  /**
+   * @type {boolean} connected - True if the websocket is connected
+   */
+  connected: false,
+
+  /**
+   * @type {boolean} connecting - True if the websocket is connecting
+   */
+  connecting: false,
+
+  /**
+   * Generalized location for client data storage
+   */
+  data: {},
+
+  /**
+   * @type {Message} messages - A dictonary of the latest messages received from the server,
+   * keyed by the message name and method.
+   */
+  messages: {},
+
+  /**
+   * @type {object} statusList - A dictionary to store status messages, keyed by service name with suffix "onStatusList".
+   */
+  statusList: [],
 
   setName: (newName) => {
     console.log("Setting name:", newName)
@@ -48,11 +105,6 @@ const store = (set, get) => ({
   setDefaultRemoteId: (id) => set({ defaultRemoteId: id }),
 
   setId: (newId) => set({ id: newId }),
-
-  debug: false,
-
-  // dashboard layout
-  layout: {},
 
   setDebug: (newDebug) => set({ debug: newDebug }),
 
@@ -87,50 +139,6 @@ const store = (set, get) => ({
 
   // Use a getter function for repoUrl - the one to use !
   getPublicUrl: () => `${get().getBaseUrl()}/public`,
-
-  /**
-   * dictionary of services with initial registered state
-   */
-  registry: {},
-
-  /**
-   * dictionary of services with latest state
-   */
-  services: {},
-
-  /**
-   * @type {Service} repo - The service repository of types
-   * @description This is a dictionary of service types, keyed by the simple name of the service. typeKey@version
-   */
-  repo: {},
-
-  /**
-   * @type {WebSocket} socket - The websocket connection
-   */
-  socket: null,
-
-  /**
-   * @type {boolean} connected - True if the websocket is connected
-   */
-  connected: false,
-
-  /**
-   * @type {boolean} connecting - True if the websocket is connecting
-   */
-  connecting: false,
-
-  data: {},
-
-  /**
-   * @type {Message} messages - A dictonary of the latest messages received from the server,
-   * keyed by the message name and method.
-   */
-  messages: {},
-
-  /**
-   * @type {object} statusList - A dictionary to store status messages, keyed by service name with suffix "onStatusList".
-   */
-  statusList: [],
 
   updateRegistryOnRegistered: (data) => {
     set((state) => {
@@ -457,8 +465,6 @@ const store = (set, get) => ({
   },
   setLayout: (newLayout) => set({ layout: newLayout }),
   saveLayout: (newLayout) => set({ layout: newLayout }),
-
-  logs: [],
   addLogs: (newLogs) =>
     set((state) => {
       const combinedLogs = [...state.logs, ...newLogs]
@@ -493,6 +499,38 @@ const store = (set, get) => ({
         newStatusList.shift() // Remove the oldest record
       }
       return { statusList: newStatusList }
+    })
+  },
+
+  addRecords: (key, newRecords) =>
+    set((state) => {
+      const existingRecords = state.data[key] || []
+      const updatedRecords = [...existingRecords, ...newRecords]
+
+      const trimmedRecords = updatedRecords.slice(-500)
+
+      return {
+        data: {
+          ...state.data,
+          [key]: trimmedRecords
+        }
+      }
+    }),
+
+  getRecords: (key) => {
+    return (state) => state.data[key] || []
+  },
+
+  getData: (key) => (state) => state.data[key],
+
+  setData: (key, data) => {
+    set((state) => {
+      return {
+        data: {
+          ...state.registry,
+          [key]: data
+        }
+      }
     })
   }
 })

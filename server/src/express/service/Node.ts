@@ -22,16 +22,26 @@ interface FileTreeNode {
   creationDate: Date // Creation date
   children?: FileTreeNode[] // Children for directories
 }
+
+interface ConsoleLog {
+  filePath: string
+  message: string
+}
+
 /**
  * @class Node
  * @extends Service
  * @description A service that provides node functionality and a programming interface to the RobotLab-X runtime.
  */
 export default class Node extends Service {
+  private intervalId: NodeJS.Timeout | null = null
+
   /**
    * @property {NodeConfig} config - The configuration for the node service.
    */
-  config = {}
+  config = {
+    intervalMs: 5000
+  }
 
   /**
    * @property {Record<string, { content: string }>} openScripts - Dictionary of open scripts with their content.
@@ -42,6 +52,16 @@ export default class Node extends Service {
    * @property {string[]} fileTree - An array files from scanning a directory.
    */
   fileTree: FileTreeNode[] = []
+
+  /**
+   * @property {ConsoleLog[]} consoleLogs - An array of incremental new console logs.
+   */
+  newLogs: ConsoleLog[] = []
+
+  /**
+   * @property {ConsoleLog[]} consoleLogs - An array window of all console logs.
+   */
+  consoleLogs: ConsoleLog[] = []
 
   /**
    * Creates an instance of Node.
@@ -316,8 +336,9 @@ export default class Node extends Service {
       const outputStream = new Writable({
         write: (chunk, encoding, callback) => {
           const message = chunk.toString().trim()
-          this.invoke("publishConsole", filePath, message)
-          log.info(`[Script Output] ${message}`) // Optional: Log locally
+          this.newLogs.push({ filePath, message })
+          // BAD - DO NOT DO THIS !!! log.info(`[Script Output] ${message}`)
+          // RECURSIVE LOGGING !!!
           callback()
         }
       })
@@ -340,7 +361,7 @@ export default class Node extends Service {
 
       log.info(`Script ${filePath} ran successfully`)
     } catch (error: any) {
-      this.invoke("publishConsole", { filePath, message: `ERROR: ${error.message || error}` })
+      this.newLogs.push({ filePath, message: `ERROR: ${error.message || error}` })
       log.error(`Error running script ${filePath}: ${error}`)
       throw error
     }
@@ -348,12 +369,53 @@ export default class Node extends Service {
 
   /**
    * Publishes console output for a specific script.
-   * @param {string} filePath - The path of the script.
-   * @param {string[]} output - The console output to publish.
    */
-  publishConsole(filePath: string, output: string): string {
-    log.info(`Console output published for script ${filePath} ${output}`)
-    return output
+  publishConsole(): ConsoleLog[] {
+    const incrementalLogs = this.newLogs
+
+    // move them to the consoleLogs
+    this.consoleLogs.push(...this.newLogs)
+    this.newLogs = []
+
+    // trim the consoleLogs to the last 500 entries
+    if (this.consoleLogs.length > 500) {
+      this.consoleLogs.splice(0, this.consoleLogs.length - 500)
+    }
+
+    // publish the incremental newLogs
+    return incrementalLogs
+  }
+
+  startService(): void {
+    super.startService()
+    this.startLogging()
+  }
+
+  public startLogging(intervalMs?: number): void {
+    if (intervalMs) {
+      this.config.intervalMs = intervalMs
+    }
+
+    if (this.intervalId === null) {
+      console.log(`Log.startLogging: Starting timer with interval ${this.config.intervalMs} ms`)
+      this.intervalId = setInterval(async () => {
+        if (this.newLogs.length > 0) {
+          this.invoke("publishConsole")
+        }
+      }, this.config.intervalMs)
+    } else {
+      console.warn("Log.startLogging: Timer is already running")
+    }
+  }
+
+  public stopLogging(): void {
+    if (this.intervalId !== null) {
+      console.log("Log.stopLogging: Stopping log timer")
+      clearInterval(this.intervalId)
+      this.intervalId = null
+    } else {
+      console.warn("Log.stopLogging: Log timer is not running")
+    }
   }
 
   /**
@@ -366,7 +428,8 @@ export default class Node extends Service {
       ...super.toJSON(),
       // openScripts: Object.keys(this.openScripts), // Serialize only the keys of openScripts
       openScripts: this.openScripts,
-      fileTree: this.fileTree
+      fileTree: this.fileTree,
+      consoleLogs: this.consoleLogs
     }
   }
 }

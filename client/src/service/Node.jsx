@@ -5,7 +5,7 @@ import "ace-builds/src-noconflict/ace"
 import "ace-builds/src-noconflict/ext-language_tools"
 import "ace-builds/src-noconflict/mode-javascript"
 import "ace-builds/src-noconflict/theme-monokai"
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import AceEditor from "react-ace"
 import "react-resizable/css/styles.css"
 import useStore from "store/store"
@@ -16,22 +16,34 @@ export default function Node({ fullname }) {
 
   const service = useSubscription(fullname, "broadcastState", true)
   const [expanded, setExpanded] = useState(false)
-  const { sendTo } = useStore()
+  const { sendTo, addRecords, getRecords } = useStore()
   const [selectedScript, setSelectedScript] = useState(null)
   const fileTree = useSubscription(fullname, "publishFileTree", true)
   const openScripts = useSubscription(fullname, "publishOpenScripts", true)
-  const publishConsole = useSubscription(fullname, "publishConsole")
-  // const [consoleLog, setConsoleLog] = useState([])
+  const logBatch = useSubscription(fullname, "publishConsole")
 
+  const keyName = `${fullname}.console`
+  const consoleLog = useStore((state) => state.getRecords(keyName)(state))
+
+  // Safely initialize Zustand records for this console key
   // useEffect(() => {
-  //   if (publishConsole) {
-  //     // Append new message only if it's not already in the consoleLog
-  //     setConsoleLog((prevLog) => {
-  //       if (prevLog[prevLog.length - 1] === publishConsole) return prevLog // Prevent duplicates
-  //       return [...prevLog, publishConsole]
-  //     })
-  //   }
-  // }, [publishConsole]) // Trigger effect whenever publishConsole changes
+  //   const existingLogs = getRecords(keyName) || [] // Ensure it's an array even if undefined
+  //   setConsoleLog(existingLogs)
+  // }, [keyName, getRecords])
+
+  // Handle new logBatch messages
+  useEffect(() => {
+    if (logBatch?.length > 0) {
+      console.info(`New console message: ${logBatch}`)
+      addRecords(keyName, logBatch)
+
+      // Update local state with current Zustand data
+      // const updatedLogs = getRecords(keyName) || [] // Safely fetch logs
+      // setConsoleLog(updatedLogs)
+
+      console.info(`Current console logs: ${consoleLog}`)
+    }
+  }, [logBatch, keyName, addRecords, getRecords])
 
   // Handler to toggle the file browser
   const toggleFileBrowser = () => setExpanded(!expanded)
@@ -189,7 +201,11 @@ export default function Node({ fullname }) {
             height="100%"
             padding={0}
             fontFamily="monospace"
-          ></Box>
+          >
+            {/* logBatch && logBatch.map((log) => <div>{log.message}</div>) */}
+            {/* getRecords(keyName) && getRecords(keyName).map((log) => <div>{log.message}</div>)*/}
+            {consoleLog && consoleLog.map((log) => <div>{log.message}</div>)}
+          </Box>
         </Box>
       </Box>
     </>
