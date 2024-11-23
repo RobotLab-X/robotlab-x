@@ -5,7 +5,7 @@ import "ace-builds/src-noconflict/ace"
 import "ace-builds/src-noconflict/ext-language_tools"
 import "ace-builds/src-noconflict/mode-javascript"
 import "ace-builds/src-noconflict/theme-monokai"
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import AceEditor from "react-ace"
 import "react-resizable/css/styles.css"
 import useStore from "store/store"
@@ -14,6 +14,7 @@ import useSubscription from "store/useSubscription"
 export default function Node({ fullname }) {
   console.info(`Node ${fullname}`)
 
+  const consoleRef = useRef(null)
   const service = useSubscription(fullname, "broadcastState", true)
   const [expanded, setExpanded] = useState(false)
   const { sendTo, addRecords, getRecords } = useStore()
@@ -23,25 +24,24 @@ export default function Node({ fullname }) {
   const logBatch = useSubscription(fullname, "publishConsole")
 
   const keyName = `${fullname}.console`
-  const consoleLog = useStore((state) => state.getRecords(keyName)(state))
+  const clientConsoleLogs = useStore((state) => state.getRecords(keyName)(state))
 
-  // Safely initialize Zustand records for this console key
-  // useEffect(() => {
-  //   const existingLogs = getRecords(keyName) || [] // Ensure it's an array even if undefined
-  //   setConsoleLog(existingLogs)
-  // }, [keyName, getRecords])
+  useEffect(() => {
+    if (consoleRef.current) {
+      consoleRef.current.scrollTop = consoleRef.current.scrollHeight
+    }
+  }, [clientConsoleLogs])
+
+  // init logs
+  useEffect(() => {
+    if (!service?.consoleLogs) return
+    addRecords(keyName, service?.consoleLogs)
+  }, [])
 
   // Handle new logBatch messages
   useEffect(() => {
     if (logBatch?.length > 0) {
-      console.info(`New console message: ${logBatch}`)
       addRecords(keyName, logBatch)
-
-      // Update local state with current Zustand data
-      // const updatedLogs = getRecords(keyName) || [] // Safely fetch logs
-      // setConsoleLog(updatedLogs)
-
-      console.info(`Current console logs: ${consoleLog}`)
     }
   }, [logBatch, keyName, addRecords, getRecords])
 
@@ -190,21 +190,30 @@ export default function Node({ fullname }) {
               height="100%"
               minLines={50} // Set a minimum of 50 lines
               maxLines={Infinity}
+              style={{
+                borderRadius: "8px",
+                overflow: "hidden",
+                border: "1px solid #444"
+              }}
             />
           )}
           {/* Console Area */}
           <Box
+            ref={consoleRef} // Reference the console container
             component="pre"
             bgcolor="#272822"
             color="#C2E4D7"
-            overflow="auto"
-            height="100%"
-            padding={0}
+            overflow="auto" // Enable scrolling when content exceeds the height
+            height="calc(30 * 1.2em)" // Set height for 30 lines
+            padding="16px" // Add padding inside the terminal
+            margin="8px" // Add margin outside the terminal
             fontFamily="monospace"
+            fontSize="0.68rem" // Smaller font size for terminal-like text
+            lineHeight="1.2" // Control line height to calculate 30 lines height
+            borderRadius="8px"
+            border="1px solid #444" // Subtle border for visual distinction
           >
-            {/* logBatch && logBatch.map((log) => <div>{log.message}</div>) */}
-            {/* getRecords(keyName) && getRecords(keyName).map((log) => <div>{log.message}</div>)*/}
-            {consoleLog && consoleLog.map((log) => <div>{log.message}</div>)}
+            {clientConsoleLogs && clientConsoleLogs.map((log, index) => <div key={index}>{log.message}</div>)}
           </Box>
         </Box>
       </Box>

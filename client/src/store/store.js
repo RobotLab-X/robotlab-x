@@ -504,6 +504,7 @@ const store = (set, get) => ({
 
   addRecords: (key, newRecords) =>
     set((state) => {
+      if (!newRecords) return state
       const existingRecords = state.data[key] || []
       const updatedRecords = [...existingRecords, ...newRecords]
 
