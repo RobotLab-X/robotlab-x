@@ -337,8 +337,6 @@ export default class Node extends Service {
         write: (chunk, encoding, callback) => {
           const message = chunk.toString().trim()
           this.newLogs.push({ filePath, message })
-          // BAD - DO NOT DO THIS !!! log.info(`[Script Output] ${message}`)
-          // RECURSIVE LOGGING !!!
           callback()
         }
       })
@@ -346,14 +344,13 @@ export default class Node extends Service {
       // Create a custom console using the writable stream
       const customConsole = new console.Console(outputStream)
 
-      // Replace global console with custom console
+      // Replace the global console with custom console
       const originalConsole = global.console
       global.console = customConsole
 
       try {
-        // Execute the script content
-        const scriptFunction = new Function(script.content)
-        scriptFunction()
+        // Execute the script content in the local scope using eval
+        eval(script.content)
       } finally {
         // Restore the original console after execution
         global.console = originalConsole

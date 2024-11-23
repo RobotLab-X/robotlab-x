@@ -1,4 +1,6 @@
 import { ChevronLeft, ChevronRight, Delete, PlayArrow, Save } from "@mui/icons-material"
+import Convert from "ansi-to-html"
+
 import ClearIcon from "@mui/icons-material/Clear"
 import { Box, IconButton, Tab, Tabs, Tooltip, Typography } from "@mui/material"
 import { RichTreeView } from "@mui/x-tree-view/RichTreeView"
@@ -25,6 +27,14 @@ export default function Node({ fullname }) {
 
   const keyName = `${fullname}.console`
   const clientConsoleLogs = useStore((state) => state.getRecords(keyName)(state))
+
+  const ansiConverter = new Convert({
+    fg: "#C2E4D7", // Default foreground color
+    bg: "#272822", // Default background color
+    newline: true,
+    escapeXML: true, // Escape special characters in HTML
+    stream: true // Handle multi-line ANSI output
+  })
 
   // init logs
   useEffect(() => {
@@ -255,10 +265,26 @@ export default function Node({ fullname }) {
             borderRadius="8px"
             border="1px solid #444" // Subtle border for visual distinction
           >
-            {clientConsoleLogs && clientConsoleLogs.map((log, index) => <div key={index}>{log.message}</div>)}
+            {clientConsoleLogs &&
+              clientConsoleLogs.map((log, index) => (
+                <div
+                  key={index}
+                  dangerouslySetInnerHTML={{
+                    __html: ansiConverter.toHtml(log.message) // Convert ANSI to HTML
+                  }}
+                />
+              ))}
           </Box>
         </Box>
       </Box>
+
+      {clientConsoleLogs &&
+        clientConsoleLogs.map((log, index) => (
+          <>
+            {log.message}
+            <br />
+          </>
+        ))}
     </>
   )
 }
