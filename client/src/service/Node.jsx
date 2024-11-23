@@ -246,7 +246,7 @@ export default function Node({ fullname }) {
             bgcolor="#272822"
             color="#C2E4D7"
             overflow="auto" // Enable scrolling when content exceeds the height
-            height="calc(30 * 1.2em)" // Set height for 30 lines
+            height="calc(10 * 1.2em)" // Set height for 30 lines
             padding="16px" // Add padding inside the terminal
             margin="8px" // Add margin outside the terminal
             fontFamily="monospace"
