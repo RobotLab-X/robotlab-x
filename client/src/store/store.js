@@ -522,6 +522,14 @@ const store = (set, get) => ({
     return (state) => state.data[key] || []
   },
 
+  clearRecords: (key) =>
+    set((state) => ({
+      data: {
+        ...state.data,
+        [key]: [] // Reset the array for the specified key
+      }
+    })),
+
   getData: (key) => (state) => state.data[key],
 
   setData: (key, data) => {

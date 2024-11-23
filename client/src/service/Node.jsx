@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight, Close, Delete, PlayArrow, Save } from "@mui/icons-material"
-import { Box, IconButton, Tab, Tabs, Tooltip } from "@mui/material"
+import ClearIcon from "@mui/icons-material/Clear"
+import { Box, IconButton, Tab, Tabs, Tooltip, Typography } from "@mui/material"
 import { RichTreeView } from "@mui/x-tree-view/RichTreeView"
 import "ace-builds/src-noconflict/ace"
 import "ace-builds/src-noconflict/ext-language_tools"
@@ -10,14 +11,13 @@ import AceEditor from "react-ace"
 import "react-resizable/css/styles.css"
 import useStore from "store/store"
 import useSubscription from "store/useSubscription"
-
 export default function Node({ fullname }) {
   console.info(`Node ${fullname}`)
 
   const consoleRef = useRef(null)
   const service = useSubscription(fullname, "broadcastState", true)
   const [expanded, setExpanded] = useState(false)
-  const { sendTo, addRecords, getRecords } = useStore()
+  const { sendTo, addRecords, getRecords, clearRecords } = useStore()
   const [selectedScript, setSelectedScript] = useState(null)
   const fileTree = useSubscription(fullname, "publishFileTree", true)
   const openScripts = useSubscription(fullname, "publishOpenScripts", true)
@@ -52,6 +52,10 @@ export default function Node({ fullname }) {
   const handleOpenScript = async (filePath, label) => {
     sendTo(fullname, "openScript", filePath) // Fetch script content
     setSelectedScript(filePath)
+  }
+
+  const clearConsoleLogs = (key) => {
+    clearRecords(key) // Clear the logs in Zustand store
   }
 
   // Handler to save the currently selected script
@@ -197,6 +201,22 @@ export default function Node({ fullname }) {
               }}
             />
           )}
+
+          {/* Console Toolbar */}
+          <Box display="flex" justifyContent="space-between" alignItems="center" padding="8px">
+            <Typography variant="subtitle2" color="white">
+              Console Logs
+            </Typography>
+            <IconButton
+              onClick={() => {
+                clearConsoleLogs(keyName) // Call clear function
+              }}
+              color="inherit"
+            >
+              <ClearIcon />
+            </IconButton>
+          </Box>
+
           {/* Console Area */}
           <Box
             ref={consoleRef} // Reference the console container
