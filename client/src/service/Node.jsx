@@ -167,116 +167,129 @@ export default function Node({ fullname }) {
         </Box>
 
         {/* Main Editor Section */}
-        <Box width={expanded ? "85%" : "100%"} display="flex" flexDirection="column" flexGrow={1}>
-          {/* Toolbar and Tabs Section */}
-          <Box display="flex" flexDirection="column">
-            {/* Toolbar */}
-            <Box display="flex" alignItems="center" padding={1}>
-              &nbsp;
-            </Box>
-            {/* Tabs */}
-            {openScripts && Object.keys(openScripts).length > 0 && (
-              <Tabs value={selectedScript || Object.keys(openScripts)[0]} onChange={handleTabChange}>
-                {Object.keys(openScripts).map((filePath) => {
-                  const fileName = getFileName(filePath) // Extract the file name cross-platform
-                  return (
-                    <Tab
-                      key={filePath}
-                      label={
-                        <Box display="flex" alignItems="center">
-                          {fileName}
-                          <span
-                            style={{
-                              marginLeft: "8px",
-                              cursor: "pointer",
-                              color: "gray", // Close icon color
-                              fontSize: "16px", // Size of the close icon
-                              display: "flex",
-                              alignItems: "center"
-                            }}
-                            onClick={(e) => {
-                              e.stopPropagation() // Prevent tab switching on close
-                              handleCloseScript(filePath) // Notify server and close tab
-                            }}
-                          >
-                            ✖
-                          </span>
-                        </Box>
-                      }
-                      value={filePath}
-                      sx={{
-                        textTransform: "none" // Prevent uppercase transformation
-                      }}
-                    />
-                  )
-                })}
-              </Tabs>
-            )}
-          </Box>
-          {/* Ace Editor for script content */}
-          {selectedScript && openScripts[selectedScript]?.content && (
-            <AceEditor
-              mode="javascript"
-              theme="monokai"
-              value={openScripts[selectedScript]?.content || "// No content available"}
-              onChange={handleEditorChange}
-              name="script-editor"
-              editorProps={{ $blockScrolling: true }}
-              width="100%"
-              height="100%"
-              minLines={50} // Set a minimum of 50 lines
-              maxLines={Infinity}
-              style={{
-                borderRadius: "8px",
-                overflow: "hidden",
-                border: "1px solid #444"
-              }}
-            />
-          )}
-
-          {/* Console Toolbar */}
-          <Box display="flex" justifyContent="space-between" alignItems="center" padding="8px">
-            <Typography variant="subtitle2" color="white">
-              Console Logs
-            </Typography>
-            <IconButton
-              onClick={() => {
-                clearConsoleLogs(keyName) // Call clear function
-              }}
-              color="inherit"
-            >
-              <ClearIcon />
-            </IconButton>
-          </Box>
-
-          {/* Console Area */}
+        <Box
+          width={expanded ? "85%" : "100%"}
+          display="flex"
+          flexDirection="column"
+          flexGrow={1}
+          alignItems="flex-start" // Align content to the left
+        >
+          {/* Limit the max width */}
           <Box
-            ref={consoleRef} // Reference the console container
-            component="pre"
-            bgcolor="#272822"
-            color="#C2E4D7"
-            overflow="auto" // Enable scrolling when content exceeds the height
-            height="calc(10 * 1.2em)" // Set height for 30 lines
-            padding="16px" // Add padding inside the terminal
-            margin="8px" // Add margin outside the terminal
-            fontFamily="monospace"
-            fontSize="0.68rem" // Smaller font size for terminal-like text
-            lineHeight="1.2" // Control line height to calculate 30 lines height
-            borderRadius="8px"
-            border="1px solid #444" // Subtle border for visual distinction
+            maxWidth="960px" // Roughly 120 characters in width for monospaced fonts
+            width="100%" // Ensure it scales properly within the parent
+            display="flex"
+            flexDirection="column"
           >
-            {clientConsoleLogs &&
-              clientConsoleLogs.map((log, index) => (
-                <>
+            {/* Toolbar and Tabs Section */}
+            <Box display="flex" flexDirection="column">
+              {/* Toolbar */}
+              <Box display="flex" alignItems="center" padding={1}>
+                &nbsp;
+              </Box>
+              {/* Tabs */}
+              {openScripts && Object.keys(openScripts).length > 0 && (
+                <Tabs value={selectedScript || Object.keys(openScripts)[0]} onChange={handleTabChange}>
+                  {Object.keys(openScripts).map((filePath) => {
+                    const fileName = getFileName(filePath) // Extract the file name cross-platform
+                    return (
+                      <Tab
+                        key={filePath}
+                        label={
+                          <Box display="flex" alignItems="center">
+                            {fileName}
+                            <span
+                              style={{
+                                marginLeft: "8px",
+                                cursor: "pointer",
+                                color: "gray", // Close icon color
+                                fontSize: "16px", // Size of the close icon
+                                display: "flex",
+                                alignItems: "center"
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation() // Prevent tab switching on close
+                                handleCloseScript(filePath) // Notify server and close tab
+                              }}
+                            >
+                              ✖
+                            </span>
+                          </Box>
+                        }
+                        value={filePath}
+                        sx={{
+                          textTransform: "none" // Prevent uppercase transformation
+                        }}
+                      />
+                    )
+                  })}
+                </Tabs>
+              )}
+            </Box>
+            {/* Ace Editor for script content */}
+            {selectedScript && openScripts[selectedScript]?.content && (
+              <AceEditor
+                mode="javascript"
+                theme="monokai"
+                value={openScripts[selectedScript]?.content || "// No content available"}
+                onChange={handleEditorChange}
+                name="script-editor"
+                editorProps={{ $blockScrolling: true }}
+                width="100%"
+                height="400px" // Fixed height for consistency
+                minLines={50} // Set a minimum of 50 lines
+                maxLines={Infinity}
+                style={{
+                  borderRadius: "8px",
+                  overflow: "hidden",
+                  border: "1px solid #444"
+                }}
+              />
+            )}
+
+            {/* Console Toolbar */}
+            <Box display="flex" justifyContent="space-between" alignItems="center" padding="8px">
+              <Typography variant="subtitle2" color="white">
+                Console Logs
+              </Typography>
+              <IconButton
+                onClick={() => {
+                  clearConsoleLogs(keyName) // Call clear function
+                }}
+                color="inherit"
+              >
+                <ClearIcon />
+              </IconButton>
+            </Box>
+
+            {/* Console Area */}
+            <Box
+              ref={consoleRef} // Reference the console container
+              component="pre"
+              bgcolor="#272822"
+              color="#C2E4D7"
+              overflow="auto" // Enable scrolling when content exceeds the height
+              height="200px" // Set fixed height for uniformity
+              padding="16px" // Add padding inside the terminal
+              margin="8px 0" // Add margin between sections
+              fontFamily="monospace"
+              fontSize="0.68rem" // Smaller font size for terminal-like text
+              lineHeight="1.2" // Control line height
+              borderRadius="8px"
+              border="1px solid #444" // Subtle border for visual distinction
+              width="100%" // Match the container width
+              style={{ whiteSpace: "pre-wrap" }}
+            >
+              {clientConsoleLogs &&
+                clientConsoleLogs.map((log, index) => (
                   <span
                     key={index}
                     dangerouslySetInnerHTML={{
                       __html: ansiConverter.toHtml(log.message) // Convert ANSI to HTML
                     }}
                   />
-                  <br />
-                </>
-              ))}
+                ))}
+            </Box>
           </Box>
         </Box>
       </Box>
