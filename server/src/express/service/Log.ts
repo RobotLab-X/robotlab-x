@@ -153,6 +153,10 @@ export default class Log extends Service {
     }
   }
 
+  /**
+   * Stops the log timer.
+   * @returns {void}
+   */
   public stopLogging(): void {
     if (this.intervalId !== null) {
       console.log("Log.stopLogging: Stopping log timer")

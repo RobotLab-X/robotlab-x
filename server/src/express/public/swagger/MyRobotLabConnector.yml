@@ -36,6 +36,35 @@ components:
         type: array
     type: object
 paths:
+  /connect:
+    put:
+      summary: Executes connect method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - wsUrl
+      responses:
+        "200":
+          description: connect executed successfully
+    get:
+      summary: Fetch information for connect
+      description: HTTP GET for connect
+      parameters:
+        - name: wsUrl
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter wsUrl
+      responses:
+        "200":
+          description: Details for connect fetched successfully
   /disconnect:
     put:
       summary: Executes disconnect method
@@ -49,22 +78,56 @@ paths:
             example: []
       responses:
         "200":
-          description: disconnect method executed successfully
-  /connect:
+          description: disconnect executed successfully
+    get:
+      summary: Fetch information for disconnect
+      description: HTTP GET for disconnect
+      parameters: []
+      responses:
+        "200":
+          description: Details for disconnect fetched successfully
+  /getConfigList:
     put:
-      summary: Executes connect method
+      summary: Executes getConfigList method
       description: ""
       requestBody:
         content:
           application/json:
             schema:
               type: array
-              items:
-                - type: string
+              items: []
             example: []
       responses:
         "200":
-          description: connect method executed successfully
+          description: getConfigList executed successfully
+    get:
+      summary: Fetch information for getConfigList
+      description: HTTP GET for getConfigList
+      parameters: []
+      responses:
+        "200":
+          description: Details for getConfigList fetched successfully
+  /getConfigName:
+    put:
+      summary: Executes getConfigName method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: getConfigName executed successfully
+    get:
+      summary: Fetch information for getConfigName
+      description: HTTP GET for getConfigName
+      parameters: []
+      responses:
+        "200":
+          description: Details for getConfigName fetched successfully
   /onMessageReceived:
     put:
       summary: >-
@@ -84,10 +147,24 @@ paths:
               type: array
               items:
                 - type: string
-            example: []
+            example:
+              - message
       responses:
         "200":
-          description: onMessageReceived method executed successfully
+          description: onMessageReceived executed successfully
+    get:
+      summary: Fetch information for onMessageReceived
+      description: HTTP GET for onMessageReceived
+      parameters:
+        - name: message
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter message
+      responses:
+        "200":
+          description: Details for onMessageReceived fetched successfully
   /onServiceNames:
     put:
       summary: Executes onServiceNames method
@@ -99,10 +176,53 @@ paths:
               type: array
               items:
                 - type: Message
-            example: []
+            example:
+              - msg
       responses:
         "200":
-          description: onServiceNames method executed successfully
+          description: onServiceNames executed successfully
+    get:
+      summary: Fetch information for onServiceNames
+      description: HTTP GET for onServiceNames
+      parameters:
+        - name: msg
+          in: query
+          required: true
+          schema:
+            type: Message
+          description: Parameter msg
+      responses:
+        "200":
+          description: Details for onServiceNames fetched successfully
+  /publishMessage:
+    put:
+      summary: Executes publishMessage method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: any
+            example:
+              - mrlMessage
+      responses:
+        "200":
+          description: publishMessage executed successfully
+    get:
+      summary: Fetch information for publishMessage
+      description: HTTP GET for publishMessage
+      parameters:
+        - name: mrlMessage
+          in: query
+          required: true
+          schema:
+            type: any
+          description: Parameter mrlMessage
+      responses:
+        "200":
+          description: Details for publishMessage fetched successfully
   /sendMessage:
     put:
       summary: Executes sendMessage method
@@ -114,38 +234,24 @@ paths:
               type: array
               items:
                 - type: object
-            example: []
+            example:
+              - message
       responses:
         "200":
-          description: sendMessage method executed successfully
-  /getConfigName:
-    put:
-      summary: Executes getConfigName method
-      description: ""
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items: []
-            example: []
+          description: sendMessage executed successfully
+    get:
+      summary: Fetch information for sendMessage
+      description: HTTP GET for sendMessage
+      parameters:
+        - name: message
+          in: query
+          required: true
+          schema:
+            type: object
+          description: Parameter message
       responses:
         "200":
-          description: getConfigName method executed successfully
-  /getConfigList:
-    put:
-      summary: Executes getConfigList method
-      description: ""
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items: []
-            example: []
-      responses:
-        "200":
-          description: getConfigList method executed successfully
+          description: Details for sendMessage fetched successfully
   /sendRemote:
     put:
       summary: |-
@@ -161,25 +267,24 @@ paths:
               type: array
               items:
                 - type: Message
-            example: []
+            example:
+              - msg
       responses:
         "200":
-          description: sendRemote method executed successfully
-  /publishMessage:
-    put:
-      summary: Executes publishMessage method
-      description: ""
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                - type: any
-            example: []
+          description: sendRemote executed successfully
+    get:
+      summary: Fetch information for sendRemote
+      description: HTTP GET for sendRemote
+      parameters:
+        - name: msg
+          in: query
+          required: true
+          schema:
+            type: Message
+          description: rlx message
       responses:
         "200":
-          description: publishMessage method executed successfully
+          description: Details for sendRemote fetched successfully
   /toJSON:
     put:
       summary: Executes toJSON method
@@ -193,5 +298,12 @@ paths:
             example: []
       responses:
         "200":
-          description: toJSON method executed successfully
+          description: toJSON executed successfully
+    get:
+      summary: Fetch information for toJSON
+      description: HTTP GET for toJSON
+      parameters: []
+      responses:
+        "200":
+          description: Details for toJSON fetched successfully
 tags: []

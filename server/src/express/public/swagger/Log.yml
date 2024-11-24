@@ -1,0 +1,281 @@
+openapi: 3.0.3
+info:
+  title: API Documentation
+  version: 1.0.0
+servers:
+  - url: http://localhost:3001/v1
+    description: Local development server
+components:
+  schemas:
+    $schema: http://json-schema.org/draft-07/schema#
+    definitions:
+      A<object>:
+        description: An AsyncIterator which can be aborted
+        properties:
+          abortController: {}
+          doneCallback: {}
+          itr: {}
+        type: object
+      a:
+        properties:
+          fetch:
+            type: object
+          host:
+            type: string
+          proxy:
+            type: boolean
+        type: object
+    properties:
+      config:
+        $ref: "#/definitions/a"
+      fetch:
+        type: object
+      ongoingStreamedRequests:
+        items:
+          $ref: "#/definitions/A<object>"
+        type: array
+    type: object
+paths:
+  /broadcastState:
+    put:
+      summary: Broadcasts the current state of the service
+      description: Broadcasts the current state of the service
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: broadcastState executed successfully
+    get:
+      summary: Fetch information for broadcastState
+      description: HTTP GET for broadcastState
+      parameters: []
+      responses:
+        "200":
+          description: Details for broadcastState fetched successfully
+  /getNewLogs:
+    put:
+      summary: Executes getNewLogs method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: getNewLogs executed successfully
+    get:
+      summary: Fetch information for getNewLogs
+      description: HTTP GET for getNewLogs
+      parameters: []
+      responses:
+        "200":
+          description: Details for getNewLogs fetched successfully
+  /openLogFile:
+    put:
+      summary: Executes openLogFile method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - filePath
+      responses:
+        "200":
+          description: openLogFile executed successfully
+    get:
+      summary: Fetch information for openLogFile
+      description: HTTP GET for openLogFile
+      parameters:
+        - name: filePath
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter filePath
+      responses:
+        "200":
+          description: Details for openLogFile fetched successfully
+  /publishLogs:
+    put:
+      summary: Executes publishLogs method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: LogEntry[]
+            example:
+              - logs
+      responses:
+        "200":
+          description: publishLogs executed successfully
+    get:
+      summary: Fetch information for publishLogs
+      description: HTTP GET for publishLogs
+      parameters:
+        - name: logs
+          in: query
+          required: true
+          schema:
+            type: LogEntry[]
+          description: Parameter logs
+      responses:
+        "200":
+          description: Details for publishLogs fetched successfully
+  /readNewLogsFromFile:
+    put:
+      summary: Executes readNewLogsFromFile method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - filePath
+      responses:
+        "200":
+          description: readNewLogsFromFile executed successfully
+    get:
+      summary: Fetch information for readNewLogsFromFile
+      description: HTTP GET for readNewLogsFromFile
+      parameters:
+        - name: filePath
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter filePath
+      responses:
+        "200":
+          description: Details for readNewLogsFromFile fetched successfully
+  /startLogging:
+    put:
+      summary: Executes startLogging method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: integer
+            example:
+              - intervalMs
+      responses:
+        "200":
+          description: startLogging executed successfully
+    get:
+      summary: Fetch information for startLogging
+      description: HTTP GET for startLogging
+      parameters:
+        - name: intervalMs
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: Parameter intervalMs
+      responses:
+        "200":
+          description: Details for startLogging fetched successfully
+  /startService:
+    put:
+      summary: Executes startService method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: startService executed successfully
+    get:
+      summary: Fetch information for startService
+      description: HTTP GET for startService
+      parameters: []
+      responses:
+        "200":
+          description: Details for startService fetched successfully
+  /stopLogging:
+    put:
+      summary: Stops the log timer.
+      description: Stops the log timer.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: stopLogging executed successfully
+    get:
+      summary: Fetch information for stopLogging
+      description: HTTP GET for stopLogging
+      parameters: []
+      responses:
+        "200":
+          description: Details for stopLogging fetched successfully
+  /stopService:
+    put:
+      summary: Executes stopService method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: stopService executed successfully
+    get:
+      summary: Fetch information for stopService
+      description: HTTP GET for stopService
+      parameters: []
+      responses:
+        "200":
+          description: Details for stopService fetched successfully
+  /toJSON:
+    put:
+      summary: Executes toJSON method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: toJSON executed successfully
+    get:
+      summary: Fetch information for toJSON
+      description: HTTP GET for toJSON
+      parameters: []
+      responses:
+        "200":
+          description: Details for toJSON fetched successfully
+tags: []

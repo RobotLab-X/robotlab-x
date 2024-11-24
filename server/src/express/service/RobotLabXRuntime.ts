@@ -315,18 +315,6 @@ export default class RobotLabXRuntime extends Service {
       })
   }
 
-  // readConfig(serviceName: string, defaultConfig: any) {
-  //   const filePath = path.join(this.configDir, this.configName, `${serviceName}.yml`)
-  //   try {
-  //     const file = fs.readFileSync(filePath, "utf8")
-  //     const config = YAML.parse(file)
-  //     return config
-  //   } catch (error) {
-  //     this.error(`Failed to load config: ${error}`)
-  //     return defaultConfig
-  //   }
-  // }
-
   applyServiceConfig(serviceName: string, config: any) {
     log.info(`applyServiceConfig ${serviceName} ${JSON.stringify(config)}`)
     try {
@@ -347,6 +335,7 @@ export default class RobotLabXRuntime extends Service {
 
   // FIXME - save a specific service config in a launch file ???
   saveServiceConfig(serviceName: string, config: any) {
+    // FIXME - implement !
     log.info(`saveServiceConfig ${serviceName}`)
     // const filePath = path.join(this.configDir, this.configName, `${serviceName}.yml`)
     // log.info(`saveServiceConfig ${filePath}`)
@@ -909,10 +898,18 @@ export default class RobotLabXRuntime extends Service {
     return ["default", "worky1", "worky2", "worky3", "worky4"]
   }
 
+  /**
+   * Get the hosts object from the store.
+   * @returns {HostData} The hosts object.
+   */
   getHosts() {
     return this.hosts
   }
 
+  /**
+   * Get the host object for the current host.
+   * @returns {HostData} The host object.
+   */
   getHost() {
     if (this.hostname == null) {
       return null
@@ -937,13 +934,17 @@ export default class RobotLabXRuntime extends Service {
     return this.connectionImpl.set(gatewayId, ws)
   }
 
+  /**
+   * Get the registry from the store.
+   * @returns {Object} The registry.
+   */
   getRegistry(): Object {
     return Store.getInstance().getRegistry()
   }
 
   /**
-   * Returns full name of all services
-   * @returns Array of all registry service names
+   *  Returns full name of all services
+   * @returns {string[]} List of all service names.
    */
   getServiceNames(): string[] {
     const localId = RobotLabXRuntime.instance.getId() // Assuming CodecUtil.getId() returns the local ID string
@@ -953,7 +954,7 @@ export default class RobotLabXRuntime extends Service {
 
   /**
    * Returns only local services and short names
-   * @returns Array of short names of local services
+   * @returns {string[]} List of local service names.
    */
   getLocalServiceNames(): string[] {
     const localId = RobotLabXRuntime.instance.getId() // Assuming CodecUtil.getId() returns the local ID string
@@ -1007,6 +1008,12 @@ export default class RobotLabXRuntime extends Service {
     return launchFiles
   }
 
+  /**
+   * Save a launch file to the userData/launch directory.
+   * @param {string} fileName - The name of the launch file.
+   * @param {string} content - The content of the launch file.
+   * @returns {void}
+   */
   saveLaunchFile(fileName: string, content: string): void {
     log.info(`saveLaunchFile ${fileName}`)
 
@@ -1042,6 +1049,11 @@ export default class RobotLabXRuntime extends Service {
     )
   }
 
+  /**
+   * Set the debug flag for the service.
+   * @param {boolean} debug - The new debug flag.
+   * @returns {void}
+   */
   setDebug(debug: boolean) {
     log.info(`setting debug: ${debug}`)
     this.debug = debug
@@ -1053,11 +1065,13 @@ export default class RobotLabXRuntime extends Service {
   }
 
   /**
-   * For outbound client connections
-   * <--- I am connecting to someone (outbound connection)
+   * Register a connection in the connection map.
+   *
+   * @param gateway
    * @param gatewayId
+   * @param url
+   * @param inboundOutbound
    * @param ws
-   * FIXME - gatewayFullname: String,
    */
   registerConnection(gateway: string, gatewayId: string, url: string, inboundOutbound: string, ws: WebSocket) {
     log.info(`==== registering connection gatewayId:${gatewayId} url:${url} i/o:${inboundOutbound} ====`)
@@ -1081,11 +1095,22 @@ export default class RobotLabXRuntime extends Service {
     this.connections[`${gatewayId}`] = connection
   }
 
+  /**
+   * Update the state of a connection in the connection map.
+   * @param {string} gatewayId - The gateway ID.
+   * @param {string} state - The new state of the connection.
+   * @returns {void}
+   */
   updateConnection(gatewayId: string, state: string) {
     log.error(`updating connection ${gatewayId} state ${state}`)
     this.connections[`${gatewayId}`].state = state
   }
 
+  /**
+   * Remove a connection from the connection map.
+   * @param {string} gatewayId - The gateway ID.
+   * @returns {void}
+   */
   removeConnection(gatewayId: string) {
     log.error(`removing connection ${gatewayId}`)
     // TODO - lots of possiblities with this
@@ -1128,6 +1153,11 @@ export default class RobotLabXRuntime extends Service {
     delete this.routeTable[remoteId]
   }
 
+  /**
+   * Get the connection for a gateway ID.
+   * @param {string} gatewayId - The gateway ID.
+   * @returns {WebSocket | undefined} The connection for the gateway ID.
+   */
   getGatewayConnection(gatewayId: string): WebSocket | undefined {
     return this.connectionImpl.get(gatewayId)
   }
@@ -1153,6 +1183,11 @@ export default class RobotLabXRuntime extends Service {
     this.broadcastJsonMessage(json)
   }
 
+  /**
+   * Get the gateway for a remote ID.
+   * @param {string} remoteId - The remote ID.
+   * @returns {Gateway} The gateway for the remote ID.
+   */
   getGateway(remoteId: string): Gateway {
     // log.error(`getGateway remoteId:${remoteId}`)
     let entry: RouteEntry = this.routeTable[remoteId]
@@ -1165,6 +1200,11 @@ export default class RobotLabXRuntime extends Service {
     return this.getService(entry.gateway)
   }
 
+  /**
+   * Get the route ID for a remote ID.
+   * @param {string} remoteId - The remote ID.
+   * @returns {string} The route ID.
+   */
   getRouteId(remoteId: string): string {
     // this is a local gateway id
     // this is the id of the gateway that will route to the remoteId
@@ -1216,11 +1256,9 @@ export default class RobotLabXRuntime extends Service {
    * Get list of interfaces from method name
    * FIXME - need to change from single method name to name of real interface
    * Match all services with the same interface
-   *
    * @param methodName
-   * @returns
-   *
-   **/
+   * @returns {string[]} List of services with the same interface
+   */
   getServicesFromInterface(methodName: string): string[] {
     const registry = Store.getInstance().getRegistry()
     let services: string[] = []
@@ -1236,6 +1274,12 @@ export default class RobotLabXRuntime extends Service {
     return services
   }
 
+  /**
+   * Sets the auto-launch flag for a launch file.
+   * @param {string} filename - The name of the launch file.
+   * @param {boolean} autolaunch - The auto-launch flag.
+   * @returns {void}
+   */
   setAutoLaunch(filename: string, autolaunch: boolean): void {
     log.info(`setAutoLaunch ${filename} ${autolaunch}`)
 

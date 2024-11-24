@@ -36,9 +36,166 @@ components:
         type: array
     type: object
 paths:
-  /startService:
+  /checkPipVersion:
     put:
-      summary: Executes startService method
+      summary: |-
+        Check the pip version - part of necessary preparations
+        to install a python client
+      description: |-
+        Check the pip version - part of necessary preparations
+        to install a python client
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - requiredVersion
+      responses:
+        "200":
+          description: checkPipVersion executed successfully
+    get:
+      summary: Fetch information for checkPipVersion
+      description: HTTP GET for checkPipVersion
+      parameters:
+        - name: requiredVersion
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter requiredVersion
+      responses:
+        "200":
+          description: Details for checkPipVersion fetched successfully
+  /checkPythonVersion:
+    put:
+      summary: Executes checkPythonVersion method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - requiredVersion
+      responses:
+        "200":
+          description: checkPythonVersion executed successfully
+    get:
+      summary: Fetch information for checkPythonVersion
+      description: HTTP GET for checkPythonVersion
+      parameters:
+        - name: requiredVersion
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter requiredVersion
+      responses:
+        "200":
+          description: Details for checkPythonVersion fetched successfully
+  /installPipRequirements:
+    put:
+      summary: Executes installPipRequirements method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: "{}"
+            example:
+              - packages
+      responses:
+        "200":
+          description: installPipRequirements executed successfully
+    get:
+      summary: Fetch information for installPipRequirements
+      description: HTTP GET for installPipRequirements
+      parameters:
+        - name: packages
+          in: query
+          required: true
+          schema:
+            type: "{}"
+          description: Parameter packages
+      responses:
+        "200":
+          description: Details for installPipRequirements fetched successfully
+  /installRepoRequirement:
+    put:
+      summary: Executes installRepoRequirement method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - typeKey
+      responses:
+        "200":
+          description: installRepoRequirement executed successfully
+    get:
+      summary: Fetch information for installRepoRequirement
+      description: HTTP GET for installRepoRequirement
+      parameters:
+        - name: typeKey
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter typeKey
+      responses:
+        "200":
+          description: Details for installRepoRequirement fetched successfully
+  /installRepoRequirements:
+    put:
+      summary: Executes installRepoRequirements method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+                - type: string
+            example:
+              - envName
+              - envPath
+      responses:
+        "200":
+          description: installRepoRequirements executed successfully
+    get:
+      summary: Fetch information for installRepoRequirements
+      description: HTTP GET for installRepoRequirements
+      parameters:
+        - name: envName
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter envName
+        - name: envPath
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter envPath
+      responses:
+        "200":
+          description: Details for installRepoRequirements fetched successfully
+  /installVirtualEnv:
+    put:
+      summary: Executes installVirtualEnv method
       description: ""
       requestBody:
         content:
@@ -49,22 +206,14 @@ paths:
             example: []
       responses:
         "200":
-          description: startService method executed successfully
-  /sendRemote:
-    put:
-      summary: Requesting to send a message to a remote process
-      description: Requesting to send a message to a remote process
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                - type: Message
-            example: []
+          description: installVirtualEnv executed successfully
+    get:
+      summary: Fetch information for installVirtualEnv
+      description: HTTP GET for installVirtualEnv
+      parameters: []
       responses:
         "200":
-          description: sendRemote method executed successfully
+          description: Details for installVirtualEnv fetched successfully
   /invoke:
     put:
       summary: >-
@@ -97,10 +246,31 @@ paths:
               items:
                 - type: string
                 - type: any[]
-            example: []
+            example:
+              - methodName
+              - args
       responses:
         "200":
-          description: invoke method executed successfully
+          description: invoke executed successfully
+    get:
+      summary: Fetch information for invoke
+      description: HTTP GET for invoke
+      parameters:
+        - name: methodName
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter methodName
+        - name: args
+          in: query
+          required: true
+          schema:
+            type: any[]
+          description: Parameter args
+      responses:
+        "200":
+          description: Details for invoke fetched successfully
   /invokeMsg:
     put:
       summary: >-
@@ -120,10 +290,153 @@ paths:
               type: array
               items:
                 - type: Message
+            example:
+              - msg
+      responses:
+        "200":
+          description: invokeMsg executed successfully
+    get:
+      summary: Fetch information for invokeMsg
+      description: HTTP GET for invokeMsg
+      parameters:
+        - name: msg
+          in: query
+          required: true
+          schema:
+            type: Message
+          description: Parameter msg
+      responses:
+        "200":
+          description: Details for invokeMsg fetched successfully
+  /normalizeVersion:
+    put:
+      summary: Executes normalizeVersion method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - version
+      responses:
+        "200":
+          description: normalizeVersion executed successfully
+    get:
+      summary: Fetch information for normalizeVersion
+      description: HTTP GET for normalizeVersion
+      parameters:
+        - name: version
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter version
+      responses:
+        "200":
+          description: Details for normalizeVersion fetched successfully
+  /onConnectionClosed:
+    put:
+      summary: Executes onConnectionClosed method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
             example: []
       responses:
         "200":
-          description: invokeMsg method executed successfully
+          description: onConnectionClosed executed successfully
+    get:
+      summary: Fetch information for onConnectionClosed
+      description: HTTP GET for onConnectionClosed
+      parameters: []
+      responses:
+        "200":
+          description: Details for onConnectionClosed fetched successfully
+  /sendRemote:
+    put:
+      summary: Requesting to send a message to a remote process
+      description: Requesting to send a message to a remote process
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: Message
+            example:
+              - msg
+      responses:
+        "200":
+          description: sendRemote executed successfully
+    get:
+      summary: Fetch information for sendRemote
+      description: HTTP GET for sendRemote
+      parameters:
+        - name: msg
+          in: query
+          required: true
+          schema:
+            type: Message
+          description: Parameter msg
+      responses:
+        "200":
+          description: Details for sendRemote fetched successfully
+  /startProxy:
+    put:
+      summary: Executes startProxy method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: "{}"
+            example:
+              - packages
+      responses:
+        "200":
+          description: startProxy executed successfully
+    get:
+      summary: Fetch information for startProxy
+      description: HTTP GET for startProxy
+      parameters:
+        - name: packages
+          in: query
+          required: true
+          schema:
+            type: "{}"
+          description: Parameter packages
+      responses:
+        "200":
+          description: Details for startProxy fetched successfully
+  /startService:
+    put:
+      summary: Executes startService method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: startService executed successfully
+    get:
+      summary: Fetch information for startService
+      description: HTTP GET for startService
+      parameters: []
+      responses:
+        "200":
+          description: Details for startService fetched successfully
   /toJSON:
     put:
       summary: Executes toJSON method
@@ -137,129 +450,12 @@ paths:
             example: []
       responses:
         "200":
-          description: toJSON method executed successfully
-  /checkPythonVersion:
-    put:
-      summary: Executes checkPythonVersion method
-      description: ""
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                - type: string
-            example: []
+          description: toJSON executed successfully
+    get:
+      summary: Fetch information for toJSON
+      description: HTTP GET for toJSON
+      parameters: []
       responses:
         "200":
-          description: checkPythonVersion method executed successfully
-  /normalizeVersion:
-    put:
-      summary: Executes normalizeVersion method
-      description: ""
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                - type: string
-            example: []
-      responses:
-        "200":
-          description: normalizeVersion method executed successfully
-  /checkPipVersion:
-    put:
-      summary: |-
-        Check the pip version - part of necessary preparations
-        to install a python client
-      description: |-
-        Check the pip version - part of necessary preparations
-        to install a python client
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                - type: string
-            example: []
-      responses:
-        "200":
-          description: checkPipVersion method executed successfully
-  /installVirtualEnv:
-    put:
-      summary: Executes installVirtualEnv method
-      description: ""
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items: []
-            example: []
-      responses:
-        "200":
-          description: installVirtualEnv method executed successfully
-  /installPipRequirements:
-    put:
-      summary: Executes installPipRequirements method
-      description: ""
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                - type: "{}"
-            example: []
-      responses:
-        "200":
-          description: installPipRequirements method executed successfully
-  /startProxy:
-    put:
-      summary: Executes startProxy method
-      description: ""
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                - type: "{}"
-            example: []
-      responses:
-        "200":
-          description: startProxy method executed successfully
-  /installRepoRequirement:
-    put:
-      summary: Executes installRepoRequirement method
-      description: ""
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                - type: string
-            example: []
-      responses:
-        "200":
-          description: installRepoRequirement method executed successfully
-  /installRepoRequirements:
-    put:
-      summary: Executes installRepoRequirements method
-      description: ""
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                - type: string
-                - type: string
-            example: []
-      responses:
-        "200":
-          description: installRepoRequirements method executed successfully
+          description: Details for toJSON fetched successfully
 tags: []

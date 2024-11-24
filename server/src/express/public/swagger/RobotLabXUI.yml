@@ -36,6 +36,47 @@ components:
         type: array
     type: object
 paths:
+  /sendRemote:
+    put:
+      summary: |-
+        Overriding sendRemote - all UIs are remote proxies,
+        however the funtionality of interest besides displaying is
+        configuration, which a RobotLabXUI does not have. The
+        proxy is the only way to send/save/apply configuration to this UI.
+
+        So, we intercept the these messages here.
+      description: |-
+        Overriding sendRemote - all UIs are remote proxies,
+        however the funtionality of interest besides displaying is
+        configuration, which a RobotLabXUI does not have. The
+        proxy is the only way to send/save/apply configuration to this UI.
+
+        So, we intercept the these messages here.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: Message
+            example:
+              - msg
+      responses:
+        "200":
+          description: sendRemote executed successfully
+    get:
+      summary: Fetch information for sendRemote
+      description: HTTP GET for sendRemote
+      parameters:
+        - name: msg
+          in: query
+          required: true
+          schema:
+            type: Message
+          description: Parameter msg
+      responses:
+        "200":
+          description: Details for sendRemote fetched successfully
   /startService:
     put:
       summary: Executes startService method
@@ -49,15 +90,18 @@ paths:
             example: []
       responses:
         "200":
-          description: startService method executed successfully
+          description: startService executed successfully
+    get:
+      summary: Fetch information for startService
+      description: HTTP GET for startService
+      parameters: []
+      responses:
+        "200":
+          description: Details for startService fetched successfully
   /toJSON:
     put:
-      summary: |-
-        Serializes the RobotLabXUI instance to JSON.
-        Excludes intervalId from serialization.
-      description: |-
-        Serializes the RobotLabXUI instance to JSON.
-        Excludes intervalId from serialization.
+      summary: Serializes the RobotLabXUI instance to JSON.
+      description: Serializes the RobotLabXUI instance to JSON.
       requestBody:
         content:
           application/json:
@@ -67,5 +111,12 @@ paths:
             example: []
       responses:
         "200":
-          description: toJSON method executed successfully
+          description: The serialized RobotLabXUI instance.
+    get:
+      summary: Fetch information for toJSON
+      description: HTTP GET for toJSON
+      parameters: []
+      responses:
+        "200":
+          description: The serialized RobotLabXUI instance.
 tags: []

@@ -73,8 +73,6 @@ function parseTypeScriptFile(filePath) {
 }
 
 // Generate Swagger paths for each method
-// Generate Swagger paths for each method
-// Generate Swagger paths for each method
 function generateSwaggerPaths(methods) {
   // Sort methods alphabetically by method name
   methods.sort((a, b) => a.methodName.localeCompare(b.methodName))
@@ -88,6 +86,9 @@ function generateSwaggerPaths(methods) {
         type: param.type === "number" ? "integer" : param.type
       }))
     }
+
+    // Create an example array of parameter names for PUT
+    const parameterExample = method.parameters.map((param) => param.name)
 
     // Create a list of parameters for GET request
     const getParameters = method.parameters.map((param) => ({
@@ -107,7 +108,8 @@ function generateSwaggerPaths(methods) {
         requestBody: {
           content: {
             "application/json": {
-              schema: parametersSchema
+              schema: parametersSchema,
+              example: parameterExample // Add the parameter names as the example
             }
           }
         },
@@ -186,7 +188,8 @@ function processDirectoryOrFile(sourcePath) {
 }
 
 // Path to source file or directory
-const sourcePath = path.resolve(__dirname, "./src/express/service/Node.ts")
+// const sourcePath = path.resolve(__dirname, "./src/express/service/RobotLabXRuntime.ts")
+const sourcePath = path.resolve(__dirname, "./src/express/service")
 
 // Process the path
 processDirectoryOrFile(sourcePath)

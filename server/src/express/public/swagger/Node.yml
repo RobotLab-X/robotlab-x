@@ -1,0 +1,593 @@
+openapi: 3.0.3
+info:
+  title: API Documentation
+  version: 1.0.0
+servers:
+  - url: http://localhost:3001/v1
+    description: Local development server
+components:
+  schemas:
+    $schema: http://json-schema.org/draft-07/schema#
+    definitions:
+      A<object>:
+        description: An AsyncIterator which can be aborted
+        properties:
+          abortController: {}
+          doneCallback: {}
+          itr: {}
+        type: object
+      a:
+        properties:
+          fetch:
+            type: object
+          host:
+            type: string
+          proxy:
+            type: boolean
+        type: object
+    properties:
+      config:
+        $ref: "#/definitions/a"
+      fetch:
+        type: object
+      ongoingStreamedRequests:
+        items:
+          $ref: "#/definitions/A<object>"
+        type: array
+    type: object
+paths:
+  /clearConsoleLogs:
+    put:
+      summary: Executes clearConsoleLogs method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: clearConsoleLogs executed successfully
+    get:
+      summary: Fetch information for clearConsoleLogs
+      description: HTTP GET for clearConsoleLogs
+      parameters: []
+      responses:
+        "200":
+          description: Details for clearConsoleLogs fetched successfully
+  /closeScript:
+    put:
+      summary: Closes a script by removing it from openScripts.
+      description: Closes a script by removing it from openScripts.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - filePath
+      responses:
+        "200":
+          description: closeScript executed successfully
+    get:
+      summary: Fetch information for closeScript
+      description: HTTP GET for closeScript
+      parameters:
+        - name: filePath
+          in: query
+          required: true
+          schema:
+            type: string
+          description: "- The path of the script to close."
+      responses:
+        "200":
+          description: Details for closeScript fetched successfully
+  /deleteFile:
+    put:
+      summary: Deletes a file synchronously.
+      description: Deletes a file synchronously.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - filePath
+      responses:
+        "200":
+          description: deleteFile executed successfully
+    get:
+      summary: Fetch information for deleteFile
+      description: HTTP GET for deleteFile
+      parameters:
+        - name: filePath
+          in: query
+          required: true
+          schema:
+            type: string
+          description: "- The path of the file to delete."
+      responses:
+        "200":
+          description: Details for deleteFile fetched successfully
+  /fileExists:
+    put:
+      summary: Checks if a file exists synchronously.
+      description: Checks if a file exists synchronously.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - filePath
+      responses:
+        "200":
+          description: True if the file exists, otherwise false.
+    get:
+      summary: Fetch information for fileExists
+      description: HTTP GET for fileExists
+      parameters:
+        - name: filePath
+          in: query
+          required: true
+          schema:
+            type: string
+          description: "- The path of the file to check."
+      responses:
+        "200":
+          description: True if the file exists, otherwise false.
+  /getFile:
+    put:
+      summary: Gets the contents of a file synchronously.
+      description: Gets the contents of a file synchronously.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - filePath
+      responses:
+        "200":
+          description: The file contents.
+    get:
+      summary: Fetch information for getFile
+      description: HTTP GET for getFile
+      parameters:
+        - name: filePath
+          in: query
+          required: true
+          schema:
+            type: string
+          description: "- The path of the file."
+      responses:
+        "200":
+          description: The file contents.
+  /getFileTree:
+    put:
+      summary: Executes getFileTree method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: getFileTree executed successfully
+    get:
+      summary: Fetch information for getFileTree
+      description: HTTP GET for getFileTree
+      parameters: []
+      responses:
+        "200":
+          description: Details for getFileTree fetched successfully
+  /mergeFileTree:
+    put:
+      summary: Merges a new subtree into the existing fileTree.
+      description: Merges a new subtree into the existing fileTree.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: FileTreeNode[]
+                - type: FileTreeNode
+            example:
+              - existingTree
+              - newTree
+      responses:
+        "200":
+          description: mergeFileTree executed successfully
+    get:
+      summary: Fetch information for mergeFileTree
+      description: HTTP GET for mergeFileTree
+      parameters:
+        - name: existingTree
+          in: query
+          required: true
+          schema:
+            type: FileTreeNode[]
+          description: "- The current fileTree."
+        - name: newTree
+          in: query
+          required: true
+          schema:
+            type: FileTreeNode
+          description: "- The new subtree to merge."
+      responses:
+        "200":
+          description: Details for mergeFileTree fetched successfully
+  /openScript:
+    put:
+      summary: Adds a script to openScripts by loading its content if it's a .js file.
+      description: Adds a script to openScripts by loading its content if it's a .js file.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - filePath
+      responses:
+        "200":
+          description: A promise that resolves when the file is added to openScripts.
+    get:
+      summary: Fetch information for openScript
+      description: HTTP GET for openScript
+      parameters:
+        - name: filePath
+          in: query
+          required: true
+          schema:
+            type: string
+          description: "- The path of the JavaScript file to open."
+      responses:
+        "200":
+          description: A promise that resolves when the file is added to openScripts.
+  /publishConsole:
+    put:
+      summary: Publishes console output for a specific script.
+      description: Publishes console output for a specific script.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: publishConsole executed successfully
+    get:
+      summary: Fetch information for publishConsole
+      description: HTTP GET for publishConsole
+      parameters: []
+      responses:
+        "200":
+          description: Details for publishConsole fetched successfully
+  /publishFileTree:
+    put:
+      summary: Executes publishFileTree method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: publishFileTree executed successfully
+    get:
+      summary: Fetch information for publishFileTree
+      description: HTTP GET for publishFileTree
+      parameters: []
+      responses:
+        "200":
+          description: Details for publishFileTree fetched successfully
+  /publishOpenScripts:
+    put:
+      summary: Executes publishOpenScripts method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: publishOpenScripts executed successfully
+    get:
+      summary: Fetch information for publishOpenScripts
+      description: HTTP GET for publishOpenScripts
+      parameters: []
+      responses:
+        "200":
+          description: Details for publishOpenScripts fetched successfully
+  /runScript:
+    put:
+      summary: Runs a JavaScript script in the same application context and publishes
+        its console output.
+      description: Runs a JavaScript script in the same application context and
+        publishes its console output.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - filePath
+      responses:
+        "200":
+          description: runScript executed successfully
+    get:
+      summary: Fetch information for runScript
+      description: HTTP GET for runScript
+      parameters:
+        - name: filePath
+          in: query
+          required: true
+          schema:
+            type: string
+          description: "- The path of the script to run."
+      responses:
+        "200":
+          description: Details for runScript fetched successfully
+  /saveScript:
+    put:
+      summary: Saves the content of an open script to the file system.
+      description: Saves the content of an open script to the file system.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+                - type: string
+            example:
+              - filePath
+              - content
+      responses:
+        "200":
+          description: A promise that resolves when the script is saved.
+    get:
+      summary: Fetch information for saveScript
+      description: HTTP GET for saveScript
+      parameters:
+        - name: filePath
+          in: query
+          required: true
+          schema:
+            type: string
+          description: "- The path of the script to save."
+        - name: content
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter content
+      responses:
+        "200":
+          description: A promise that resolves when the script is saved.
+  /scanDirectory:
+    put:
+      summary: Scans a directory synchronously and merges it with the fileTree.
+      description: Scans a directory synchronously and merges it with the fileTree.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - directoryPath
+      responses:
+        "200":
+          description: The updated fileTree.
+    get:
+      summary: Fetch information for scanDirectory
+      description: HTTP GET for scanDirectory
+      parameters:
+        - name: directoryPath
+          in: query
+          required: true
+          schema:
+            type: string
+          description: "- The path of the directory to scan."
+      responses:
+        "200":
+          description: The updated fileTree.
+  /startLogging:
+    put:
+      summary: Executes startLogging method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: integer
+            example:
+              - intervalMs
+      responses:
+        "200":
+          description: startLogging executed successfully
+    get:
+      summary: Fetch information for startLogging
+      description: HTTP GET for startLogging
+      parameters:
+        - name: intervalMs
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: Parameter intervalMs
+      responses:
+        "200":
+          description: Details for startLogging fetched successfully
+  /startService:
+    put:
+      summary: Executes startService method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: startService executed successfully
+    get:
+      summary: Fetch information for startService
+      description: HTTP GET for startService
+      parameters: []
+      responses:
+        "200":
+          description: Details for startService fetched successfully
+  /stopLogging:
+    put:
+      summary: Executes stopLogging method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: stopLogging executed successfully
+    get:
+      summary: Fetch information for stopLogging
+      description: HTTP GET for stopLogging
+      parameters: []
+      responses:
+        "200":
+          description: Details for stopLogging fetched successfully
+  /toJSON:
+    put:
+      summary: |-
+        Serializes the Node instance to JSON.
+        Excludes intervalId from serialization.
+      description: |-
+        Serializes the Node instance to JSON.
+        Excludes intervalId from serialization.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: The serialized Node instance.
+    get:
+      summary: Fetch information for toJSON
+      description: HTTP GET for toJSON
+      parameters: []
+      responses:
+        "200":
+          description: The serialized Node instance.
+  /updateScript:
+    put:
+      summary: Updates the content of an open script.
+      description: Updates the content of an open script.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+                - type: string
+            example:
+              - filePath
+              - content
+      responses:
+        "200":
+          description: updateScript executed successfully
+    get:
+      summary: Fetch information for updateScript
+      description: HTTP GET for updateScript
+      parameters:
+        - name: filePath
+          in: query
+          required: true
+          schema:
+            type: string
+          description: is the path of the script to update.
+        - name: content
+          in: query
+          required: true
+          schema:
+            type: string
+          description: is the new content of the script.
+      responses:
+        "200":
+          description: Details for updateScript fetched successfully
+  /writeFile:
+    put:
+      summary: Writes data to a file.
+      description: Writes data to a file.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+                - type: string
+            example:
+              - filePath
+              - data
+      responses:
+        "200":
+          description: A promise that resolves when the file is written.
+    get:
+      summary: Fetch information for writeFile
+      description: HTTP GET for writeFile
+      parameters:
+        - name: filePath
+          in: query
+          required: true
+          schema:
+            type: string
+          description: "- The path of the file."
+        - name: data
+          in: query
+          required: true
+          schema:
+            type: string
+          description: "- The data to write."
+      responses:
+        "200":
+          description: A promise that resolves when the file is written.
+tags: []

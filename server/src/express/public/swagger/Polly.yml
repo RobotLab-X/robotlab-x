@@ -36,6 +36,77 @@ components:
         type: array
     type: object
 paths:
+  /applyConfig:
+    put:
+      summary: Executes applyConfig method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: any
+            example:
+              - config
+      responses:
+        "200":
+          description: applyConfig executed successfully
+    get:
+      summary: Fetch information for applyConfig
+      description: HTTP GET for applyConfig
+      parameters:
+        - name: config
+          in: query
+          required: true
+          schema:
+            type: any
+          description: Parameter config
+      responses:
+        "200":
+          description: Details for applyConfig fetched successfully
+  /fetchVoices:
+    put:
+      summary: Executes fetchVoices method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: fetchVoices executed successfully
+    get:
+      summary: Fetch information for fetchVoices
+      description: HTTP GET for fetchVoices
+      parameters: []
+      responses:
+        "200":
+          description: Details for fetchVoices fetched successfully
+  /initializePollyClient:
+    put:
+      summary: Executes initializePollyClient method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: initializePollyClient executed successfully
+    get:
+      summary: Fetch information for initializePollyClient
+      description: HTTP GET for initializePollyClient
+      parameters: []
+      responses:
+        "200":
+          description: Details for initializePollyClient fetched successfully
   /onText:
     put:
       summary: Executes onText method
@@ -65,6 +136,35 @@ paths:
       responses:
         "200":
           description: Details for onText fetched successfully
+  /publishPlayAudioFile:
+    put:
+      summary: Executes publishPlayAudioFile method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - filename
+      responses:
+        "200":
+          description: publishPlayAudioFile executed successfully
+    get:
+      summary: Fetch information for publishPlayAudioFile
+      description: HTTP GET for publishPlayAudioFile
+      parameters:
+        - name: filename
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter filename
+      responses:
+        "200":
+          description: Details for publishPlayAudioFile fetched successfully
   /publishSpeaking:
     put:
       summary: Executes publishSpeaking method
@@ -123,13 +223,34 @@ paths:
       responses:
         "200":
           description: Details for speak fetched successfully
+  /startService:
+    put:
+      summary: Executes startService method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: startService executed successfully
+    get:
+      summary: Fetch information for startService
+      description: HTTP GET for startService
+      parameters: []
+      responses:
+        "200":
+          description: Details for startService fetched successfully
   /toJSON:
     put:
       summary: |-
-        Serializes the GTTS instance to JSON.
+        Serializes the Polly instance to JSON.
         Excludes intervalId from serialization.
       description: |-
-        Serializes the GTTS instance to JSON.
+        Serializes the Polly instance to JSON.
         Excludes intervalId from serialization.
       requestBody:
         content:
@@ -140,12 +261,12 @@ paths:
             example: []
       responses:
         "200":
-          description: The serialized GTTS instance.
+          description: The serialized Polly instance.
     get:
       summary: Fetch information for toJSON
       description: HTTP GET for toJSON
       parameters: []
       responses:
         "200":
-          description: The serialized GTTS instance.
+          description: The serialized Polly instance.
 tags: []

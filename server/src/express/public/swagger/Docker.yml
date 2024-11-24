@@ -36,77 +36,6 @@ components:
         type: array
     type: object
 paths:
-  /startService:
-    put:
-      summary: Executes startService method
-      description: ""
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items: []
-            example: []
-      responses:
-        "200":
-          description: startService method executed successfully
-  /stopService:
-    put:
-      summary: Executes stopService method
-      description: ""
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items: []
-            example: []
-      responses:
-        "200":
-          description: stopService method executed successfully
-  /showAll:
-    put:
-      summary: Executes showAll method
-      description: ""
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                - type: boolean
-            example: []
-      responses:
-        "200":
-          description: showAll method executed successfully
-  /ps:
-    put:
-      summary: Executes ps method
-      description: ""
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items: []
-            example: []
-      responses:
-        "200":
-          description: ps method executed successfully
-  /publishPs:
-    put:
-      summary: Executes publishPs method
-      description: ""
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items: []
-            example: []
-      responses:
-        "200":
-          description: publishPs method executed successfully
   /createAndStartContainer:
     put:
       summary: Executes createAndStartContainer method
@@ -119,10 +48,31 @@ paths:
               items:
                 - type: string
                 - type: string
-            example: []
+            example:
+              - imageName
+              - containerName
       responses:
         "200":
-          description: createAndStartContainer method executed successfully
+          description: createAndStartContainer executed successfully
+    get:
+      summary: Fetch information for createAndStartContainer
+      description: HTTP GET for createAndStartContainer
+      parameters:
+        - name: imageName
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter imageName
+        - name: containerName
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter containerName
+      responses:
+        "200":
+          description: Details for createAndStartContainer fetched successfully
   /deleteContainer:
     put:
       summary: Executes deleteContainer method
@@ -134,10 +84,24 @@ paths:
               type: array
               items:
                 - type: string
-            example: []
+            example:
+              - containerId
       responses:
         "200":
-          description: deleteContainer method executed successfully
+          description: deleteContainer executed successfully
+    get:
+      summary: Fetch information for deleteContainer
+      description: HTTP GET for deleteContainer
+      parameters:
+        - name: containerId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter containerId
+      responses:
+        "200":
+          description: Details for deleteContainer fetched successfully
   /deleteImage:
     put:
       summary: Executes deleteImage method
@@ -149,25 +113,24 @@ paths:
               type: array
               items:
                 - type: string
-            example: []
+            example:
+              - imageId
       responses:
         "200":
-          description: deleteImage method executed successfully
-  /pullImage:
-    put:
-      summary: Executes pullImage method
-      description: ""
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                - type: string
-            example: []
+          description: deleteImage executed successfully
+    get:
+      summary: Fetch information for deleteImage
+      description: HTTP GET for deleteImage
+      parameters:
+        - name: imageId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter imageId
       responses:
         "200":
-          description: pullImage method executed successfully
+          description: Details for deleteImage fetched successfully
   /getImages:
     put:
       summary: Executes getImages method
@@ -181,7 +144,35 @@ paths:
             example: []
       responses:
         "200":
-          description: getImages method executed successfully
+          description: getImages executed successfully
+    get:
+      summary: Fetch information for getImages
+      description: HTTP GET for getImages
+      parameters: []
+      responses:
+        "200":
+          description: Details for getImages fetched successfully
+  /ps:
+    put:
+      summary: Executes ps method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: ps executed successfully
+    get:
+      summary: Fetch information for ps
+      description: HTTP GET for ps
+      parameters: []
+      responses:
+        "200":
+          description: Details for ps fetched successfully
   /publishImages:
     put:
       summary: Executes publishImages method
@@ -193,10 +184,103 @@ paths:
               type: array
               items:
                 - type: any
+            example:
+              - images
+      responses:
+        "200":
+          description: publishImages executed successfully
+    get:
+      summary: Fetch information for publishImages
+      description: HTTP GET for publishImages
+      parameters:
+        - name: images
+          in: query
+          required: true
+          schema:
+            type: any
+          description: Parameter images
+      responses:
+        "200":
+          description: Details for publishImages fetched successfully
+  /publishPs:
+    put:
+      summary: Executes publishPs method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
             example: []
       responses:
         "200":
-          description: publishImages method executed successfully
+          description: publishPs executed successfully
+    get:
+      summary: Fetch information for publishPs
+      description: HTTP GET for publishPs
+      parameters: []
+      responses:
+        "200":
+          description: Details for publishPs fetched successfully
+  /pullImage:
+    put:
+      summary: Executes pullImage method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - imageName
+      responses:
+        "200":
+          description: pullImage executed successfully
+    get:
+      summary: Fetch information for pullImage
+      description: HTTP GET for pullImage
+      parameters:
+        - name: imageName
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter imageName
+      responses:
+        "200":
+          description: Details for pullImage fetched successfully
+  /showAll:
+    put:
+      summary: Executes showAll method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: boolean
+            example:
+              - all
+      responses:
+        "200":
+          description: showAll executed successfully
+    get:
+      summary: Fetch information for showAll
+      description: HTTP GET for showAll
+      parameters:
+        - name: all
+          in: query
+          required: true
+          schema:
+            type: boolean
+          description: Parameter all
+      responses:
+        "200":
+          description: Details for showAll fetched successfully
   /startPs:
     put:
       summary: Executes startPs method
@@ -210,7 +294,35 @@ paths:
             example: []
       responses:
         "200":
-          description: startPs method executed successfully
+          description: startPs executed successfully
+    get:
+      summary: Fetch information for startPs
+      description: HTTP GET for startPs
+      parameters: []
+      responses:
+        "200":
+          description: Details for startPs fetched successfully
+  /startService:
+    put:
+      summary: Executes startService method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: startService executed successfully
+    get:
+      summary: Fetch information for startService
+      description: HTTP GET for startService
+      parameters: []
+      responses:
+        "200":
+          description: Details for startService fetched successfully
   /stopPs:
     put:
       summary: Executes stopPs method
@@ -224,7 +336,35 @@ paths:
             example: []
       responses:
         "200":
-          description: stopPs method executed successfully
+          description: stopPs executed successfully
+    get:
+      summary: Fetch information for stopPs
+      description: HTTP GET for stopPs
+      parameters: []
+      responses:
+        "200":
+          description: Details for stopPs fetched successfully
+  /stopService:
+    put:
+      summary: Executes stopService method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: stopService executed successfully
+    get:
+      summary: Fetch information for stopService
+      description: HTTP GET for stopService
+      parameters: []
+      responses:
+        "200":
+          description: Details for stopService fetched successfully
   /toJSON:
     put:
       summary: Executes toJSON method
@@ -238,5 +378,12 @@ paths:
             example: []
       responses:
         "200":
-          description: toJSON method executed successfully
+          description: toJSON executed successfully
+    get:
+      summary: Fetch information for toJSON
+      description: HTTP GET for toJSON
+      parameters: []
+      responses:
+        "200":
+          description: Details for toJSON fetched successfully
 tags: []

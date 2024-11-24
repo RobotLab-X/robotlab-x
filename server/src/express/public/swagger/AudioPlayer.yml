@@ -1,0 +1,214 @@
+openapi: 3.0.3
+info:
+  title: API Documentation
+  version: 1.0.0
+servers:
+  - url: http://localhost:3001/v1
+    description: Local development server
+components:
+  schemas:
+    $schema: http://json-schema.org/draft-07/schema#
+    definitions:
+      A<object>:
+        description: An AsyncIterator which can be aborted
+        properties:
+          abortController: {}
+          doneCallback: {}
+          itr: {}
+        type: object
+      a:
+        properties:
+          fetch:
+            type: object
+          host:
+            type: string
+          proxy:
+            type: boolean
+        type: object
+    properties:
+      config:
+        $ref: "#/definitions/a"
+      fetch:
+        type: object
+      ongoingStreamedRequests:
+        items:
+          $ref: "#/definitions/A<object>"
+        type: array
+    type: object
+paths:
+  /onPlayAudioFile:
+    put:
+      summary: Executes onPlayAudioFile method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - audioFile
+      responses:
+        "200":
+          description: onPlayAudioFile executed successfully
+    get:
+      summary: Fetch information for onPlayAudioFile
+      description: HTTP GET for onPlayAudioFile
+      parameters:
+        - name: audioFile
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter audioFile
+      responses:
+        "200":
+          description: Details for onPlayAudioFile fetched successfully
+  /play:
+    put:
+      summary: Executes play method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - audioFile
+      responses:
+        "200":
+          description: play executed successfully
+    get:
+      summary: Fetch information for play
+      description: HTTP GET for play
+      parameters:
+        - name: audioFile
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter audioFile
+      responses:
+        "200":
+          description: Details for play fetched successfully
+  /playAudioFile:
+    put:
+      summary: Executes playAudioFile method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - audioFile
+      responses:
+        "200":
+          description: playAudioFile executed successfully
+    get:
+      summary: Fetch information for playAudioFile
+      description: HTTP GET for playAudioFile
+      parameters:
+        - name: audioFile
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter audioFile
+      responses:
+        "200":
+          description: Details for playAudioFile fetched successfully
+  /start:
+    put:
+      summary: Starts the audio player service.
+      description: Starts the audio player service.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: start executed successfully
+    get:
+      summary: Fetch information for start
+      description: HTTP GET for start
+      parameters: []
+      responses:
+        "200":
+          description: Details for start fetched successfully
+  /startService:
+    put:
+      summary: Executes startService method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: startService executed successfully
+    get:
+      summary: Fetch information for startService
+      description: HTTP GET for startService
+      parameters: []
+      responses:
+        "200":
+          description: Details for startService fetched successfully
+  /stop:
+    put:
+      summary: Stops the audio player service.
+      description: Stops the audio player service.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: stop executed successfully
+    get:
+      summary: Fetch information for stop
+      description: HTTP GET for stop
+      parameters: []
+      responses:
+        "200":
+          description: Details for stop fetched successfully
+  /toJSON:
+    put:
+      summary: |-
+        Serializes the AudioPlayer instance to JSON.
+        Excludes intervalId from serialization.
+      description: |-
+        Serializes the AudioPlayer instance to JSON.
+        Excludes intervalId from serialization.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: The serialized AudioPlayer instance.
+    get:
+      summary: Fetch information for toJSON
+      description: HTTP GET for toJSON
+      parameters: []
+      responses:
+        "200":
+          description: The serialized AudioPlayer instance.
+tags: []

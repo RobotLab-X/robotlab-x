@@ -36,10 +36,10 @@ components:
         type: array
     type: object
 paths:
-  /onUptime:
+  /publishText:
     put:
-      summary: Executes onUptime method
-      description: ""
+      summary: Publishes the current epoch time.
+      description: Publishes the current epoch time.
       requestBody:
         content:
           application/json:
@@ -48,21 +48,46 @@ paths:
               items:
                 - type: string
             example:
-              - str
+              - text
       responses:
         "200":
-          description: onUptime executed successfully
+          description: The current epoch time.
     get:
-      summary: Fetch information for onUptime
-      description: HTTP GET for onUptime
+      summary: Fetch information for publishText
+      description: HTTP GET for publishText
       parameters:
-        - name: str
+        - name: text
           in: query
           required: true
           schema:
             type: string
-          description: Parameter str
+          description: Parameter text
       responses:
         "200":
-          description: Details for onUptime fetched successfully
+          description: The current epoch time.
+  /toJSON:
+    put:
+      summary: |-
+        Serializes the WebkitSpeechRecognition instance to JSON.
+        Excludes intervalId from serialization.
+      description: |-
+        Serializes the WebkitSpeechRecognition instance to JSON.
+        Excludes intervalId from serialization.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: The serialized WebkitSpeechRecognition instance.
+    get:
+      summary: Fetch information for toJSON
+      description: HTTP GET for toJSON
+      parameters: []
+      responses:
+        "200":
+          description: The serialized WebkitSpeechRecognition instance.
 tags: []

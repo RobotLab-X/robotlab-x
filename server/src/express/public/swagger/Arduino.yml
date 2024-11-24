@@ -36,34 +36,6 @@ components:
         type: array
     type: object
 paths:
-  /startService:
-    put:
-      summary: Executes startService method
-      description: ""
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items: []
-            example: []
-      responses:
-        "200":
-          description: startService method executed successfully
-  /stopService:
-    put:
-      summary: Executes stopService method
-      description: ""
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items: []
-            example: []
-      responses:
-        "200":
-          description: stopService method executed successfully
   /applyConfig:
     put:
       summary: Executes applyConfig method
@@ -75,10 +47,24 @@ paths:
               type: array
               items:
                 - type: any
-            example: []
+            example:
+              - config
       responses:
         "200":
-          description: applyConfig method executed successfully
+          description: applyConfig executed successfully
+    get:
+      summary: Fetch information for applyConfig
+      description: HTTP GET for applyConfig
+      parameters:
+        - name: config
+          in: query
+          required: true
+          schema:
+            type: any
+          description: Parameter config
+      responses:
+        "200":
+          description: Details for applyConfig fetched successfully
   /connect:
     put:
       summary: Executes connect method
@@ -90,52 +76,24 @@ paths:
               type: array
               items:
                 - type: string
-            example: []
+            example:
+              - port
       responses:
         "200":
-          description: connect method executed successfully
-  /disconnect:
-    put:
-      summary: Executes disconnect method
-      description: ""
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items: []
-            example: []
+          description: connect executed successfully
+    get:
+      summary: Fetch information for connect
+      description: HTTP GET for connect
+      parameters:
+        - name: port
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter port
       responses:
         "200":
-          description: disconnect method executed successfully
-  /getPorts:
-    put:
-      summary: Executes getPorts method
-      description: ""
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items: []
-            example: []
-      responses:
-        "200":
-          description: getPorts method executed successfully
-  /getBoardInfo:
-    put:
-      summary: Executes getBoardInfo method
-      description: ""
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items: []
-            example: []
-      responses:
-        "200":
-          description: getBoardInfo method executed successfully
+          description: Details for connect fetched successfully
   /createPins:
     put:
       summary: Executes createPins method
@@ -149,7 +107,56 @@ paths:
             example: []
       responses:
         "200":
-          description: createPins method executed successfully
+          description: createPins executed successfully
+    get:
+      summary: Fetch information for createPins
+      description: HTTP GET for createPins
+      parameters: []
+      responses:
+        "200":
+          description: Details for createPins fetched successfully
+  /disconnect:
+    put:
+      summary: Executes disconnect method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: disconnect executed successfully
+    get:
+      summary: Fetch information for disconnect
+      description: HTTP GET for disconnect
+      parameters: []
+      responses:
+        "200":
+          description: Details for disconnect fetched successfully
+  /getBoardInfo:
+    put:
+      summary: Executes getBoardInfo method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: getBoardInfo executed successfully
+    get:
+      summary: Fetch information for getBoardInfo
+      description: HTTP GET for getBoardInfo
+      parameters: []
+      responses:
+        "200":
+          description: Details for getBoardInfo fetched successfully
   /getPins:
     put:
       summary: Executes getPins method
@@ -163,10 +170,38 @@ paths:
             example: []
       responses:
         "200":
-          description: getPins method executed successfully
-  /write:
+          description: getPins executed successfully
+    get:
+      summary: Fetch information for getPins
+      description: HTTP GET for getPins
+      parameters: []
+      responses:
+        "200":
+          description: Details for getPins fetched successfully
+  /getPorts:
     put:
-      summary: Executes write method
+      summary: Executes getPorts method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: getPorts executed successfully
+    get:
+      summary: Fetch information for getPorts
+      description: HTTP GET for getPorts
+      parameters: []
+      responses:
+        "200":
+          description: Details for getPorts fetched successfully
+  /onServoMoveTo:
+    put:
+      summary: Executes onServoMoveTo method
       description: ""
       requestBody:
         content:
@@ -174,12 +209,25 @@ paths:
             schema:
               type: array
               items:
-                - type: integer
-                - type: integer
-            example: []
+                - type: ServoMove
+            example:
+              - servoMove
       responses:
         "200":
-          description: write method executed successfully
+          description: onServoMoveTo executed successfully
+    get:
+      summary: Fetch information for onServoMoveTo
+      description: HTTP GET for onServoMoveTo
+      parameters:
+        - name: servoMove
+          in: query
+          required: true
+          schema:
+            type: ServoMove
+          description: Parameter servoMove
+      responses:
+        "200":
+          description: Details for onServoMoveTo fetched successfully
   /servoWrite:
     put:
       summary: Executes servoWrite method
@@ -192,25 +240,81 @@ paths:
               items:
                 - type: string
                 - type: integer
-            example: []
+                - type: integer
+            example:
+              - pin
+              - angle
+              - speed
       responses:
         "200":
-          description: servoWrite method executed successfully
-  /onServoMoveTo:
+          description: servoWrite executed successfully
+    get:
+      summary: Fetch information for servoWrite
+      description: HTTP GET for servoWrite
+      parameters:
+        - name: pin
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter pin
+        - name: angle
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: Parameter angle
+        - name: speed
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: Parameter speed
+      responses:
+        "200":
+          description: Details for servoWrite fetched successfully
+  /startService:
     put:
-      summary: Executes onServoMoveTo method
+      summary: Executes startService method
       description: ""
       requestBody:
         content:
           application/json:
             schema:
               type: array
-              items:
-                - type: ServoMove
+              items: []
             example: []
       responses:
         "200":
-          description: onServoMoveTo method executed successfully
+          description: startService executed successfully
+    get:
+      summary: Fetch information for startService
+      description: HTTP GET for startService
+      parameters: []
+      responses:
+        "200":
+          description: Details for startService fetched successfully
+  /stopService:
+    put:
+      summary: Executes stopService method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: stopService executed successfully
+    get:
+      summary: Fetch information for stopService
+      description: HTTP GET for stopService
+      parameters: []
+      responses:
+        "200":
+          description: Details for stopService fetched successfully
   /toJSON:
     put:
       summary: Executes toJSON method
@@ -224,5 +328,49 @@ paths:
             example: []
       responses:
         "200":
-          description: toJSON method executed successfully
+          description: toJSON executed successfully
+    get:
+      summary: Fetch information for toJSON
+      description: HTTP GET for toJSON
+      parameters: []
+      responses:
+        "200":
+          description: Details for toJSON fetched successfully
+  /write:
+    put:
+      summary: Executes write method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: integer
+                - type: integer
+            example:
+              - pin
+              - value
+      responses:
+        "200":
+          description: write executed successfully
+    get:
+      summary: Fetch information for write
+      description: HTTP GET for write
+      parameters:
+        - name: pin
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: Parameter pin
+        - name: value
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: Parameter value
+      responses:
+        "200":
+          description: Details for write fetched successfully
 tags: []

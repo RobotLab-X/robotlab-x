@@ -36,20 +36,6 @@ components:
         type: array
     type: object
 paths:
-  /publishEpoch:
-    put:
-      summary: Publishes the current epoch time.
-      description: Publishes the current epoch time.
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items: []
-            example: []
-      responses:
-        "200":
-          description: publishEpoch method executed successfully
   /onTick:
     put:
       summary: Handles the tick event, invoking the publishEpoch method.
@@ -63,11 +49,18 @@ paths:
             example: []
       responses:
         "200":
-          description: onTick method executed successfully
-  /stopService:
+          description: onTick executed successfully
+    get:
+      summary: Fetch information for onTick
+      description: HTTP GET for onTick
+      parameters: []
+      responses:
+        "200":
+          description: Details for onTick fetched successfully
+  /publishEpoch:
     put:
-      summary: Executes stopService method
-      description: ""
+      summary: Publishes the current epoch time.
+      description: Publishes the current epoch time.
       requestBody:
         content:
           application/json:
@@ -77,7 +70,14 @@ paths:
             example: []
       responses:
         "200":
-          description: stopService method executed successfully
+          description: The current epoch time.
+    get:
+      summary: Fetch information for publishEpoch
+      description: HTTP GET for publishEpoch
+      parameters: []
+      responses:
+        "200":
+          description: The current epoch time.
   /startClock:
     put:
       summary: Starts the clock timer.
@@ -90,10 +90,24 @@ paths:
               items:
                 - type: integer
             example:
-              - 1000
+              - intervalMs
       responses:
         "200":
-          description: startClock method executed successfully
+          description: startClock executed successfully
+    get:
+      summary: Fetch information for startClock
+      description: HTTP GET for startClock
+      parameters:
+        - name: intervalMs
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: "- The interval in milliseconds. If not provided, the existing
+            intervalMs from the config is used."
+      responses:
+        "200":
+          description: Details for startClock fetched successfully
   /stopClock:
     put:
       summary: Stops the clock timer.
@@ -107,7 +121,35 @@ paths:
             example: []
       responses:
         "200":
-          description: stopClock method executed successfully
+          description: stopClock executed successfully
+    get:
+      summary: Fetch information for stopClock
+      description: HTTP GET for stopClock
+      parameters: []
+      responses:
+        "200":
+          description: Details for stopClock fetched successfully
+  /stopService:
+    put:
+      summary: Executes stopService method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: stopService executed successfully
+    get:
+      summary: Fetch information for stopService
+      description: HTTP GET for stopService
+      parameters: []
+      responses:
+        "200":
+          description: Details for stopService fetched successfully
   /toJSON:
     put:
       summary: |-
@@ -125,5 +167,12 @@ paths:
             example: []
       responses:
         "200":
-          description: toJSON method executed successfully
+          description: The serialized Clock instance.
+    get:
+      summary: Fetch information for toJSON
+      description: HTTP GET for toJSON
+      parameters: []
+      responses:
+        "200":
+          description: The serialized Clock instance.
 tags: []

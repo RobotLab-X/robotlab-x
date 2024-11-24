@@ -36,20 +36,6 @@ components:
         type: array
     type: object
 paths:
-  /toJSON:
-    put:
-      summary: Executes toJSON method
-      description: ""
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items: []
-            example: []
-      responses:
-        "200":
-          description: toJSON method executed successfully
   /getMicrophones:
     put:
       summary: Executes getMicrophones method
@@ -63,7 +49,14 @@ paths:
             example: []
       responses:
         "200":
-          description: getMicrophones method executed successfully
+          description: getMicrophones executed successfully
+    get:
+      summary: Fetch information for getMicrophones
+      description: HTTP GET for getMicrophones
+      parameters: []
+      responses:
+        "200":
+          description: Details for getMicrophones fetched successfully
   /parseMicrophoneList:
     put:
       summary: Executes parseMicrophoneList method
@@ -76,38 +69,31 @@ paths:
               items:
                 - type: string
                 - type: string
-            example: []
+            example:
+              - output
+              - platform
       responses:
         "200":
-          description: parseMicrophoneList method executed successfully
-  /startService:
-    put:
-      summary: Executes startService method
-      description: ""
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items: []
-            example: []
+          description: parseMicrophoneList executed successfully
+    get:
+      summary: Fetch information for parseMicrophoneList
+      description: HTTP GET for parseMicrophoneList
+      parameters:
+        - name: output
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter output
+        - name: platform
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter platform
       responses:
         "200":
-          description: startService method executed successfully
-  /stopRecording:
-    put:
-      summary: Executes stopRecording method
-      description: ""
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items: []
-            example: []
-      responses:
-        "200":
-          description: stopRecording method executed successfully
+          description: Details for parseMicrophoneList fetched successfully
   /pauseRecording:
     put:
       summary: Executes pauseRecording method
@@ -121,7 +107,14 @@ paths:
             example: []
       responses:
         "200":
-          description: pauseRecording method executed successfully
+          description: pauseRecording executed successfully
+    get:
+      summary: Fetch information for pauseRecording
+      description: HTTP GET for pauseRecording
+      parameters: []
+      responses:
+        "200":
+          description: Details for pauseRecording fetched successfully
   /resumeRecording:
     put:
       summary: Executes resumeRecording method
@@ -135,7 +128,43 @@ paths:
             example: []
       responses:
         "200":
-          description: resumeRecording method executed successfully
+          description: resumeRecording executed successfully
+    get:
+      summary: Fetch information for resumeRecording
+      description: HTTP GET for resumeRecording
+      parameters: []
+      responses:
+        "200":
+          description: Details for resumeRecording fetched successfully
+  /setMicrophone:
+    put:
+      summary: Executes setMicrophone method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - mic
+      responses:
+        "200":
+          description: setMicrophone executed successfully
+    get:
+      summary: Fetch information for setMicrophone
+      description: HTTP GET for setMicrophone
+      parameters:
+        - name: mic
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter mic
+      responses:
+        "200":
+          description: Details for setMicrophone fetched successfully
   /startRecording:
     put:
       summary: Executes startRecording method
@@ -149,20 +178,75 @@ paths:
             example: []
       responses:
         "200":
-          description: startRecording method executed successfully
-  /setMicrophone:
+          description: startRecording executed successfully
+    get:
+      summary: Fetch information for startRecording
+      description: HTTP GET for startRecording
+      parameters: []
+      responses:
+        "200":
+          description: Details for startRecording fetched successfully
+  /startService:
     put:
-      summary: Executes setMicrophone method
+      summary: Executes startService method
       description: ""
       requestBody:
         content:
           application/json:
             schema:
               type: array
-              items:
-                - type: string
+              items: []
             example: []
       responses:
         "200":
-          description: setMicrophone method executed successfully
+          description: startService executed successfully
+    get:
+      summary: Fetch information for startService
+      description: HTTP GET for startService
+      parameters: []
+      responses:
+        "200":
+          description: Details for startService fetched successfully
+  /stopRecording:
+    put:
+      summary: Executes stopRecording method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: stopRecording executed successfully
+    get:
+      summary: Fetch information for stopRecording
+      description: HTTP GET for stopRecording
+      parameters: []
+      responses:
+        "200":
+          description: Details for stopRecording fetched successfully
+  /toJSON:
+    put:
+      summary: Executes toJSON method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: toJSON executed successfully
+    get:
+      summary: Fetch information for toJSON
+      description: HTTP GET for toJSON
+      parameters: []
+      responses:
+        "200":
+          description: Details for toJSON fetched successfully
 tags: []

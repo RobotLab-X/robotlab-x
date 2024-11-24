@@ -81,6 +81,7 @@ export default function Node({ fullname }) {
 
   const clearConsoleLogs = (key) => {
     clearRecords(key) // Clear the logs in Zustand store
+    sendTo(fullname, "clearConsoleLogs")
   }
 
   // Handler to save the currently selected script

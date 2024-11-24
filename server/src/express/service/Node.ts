@@ -81,6 +81,120 @@ export default class Node extends Service {
     super(id, name, typeKey, version, hostname)
     let main = Main.getInstance()
     this.scanDirectory(path.join(main.userData, "types", "Node", "scripts"))
+
+    // launch files
+
+    // node examples
+  }
+
+  public clearConsoleLogs(): void {
+    this.newLogs = []
+    this.consoleLogs = []
+  }
+
+  /**
+   * Closes a script by removing it from openScripts.
+   * @param {string} filePath - The path of the script to close.
+   */
+  closeScript(filePath: string): void {
+    if (this.openScripts[filePath]) {
+      delete this.openScripts[filePath]
+      log.info(`Script ${filePath} closed successfully`)
+    } else {
+      log.warn(`Script ${filePath} is not open`)
+    }
+  }
+
+  /**
+   * Deletes a file synchronously.
+   * @param {string} filePath - The path of the file to delete.
+   */
+  deleteFile(filePath: string): void {
+    try {
+      fs.unlinkSync(filePath) // Use unlinkSync for synchronous deletion
+      log.info(`File deleted successfully at ${filePath}`)
+    } catch (error) {
+      if (error instanceof Error) {
+        log.error(`Error deleting file ${filePath}: ${error.message}`)
+      } else {
+        log.error(`Error deleting file ${filePath}: ${String(error)}`)
+      }
+      throw error
+    }
+  }
+
+  /**
+   * Checks if a file exists synchronously.
+   * @param {string} filePath - The path of the file to check.
+   * @returns {boolean} True if the file exists, otherwise false.
+   */
+  fileExists(filePath: string): boolean {
+    try {
+      fs.statSync(filePath) // Use statSync to check file existence
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  getFileTree(): any {
+    return this.fileTree
+  }
+
+  /**
+   * Gets the contents of a file synchronously.
+   * @param {string} filePath - The path of the file.
+   * @returns {string} The file contents.
+   */
+  getFile(filePath: string): string {
+    try {
+      const data = fs.readFileSync(filePath, "utf8") // Use readFileSync for synchronous reading
+      return data
+    } catch (error) {
+      if (error instanceof Error) {
+        log.error(`Error reading file ${filePath}: ${error.message}`)
+      } else {
+        log.error(`Error reading file ${filePath}: ${String(error)}`)
+      }
+      throw error
+    }
+  }
+
+  /**
+   * Merges a new subtree into the existing fileTree.
+   * @param {FileTreeNode[]} existingTree - The current fileTree.
+   * @param {FileTreeNode} newTree - The new subtree to merge.
+   */
+  private mergeFileTree(existingTree: FileTreeNode[], newTree: FileTreeNode): void {
+    const findNode = (tree: FileTreeNode[], id: string): FileTreeNode | undefined => {
+      for (const node of tree) {
+        if (node.id === id) return node
+        if (node.children) {
+          const found = findNode(node.children, id)
+          if (found) return found
+        }
+      }
+      return undefined
+    }
+
+    const mergeNodes = (existingNode: FileTreeNode, newNode: FileTreeNode): void => {
+      if (!existingNode.children) existingNode.children = []
+      newNode.children?.forEach((newChild) => {
+        const existingChild = existingNode.children!.find((child) => child.id === newChild.id)
+        if (existingChild) {
+          mergeNodes(existingChild, newChild) // Recursively merge child nodes
+        } else {
+          existingNode.children!.push(newChild) // Add new child if it doesn't exist
+        }
+      })
+    }
+
+    const rootNode = findNode(existingTree, newTree.id)
+    if (rootNode) {
+      mergeNodes(rootNode, newTree) // Merge into the existing root node
+    } else {
+      existingTree.push(newTree) // Add as a new root if not found
+    }
   }
 
   /**
@@ -105,20 +219,75 @@ export default class Node extends Service {
     }
   }
 
+  publishFileTree(): any {
+    return this.fileTree
+  }
+
+  publishOpenScripts(): any {
+    return this.openScripts
+  }
+
   /**
-   * Updates the content of an open script.
-   * @param filePath is the path of the script to update.
-   * @param content is the new content of the script.
+   * Publishes console output for a specific script.
    */
-  async updateScript(filePath: string, content: string): Promise<void> {
-    console.info(`updateScript ${filePath} ${content}`)
+  publishConsole(): ConsoleLog[] {
+    const incrementalLogs = this.newLogs
+
+    // move them to the consoleLogs
+    this.consoleLogs.push(...this.newLogs)
+    this.newLogs = []
+
+    // trim the consoleLogs to the last 500 entries
+    if (this.consoleLogs.length > 500) {
+      this.consoleLogs.splice(0, this.consoleLogs.length - 500)
+    }
+
+    // publish the incremental newLogs
+    return incrementalLogs
+  }
+
+  /**
+   * Runs a JavaScript script in the same application context and publishes its console output.
+   * @param {string} filePath - The path of the script to run.
+   */
+  async runScript(filePath: string): Promise<void> {
     const script = this.openScripts[filePath]
     if (!script) {
-      log.error(`Script ${filePath} is not open`)
+      log.error(`Script ${filePath} is not open and cannot be run`)
       throw new Error(`Script ${filePath} is not open`)
     }
 
-    script.content = content
+    try {
+      // Create a writable stream to capture console output
+      const outputStream = new Writable({
+        write: (chunk, encoding, callback) => {
+          const message = chunk.toString().trim()
+          this.newLogs.push({ filePath, message })
+          callback()
+        }
+      })
+
+      // Create a custom console using the writable stream
+      const customConsole = new console.Console(outputStream)
+
+      // Replace the global console with custom console
+      const originalConsole = global.console
+      global.console = customConsole
+
+      try {
+        // Execute the script content in the local scope using eval
+        eval(script.content)
+      } finally {
+        // Restore the original console after execution
+        global.console = originalConsole
+      }
+
+      log.info(`Script ${filePath} ran successfully`)
+    } catch (error: any) {
+      this.newLogs.push({ filePath, message: `ERROR: ${error.message || error}` })
+      log.error(`Error running script ${filePath}: ${error}`)
+      throw error
+    }
   }
 
   /**
@@ -142,19 +311,6 @@ export default class Node extends Service {
     } catch (error) {
       log.error(`Error saving script ${filePath}: ${error}`)
       throw error
-    }
-  }
-
-  /**
-   * Closes a script by removing it from openScripts.
-   * @param {string} filePath - The path of the script to close.
-   */
-  closeScript(filePath: string): void {
-    if (this.openScripts[filePath]) {
-      delete this.openScripts[filePath]
-      log.info(`Script ${filePath} closed successfully`)
-    } else {
-      log.warn(`Script ${filePath} is not open`)
     }
   }
 
@@ -204,185 +360,6 @@ export default class Node extends Service {
     }
   }
 
-  /**
-   * Merges a new subtree into the existing fileTree.
-   * @param {FileTreeNode[]} existingTree - The current fileTree.
-   * @param {FileTreeNode} newTree - The new subtree to merge.
-   */
-  private mergeFileTree(existingTree: FileTreeNode[], newTree: FileTreeNode): void {
-    const findNode = (tree: FileTreeNode[], id: string): FileTreeNode | undefined => {
-      for (const node of tree) {
-        if (node.id === id) return node
-        if (node.children) {
-          const found = findNode(node.children, id)
-          if (found) return found
-        }
-      }
-      return undefined
-    }
-
-    const mergeNodes = (existingNode: FileTreeNode, newNode: FileTreeNode): void => {
-      if (!existingNode.children) existingNode.children = []
-      newNode.children?.forEach((newChild) => {
-        const existingChild = existingNode.children!.find((child) => child.id === newChild.id)
-        if (existingChild) {
-          mergeNodes(existingChild, newChild) // Recursively merge child nodes
-        } else {
-          existingNode.children!.push(newChild) // Add new child if it doesn't exist
-        }
-      })
-    }
-
-    const rootNode = findNode(existingTree, newTree.id)
-    if (rootNode) {
-      mergeNodes(rootNode, newTree) // Merge into the existing root node
-    } else {
-      existingTree.push(newTree) // Add as a new root if not found
-    }
-  }
-
-  publishFileTree(): any {
-    return this.fileTree
-  }
-
-  publishOpenScripts(): any {
-    return this.openScripts
-  }
-
-  getFileTree(): any {
-    return this.fileTree
-  }
-
-  /**
-   * Gets the contents of a file synchronously.
-   * @param {string} filePath - The path of the file.
-   * @returns {string} The file contents.
-   */
-  getFile(filePath: string): string {
-    try {
-      const data = fs.readFileSync(filePath, "utf8") // Use readFileSync for synchronous reading
-      return data
-    } catch (error) {
-      if (error instanceof Error) {
-        log.error(`Error reading file ${filePath}: ${error.message}`)
-      } else {
-        log.error(`Error reading file ${filePath}: ${String(error)}`)
-      }
-      throw error
-    }
-  }
-
-  /**
-   * Writes data to a file.
-   * @param {string} filePath - The path of the file.
-   * @param {string} data - The data to write.
-   * @returns {Promise<void>} A promise that resolves when the file is written.
-   */
-  async writeFile(filePath: string, data: string): Promise<void> {
-    try {
-      await writeFileAsync(filePath, data, "utf8")
-      log.info(`File written successfully at ${filePath}`)
-    } catch (error) {
-      log.error(`Error writing file ${filePath}: ${error}`)
-      throw error
-    }
-  }
-
-  /**
-   * Deletes a file synchronously.
-   * @param {string} filePath - The path of the file to delete.
-   */
-  deleteFile(filePath: string): void {
-    try {
-      fs.unlinkSync(filePath) // Use unlinkSync for synchronous deletion
-      log.info(`File deleted successfully at ${filePath}`)
-    } catch (error) {
-      if (error instanceof Error) {
-        log.error(`Error deleting file ${filePath}: ${error.message}`)
-      } else {
-        log.error(`Error deleting file ${filePath}: ${String(error)}`)
-      }
-      throw error
-    }
-  }
-
-  /**
-   * Checks if a file exists synchronously.
-   * @param {string} filePath - The path of the file to check.
-   * @returns {boolean} True if the file exists, otherwise false.
-   */
-  fileExists(filePath: string): boolean {
-    try {
-      fs.statSync(filePath) // Use statSync to check file existence
-      return true
-    } catch {
-      return false
-    }
-  }
-
-  /**
-   * Runs a JavaScript script in the same application context and publishes its console output.
-   * @param {string} filePath - The path of the script to run.
-   */
-  async runScript(filePath: string): Promise<void> {
-    const script = this.openScripts[filePath]
-    if (!script) {
-      log.error(`Script ${filePath} is not open and cannot be run`)
-      throw new Error(`Script ${filePath} is not open`)
-    }
-
-    try {
-      // Create a writable stream to capture console output
-      const outputStream = new Writable({
-        write: (chunk, encoding, callback) => {
-          const message = chunk.toString().trim()
-          this.newLogs.push({ filePath, message })
-          callback()
-        }
-      })
-
-      // Create a custom console using the writable stream
-      const customConsole = new console.Console(outputStream)
-
-      // Replace the global console with custom console
-      const originalConsole = global.console
-      global.console = customConsole
-
-      try {
-        // Execute the script content in the local scope using eval
-        eval(script.content)
-      } finally {
-        // Restore the original console after execution
-        global.console = originalConsole
-      }
-
-      log.info(`Script ${filePath} ran successfully`)
-    } catch (error: any) {
-      this.newLogs.push({ filePath, message: `ERROR: ${error.message || error}` })
-      log.error(`Error running script ${filePath}: ${error}`)
-      throw error
-    }
-  }
-
-  /**
-   * Publishes console output for a specific script.
-   */
-  publishConsole(): ConsoleLog[] {
-    const incrementalLogs = this.newLogs
-
-    // move them to the consoleLogs
-    this.consoleLogs.push(...this.newLogs)
-    this.newLogs = []
-
-    // trim the consoleLogs to the last 500 entries
-    if (this.consoleLogs.length > 500) {
-      this.consoleLogs.splice(0, this.consoleLogs.length - 500)
-    }
-
-    // publish the incremental newLogs
-    return incrementalLogs
-  }
-
   startService(): void {
     super.startService()
     this.startLogging()
@@ -405,6 +382,22 @@ export default class Node extends Service {
     }
   }
 
+  /**
+   * Updates the content of an open script.
+   * @param filePath is the path of the script to update.
+   * @param content is the new content of the script.
+   */
+  async updateScript(filePath: string, content: string): Promise<void> {
+    console.info(`updateScript ${filePath} ${content}`)
+    const script = this.openScripts[filePath]
+    if (!script) {
+      log.error(`Script ${filePath} is not open`)
+      throw new Error(`Script ${filePath} is not open`)
+    }
+
+    script.content = content
+  }
+
   public stopLogging(): void {
     if (this.intervalId !== null) {
       console.log("Log.stopLogging: Stopping log timer")
@@ -412,6 +405,22 @@ export default class Node extends Service {
       this.intervalId = null
     } else {
       console.warn("Log.stopLogging: Log timer is not running")
+    }
+  }
+
+  /**
+   * Writes data to a file.
+   * @param {string} filePath - The path of the file.
+   * @param {string} data - The data to write.
+   * @returns {Promise<void>} A promise that resolves when the file is written.
+   */
+  async writeFile(filePath: string, data: string): Promise<void> {
+    try {
+      await writeFileAsync(filePath, data, "utf8")
+      log.info(`File written successfully at ${filePath}`)
+    } catch (error) {
+      log.error(`Error writing file ${filePath}: ${error}`)
+      throw error
     }
   }
 

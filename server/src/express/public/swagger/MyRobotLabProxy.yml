@@ -49,5 +49,12 @@ paths:
             example: []
       responses:
         "200":
-          description: toJSON method executed successfully
+          description: toJSON executed successfully
+    get:
+      summary: Fetch information for toJSON
+      description: HTTP GET for toJSON
+      parameters: []
+      responses:
+        "200":
+          description: Details for toJSON fetched successfully
 tags: []

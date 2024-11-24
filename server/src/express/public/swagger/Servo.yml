@@ -36,22 +36,6 @@ components:
         type: array
     type: object
 paths:
-  /moveTo:
-    put:
-      summary: Move the servo to a specific position at a specific speed
-      description: Move the servo to a specific position at a specific speed
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                - type: integer
-                - type: integer
-            example: []
-      responses:
-        "200":
-          description: moveTo method executed successfully
   /attach:
     put:
       summary: Attach the servo to a specific controller
@@ -64,146 +48,23 @@ paths:
               items:
                 - type: string
             example:
-              - uno
+              - controller
       responses:
         "200":
-          description: attach method executed successfully
-  /publishServoMoveTo:
-    put:
-      summary: Publishing point for a Servo move - invoked internally
-      description: Publishing point for a Servo move - invoked internally
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                - type: integer
-                - type: integer
-            example: []
+          description: attach executed successfully
+    get:
+      summary: Fetch information for attach
+      description: HTTP GET for attach
+      parameters:
+        - name: controller
+          in: query
+          required: true
+          schema:
+            type: string
+          description: "- controller to attach to"
       responses:
         "200":
-          description: publishServoMoveTo method executed successfully
-  /setMinMax:
-    put:
-      summary: Min and max of input range
-      description: Min and max of input range
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                - type: integer
-                - type: integer
-            example: []
-      responses:
-        "200":
-          description: setMinMax method executed successfully
-  /getServoControllers:
-    put:
-      summary: Get the current set of possible controllers
-      description: Get the current set of possible controllers
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items: []
-            example: []
-      responses:
-        "200":
-          description: getServoControllers method executed successfully
-  /removeController:
-    put:
-      summary: Remove the servo from a specific controller
-      description: Remove the servo from a specific controller
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                - type: string
-            example:
-              - uno
-      responses:
-        "200":
-          description: removeController method executed successfully
-  /setController:
-    put:
-      summary: Set the controller for the servo
-      description: Set the controller for the servo
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                - type: string
-            example:
-              - uno
-      responses:
-        "200":
-          description: setController method executed successfully
-  /setPin:
-    put:
-      summary: Set the current pin for the servo
-      description: Set the current pin for the servo
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                - type: string
-            example: []
-      responses:
-        "200":
-          description: setPin method executed successfully
-  /setRest:
-    put:
-      summary: Set the current rest position for the servo
-      description: Set the current rest position for the servo
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                - type: integer
-            example: []
-      responses:
-        "200":
-          description: setRest method executed successfully
-  /rest:
-    put:
-      summary: A position set by the user to be the rest position of the servo
-      description: A position set by the user to be the rest position of the servo
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items: []
-            example: []
-      responses:
-        "200":
-          description: rest method executed successfully
-  /enable:
-    put:
-      summary: Executes enable method
-      description: ""
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items: []
-            example: []
-      responses:
-        "200":
-          description: enable method executed successfully
+          description: Details for attach fetched successfully
   /disable:
     put:
       summary: Executes disable method
@@ -217,7 +78,56 @@ paths:
             example: []
       responses:
         "200":
-          description: disable method executed successfully
+          description: disable executed successfully
+    get:
+      summary: Fetch information for disable
+      description: HTTP GET for disable
+      parameters: []
+      responses:
+        "200":
+          description: Details for disable fetched successfully
+  /enable:
+    put:
+      summary: Executes enable method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: enable executed successfully
+    get:
+      summary: Fetch information for enable
+      description: HTTP GET for enable
+      parameters: []
+      responses:
+        "200":
+          description: Details for enable fetched successfully
+  /getServoControllers:
+    put:
+      summary: Get the current set of possible controllers
+      description: Get the current set of possible controllers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: names of the controllers
+    get:
+      summary: Fetch information for getServoControllers
+      description: HTTP GET for getServoControllers
+      parameters: []
+      responses:
+        "200":
+          description: names of the controllers
   /isEnabled:
     put:
       summary: Executes isEnabled method
@@ -231,7 +141,167 @@ paths:
             example: []
       responses:
         "200":
-          description: isEnabled method executed successfully
+          description: isEnabled executed successfully
+    get:
+      summary: Fetch information for isEnabled
+      description: HTTP GET for isEnabled
+      parameters: []
+      responses:
+        "200":
+          description: Details for isEnabled fetched successfully
+  /moveTo:
+    put:
+      summary: Move the servo to a specific position at a specific speed
+      description: Move the servo to a specific position at a specific speed
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: integer
+                - type: integer
+            example:
+              - degrees
+              - speed
+      responses:
+        "200":
+          description: moveTo executed successfully
+    get:
+      summary: Fetch information for moveTo
+      description: HTTP GET for moveTo
+      parameters:
+        - name: degrees
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: "- required position to move to"
+        - name: speed
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: "- optional if not supplied config.speed is used"
+      responses:
+        "200":
+          description: Details for moveTo fetched successfully
+  /publishServoMoveTo:
+    put:
+      summary: Publishing point for a Servo move - invoked internally
+      description: Publishing point for a Servo move - invoked internally
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: integer
+                - type: integer
+            example:
+              - degrees
+              - speed
+      responses:
+        "200":
+          description: publishServoMoveTo executed successfully
+    get:
+      summary: Fetch information for publishServoMoveTo
+      description: HTTP GET for publishServoMoveTo
+      parameters:
+        - name: degrees
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: Parameter degrees
+        - name: speed
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: Parameter speed
+      responses:
+        "200":
+          description: Details for publishServoMoveTo fetched successfully
+  /removeController:
+    put:
+      summary: Remove the servo from a specific controller
+      description: Remove the servo from a specific controller
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - controller
+      responses:
+        "200":
+          description: removeController executed successfully
+    get:
+      summary: Fetch information for removeController
+      description: HTTP GET for removeController
+      parameters:
+        - name: controller
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter controller
+      responses:
+        "200":
+          description: Details for removeController fetched successfully
+  /rest:
+    put:
+      summary: A position set by the user to be the rest position of the servo
+      description: A position set by the user to be the rest position of the servo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: rest executed successfully
+    get:
+      summary: Fetch information for rest
+      description: HTTP GET for rest
+      parameters: []
+      responses:
+        "200":
+          description: Details for rest fetched successfully
+  /setController:
+    put:
+      summary: Set the controller for the servo
+      description: Set the controller for the servo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - controller
+      responses:
+        "200":
+          description: setController executed successfully
+    get:
+      summary: Fetch information for setController
+      description: HTTP GET for setController
+      parameters:
+        - name: controller
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter controller
+      responses:
+        "200":
+          description: Details for setController fetched successfully
   /setEnabled:
     put:
       summary: Executes setEnabled method
@@ -243,8 +313,146 @@ paths:
               type: array
               items:
                 - type: boolean
-            example: []
+            example:
+              - enabled
       responses:
         "200":
-          description: setEnabled method executed successfully
+          description: setEnabled executed successfully
+    get:
+      summary: Fetch information for setEnabled
+      description: HTTP GET for setEnabled
+      parameters:
+        - name: enabled
+          in: query
+          required: true
+          schema:
+            type: boolean
+          description: Parameter enabled
+      responses:
+        "200":
+          description: Details for setEnabled fetched successfully
+  /setMinMax:
+    put:
+      summary: Min and max of input range
+      description: Min and max of input range
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: integer
+                - type: integer
+            example:
+              - min
+              - max
+      responses:
+        "200":
+          description: setMinMax executed successfully
+    get:
+      summary: Fetch information for setMinMax
+      description: HTTP GET for setMinMax
+      parameters:
+        - name: min
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: Parameter min
+        - name: max
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: Parameter max
+      responses:
+        "200":
+          description: Details for setMinMax fetched successfully
+  /setPin:
+    put:
+      summary: Set the current pin for the servo
+      description: Set the current pin for the servo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - pin
+      responses:
+        "200":
+          description: pin
+    get:
+      summary: Fetch information for setPin
+      description: HTTP GET for setPin
+      parameters:
+        - name: pin
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter pin
+      responses:
+        "200":
+          description: pin
+  /setRest:
+    put:
+      summary: Set the current rest position for the servo
+      description: Set the current rest position for the servo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: integer
+            example:
+              - rest
+      responses:
+        "200":
+          description: setRest executed successfully
+    get:
+      summary: Fetch information for setRest
+      description: HTTP GET for setRest
+      parameters:
+        - name: rest
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: "- position to set the rest to"
+      responses:
+        "200":
+          description: Details for setRest fetched successfully
+  /setSpeed:
+    put:
+      summary: Executes setSpeed method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: integer
+            example:
+              - speed
+      responses:
+        "200":
+          description: setSpeed executed successfully
+    get:
+      summary: Fetch information for setSpeed
+      description: HTTP GET for setSpeed
+      parameters:
+        - name: speed
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: Parameter speed
+      responses:
+        "200":
+          description: Details for setSpeed fetched successfully
 tags: []
