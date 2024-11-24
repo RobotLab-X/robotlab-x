@@ -20,27 +20,49 @@ function parseTypeScriptFile(filePath) {
       const symbol = checker.getSymbolAtLocation(node.name)
       if (symbol) {
         const methodName = symbol.getName()
-        const parameters = node.parameters.map((param) => {
-          const paramType = checker.getTypeAtLocation(param)
-          const paramName = param.name.getText() // Get the parameter's variable name
-          return {
-            name: paramName,
-            type: checker.typeToString(paramType)
+
+        // Extract JSDoc comments
+        const documentation = ts.displayPartsToString(symbol.getDocumentationComment(checker))
+
+        // Extract JSDoc tags for parameters and return type
+        const tags = symbol.getJsDocTags()
+        const parameterDescriptions = {}
+        let returnDescription = ""
+
+        tags.forEach((tag) => {
+          if (tag.name === "param") {
+            const [paramName, ...descParts] = tag.text?.map((part) => part.text) || []
+            parameterDescriptions[paramName] = descParts.join(" ").trim()
+          } else if (tag.name === "returns") {
+            returnDescription =
+              tag.text
+                ?.map((part) => part.text)
+                .join(" ")
+                .trim() || ""
           }
         })
 
-        let documentation = ts.displayPartsToString(symbol.getDocumentationComment(checker))
+        const parameters = node.parameters.map((param) => {
+          const paramName = param.name.getText()
+          const paramType = checker.typeToString(checker.getTypeAtLocation(param))
+          return {
+            name: paramName,
+            type: paramType,
+            description: parameterDescriptions[paramName] || `Parameter ${paramName}`
+          }
+        })
 
-        // Get tags from the jsdoc
-        const tags = symbol.getJsDocTags().map((tag) => ({
-          name: tag.name,
-          text: tag.text ? ts.displayPartsToString(tag.text) : undefined
-        }))
+        const returnType = checker.getReturnTypeOfSignature(checker.getSignatureFromDeclaration(node))
+        const returnTypeString = checker.typeToString(returnType)
 
-        const exampleTag = tags.find((tag) => tag.name === "example")
-        const example = exampleTag ? JSON.parse(exampleTag.text) : null
-
-        methods.push({ methodName, parameters, documentation, example })
+        methods.push({
+          methodName,
+          parameters,
+          documentation,
+          example: null, // Adjust if you want to handle @example tags
+          returnType: returnTypeString,
+          returnDescription
+        })
       }
     }
     ts.forEachChild(node, visit)
@@ -50,6 +72,7 @@ function parseTypeScriptFile(filePath) {
   return methods
 }
 
+// Generate Swagger paths for each method
 // Generate Swagger paths for each method
 // Generate Swagger paths for each method
 function generateSwaggerPaths(methods) {
@@ -74,7 +97,7 @@ function generateSwaggerPaths(methods) {
       schema: {
         type: param.type === "number" ? "integer" : param.type
       },
-      description: `Parameter ${param.name} for ${method.methodName}`
+      description: param.description // Use the description extracted from JSDoc
     }))
 
     paths[`/${method.methodName}`] = {
@@ -84,14 +107,13 @@ function generateSwaggerPaths(methods) {
         requestBody: {
           content: {
             "application/json": {
-              schema: parametersSchema,
-              example: method.example ?? []
+              schema: parametersSchema
             }
           }
         },
         responses: {
           200: {
-            description: `${method.methodName} method executed successfully`
+            description: method.returnDescription || `${method.methodName} executed successfully`
           }
         }
       },
@@ -101,7 +123,7 @@ function generateSwaggerPaths(methods) {
         parameters: getParameters,
         responses: {
           200: {
-            description: `Details for ${method.methodName} fetched successfully`
+            description: method.returnDescription || `Details for ${method.methodName} fetched successfully`
           }
         }
       }
