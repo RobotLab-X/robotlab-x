@@ -22,7 +22,11 @@ function parseTypeScriptFile(filePath) {
         const methodName = symbol.getName()
         const parameters = node.parameters.map((param) => {
           const paramType = checker.getTypeAtLocation(param)
-          return checker.typeToString(paramType)
+          const paramName = param.name.getText() // Get the parameter's variable name
+          return {
+            name: paramName,
+            type: checker.typeToString(paramType)
+          }
         })
 
         let documentation = ts.displayPartsToString(symbol.getDocumentationComment(checker))
@@ -47,15 +51,31 @@ function parseTypeScriptFile(filePath) {
 }
 
 // Generate Swagger paths for each method
+// Generate Swagger paths for each method
 function generateSwaggerPaths(methods) {
+  // Sort methods alphabetically by method name
+  methods.sort((a, b) => a.methodName.localeCompare(b.methodName))
+
   const paths = {}
   methods.forEach((method) => {
+    // Create a schema for the method's parameters for PUT request
     const parametersSchema = {
       type: "array",
       items: method.parameters.map((param) => ({
-        type: param === "number" ? "integer" : param
+        type: param.type === "number" ? "integer" : param.type
       }))
     }
+
+    // Create a list of parameters for GET request
+    const getParameters = method.parameters.map((param) => ({
+      name: param.name, // Use the parameter's variable name
+      in: "query",
+      required: true,
+      schema: {
+        type: param.type === "number" ? "integer" : param.type
+      },
+      description: `Parameter ${param.name} for ${method.methodName}`
+    }))
 
     paths[`/${method.methodName}`] = {
       put: {
@@ -74,54 +94,77 @@ function generateSwaggerPaths(methods) {
             description: `${method.methodName} method executed successfully`
           }
         }
+      },
+      get: {
+        summary: `Fetch information for ${method.methodName}`,
+        description: `HTTP GET for ${method.methodName}`,
+        parameters: getParameters,
+        responses: {
+          200: {
+            description: `Details for ${method.methodName} fetched successfully`
+          }
+        }
       }
     }
   })
   return paths
 }
 
-// Process all .ts files in a directory and generate Swagger documentation
-function processDirectory(directoryPath) {
-  const files = fs.readdirSync(directoryPath)
-  files.forEach((file) => {
-    if (path.extname(file) === ".ts") {
-      const filePath = path.join(directoryPath, file)
-      const methods = parseTypeScriptFile(filePath)
-      const swaggerPaths = generateSwaggerPaths(methods)
+// Process TypeScript file and generate Swagger documentation
+function processFile(filePath) {
+  const methods = parseTypeScriptFile(filePath)
+  const swaggerPaths = generateSwaggerPaths(methods)
 
-      const options = {
-        definition: {
-          openapi: "3.0.3",
-          info: {
-            title: "API Documentation",
-            version: "1.0.0"
-          },
-          servers: [
-            {
-              url: "http://localhost:3001/v1",
-              description: "Local development server"
-            }
-          ],
-          components: {
-            schemas: schemas
-          },
-          paths: swaggerPaths
-        },
-        apis: [filePath]
-      }
+  const options = {
+    definition: {
+      openapi: "3.0.3",
+      info: {
+        title: "API Documentation",
+        version: "1.0.0"
+      },
+      servers: [
+        {
+          url: "http://localhost:3001/v1",
+          description: "Local development server"
+        }
+      ],
+      components: {
+        schemas: schemas
+      },
+      paths: swaggerPaths
+    },
+    apis: [filePath]
+  }
 
-      const swaggerSpec = swaggerJsdoc(options)
-      const outputFileName = path.basename(file, ".ts") + ".yml"
-      const outputPath = path.join("./express/public/swagger", outputFileName)
-      fs.writeFileSync(outputPath, yaml.stringify(swaggerSpec))
+  const swaggerSpec = swaggerJsdoc(options)
+  const outputFileName = path.basename(filePath, ".ts") + ".yml"
+  const outputPath = path.join("./src/express/public/swagger", outputFileName)
+  fs.writeFileSync(outputPath, yaml.stringify(swaggerSpec))
 
-      console.log(`Swagger documentation generated for ${file} and saved to ${outputFileName}`)
-    }
-  })
+  console.log(`Swagger documentation generated for ${filePath} and saved to ${outputFileName}`)
 }
 
-// Directory containing .ts files
-const directoryPath = path.resolve(__dirname, "./express/service")
+// Process all .ts files in a directory or a single file
+function processDirectoryOrFile(sourcePath) {
+  const stats = fs.statSync(sourcePath)
 
-// Process the directory
-processDirectory(directoryPath)
+  if (stats.isDirectory()) {
+    const files = fs.readdirSync(sourcePath)
+    files.forEach((file) => {
+      if (path.extname(file) === ".ts") {
+        const filePath = path.join(sourcePath, file)
+        processFile(filePath)
+      }
+    })
+  } else if (stats.isFile() && path.extname(sourcePath) === ".ts") {
+    processFile(sourcePath)
+  } else {
+    console.log(`${sourcePath} is not a valid TypeScript file or directory.`)
+  }
+}
+
+// Path to source file or directory
+const sourcePath = path.resolve(__dirname, "./src/express/service/Node.ts")
+
+// Process the path
+processDirectoryOrFile(sourcePath)
