@@ -1287,9 +1287,10 @@ export default class RobotLabXRuntime extends Service {
       filename = filename + ".js"
     }
 
-    let f = path.join(this.main.userData, "launch", filename)
+    let f = path.relative(process.cwd(), path.join(this.main.userData, "launch", filename))
 
     let startYmlPath = path.join(this.main.userData, "start.yml")
+
     const ymlstr = yaml.stringify({
       autoLaunch: autolaunch,
       launchFile: f

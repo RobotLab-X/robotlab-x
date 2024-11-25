@@ -69,6 +69,8 @@ const Graph = ({ nodes, links, onNodeClick, onNodeRightClick, imageCache, setIma
           ctx.textAlign = "center"
           ctx.textBaseline = "middle"
           ctx.fillText(node.name, node.x, node.y + 9)
+          ctx.fillStyle = "grey"
+          ctx.fillText(node.typeKey, node.x, node.y + 14)
           // // Draw small circle
           // ctx.beginPath()
           // ctx.arc(node.x + size / 2 + 2, node.y, 1, 0, 2 * Math.PI, false)

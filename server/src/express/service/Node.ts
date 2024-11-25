@@ -80,6 +80,14 @@ export default class Node extends Service {
   ) {
     super(id, name, typeKey, version, hostname)
     let main = Main.getInstance()
+
+    const dirPath = path.join(main.userData, "types", "Node", "scripts")
+
+    if (!fs.existsSync(dirPath)) {
+      // Create the directory and parent directories if they don't exist
+      fs.mkdirSync(dirPath, { recursive: true })
+      console.log(`Directory created: ${dirPath}`)
+    }
     this.scanDirectory(path.join(main.userData, "types", "Node", "scripts"))
 
     // launch files

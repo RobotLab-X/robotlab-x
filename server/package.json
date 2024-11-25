@@ -61,7 +61,7 @@
     "test": "jest",
     "test-coverage": "nyc jest",
     "generate-schemas": "typescript-json-schema tsconfig.json 'Ollama' --out schemas.json",
-    "generate-swagger": "node generate-swagger-paths.js",
+    "generate-swagger": "node generate-swagger.js",
     "generate-pkg-file": "node generatePkgFile.js",
     "package": "yarn prebuild && yarn build && yarn copy-public",
     "package-linux": "yarn package && npx electron-rebuild --arch=x64 && electron-builder --linux AppImage --x64",

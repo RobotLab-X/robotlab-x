@@ -5,7 +5,7 @@ yarn run generate-schemas
 yarn run generate-swagger
 
 
-$ node generate-swagger-paths.js
+$ node generate-swagger.js
 Swagger documentation generated for Arduino.ts and saved to Arduino.yml
 Swagger documentation generated for Clock.ts and saved to Clock.yml
 Swagger documentation generated for Docker.ts and saved to Docker.yml
