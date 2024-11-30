@@ -85,8 +85,7 @@ jobs:
     steps:
       - name: Create latest.json
         run: |
-          VERSION="${{ needs.generate-version.outputs.version }}"
-          echo "{ \"version\": \"${VERSION}\" }" > latest.json
+          echo "{ \"version\": \"${{ needs.generate-version.outputs.version }}\" }" > latest.json
           echo "Created latest.json:"
           cat latest.json
 
