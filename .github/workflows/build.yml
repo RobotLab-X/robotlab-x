@@ -83,9 +83,15 @@ jobs:
     needs: [build-linux, build-linux-arm64, build-windows]
     runs-on: ubuntu-latest
     steps:
+      - name: Extract version
+        run: |
+          echo "VERSION=${{ needs.generate-version.outputs.version }}" >> $GITHUB_ENV
+          echo "Extracted version: ${{ needs.generate-version.outputs.version }}"
+
       - name: Create latest.json
         run: |
-          echo "{ \"version\": \"${{ needs.generate-version.outputs.version }}\" }" > latest.json
+          echo "Preparing to create latest.json with version: $VERSION"
+          echo "{ \"version\": \"$VERSION\" }" > latest.json
           echo "Created latest.json:"
           cat latest.json
 
