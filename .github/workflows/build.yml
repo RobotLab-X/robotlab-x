@@ -78,7 +78,25 @@ jobs:
     with:
       version: ${{ needs.generate-version.outputs.version }}
 
+  upload-latest-json:
+    name: Upload latest.json to S3
+    needs: [build-linux, build-linux-arm64, build-windows]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create latest.json
+        run: |
+          VERSION="${{ needs.generate-version.outputs.version }}"
+          echo "{ \"version\": \"${VERSION}\" }" > latest.json
+          echo "Created latest.json:"
+          cat latest.json
 
+      - name: Upload latest.json to Amazon S3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-1
+        run: |
+          aws s3 cp latest.json "s3://robotlab-x-repo/latest.json"
 
 
   #     - name: Create Release

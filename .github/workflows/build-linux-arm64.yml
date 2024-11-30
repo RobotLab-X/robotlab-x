@@ -54,13 +54,11 @@ jobs:
       - name: Install dependencies
         run: yarn install-all
 
-      - name: Run ESLint
-        run: yarn lint || true
-
-      - name: Build and Install Client
-        run: |
-          yarn build-client
-          yarn install-client
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: client-artifact
+          path: server/dist/client
 
       - name: Build Server
         run: yarn build-server
