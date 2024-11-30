@@ -78,28 +78,13 @@ jobs:
     with:
       version: ${{ needs.generate-version.outputs.version }}
 
-  upload-latest-json:
-    name: Upload latest.json to S3
+  post-processing:
+    name: Post-Processing
     needs: [build-linux, build-linux-arm64, build-windows]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Debug and Create latest.json
-        run: |
-          echo "Debug: needs.generate-version.outputs.version is '${{ needs.generate-version.outputs.version }}'"
-          VERSION="${{ needs.generate-version.outputs.version }}"
-          echo "Debug: VERSION resolved to '${VERSION}'"
-          echo "{ \"version\": \"${VERSION}\" }" > latest.json
-          echo "Created latest.json with content:"
-          cat latest.json
-
-      - name: Upload latest.json to Amazon S3
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: us-east-1
-        run: |
-          aws s3 cp latest.json "s3://robotlab-x-repo/latest.json"
-
+    uses: ./.github/workflows/build-post-processing.yml
+    secrets: inherit
+    with:
+      version: ${{ needs.generate-version.outputs.version }}
 
 
 
