@@ -80,7 +80,7 @@ jobs:
 
   post-processing:
     name: Post-Processing
-    needs: [build-linux, build-linux-arm64, build-windows]
+    needs: [build-linux, build-linux-arm64, build-windows, generate-version]
     uses: ./.github/workflows/build-post-processing.yml
     secrets: inherit
     with:
