@@ -39,9 +39,17 @@ jobs:
         run: |
           aws s3 cp latest.json "s3://robotlab-x-repo/latest.json"
 
-      - name: Send Version to Discord
-        run: |
-          curl -X POST \
-          -H "Content-Type: application/json" \
-          -d "{\"content\": \"New version deployed: **${{ env.VERSION }}**\"}" \
-          ${{ secrets.DISCORD_WEBHOOK_URL }}
+          - name: Send Version to Discord
+          run: |
+            curl -X POST \
+            -H "Content-Type: application/json" \
+            -d '{
+                  "embeds": [
+                    {
+                      "title": "New Version Deployed: **${{ env.VERSION }}**",
+                      "description": "Version [${{ env.VERSION }}](http://robotlab-x.com) has been deployed successfully.",
+                      "color": 5814783
+                    }
+                  ]
+                }' \
+            ${{ secrets.DISCORD_WEBHOOK_URL }}
