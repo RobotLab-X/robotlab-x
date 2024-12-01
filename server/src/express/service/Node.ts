@@ -1,4 +1,4 @@
-import fs from "fs"
+import fs, { readFileSync, writeFileSync } from "fs"
 import path from "path"
 import { Writable } from "stream"
 import util from "util"
@@ -40,7 +40,8 @@ export default class Node extends Service {
    * @property {NodeConfig} config - The configuration for the node service.
    */
   config = {
-    intervalMs: 5000
+    consoleLogInterval: 1000,
+    defaultScriptPath: path.join(Main.getInstance().userData, "types", "Node", "scripts")
   }
 
   newScriptIncrement: number = 1
@@ -110,6 +111,7 @@ export default class Node extends Service {
     if (this.openScripts[filePath]) {
       delete this.openScripts[filePath]
       log.info(`Script ${filePath} closed successfully`)
+      this.invoke("publishOpenScripts")
     } else {
       log.warn(`Script ${filePath} is not open`)
     }
@@ -324,6 +326,26 @@ export default class Node extends Service {
     }
   }
 
+  saveAsScript(originalFilePath: string, newFilePath: string, content: string): boolean {
+    // save as new file - TODO - check if file exists, then ask user to overwrite
+    // if we do not have content, then we need to open the original file
+
+    if (!content) {
+      content = readFileSync(originalFilePath, "utf8")
+    }
+
+    // write the content to the new file
+    writeFileSync(newFilePath, content, "utf8")
+    // open the new script
+    this.openScript(newFilePath)
+    // close the original script
+    this.closeScript(originalFilePath)
+    this.deleteFile(originalFilePath)
+    this.invoke("publishOpenScripts")
+    this.scanDirectory()
+    return true
+  }
+
   /**
    * Scans a directory synchronously and merges it with the fileTree.
    * @param {string} directoryPath - The path of the directory to scan.
@@ -375,18 +397,18 @@ export default class Node extends Service {
     this.startLogging()
   }
 
-  public startLogging(intervalMs?: number): void {
-    if (intervalMs) {
-      this.config.intervalMs = intervalMs
+  public startLogging(consoleLogInterval?: number): void {
+    if (consoleLogInterval) {
+      this.config.consoleLogInterval = consoleLogInterval
     }
 
     if (this.intervalId === null) {
-      console.log(`Log.startLogging: Starting timer with interval ${this.config.intervalMs} ms`)
+      console.log(`Log.startLogging: Starting timer with interval ${this.config.consoleLogInterval} ms`)
       this.intervalId = setInterval(async () => {
         if (this.newLogs.length > 0) {
           this.invoke("publishConsole")
         }
-      }, this.config.intervalMs)
+      }, this.config.consoleLogInterval)
     } else {
       console.warn("Log.startLogging: Timer is already running")
     }
@@ -428,7 +450,7 @@ export default class Node extends Service {
     )
   ): void {
     this.newScriptIncrement++
-    this.writeFile(filePath, "// new cool robot script\n\n\n")
+    this.writeFile(filePath, "// new cool robot script\n")
     this.openScript(filePath)
   }
 
@@ -457,6 +479,8 @@ export default class Node extends Service {
     return {
       ...super.toJSON(),
       // openScripts: Object.keys(this.openScripts), // Serialize only the keys of openScripts
+      consoleLogInterval: this.config.consoleLogInterval,
+      defaultScriptPath: "wtf",
       openScripts: this.openScripts,
       fileTree: this.fileTree,
       consoleLogs: this.consoleLogs

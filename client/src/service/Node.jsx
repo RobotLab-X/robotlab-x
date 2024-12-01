@@ -2,7 +2,7 @@ import { ChevronLeft, ChevronRight, Delete, PlayArrow, Save } from "@mui/icons-m
 import AddIcon from "@mui/icons-material/Add"
 import ClearIcon from "@mui/icons-material/Clear"
 import SaveAs from "@mui/icons-material/SaveAs"
-import { Box, IconButton, Tab, Tabs, Tooltip, Typography } from "@mui/material"
+import { Box, Button, IconButton, Modal, Tab, Tabs, TextField, Tooltip, Typography } from "@mui/material"
 import { RichTreeView } from "@mui/x-tree-view/RichTreeView"
 import "ace-builds/src-noconflict/ace"
 import "ace-builds/src-noconflict/ext-language_tools"
@@ -25,9 +25,13 @@ export default function Node({ fullname }) {
   const fileTree = useSubscription(fullname, "publishFileTree", true)
   const openScripts = useSubscription(fullname, "publishOpenScripts", true)
   const logBatch = useSubscription(fullname, "publishConsole")
-
   const keyName = `${fullname}.console`
   const clientConsoleLogs = useStore((state) => state.getRecords(keyName)(state))
+
+  // save as related
+  const [isSaveAsModelOpen, setIsSaveAsModelOpen] = useState(false)
+  const [originalSaveAsScriptFilePath, setOriginalSaveAsScriptFilePath] = useState("")
+  const [newSaveAsScriptFilePath, setNewSaveAsScriptFilePath] = useState("")
 
   const ansiConverter = new Convert({
     fg: "#C2E4D7", // Default foreground color
@@ -109,13 +113,40 @@ export default function Node({ fullname }) {
     }
   }
 
-  const handleSaveAsScript = (script) => {
-    const newName = prompt("Enter a new name for the script:", script || "newScript.js")
-    if (newName) {
-      // Add logic to save the script with the new name
-      console.log(`Saving script as ${newName}`)
-      // Example: Update state or call an API to save the new script
+  const handleSaveAsScriptStart = (originalScriptFilePath) => {
+    console.info(`Saving as for ${originalScriptFilePath}`)
+    setOriginalSaveAsScriptFilePath(originalScriptFilePath)
+    setIsSaveAsModelOpen(true)
+    // copy
+    // delete
+    // sendTo(fullname, "saveAs", originalScriptFilePath, newSaveAsScriptFilePath, content)
+  }
+
+  const handleSaveAsFinish = () => {
+    let finalPath = newSaveAsScriptFilePath.trim()
+
+    // Check if `newSaveAsScriptFilePath` contains a file name
+    const hasFileName = finalPath.includes("/") || finalPath.includes("\\")
+    if (!hasFileName) {
+      // If no directory or filename is provided, prefix with the default script path
+      finalPath = `${service?.config.defaultScriptPath}/${finalPath}`
     }
+
+    // Ensure the file ends with `.js`
+    if (!finalPath.endsWith(".js")) {
+      finalPath += ".js"
+    }
+
+    console.info(`Saving as finished for ${originalSaveAsScriptFilePath} to ${finalPath}`)
+    setIsSaveAsModelOpen(false)
+    sendTo(fullname, "saveAsScript", originalSaveAsScriptFilePath, finalPath)
+  }
+
+  const handleCloseModal = () => {
+    // setIsSaveAsModelOpen(false);
+    setIsSaveAsModelOpen(false)
+    // setNewSaveAsScriptFilePath("");
+    console.info("Modal closed")
   }
 
   const handleCloseScript = (filePath) => {
@@ -182,7 +213,7 @@ export default function Node({ fullname }) {
               </IconButton>
             </Tooltip>
             <Tooltip title="Save As">
-              <IconButton onClick={() => handleSaveAsScript(selectedScript)}>
+              <IconButton onClick={() => handleSaveAsScriptStart(selectedScript)}>
                 <SaveAs />
               </IconButton>
             </Tooltip>
@@ -316,7 +347,7 @@ export default function Node({ fullname }) {
             >
               {clientConsoleLogs &&
                 clientConsoleLogs.map((log, index) => (
-                  <span
+                  <div
                     key={index}
                     dangerouslySetInnerHTML={{
                       __html: ansiConverter.toHtml(log.message) // Convert ANSI to HTML
@@ -327,6 +358,40 @@ export default function Node({ fullname }) {
           </Box>
         </Box>
       </Box>
+
+      <Modal open={isSaveAsModelOpen} onClose={handleCloseModal}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 400,
+            bgcolor: "background.paper",
+            boxShadow: 24,
+            p: 4,
+            borderRadius: 2
+          }}
+        >
+          <Typography variant="h6" component="h2" mb={2}>
+            Save As
+          </Typography>
+          <TextField
+            label="New Script File Path"
+            fullWidth
+            value={newSaveAsScriptFilePath}
+            onChange={(e) => setNewSaveAsScriptFilePath(e.target.value)}
+          />
+          <Box mt={3} display="flex" justifyContent="flex-end" gap={2}>
+            <Button onClick={handleCloseModal} color="secondary">
+              Cancel
+            </Button>
+            <Button onClick={handleSaveAsFinish} variant="contained" color="primary">
+              Save
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
     </>
   )
 }
