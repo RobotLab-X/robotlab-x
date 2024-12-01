@@ -155,8 +155,11 @@ export default function Node({ fullname }) {
     delete openScripts[filePath] // Remove the closed script locally
     setSelectedScript(Object.keys(openScripts)[0] || null)
   }
-  // Handler for tab change
-  const handleTabChange = (event, newFilePath) => setSelectedScript(newFilePath)
+
+  const handleTabChange = (event, newFilePath) => {
+    setSelectedScript(newFilePath)
+    sendTo(fullname, "openScript", newFilePath)
+  }
 
   // Utility to find a node by its ID in the file tree
   const findNodeById = (nodes, id) => {

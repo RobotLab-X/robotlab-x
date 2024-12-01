@@ -74,7 +74,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (Object.keys(savedLayout).length > 0) {
-      const minimized = savedLayout.minimized || []
+      const minimized = Object.values(registry).map((srvc) => srvc.fullname)
       setMinimizedServices(minimized)
 
       const updatedServices = serviceArray.map((srvc) => ({
@@ -96,30 +96,6 @@ const Dashboard = () => {
       setOpenServices(serviceArray)
     }
   }, [service?.config?.layout, savedLayout, serviceArray])
-
-  // useEffect(() => {
-  //   if (service?.config?.layout) {
-  //     const layoutConfig = service.config.layout
-  //     const minimized = layoutConfig.minimized || []
-  //     setMinimizedServices(minimized)
-
-  //     const updatedServices = serviceArray.map((srvc) => ({
-  //       ...srvc,
-  //       layout: layoutConfig[srvc.fullname]?.layout || {
-  //         x: (serviceArray.indexOf(srvc) % 4) * 3,
-  //         y: Math.floor(serviceArray.indexOf(srvc) / 4) * 3,
-  //         w: 4,
-  //         h: 3,
-  //         minW: 2,
-  //         minH: 2,
-  //         maxW: 12,
-  //         maxH: 12
-  //       }
-  //     }))
-
-  //     setOpenServices(updatedServices.filter((srvc) => !minimized.includes(srvc.fullname)))
-  //   }
-  // }, [service?.config?.layout, serviceArray])
 
   const layout = useMemo(
     () =>
