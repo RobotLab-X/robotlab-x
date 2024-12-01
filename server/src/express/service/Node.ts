@@ -43,6 +43,8 @@ export default class Node extends Service {
     intervalMs: 5000
   }
 
+  newScriptIncrement: number = 1
+
   /**
    * @property {Record<string, { content: string }>} openScripts - Dictionary of open scripts with their content.
    */
@@ -414,6 +416,20 @@ export default class Node extends Service {
     } else {
       console.warn("Log.stopLogging: Log timer is not running")
     }
+  }
+
+  public newScript(
+    filePath: string = path.join(
+      Main.getInstance().userData,
+      "types",
+      "Node",
+      "scripts",
+      `Untitled-${this.newScriptIncrement}.js`
+    )
+  ): void {
+    this.newScriptIncrement++
+    this.writeFile(filePath, "// new cool robot script\n\n\n")
+    this.openScript(filePath)
   }
 
   /**

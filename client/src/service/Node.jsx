@@ -1,13 +1,14 @@
 import { ChevronLeft, ChevronRight, Delete, PlayArrow, Save } from "@mui/icons-material"
-import Convert from "ansi-to-html"
-
+import AddIcon from "@mui/icons-material/Add"
 import ClearIcon from "@mui/icons-material/Clear"
+import SaveAs from "@mui/icons-material/SaveAs"
 import { Box, IconButton, Tab, Tabs, Tooltip, Typography } from "@mui/material"
 import { RichTreeView } from "@mui/x-tree-view/RichTreeView"
 import "ace-builds/src-noconflict/ace"
 import "ace-builds/src-noconflict/ext-language_tools"
 import "ace-builds/src-noconflict/mode-javascript"
 import "ace-builds/src-noconflict/theme-monokai"
+import Convert from "ansi-to-html"
 import React, { useEffect, useRef, useState } from "react"
 import AceEditor from "react-ace"
 import "react-resizable/css/styles.css"
@@ -73,6 +74,18 @@ export default function Node({ fullname }) {
   // Handler to toggle the file browser
   const toggleFileBrowser = () => setExpanded(!expanded)
 
+  const handleCreateNewScript = () => {
+    // const newScriptName = "newScript.js" // Example default name
+    // const initialContent = "// Start coding here..."
+    // // Add logic to create a new script and update the openScripts state
+    // setOpenScripts((prev) => ({
+    //   ...prev,
+    //   [newScriptName]: { content: initialContent }
+    // }))
+    // setSelectedScript(newScriptName) // Set the newly created script as selected
+    sendTo(fullname, "newScript")
+  }
+
   // Handler to open a script in a new tab
   const handleOpenScript = async (filePath, label) => {
     sendTo(fullname, "openScript", filePath) // Fetch script content
@@ -93,6 +106,15 @@ export default function Node({ fullname }) {
         sendTo(fullname, "saveScript", filePath, openScripts[filePath].content)
       }
       console.info(`Script ${filePath} saved`)
+    }
+  }
+
+  const handleSaveAsScript = (script) => {
+    const newName = prompt("Enter a new name for the script:", script || "newScript.js")
+    if (newName) {
+      // Add logic to save the script with the new name
+      console.log(`Saving script as ${newName}`)
+      // Example: Update state or call an API to save the new script
     }
   }
 
@@ -148,9 +170,20 @@ export default function Node({ fullname }) {
         <Box width={expanded ? "15%" : "0%"} display="flex" flexDirection="column">
           <Box display="flex" alignItems="center" padding={1}>
             <IconButton onClick={toggleFileBrowser}>{expanded ? <ChevronLeft /> : <ChevronRight />}</IconButton>
+
+            <Tooltip title="New Script">
+              <IconButton onClick={handleCreateNewScript}>
+                <AddIcon />
+              </IconButton>
+            </Tooltip>
             <Tooltip title="Save">
               <IconButton onClick={() => handleSaveScript(selectedScript)}>
                 <Save />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Save As">
+              <IconButton onClick={() => handleSaveAsScript(selectedScript)}>
+                <SaveAs />
               </IconButton>
             </Tooltip>
             <Tooltip title="Run">

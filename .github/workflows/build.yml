@@ -22,7 +22,7 @@ jobs:
       - name: Generate Version Number
         id: set-version
         run: |
-          BUILD_NUMBER=$(( $GITHUB_RUN_NUMBER + 160 ))
+          BUILD_NUMBER=$(( $GITHUB_RUN_NUMBER))
           VERSION="0.9.${BUILD_NUMBER}"
           echo "Generated version: ${VERSION}"
           echo "::set-output name=version::${VERSION}"
