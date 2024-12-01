@@ -39,15 +39,18 @@ jobs:
         run: |
           aws s3 cp latest.json "s3://robotlab-x-repo/latest.json"
 
-          - name: Send Version to Discord
-          run: |
+        # refer for discord webhook details to https://gist.github.com/Birdie0/78ee79402a4301b1faf412ab5f1cdcf9
+      - name: Send Version to Discord
+        run: |
             curl -X POST \
             -H "Content-Type: application/json" \
             -d '{
+                  "content": "New Version Deployed: **${{ env.VERSION }}**",
                   "embeds": [
                     {
                       "title": "New Version Deployed: **${{ env.VERSION }}**",
-                      "description": "Version [${{ env.VERSION }}](http://robotlab-x.com) has been deployed successfully.",
+                      "url": "https://robotlab-x.com",
+                      "description": "Version [${{ env.VERSION }}](https://robotlab-x.com) has been deployed successfully.",
                       "color": 5814783
                     }
                   ]
