@@ -38,3 +38,10 @@ jobs:
           AWS_REGION: us-east-1
         run: |
           aws s3 cp latest.json "s3://robotlab-x-repo/latest.json"
+
+      - name: Send Version to Discord
+        run: |
+          curl -X POST \
+          -H "Content-Type: application/json" \
+          -d "{\"content\": \"New version deployed: **${{ env.VERSION }}**\"}" \
+          ${{ secrets.DISCORD_WEBHOOK_URL }}
