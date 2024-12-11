@@ -115,7 +115,7 @@ export default class Log extends Service {
         // Adjust the lastPublishedIndex to ensure it aligns with the current log window
         this.lastPublishedIndex = Math.max(0, this.lastPublishedIndex - excessLogs)
 
-        console.log(`Removed ${excessLogs} oldest logs to maintain a 500-log window`)
+        // console.debug(`Removed ${excessLogs} oldest logs to maintain a 500-log window`)
       }
     }
 
@@ -126,7 +126,7 @@ export default class Log extends Service {
 
   public publishLogs(logs: LogEntry[]): LogEntry[] {
     this.unifiedLogsPublished += logs.length
-    console.log(`Log.publishLogs: Publishing ${logs.length} new log entries - ${this.unifiedLogsPublished} total`)
+    // console.debug(`Log.publishLogs: Publishing ${logs.length} new log entries - ${this.unifiedLogsPublished} total`)
     return logs // Simply return the logs to be sent to the client
   }
 

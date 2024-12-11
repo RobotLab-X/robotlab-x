@@ -22,7 +22,7 @@ const log = getLogger("Polly")
  */
 export default class Polly extends Service {
   /**
-   * @property {ClockConfig} config - The configuration for the polly service.
+   * @property {PollyConfig} config - The configuration for the polly service.
    */
   config = {
     voice: "Joanna",

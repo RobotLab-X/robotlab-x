@@ -64,6 +64,13 @@ export default class Service implements Gateway {
     return []
   }
 
+  sendTo(name: string, method: string, data: any[]) {
+    log.info(`sendTo ${name} ${method} ${data}`)
+    let msg = new Message(name, method, data)
+    msg.sender = this.fullname
+    this.invokeMsg(msg)
+  }
+
   createMessage(inName: string, inMethod: string, inParams: any[]) {
     // ...inParams: any[]) {
     // TODO: consider a different way to pass inParams for a no arg method.

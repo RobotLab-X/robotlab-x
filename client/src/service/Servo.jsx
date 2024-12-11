@@ -23,11 +23,11 @@ export default function Servo({ name, fullname, id }) {
   const service = useProcessedMessage(serviceMsg)
   const publishServoMoveTo = useProcessedMessage(publishServoMoveToMsg)
   const getServoControllers = useProcessedMessage(getServoControllersMsg)
+  // const [config, setConfig] = useState(null)
 
   const handleSaveConfig = () => {
-    if (config) {
-      config.prompt = currentPromptKey
-      sendTo(fullname, "applyConfig", config)
+    if (service?.config) {
+      sendTo(fullname, "applyConfig", service.config)
       sendTo(fullname, "saveConfig")
       sendTo(fullname, "broadcastState")
       setEditMode(false)
@@ -81,10 +81,13 @@ export default function Servo({ name, fullname, id }) {
   }
 
   const handleSpeedChange = (event, newValue) => {
+    console.info(`handleSpeedChange ${newValue}`)
     if (newValue > 199) {
       console.info("removing speed control")
+      service.config.speed = null
       sendTo(fullname, "setSpeed", null)
     } else {
+      service.config.speed = newValue
       sendTo(fullname, "setSpeed", newValue)
     }
     setSpeedValue(newValue)

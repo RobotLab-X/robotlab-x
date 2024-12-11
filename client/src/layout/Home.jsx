@@ -90,7 +90,7 @@ function Home() {
               <Typography>{selectedCard.detailContent}</Typography>
             </div>
           ) : (
-            <Typography variant="h6">Select a card from the left panel.</Typography>
+            <Typography variant="h6">Select a service from the left panel.</Typography>
           )}
         </Box>
       </Box>
