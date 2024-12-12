@@ -77,6 +77,7 @@ export default class Servo extends Service {
    * @param max
    */
   setMinMax(min: number, max: number) {
+    log.info(`Servo.setMinMax: Setting min to ${min} and max to ${max}`)
     this.config.min = min
     this.config.max = max
   }
@@ -121,6 +122,7 @@ export default class Servo extends Service {
   }
 
   setSpeed(speed: number): void {
+    log.info(`Servo.setSpeed: Setting speed to ${speed}`)
     this.config.speed = speed
   }
 

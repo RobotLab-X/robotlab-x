@@ -11,19 +11,16 @@ export default function Servo({ name, fullname, id }) {
   console.debug(`Servo ${fullname}`)
 
   const { useMessage, sendTo } = useStore()
+  const [editMode, setEditMode] = useState(false)
+  const getServoControllersMsg = useMessage(fullname, "getServoControllers")
+  const serviceMsg = useServiceSubscription(fullname, ["publishServoMoveTo", "getServoControllers"])
+  const service = useProcessedMessage(serviceMsg)
+  const getServoControllers = useProcessedMessage(getServoControllersMsg)
   const [value, setRange] = useState([0, 180])
   const [mainSliderValue, setMainSliderValue] = useState(90)
   const [speedValue, setSpeedValue] = useState(50)
   const [selectedController, setSelectedController] = useState("")
   const [selectedPin, setSelectedPin] = useState("")
-  const [editMode, setEditMode] = useState(false)
-  const publishServoMoveToMsg = useMessage(fullname, "publishServoMoveTo")
-  const getServoControllersMsg = useMessage(fullname, "getServoControllers")
-  const serviceMsg = useServiceSubscription(fullname, ["publishServoMoveTo", "getServoControllers"])
-  const service = useProcessedMessage(serviceMsg)
-  const publishServoMoveTo = useProcessedMessage(publishServoMoveToMsg)
-  const getServoControllers = useProcessedMessage(getServoControllersMsg)
-  // const [config, setConfig] = useState(null)
 
   const handleSaveConfig = () => {
     if (service?.config) {
@@ -41,8 +38,9 @@ export default function Servo({ name, fullname, id }) {
   useEffect(() => {
     if (service?.config?.controller) {
       setSelectedController(service.config.controller)
+      setSpeedValue(service.config.speed)
     }
-  }, [service?.config?.controller])
+  }, [service?.config])
 
   useEffect(() => {
     if (service?.config?.pin) {

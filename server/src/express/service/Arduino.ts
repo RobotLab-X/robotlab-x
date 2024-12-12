@@ -6,6 +6,7 @@ import { promisify } from "util"
 import { getLogger } from "../framework/LocalLog"
 import Service from "../framework/Service"
 import ServoMove from "../models/ServoMove"
+const pixel = require("node-pixel")
 
 const readdirAsync = promisify(readdir)
 const log = getLogger("Arduino")
@@ -244,6 +245,40 @@ export default class Arduino extends Service {
     }
   }
 
+  printServoDetails(servo: any) {
+    const fieldsToPrint = [
+      "id",
+      "pin",
+      "range",
+      "invert",
+      // "history",
+      "interval",
+      "isMoving",
+      "last",
+      "position",
+      "value",
+      "startAt"
+    ]
+
+    const output: any = {}
+
+    for (const field of fieldsToPrint) {
+      // Check if the field exists on the servo object
+      if (servo.hasOwnProperty(field)) {
+        try {
+          output[field] = servo[field]
+        } catch (err) {
+          output[field] = "[Error accessing field]"
+        }
+      } else {
+        output[field] = "[Field not present]"
+      }
+    }
+
+    console.log("Servo Details:")
+    console.log(JSON.stringify(output, null, 2))
+  }
+
   servoWrite(pin: string, angle: number, speed: number = null): void {
     log.info(`Servo writing to pin ${pin} value: ${angle} speed: ${speed}`)
 
@@ -258,7 +293,10 @@ export default class Arduino extends Service {
       // this.servosImpl[pin].to(value, 3000)  pos, [ms], [rate]
 
       const servo = this.servosImpl[pin]
-      const currentAngle = servo.value
+
+      log.info(`Servo ${this.printServoDetails(servo)}`)
+
+      const currentAngle = servo?.last?.degrees
 
       // Check if the specified angle is the same as the current angle
       if (angle === currentAngle) {
@@ -286,6 +324,28 @@ export default class Arduino extends Service {
   onServoMoveTo(servoMove: ServoMove): void {
     this.servoWrite(servoMove.pin, servoMove.degrees, servoMove.speed)
   }
+
+  onNeopixel(r: number, g: number, b: number, w: number) {
+    console.log("onNeopixel", r, g, b, w)
+    // const pixel = new pixel.NeoPixel({
+    //   pin: 12,
+    //   // number of pixels
+    //   count: 10,
+    //   // number of bytes per pixel
+    //   // can be 1, 2, 3, or 4
+    //   bytesPerPixel: 3,
+    //   // whether to send a reset byte
+    //   sendResetByte: true,
+    //   // whether to send a color byte
+    //   sendColorByte: true,
+    //   // whether to send brightness byte
+    //   sendBrightnessByte: true,
+    //   // whether to send animation byte
+    //   sendAnimationByte: true,
+    //   // whether to send animation frame
+    //   sendAnimationFrame: true,
+  }
+
   toJSON() {
     return {
       ...super.toJSON(),
