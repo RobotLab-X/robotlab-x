@@ -1,0 +1,12 @@
+author: "GroG"
+categories: ["neopixel","light"]
+dependencies: null
+description: "NeoPixel"
+installed: true
+license: "MIT"
+platform: "node"
+platformVersion: "v20.9.0"
+title: "NeoPixel"
+typeKey: "NeoPixel"
+version: "0.0.1"
+visible: true

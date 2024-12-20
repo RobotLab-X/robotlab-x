@@ -130,6 +130,7 @@
     "johnny-five": "^2.1.0",
     "mic": "^2.1.2",
     "minimist": "^1.2.8",
+    "node-pixel": "^0.11.0",
     "ollama": "^0.5.1",
     "play-sound": "^1.1.6",
     "python-shell": "^5.0.0",
@@ -150,7 +151,9 @@
     "transform": {
       "^.+\\.tsx?$": "ts-jest"
     },
-    "modulePathIgnorePatterns": ["<rootDir>/dist/electron/package.json"],
+    "modulePathIgnorePatterns": [
+      "<rootDir>/dist/electron/package.json"
+    ],
     "collectCoverageFrom": [
       "src/**/*.{js,jsx,ts,tsx}",
       "!<rootDir>/node_modules/",

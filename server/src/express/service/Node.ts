@@ -36,6 +36,8 @@ interface ConsoleLog {
 export default class Node extends Service {
   private intervalId: NodeJS.Timeout | null = null
 
+  replace: boolean = false
+
   /**
    * @property {NodeConfig} config - The configuration for the node service.
    */
@@ -92,6 +94,7 @@ export default class Node extends Service {
       console.log(`Directory created: ${dirPath}`)
     }
     this.scanDirectory(path.join(main.userData, "types", "Node", "scripts"))
+    this.scanDirectory(path.join(main.publicRoot, "repo", "robotlabxruntime", "launch"))
 
     // launch files
 
@@ -269,6 +272,8 @@ export default class Node extends Service {
       throw new Error(`Script ${filePath} is not open`)
     }
 
+    this.openScript(filePath)
+
     try {
       // Create a writable stream to capture console output
       const outputStream = new Writable({
@@ -380,8 +385,13 @@ export default class Node extends Service {
         children
       }
 
-      // Merge the new directory into the existing fileTree
-      this.mergeFileTree(this.fileTree, newTree)
+      if (this.replace) {
+        // Replace mode: Clear and replace the fileTree
+        this.fileTree = [newTree]
+      } else {
+        // Merge mode: Merge the new directory into the existing fileTree
+        this.mergeFileTree(this.fileTree, newTree)
+      }
 
       // fileTree possibly modified - publish results
       this.invoke("publishFileTree", this.fileTree)
