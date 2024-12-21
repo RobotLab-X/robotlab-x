@@ -326,6 +326,7 @@ export default class RobotLabXRuntime extends Service {
       } else {
         // if remote, we need to send the config to the remote
         // and then apply it
+        // FIXME - I think this is a big bug !!! process.send
         send(serviceName, "applyConfig", config)
       }
     } catch (error) {
