@@ -10,6 +10,17 @@ const pixel = require("node-pixel")
 
 const readdirAsync = promisify(readdir)
 const log = getLogger("Arduino")
+
+// FIXME - move to NeoPixel.ts
+interface Flash {
+  pin: string
+  color: any
+  interval: number
+  repetitions: number
+  type?: string // default is "simple"
+  pixels?: number[] // If null or empty, flash all pixels; otherwise, flash specified pixels
+}
+
 /**
  * Arduino service class using the johnny-five library
  * to communicate with an Arduino board
@@ -44,12 +55,16 @@ export default class Arduino extends Service {
 
   protected servosImpl: { [id: string]: Servo } = {}
 
+  protected neopixelsImpl: { [id: string]: any } = {}
+
   protected boardType: string = ""
 
   /**
    * Serial port instance
    */
   protected serialPort: SerialPort = null
+
+  private neoPixelStates: Map<string, { flashInterval?: NodeJS.Timeout; [key: string]: any }> = new Map()
 
   constructor(
     public id: string,
@@ -154,7 +169,7 @@ export default class Arduino extends Service {
     }
   }
 
-  public async getPorts(): Promise<string[]> {
+  async getPorts(): Promise<string[]> {
     try {
       if (platform() === "linux") {
         const files = await readdirAsync("/dev")
@@ -170,7 +185,7 @@ export default class Arduino extends Service {
     }
   }
 
-  public getBoardInfo(): any {
+  getBoardInfo(): any {
     log.info("Getting board info")
 
     if (this.board && this.board.isReady) {
@@ -231,11 +246,11 @@ export default class Arduino extends Service {
     return this.pins
   }
 
-  public getPins(): any {
+  getPins(): any {
     return this.pins
   }
 
-  public write(pin: number, value: number): void {
+  write(pin: number, value: number): void {
     log.info(`Writing to pin ${pin} value: ${value}`)
     if (this.ready) {
       log.info(`${JSON.stringify(this.pins[pin])}`)
@@ -325,26 +340,163 @@ export default class Arduino extends Service {
     this.servoWrite(servoMove.pin, servoMove.degrees, servoMove.speed)
   }
 
-  onNeopixel(r: number, g: number, b: number, w: number) {
+  onNeoPixel(pin: string, r: number, g: number, b: number, w: number) {
     console.log("onNeopixel", r, g, b, w)
-    // const pixel = new pixel.NeoPixel({
-    //   pin: 12,
-    //   // number of pixels
-    //   count: 10,
-    //   // number of bytes per pixel
-    //   // can be 1, 2, 3, or 4
-    //   bytesPerPixel: 3,
-    //   // whether to send a reset byte
-    //   sendResetByte: true,
-    //   // whether to send a color byte
-    //   sendColorByte: true,
-    //   // whether to send brightness byte
-    //   sendBrightnessByte: true,
-    //   // whether to send animation byte
-    //   sendAnimationByte: true,
-    //   // whether to send animation frame
-    //   sendAnimationFrame: true,
+    const neopixel = this.getNeoPixel(pin)
+    if (neopixel) {
+      neopixel.setPixelColor({ r, g, b, w })
+      neopixel.show()
+    } else {
+      log.error(`neopixel ${pin} not found`)
+    }
   }
+
+  attachNeoPixel(pin: string, length: number) {
+    if (this.neopixelsImpl[pin]) {
+      return this.neopixelsImpl[pin]
+    } else {
+      const neopixel = new pixel.Strip({
+        board: this.board,
+        controller: "FIRMATA",
+        strips: [{ pin: pin, length: length }] // this is preferred form for definition
+        // gamma: 2.8, // set to a gamma that works nicely for WS2812
+      })
+      this.neopixelsImpl[pin] = neopixel
+      return neopixel
+    }
+  }
+
+  getNeoPixel(pin: string) {
+    if (!this.neopixelsImpl[pin]) {
+      log.error(`neopixel ${pin} not found`)
+      return null
+    }
+
+    return this.neopixelsImpl[pin]
+  }
+
+  /**
+   *
+   * @param pin - pin number of the neopixel
+   * @param color - can be of the form "#ff0000", "rgb(0, 255, 0)", or [255, 255, 0]
+   */
+  neoPixelColor(pin: string, color: any) {
+    console.log("neoPixelColor", color)
+    const strip = this.getNeoPixel(pin)
+    if (strip) {
+      strip.color(color)
+      strip.show()
+    } else {
+      log.error(`neopixel ${pin} not found`)
+    }
+  }
+
+  neoPixelSet(pin: string, number: number, color: any) {
+    const strip = this.getNeoPixel(pin)
+    if (strip) {
+      strip.pixel(number).color(color)
+      strip.show()
+    } else {
+      log.error(`neopixel ${pin} not found`)
+    }
+  }
+
+  /**
+   * Flashes the NeoPixel strip or a specific pixel with the given color.
+   *
+   * @param pin - Pin number of the NeoPixel strip
+   * @param color - Color to flash, can be "#ff0000", "rgb(0, 255, 0)", or [255, 255, 0]
+   * @param interval - Time interval (in milliseconds) between flashes
+   * @param repetitions - Total number of flashes (on + off pairs count as one flash)
+   * @param pixelNumber - (Optional) Specific pixel number to flash. If not set, flashes the entire strip.
+   */
+  neoPixelFlash(pin: string, color: any, interval: number, repetitions: number, pixelNumber?: number) {
+    const strip = this.getNeoPixel(pin)
+    if (!strip) {
+      log.error(`neopixel ${pin} not found`)
+      return
+    }
+
+    // Stop any existing animations for the given pin
+    this.neoPixelOff(pin)
+
+    let count = 0
+    const flashInterval = setInterval(() => {
+      if (count >= repetitions) {
+        this.neoPixelOff(pin)
+        return
+      }
+
+      if (count % 2 === 0) {
+        // Turn on the specified pixel or the entire strip
+        if (pixelNumber !== undefined) {
+          this.neoPixelSet(pin, pixelNumber, color)
+        } else {
+          this.neoPixelColor(pin, color)
+        }
+      } else {
+        // Turn off the specified pixel or the entire strip
+        if (pixelNumber !== undefined) {
+          this.neoPixelSet(pin, pixelNumber, [0, 0, 0])
+        } else {
+          this.neoPixelColor(pin, [0, 0, 0])
+        }
+      }
+
+      count++
+    }, interval)
+
+    // Store the state for the pin
+    this.neoPixelStates.set(pin, { flashInterval })
+  }
+
+  neoPixelOff(pin: string) {
+    const state = this.neoPixelStates.get(pin)
+
+    if (state) {
+      // Stop the flashing interval if it exists
+      if (state.flashInterval) {
+        clearInterval(state.flashInterval)
+      }
+
+      // Turn off the strip
+      const strip = this.getNeoPixel(pin)
+      if (strip) {
+        strip.off()
+      }
+
+      // Remove the state entry
+      this.neoPixelStates.delete(pin)
+    } else {
+      log.error(`neopixel ${pin} not found or no active state`)
+    }
+  }
+
+  neoPixelShift(pin: string, amt: number, wrap: boolean = false) {
+    const strip = this.getNeoPixel(pin)
+    if (strip) {
+      if (amt > 0) {
+        log.info(`neopixel ${pin} shifting ${amt} forward`)
+        strip.shift(amt, pixel.FORWARD, wrap)
+      } else if (amt < 0) {
+        log.info(`neopixel ${pin} shifting ${amt} backward`)
+        strip.shift(Math.abs(amt), pixel.BACKWARD, wrap)
+      }
+      strip.show()
+    } else {
+      log.error(`neopixel ${pin} not found`)
+    }
+  }
+
+  // neoPixelFade(pin: string, color: any, time: number) {
+  //   const strip = this.getNeoPixel(pin)
+  //   if (strip) {
+  //     strip.fade(color, time)
+  //     strip.show()
+  //   } else {
+  //     log.error(`neopixel ${pin} not found`)
+  //   }
+  // }
 
   toJSON() {
     return {
