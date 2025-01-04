@@ -401,17 +401,10 @@ export default class Arduino extends Service {
     }
   }
 
-  /**
-   * Flashes the NeoPixel strip or a specific pixel with the given color.
-   *
-   * @param pin - Pin number of the NeoPixel strip
-   * @param color - Color to flash, can be "#ff0000", "rgb(0, 255, 0)", or [255, 255, 0]
-   * @param interval - Time interval (in milliseconds) between flashes
-   * @param repetitions - Total number of flashes (on + off pairs count as one flash)
-   * @param pixelNumber - (Optional) Specific pixel number to flash. If not set, flashes the entire strip.
-   */
-  neoPixelFlash(pin: string, color: any, interval: number, repetitions: number, pixelNumber?: number) {
+  neoPixelFlash(flash: Flash) {
+    const { pin, color, interval, repetitions, type = "simple", pixels = [] } = flash
     const strip = this.getNeoPixel(pin)
+
     if (!strip) {
       log.error(`neopixel ${pin} not found`)
       return
@@ -422,25 +415,37 @@ export default class Arduino extends Service {
 
     let count = 0
     const flashInterval = setInterval(() => {
-      if (count >= repetitions) {
+      if (count >= repetitions && type !== "brightness") {
         this.neoPixelOff(pin)
         return
       }
 
-      if (count % 2 === 0) {
-        // Turn on the specified pixel or the entire strip
-        if (pixelNumber !== undefined) {
-          this.neoPixelSet(pin, pixelNumber, color)
+      if (type === "simple") {
+        const isOn = count % 2 === 0
+
+        if (pixels.length > 0) {
+          // Flash only specified pixels
+          pixels.forEach((pixelNumber) => {
+            this.neoPixelSet(pin, pixelNumber, isOn ? color : [0, 0, 0])
+          })
         } else {
-          this.neoPixelColor(pin, color)
+          // Flash entire strip
+          this.neoPixelColor(pin, isOn ? color : [0, 0, 0])
+        }
+      } else if (type === "brightness") {
+        // Randomly adjust brightness while keeping the color the same
+        const brightnessFactor = Math.random() * 0.5 + 0.1 // Random brightness between 50% and 100%
+        const adjustedColor = Array.isArray(color) ? color.map((c) => Math.round(c * brightnessFactor)) : color
+
+        if (pixels.length > 0) {
+          pixels.forEach((pixelNumber) => {
+            this.neoPixelSet(pin, pixelNumber, adjustedColor)
+          })
+        } else {
+          this.neoPixelColor(pin, adjustedColor)
         }
       } else {
-        // Turn off the specified pixel or the entire strip
-        if (pixelNumber !== undefined) {
-          this.neoPixelSet(pin, pixelNumber, [0, 0, 0])
-        } else {
-          this.neoPixelColor(pin, [0, 0, 0])
-        }
+        log.warn(`Flash type "${type}" not implemented.`)
       }
 
       count++
@@ -459,6 +464,11 @@ export default class Arduino extends Service {
         clearInterval(state.flashInterval)
       }
 
+      // Stop the shift interval if it exists
+      if (state.shiftInterval) {
+        clearInterval(state.shiftInterval)
+      }
+
       // Turn off the strip
       const strip = this.getNeoPixel(pin)
       if (strip) {
@@ -472,9 +482,18 @@ export default class Arduino extends Service {
     }
   }
 
-  neoPixelShift(pin: string, amt: number, wrap: boolean = false) {
+  neoPixelShift(pin: string, amt: number, wrap: boolean = false, interval?: number) {
     const strip = this.getNeoPixel(pin)
-    if (strip) {
+
+    if (!strip) {
+      log.error(`neopixel ${pin} not found`)
+      return
+    }
+
+    // Stop any existing shift interval for this pin
+    // this.neoPixelOff(pin)
+
+    const shiftPixels = () => {
       if (amt > 0) {
         log.info(`neopixel ${pin} shifting ${amt} forward`)
         strip.shift(amt, pixel.FORWARD, wrap)
@@ -483,9 +502,19 @@ export default class Arduino extends Service {
         strip.shift(Math.abs(amt), pixel.BACKWARD, wrap)
       }
       strip.show()
-    } else {
-      log.error(`neopixel ${pin} not found`)
     }
+
+    // Perform initial shift
+    shiftPixels()
+
+    // If interval is set, create a repeating shift interval
+    let shiftIntervalId: NodeJS.Timeout | null = null
+    if (typeof interval === "number" && interval > 0) {
+      shiftIntervalId = setInterval(shiftPixels, interval)
+    }
+
+    // Store the shift interval in neoPixelStates
+    this.neoPixelStates.set(pin, { shiftInterval: shiftIntervalId })
   }
 
   // neoPixelFade(pin: string, color: any, time: number) {
