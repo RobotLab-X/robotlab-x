@@ -7,15 +7,18 @@ const log = getLogger("AudioPlayer")
 /**
  * @class AudioPlayer
  * @extends Service
- * @description A service that provides audioplayer functionality, periodically publishing the current epoch time.
+ * @description A service which can play audio files.
  */
 export default class AudioPlayer extends Service {
   /**
    * @property {AudioPlayerConfig} config - The configuration for the audioplayer service.
    */
-  config = {}
+  config = {
+    // playlists: { [key: string]: string[] } = {}
+    playlists: {}
+  }
 
-  private intervalId: NodeJS.Timeout | null = null
+  currentlyPlayingAudioFile: string | null = null
 
   /**
    * Creates an instance of AudioPlayer.
@@ -40,30 +43,6 @@ export default class AudioPlayer extends Service {
     //this.start()
   }
 
-  /**
-   * Starts the audio player service.
-   */
-  start() {
-    log.info("Starting AudioPlayer service")
-    this.intervalId = setInterval(() => {
-      // const audioFilePath = path.resolve(process.cwd(), "path/to/your/sound/file.mp3")
-      const audioFilePath = "express/public/repo/polly/cache/0e88a34dc0f850ce2ca882d6abe5eef3.mp3"
-      log.info("Timer expired, sending play-sound message:", audioFilePath)
-      ipcMain.emit("play-sound", null, audioFilePath)
-    }, 5000) // 5 seconds interval
-  }
-
-  /**
-   * Stops the audio player service.
-   */
-  stop() {
-    if (this.intervalId) {
-      clearInterval(this.intervalId)
-      this.intervalId = null
-    }
-    log.info("Stopping AudioPlayer service")
-  }
-
   play(audioFile: string): void {
     log.info(`AudioPlayer.play: ${audioFile}`)
     this.playAudioFile(audioFile)
@@ -71,12 +50,25 @@ export default class AudioPlayer extends Service {
 
   playAudioFile(audioFile: string): void {
     log.info(`AudioPlayer.playAudio: ${audioFile}`)
-    ipcMain.emit("play-sound", null, audioFile)
+    const mockEvent = { sender: { send: () => {} } }
+    ipcMain.emit("play-sound", mockEvent, `${this.name}@${this.id}`, audioFile)
   }
 
   onPlayAudioFile(audioFile: string): void {
     log.info(`AudioPlayer.onPlayAudio: ${audioFile}`)
     this.playAudioFile(audioFile)
+  }
+
+  publishAudioFinished(audioFile: string): string {
+    log.info(`AudioPlayer.publishAudioFinished: ${audioFile}`)
+    this.currentlyPlayingAudioFile = null
+    return audioFile
+  }
+
+  publishAudioStarted(audioFile: string): string {
+    log.info(`AudioPlayer.publishAudioStarted: ${audioFile}`)
+    this.currentlyPlayingAudioFile = audioFile
+    return audioFile
   }
 
   /**

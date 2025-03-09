@@ -24,7 +24,7 @@ function Home() {
   return (
     <>
       <Box sx={{ display: "flex", height: "100vh" }}>
-        <Box sx={{ width: "300px", overflowY: "auto" }}>
+        <Box sx={{ width: "230px", overflowY: "auto" }}>
           {/*}
           <AppBar position="static" color="default">
             <Toolbar>
@@ -48,12 +48,26 @@ function Home() {
               <CardActionArea>
                 <CardContent>
                   <Typography variant="h5">
-                    <img
-                      src={getTypeImage(card.fullname)}
-                      alt={card.name}
-                      width="32"
-                      style={{ verticalAlign: "top" }}
-                    />
+                    <table>
+                      <tbody>
+                        <tr>
+                          <td>
+                            <img
+                              src={getTypeImage(card.fullname)}
+                              alt={card.name}
+                              width="32"
+                              style={{ verticalAlign: "top" }}
+                            />
+                          </td>
+                          <td>
+                            {card.name}
+                            <br />
+                            <span style={{ color: "grey", fontSize: "0.875rem" }}>{card?.pkg?.typeKey}</span>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+
                     {/*
                     <img
                       src={`${imagesUrl}/platform/${repo[card.typeKey]?.platform}.png`}
@@ -62,7 +76,6 @@ function Home() {
                     />{" "}
                     <img src={`${imagesUrl}/os/linux.png`} alt={card.typeKey} width="16" />
                     */}
-                    &nbsp;{card.name}
                   </Typography>
                   {remoteId !== card.id ? (
                     <Typography variant="body2" color="text.secondary">

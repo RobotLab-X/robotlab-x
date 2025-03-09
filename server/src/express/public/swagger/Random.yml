@@ -36,97 +36,10 @@ components:
         type: array
     type: object
 paths:
-  /onPlayAudioFile:
+  /onTick:
     put:
-      summary: Executes onPlayAudioFile method
-      description: ""
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                - type: string
-            example:
-              - audioFile
-      responses:
-        "200":
-          description: onPlayAudioFile executed successfully
-    get:
-      summary: Fetch information for onPlayAudioFile
-      description: HTTP GET for onPlayAudioFile
-      parameters:
-        - name: audioFile
-          in: query
-          required: true
-          schema:
-            type: string
-          description: Parameter audioFile
-      responses:
-        "200":
-          description: Details for onPlayAudioFile fetched successfully
-  /play:
-    put:
-      summary: Executes play method
-      description: ""
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                - type: string
-            example:
-              - audioFile
-      responses:
-        "200":
-          description: play executed successfully
-    get:
-      summary: Fetch information for play
-      description: HTTP GET for play
-      parameters:
-        - name: audioFile
-          in: query
-          required: true
-          schema:
-            type: string
-          description: Parameter audioFile
-      responses:
-        "200":
-          description: Details for play fetched successfully
-  /playAudioFile:
-    put:
-      summary: Executes playAudioFile method
-      description: ""
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                - type: string
-            example:
-              - audioFile
-      responses:
-        "200":
-          description: playAudioFile executed successfully
-    get:
-      summary: Fetch information for playAudioFile
-      description: HTTP GET for playAudioFile
-      parameters:
-        - name: audioFile
-          in: query
-          required: true
-          schema:
-            type: string
-          description: Parameter audioFile
-      responses:
-        "200":
-          description: Details for playAudioFile fetched successfully
-  /startService:
-    put:
-      summary: Executes startService method
-      description: ""
+      summary: Handles the tick event, invoking the publishEpoch method.
+      description: Handles the tick event, invoking the publishEpoch method.
       requestBody:
         content:
           application/json:
@@ -136,21 +49,93 @@ paths:
             example: []
       responses:
         "200":
-          description: startService executed successfully
+          description: onTick executed successfully
     get:
-      summary: Fetch information for startService
-      description: HTTP GET for startService
+      summary: Fetch information for onTick
+      description: HTTP GET for onTick
       parameters: []
       responses:
         "200":
-          description: Details for startService fetched successfully
+          description: Details for onTick fetched successfully
+  /startRandom:
+    put:
+      summary: Starts the random timer.
+      description: Starts the random timer.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: integer
+            example:
+              - intervalMs
+      responses:
+        "200":
+          description: startRandom executed successfully
+    get:
+      summary: Fetch information for startRandom
+      description: HTTP GET for startRandom
+      parameters:
+        - name: intervalMs
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: "- The interval in milliseconds. If not provided, the existing
+            intervalMs from the config is used."
+      responses:
+        "200":
+          description: Details for startRandom fetched successfully
+  /stopRandom:
+    put:
+      summary: Stops the random timer.
+      description: Stops the random timer.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: stopRandom executed successfully
+    get:
+      summary: Fetch information for stopRandom
+      description: HTTP GET for stopRandom
+      parameters: []
+      responses:
+        "200":
+          description: Details for stopRandom fetched successfully
+  /stopService:
+    put:
+      summary: Executes stopService method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: stopService executed successfully
+    get:
+      summary: Fetch information for stopService
+      description: HTTP GET for stopService
+      parameters: []
+      responses:
+        "200":
+          description: Details for stopService fetched successfully
   /toJSON:
     put:
       summary: |-
-        Serializes the AudioPlayer instance to JSON.
+        Serializes the Random instance to JSON.
         Excludes intervalId from serialization.
       description: |-
-        Serializes the AudioPlayer instance to JSON.
+        Serializes the Random instance to JSON.
         Excludes intervalId from serialization.
       requestBody:
         content:
@@ -161,12 +146,12 @@ paths:
             example: []
       responses:
         "200":
-          description: The serialized AudioPlayer instance.
+          description: The serialized Random instance.
     get:
       summary: Fetch information for toJSON
       description: HTTP GET for toJSON
       parameters: []
       responses:
         "200":
-          description: The serialized AudioPlayer instance.
+          description: The serialized Random instance.
 tags: []

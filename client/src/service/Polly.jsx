@@ -2,9 +2,9 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import { Box, Button, Checkbox, FormControlLabel, MenuItem, Select, TextField, Typography } from "@mui/material"
 import React, { useEffect, useState } from "react"
+import useSubscription from "store/useSubscription"
 import { useProcessedMessage } from "../hooks/useProcessedMessage"
 import { useStore } from "../store/store"
-import useServiceSubscription from "../store/useServiceSubscription"
 
 export default function Polly({ fullname }) {
   console.debug(`Polly ${fullname}`)
@@ -16,11 +16,9 @@ export default function Polly({ fullname }) {
   const [secretAccessKey, setSecretAccessKey] = useState("")
   const [selectedVoice, setSelectedVoice] = useState("")
   const [autoClear, setAutoClear] = useState(true) // State to control auto-clear functionality
-
+  const service = useSubscription(fullname, "broadcastState", true)
   const { useMessage, sendTo } = useStore()
   const publishSpeakingMsg = useMessage(fullname, "publishSpeaking")
-  const serviceMsg = useServiceSubscription(fullname, ["publishSpeaking"])
-  const service = useProcessedMessage(serviceMsg)
   const spoken = useProcessedMessage(publishSpeakingMsg)
 
   useEffect(() => {

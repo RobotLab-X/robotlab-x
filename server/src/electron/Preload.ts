@@ -4,7 +4,13 @@ const { contextBridge, ipcRenderer } = require("electron")
 const versions = ipcRenderer.sendSync("get-versions")
 
 contextBridge.exposeInMainWorld("electron", {
-  playSound: (file: string) => ipcRenderer.send("play-sound", file),
-  onPlaySound: (callback: (file: string) => void) => ipcRenderer.on("play-sound", (event, file) => callback(file)),
-  getVersions: () => versions
+  // playSound: for AudioPlayer --to electron --> to --> hidden
+  playSound: (serviceName: string, file: string) => ipcRenderer.send("play-sound", serviceName, file),
+  // onPlaySound: for hidden
+  onPlaySound: (callback: (serviceName: string, file: string) => void) =>
+    ipcRenderer.on("play-sound", (event, serviceName, file) => callback(serviceName, file)),
+  getVersions: () => versions,
+  // back to--> electron ElectronStarter.ipcMain.on("audio-finished", ....
+  audioStarted: (serviceName: string, file: string) => ipcRenderer.send("audio-started", serviceName, file),
+  audioFinished: (serviceName: string, file: string) => ipcRenderer.send("audio-finished", serviceName, file)
 })

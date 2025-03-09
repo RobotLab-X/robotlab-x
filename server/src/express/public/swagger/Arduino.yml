@@ -65,6 +65,43 @@ paths:
       responses:
         "200":
           description: Details for applyConfig fetched successfully
+  /attachNeoPixel:
+    put:
+      summary: Executes attachNeoPixel method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+                - type: integer
+            example:
+              - pin
+              - length
+      responses:
+        "200":
+          description: attachNeoPixel executed successfully
+    get:
+      summary: Fetch information for attachNeoPixel
+      description: HTTP GET for attachNeoPixel
+      parameters:
+        - name: pin
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter pin
+        - name: length
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: Parameter length
+      responses:
+        "200":
+          description: Details for attachNeoPixel fetched successfully
   /connect:
     put:
       summary: Executes connect method
@@ -157,6 +194,35 @@ paths:
       responses:
         "200":
           description: Details for getBoardInfo fetched successfully
+  /getNeoPixel:
+    put:
+      summary: Executes getNeoPixel method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - pin
+      responses:
+        "200":
+          description: getNeoPixel executed successfully
+    get:
+      summary: Fetch information for getNeoPixel
+      description: HTTP GET for getNeoPixel
+      parameters:
+        - name: pin
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter pin
+      responses:
+        "200":
+          description: Details for getNeoPixel fetched successfully
   /getPins:
     put:
       summary: Executes getPins method
@@ -199,6 +265,260 @@ paths:
       responses:
         "200":
           description: Details for getPorts fetched successfully
+  /neoPixelColor:
+    put:
+      summary: Executes neoPixelColor method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+                - type: any
+            example:
+              - pin
+              - color
+      responses:
+        "200":
+          description: neoPixelColor executed successfully
+    get:
+      summary: Fetch information for neoPixelColor
+      description: HTTP GET for neoPixelColor
+      parameters:
+        - name: pin
+          in: query
+          required: true
+          schema:
+            type: string
+          description: "- pin number of the neopixel"
+        - name: color
+          in: query
+          required: true
+          schema:
+            type: any
+          description: '- can be of the form "#ff0000", "rgb(0, 255, 0)", or [255, 255, 0]'
+      responses:
+        "200":
+          description: Details for neoPixelColor fetched successfully
+  /neoPixelFlash:
+    put:
+      summary: Executes neoPixelFlash method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: Flash
+            example:
+              - flash
+      responses:
+        "200":
+          description: neoPixelFlash executed successfully
+    get:
+      summary: Fetch information for neoPixelFlash
+      description: HTTP GET for neoPixelFlash
+      parameters:
+        - name: flash
+          in: query
+          required: true
+          schema:
+            type: Flash
+          description: Parameter flash
+      responses:
+        "200":
+          description: Details for neoPixelFlash fetched successfully
+  /neoPixelOff:
+    put:
+      summary: Executes neoPixelOff method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - pin
+      responses:
+        "200":
+          description: neoPixelOff executed successfully
+    get:
+      summary: Fetch information for neoPixelOff
+      description: HTTP GET for neoPixelOff
+      parameters:
+        - name: pin
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter pin
+      responses:
+        "200":
+          description: Details for neoPixelOff fetched successfully
+  /neoPixelSet:
+    put:
+      summary: Executes neoPixelSet method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+                - type: integer
+                - type: any
+            example:
+              - pin
+              - number
+              - color
+      responses:
+        "200":
+          description: neoPixelSet executed successfully
+    get:
+      summary: Fetch information for neoPixelSet
+      description: HTTP GET for neoPixelSet
+      parameters:
+        - name: pin
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter pin
+        - name: number
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: Parameter number
+        - name: color
+          in: query
+          required: true
+          schema:
+            type: any
+          description: Parameter color
+      responses:
+        "200":
+          description: Details for neoPixelSet fetched successfully
+  /neoPixelShift:
+    put:
+      summary: Executes neoPixelShift method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+                - type: integer
+                - type: boolean
+                - type: integer
+            example:
+              - pin
+              - amt
+              - wrap
+              - interval
+      responses:
+        "200":
+          description: neoPixelShift executed successfully
+    get:
+      summary: Fetch information for neoPixelShift
+      description: HTTP GET for neoPixelShift
+      parameters:
+        - name: pin
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter pin
+        - name: amt
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: Parameter amt
+        - name: wrap
+          in: query
+          required: true
+          schema:
+            type: boolean
+          description: Parameter wrap
+        - name: interval
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: Parameter interval
+      responses:
+        "200":
+          description: Details for neoPixelShift fetched successfully
+  /onNeoPixel:
+    put:
+      summary: Executes onNeoPixel method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+                - type: integer
+                - type: integer
+                - type: integer
+                - type: integer
+            example:
+              - pin
+              - r
+              - g
+              - b
+              - w
+      responses:
+        "200":
+          description: onNeoPixel executed successfully
+    get:
+      summary: Fetch information for onNeoPixel
+      description: HTTP GET for onNeoPixel
+      parameters:
+        - name: pin
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter pin
+        - name: r
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: Parameter r
+        - name: g
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: Parameter g
+        - name: b
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: Parameter b
+        - name: w
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: Parameter w
+      responses:
+        "200":
+          description: Details for onNeoPixel fetched successfully
   /onServoMoveTo:
     put:
       summary: Executes onServoMoveTo method
@@ -228,6 +548,35 @@ paths:
       responses:
         "200":
           description: Details for onServoMoveTo fetched successfully
+  /printServoDetails:
+    put:
+      summary: Executes printServoDetails method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: any
+            example:
+              - servo
+      responses:
+        "200":
+          description: printServoDetails executed successfully
+    get:
+      summary: Fetch information for printServoDetails
+      description: HTTP GET for printServoDetails
+      parameters:
+        - name: servo
+          in: query
+          required: true
+          schema:
+            type: any
+          description: Parameter servo
+      responses:
+        "200":
+          description: Details for printServoDetails fetched successfully
   /servoWrite:
     put:
       summary: Executes servoWrite method

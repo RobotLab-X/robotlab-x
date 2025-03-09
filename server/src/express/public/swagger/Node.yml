@@ -115,6 +115,35 @@ paths:
       responses:
         "200":
           description: Details for deleteFile fetched successfully
+  /deleteScript:
+    put:
+      summary: Executes deleteScript method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - filePath
+      responses:
+        "200":
+          description: deleteScript executed successfully
+    get:
+      summary: Fetch information for deleteScript
+      description: HTTP GET for deleteScript
+      parameters:
+        - name: filePath
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter filePath
+      responses:
+        "200":
+          description: Details for deleteScript fetched successfully
   /fileExists:
     put:
       summary: Checks if a file exists synchronously.
@@ -231,6 +260,35 @@ paths:
       responses:
         "200":
           description: Details for mergeFileTree fetched successfully
+  /newScript:
+    put:
+      summary: Executes newScript method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - filePath
+      responses:
+        "200":
+          description: newScript executed successfully
+    get:
+      summary: Fetch information for newScript
+      description: HTTP GET for newScript
+      parameters:
+        - name: filePath
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter filePath
+      responses:
+        "200":
+          description: Details for newScript fetched successfully
   /openScript:
     put:
       summary: Adds a script to openScripts by loading its content if it's a .js file.
@@ -354,6 +412,51 @@ paths:
       responses:
         "200":
           description: Details for runScript fetched successfully
+  /saveAsScript:
+    put:
+      summary: Executes saveAsScript method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+                - type: string
+                - type: string
+            example:
+              - originalFilePath
+              - newFilePath
+              - content
+      responses:
+        "200":
+          description: saveAsScript executed successfully
+    get:
+      summary: Fetch information for saveAsScript
+      description: HTTP GET for saveAsScript
+      parameters:
+        - name: originalFilePath
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter originalFilePath
+        - name: newFilePath
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter newFilePath
+        - name: content
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Parameter content
+      responses:
+        "200":
+          description: Details for saveAsScript fetched successfully
   /saveScript:
     put:
       summary: Saves the content of an open script to the file system.
@@ -432,7 +535,7 @@ paths:
               items:
                 - type: integer
             example:
-              - intervalMs
+              - consoleLogInterval
       responses:
         "200":
           description: startLogging executed successfully
@@ -440,12 +543,12 @@ paths:
       summary: Fetch information for startLogging
       description: HTTP GET for startLogging
       parameters:
-        - name: intervalMs
+        - name: consoleLogInterval
           in: query
           required: true
           schema:
             type: integer
-          description: Parameter intervalMs
+          description: Parameter consoleLogInterval
       responses:
         "200":
           description: Details for startLogging fetched successfully

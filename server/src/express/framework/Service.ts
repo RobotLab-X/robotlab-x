@@ -323,6 +323,21 @@ export default class Service implements Gateway {
         // invoke locally
         log.debug(`invoking ${this.name}.${msg.method}`)
         try {
+          // if (!obj) {
+          //   throw new Error(`obj is undefined in ${this.name}`)
+          // }
+
+          // if (!msg.method) {
+          //   throw new Error(`msg.method is undefined or null in ${this.name}`)
+          // }
+
+          // if (typeof obj[msg.method] !== "function") {
+          //   throw new Error(`Method '${msg.method}' is not a function on ${this.name}`)
+          // }
+
+          // log.info("=== obj:", obj)
+          // // log.info("=== Methods on obj:", Object.keys(obj))
+
           if (msg.data && msg.data.length > 0) {
             ret = obj[msg.method](...msg.data)
           } else {
@@ -350,7 +365,7 @@ export default class Service implements Gateway {
       }
     } catch (e) {
       // ui error - user should be informed
-      log.error(`failed to invoke ${this.name}.${msg.method} because ${e}`)
+      log.error(`general catch failed to invoke ${this.name}.${msg.method} because ${e}`)
       if (e instanceof Error) {
         log.error(e.stack)
       } else {

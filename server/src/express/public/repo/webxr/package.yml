@@ -1,19 +1,15 @@
-typeKey: "WebXR"
-title: "WebXR Interface"
+author: "GroG"
+categories:
+  - "web"
+  - "ui"
+  - "vr"
+  - "headset"
+dependencies: null
+description: "WebXR interface for virtual reality and augmented reality."
+license: "MIT"
 platform: "browser"
 platformVersion: null
-description: "WebXR interface for virtual reality and augmented reality."
+title: "WebXR Interface"
+typeKey: "WebXR"
 version: "0.0.1"
-interfaces:
-  restAPI:
-    - endpoint: "/api/v1/resource"
-      method: "GET"
-      description: "Retrieves list of resources."
-author: "GroG"
-license: "MIT"
-categories:
-- "web"
-- "ui"
-- "vr"
-- "headset"
-dependencies: null
+visible: true

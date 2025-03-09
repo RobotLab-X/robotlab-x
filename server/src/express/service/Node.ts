@@ -106,6 +106,11 @@ export default class Node extends Service {
     this.consoleLogs = []
   }
 
+  deleteScript(filePath: string): void {
+    this.deleteFile(filePath)
+    this.closeScript(filePath)
+  }
+
   /**
    * Closes a script by removing it from openScripts.
    * @param {string} filePath - The path of the script to close.

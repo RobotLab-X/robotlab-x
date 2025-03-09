@@ -2,6 +2,7 @@ import Electron, { app, Menu, shell, Tray } from "electron"
 import path from "path"
 import "source-map-support/register"
 import { getLogger } from "../express/framework/LocalLog"
+import RobotLabXRuntime from "../express/service/RobotLabXRuntime"
 import Main from "./Main"
 
 const { ipcMain } = require("electron")
@@ -175,12 +176,27 @@ export default class ElectronStarter {
     // ElectronStarter.hiddenWindow.webContents.openDevTools({ mode: "detach" })
 
     // IPC handlers from renderers --to--> main process
-    ipcMain.on("play-sound", (event, audioFilePath) => {
-      console.log("Received play-sound in main process:", audioFilePath)
-      // const audioFilePath = path.resolve(process.cwd(), arg)
-      console.log("Resolved audio file path:", audioFilePath)
-      // relayed to hidden renderer
-      ElectronStarter.hiddenWindow.webContents.send("play-sound", audioFilePath)
+    ipcMain.on("play-sound", (event, serviceName, audioFilePath) => {
+      console.log("Received play-sound in main process:", serviceName, audioFilePath)
+      // use hidden window to play audio
+      ElectronStarter.hiddenWindow.webContents.send("play-sound", serviceName, audioFilePath)
+    })
+
+    ipcMain.on("audio-started", (event, serviceName, audioFilePath) => {
+      console.log("Audio started playing:", serviceName, audioFilePath)
+      // need to send to the service
+      const runtime = RobotLabXRuntime.getInstance().getService(serviceName)
+      runtime.sendTo(serviceName, "publishAudioStarted", [audioFilePath])
+      // service.invoke("onAudioFinished", audioFilePath)
+    })
+
+    // Listen for the audio-finished event from the hidden renderer
+    ipcMain.on("audio-finished", (event, serviceName, audioFilePath) => {
+      console.log("Audio finished playing:", serviceName, audioFilePath)
+      // need to send to the service
+      const runtime = RobotLabXRuntime.getInstance().getService(serviceName)
+      runtime.sendTo(serviceName, "publishAudioFinished", [audioFilePath])
+      // service.invoke("onAudioFinished", audioFilePath)
     })
 
     ipcMain.on("get-versions", (event) => {

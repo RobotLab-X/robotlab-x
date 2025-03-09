@@ -95,7 +95,7 @@ function App() {
               <Route path="/nodes/:nodeId" element={<Nodes />} />
               <Route path="/swagger/:fullname" element={<SwaggerUIComponent fullname="" />} />
               <Route path="/network" element={<Network />} />
-              <Route path="/webxr/:tabName" element={<WebXR />} />
+              <Route path="/webxr" element={<WebXR />} />
               {/*}
               <Route path="*" element={<Navigate to="/" replace />} />
               */}

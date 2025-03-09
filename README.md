@@ -116,3 +116,11 @@ Remove-Item Env:ELECTRON_RUN_AS_NODE
 yarn add electron-rebuild --dev
 yarn electron-rebuild
 ```
+
+```bash
+npx electron-rebuild
+```
+
+
+## Required Parts for New Service
+* {Service}.js

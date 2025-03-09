@@ -1,0 +1,178 @@
+openapi: 3.0.3
+info:
+  title: API Documentation
+  version: 1.0.0
+servers:
+  - url: http://localhost:3001/v1
+    description: Local development server
+components:
+  schemas:
+    $schema: http://json-schema.org/draft-07/schema#
+    definitions:
+      A<object>:
+        description: An AsyncIterator which can be aborted
+        properties:
+          abortController: {}
+          doneCallback: {}
+          itr: {}
+        type: object
+      a:
+        properties:
+          fetch:
+            type: object
+          host:
+            type: string
+          proxy:
+            type: boolean
+        type: object
+    properties:
+      config:
+        $ref: "#/definitions/a"
+      fetch:
+        type: object
+      ongoingStreamedRequests:
+        items:
+          $ref: "#/definitions/A<object>"
+        type: array
+    type: object
+paths:
+  /onTick:
+    put:
+      summary: Handles the tick event, invoking the publishEpoch method.
+      description: Handles the tick event, invoking the publishEpoch method.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: onTick executed successfully
+    get:
+      summary: Fetch information for onTick
+      description: HTTP GET for onTick
+      parameters: []
+      responses:
+        "200":
+          description: Details for onTick fetched successfully
+  /publishEpoch:
+    put:
+      summary: Publishes the current epoch time.
+      description: Publishes the current epoch time.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: The current epoch time.
+    get:
+      summary: Fetch information for publishEpoch
+      description: HTTP GET for publishEpoch
+      parameters: []
+      responses:
+        "200":
+          description: The current epoch time.
+  /startNeoPixel:
+    put:
+      summary: Starts the neopixel timer.
+      description: Starts the neopixel timer.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: integer
+            example:
+              - intervalMs
+      responses:
+        "200":
+          description: startNeoPixel executed successfully
+    get:
+      summary: Fetch information for startNeoPixel
+      description: HTTP GET for startNeoPixel
+      parameters:
+        - name: intervalMs
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: "- The interval in milliseconds. If not provided, the existing
+            intervalMs from the config is used."
+      responses:
+        "200":
+          description: Details for startNeoPixel fetched successfully
+  /stopNeoPixel:
+    put:
+      summary: Stops the neopixel timer.
+      description: Stops the neopixel timer.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: stopNeoPixel executed successfully
+    get:
+      summary: Fetch information for stopNeoPixel
+      description: HTTP GET for stopNeoPixel
+      parameters: []
+      responses:
+        "200":
+          description: Details for stopNeoPixel fetched successfully
+  /stopService:
+    put:
+      summary: Executes stopService method
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: stopService executed successfully
+    get:
+      summary: Fetch information for stopService
+      description: HTTP GET for stopService
+      parameters: []
+      responses:
+        "200":
+          description: Details for stopService fetched successfully
+  /toJSON:
+    put:
+      summary: |-
+        Serializes the NeoPixel instance to JSON.
+        Excludes intervalId from serialization.
+      description: |-
+        Serializes the NeoPixel instance to JSON.
+        Excludes intervalId from serialization.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: The serialized NeoPixel instance.
+    get:
+      summary: Fetch information for toJSON
+      description: HTTP GET for toJSON
+      parameters: []
+      responses:
+        "200":
+          description: The serialized NeoPixel instance.
+tags: []

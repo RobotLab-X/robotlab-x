@@ -6,14 +6,14 @@ import StopIcon from "@mui/icons-material/Stop"
 import { Box, Grid, IconButton, TextField, Typography } from "@mui/material"
 import React, { useState } from "react"
 import { useStore } from "store/store"
-import { useProcessedMessage } from "../hooks/useProcessedMessage"
-import useServiceSubscription from "../store/useServiceSubscription"
+import useSubscription from "store/useSubscription"
 
 export default function AudioPlayer({ fullname }) {
   const [currentAudioFile, setCurrentAudioFile] = useState("")
   const [isRepeating, setIsRepeating] = useState(false)
-  const serviceMsg = useServiceSubscription(fullname, ["playingAudioFile"])
-  const service = useProcessedMessage(serviceMsg)
+  const service = useSubscription(fullname, "broadcastState", true)
+  const currentlyPlayingAudioFile = useSubscription(fullname, "publishAudioStarted")
+
   const { sendTo } = useStore()
 
   const handleStart = () => {
@@ -33,10 +33,14 @@ export default function AudioPlayer({ fullname }) {
     setIsRepeating(!isRepeating)
   }
 
+  const getFileName = (filePath) => {
+    return filePath ? filePath.split(/[/\\]/).pop() : "" // Extracts filename from any path format
+  }
+
   return (
     <Box sx={{ p: 2, border: "1px solid gray", borderRadius: "8px" }}>
       <Typography variant="h6" gutterBottom>
-        Audio Player
+        Audio Player {currentlyPlayingAudioFile ? "playing: " + getFileName(currentlyPlayingAudioFile) : ""}
       </Typography>
       <TextField
         fullWidth
