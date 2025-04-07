@@ -119,12 +119,11 @@ const AppSidebar = () => {
             Network and Diagnostics
           </MenuItem>
 
-
-          <MenuItem component={<Link to="/webxr" />} icon={<TroubleshootOutlinedIcon />}>
+          */}
+          <MenuItem component={<Link to="/webxr" />} icon={<HubOutlinedIcon />}>
             <img src={`assets/vr-lite.png`} alt="WebXR" width="22" />
             WebXR
           </MenuItem>
-          */}
         </Menu>
       </Sidebar>
     </Box>

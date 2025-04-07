@@ -1,0 +1,11 @@
+platform: "node"
+license: "MIT"
+dependencies: null
+installed: true
+typeKey: "ServoMixer"
+categories:
+  - "servo"
+  - "sequence"
+  - "animation"
+description: "Allows saving and managing servo position sequences as keyframes"
+visible: true

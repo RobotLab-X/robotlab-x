@@ -1,0 +1,38 @@
+name: DefaultSequence
+poses:
+  - name: Neutral
+    positions:
+      - id: servo1@01
+        name: servo1
+        pin: "3"
+        degrees: 90
+        speed: 50
+      - id: servo2@02
+        name: servo2
+        pin: "5"
+        degrees: 90
+        speed: 50
+  - name: Left
+    positions:
+      - id: servo1@01
+        name: servo1
+        pin: "3"
+        degrees: 45
+        speed: 30
+      - id: servo2@02
+        name: servo2
+        pin: "5"
+        degrees: 70
+        speed: 30
+  - name: Right
+    positions:
+      - id: servo1@01
+        name: servo1
+        pin: "3"
+        degrees: 135
+        speed: 30
+      - id: servo2@02
+        name: servo2
+        pin: "5"
+        degrees: 110
+        speed: 30

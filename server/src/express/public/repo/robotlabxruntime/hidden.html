@@ -6,7 +6,7 @@
   <title>Hidden Audio Player</title>
 </head>
 <body>
-  This is a hidden renderer for service related processing.
+  This is a hidden renderer for service related processing.<br/>
   <audio id="audioPlayer" controls>
     <source id="audioSource" src="" type="audio/mpeg">
     Your browser does not support the audio element.
@@ -14,8 +14,9 @@
   <script>
     // Ensure the electron API is available
     if (window.electron) {
-      window.electron.onPlaySound((file) => {
-        console.log('Received play-sound in hidden window:', file)
+      window.electron.onPlaySound((serviceName, file) => {
+        // window.electron.send('audio-finished', file)
+        console.log('Received play-sound in hidden window:', serviceName, file)
         const audioPlayer = document.getElementById('audioPlayer')
         const audioSource = document.getElementById('audioSource')
 
@@ -29,9 +30,16 @@
 
         audioPlayer.play().then(() => {
           console.log('Audio started playing')
+          window.electron.audioStarted(serviceName, file)
         }).catch((error) => {
           console.error('Error playing audio:', error)
         })
+
+        // Listen for when the audio finishes playing
+        audioPlayer.onended = () => {
+          console.log('Audio finished playing')
+          window.electron.audioFinished(serviceName, file)
+        }
       })
 
       // Log to ensure hidden window is loaded correctly

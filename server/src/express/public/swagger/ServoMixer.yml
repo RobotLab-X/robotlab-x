@@ -1,0 +1,597 @@
+openapi: 3.0.3
+info:
+  title: ServoMixer API Documentation
+  version: 1.0.0
+servers:
+  - url: http://localhost:3001/v1
+    description: Local development server
+components:
+  schemas:
+    $schema: http://json-schema.org/draft-07/schema#
+    definitions:
+      ServoPosition:
+        type: object
+        properties:
+          id:
+            type: string
+          name:
+            type: string
+          pin:
+            type: string
+          degrees:
+            type: number
+          speed:
+            type: number
+      Pose:
+        type: object
+        properties:
+          name:
+            type: string
+          positions:
+            type: array
+            items:
+              $ref: "#/definitions/ServoPosition"
+      Sequence:
+        type: object
+        properties:
+          name:
+            type: string
+          poses:
+            type: array
+            items:
+              $ref: "#/definitions/Pose"
+    properties:
+      config:
+        type: object
+        properties:
+          sequences:
+            type: array
+          sequencesDir:
+            type: string
+          currentSequence:
+            type: string
+          currentPose:
+            type: string
+      sequences:
+        type: array
+        items:
+          $ref: "#/definitions/Sequence"
+    type: object
+paths:
+  /loadSequences:
+    put:
+      summary: Load all sequence files from the sequences directory
+      description: Load all sequence files from the sequences directory
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: Loaded sequences
+    get:
+      summary: Fetch information for loadSequences
+      description: HTTP GET for loadSequences
+      parameters: []
+      responses:
+        "200":
+          description: Loaded sequences
+  
+  /getSequences:
+    put:
+      summary: Get a list of available sequences
+      description: Get a list of available sequences
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: List of sequence names
+    get:
+      summary: Fetch information for getSequences
+      description: HTTP GET for getSequences
+      parameters: []
+      responses:
+        "200":
+          description: List of sequence names
+  
+  /getSequence:
+    put:
+      summary: Get a specific sequence by name
+      description: Get a specific sequence by name
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - name
+      responses:
+        "200":
+          description: Sequence object
+    get:
+      summary: Fetch information for getSequence
+      description: HTTP GET for getSequence
+      parameters:
+        - name: name
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Name of the sequence to retrieve
+      responses:
+        "200":
+          description: Sequence object
+  
+  /createSequence:
+    put:
+      summary: Create a new sequence
+      description: Create a new sequence
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - name
+      responses:
+        "200":
+          description: Created sequence
+    get:
+      summary: Fetch information for createSequence
+      description: HTTP GET for createSequence
+      parameters:
+        - name: name
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Name of the sequence to create
+      responses:
+        "200":
+          description: Created sequence
+  
+  /deleteSequence:
+    put:
+      summary: Delete a sequence by name
+      description: Delete a sequence by name
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - name
+      responses:
+        "200":
+          description: Boolean indicating success
+    get:
+      summary: Fetch information for deleteSequence
+      description: HTTP GET for deleteSequence
+      parameters:
+        - name: name
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Name of the sequence to delete
+      responses:
+        "200":
+          description: Boolean indicating success
+  
+  /saveSequence:
+    put:
+      summary: Save a sequence to file
+      description: Save a sequence to file
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - $ref: "#/definitions/Sequence"
+            example:
+              - name: "sequenceName"
+                poses: []
+      responses:
+        "200":
+          description: Boolean indicating success
+    get:
+      summary: Fetch information for saveSequence
+      description: HTTP GET for saveSequence is not supported
+      parameters: []
+      responses:
+        "405":
+          description: Method not allowed - use PUT instead
+  
+  /setCurrentSequence:
+    put:
+      summary: Set the current active sequence
+      description: Set the current active sequence
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - name
+      responses:
+        "200":
+          description: Boolean indicating success
+    get:
+      summary: Fetch information for setCurrentSequence
+      description: HTTP GET for setCurrentSequence
+      parameters:
+        - name: name
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Name of the sequence to set as current
+      responses:
+        "200":
+          description: Boolean indicating success
+  
+  /getPoses:
+    put:
+      summary: Get poses for the current sequence
+      description: Get poses for the current sequence
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: List of pose names
+    get:
+      summary: Fetch information for getPoses
+      description: HTTP GET for getPoses
+      parameters: []
+      responses:
+        "200":
+          description: List of pose names
+  
+  /createPose:
+    put:
+      summary: Create a new pose in the current sequence
+      description: Create a new pose in the current sequence
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - name
+      responses:
+        "200":
+          description: Created pose
+    get:
+      summary: Fetch information for createPose
+      description: HTTP GET for createPose
+      parameters:
+        - name: name
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Name of the pose to create
+      responses:
+        "200":
+          description: Created pose
+  
+  /deletePose:
+    put:
+      summary: Delete a pose from the current sequence
+      description: Delete a pose from the current sequence
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - name
+      responses:
+        "200":
+          description: Boolean indicating success
+    get:
+      summary: Fetch information for deletePose
+      description: HTTP GET for deletePose
+      parameters:
+        - name: name
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Name of the pose to delete
+      responses:
+        "200":
+          description: Boolean indicating success
+  
+  /setCurrentPose:
+    put:
+      summary: Set the current active pose
+      description: Set the current active pose
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - name
+      responses:
+        "200":
+          description: Boolean indicating success
+    get:
+      summary: Fetch information for setCurrentPose
+      description: HTTP GET for setCurrentPose
+      parameters:
+        - name: name
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Name of the pose to set as current
+      responses:
+        "200":
+          description: Boolean indicating success
+  
+  /getCurrentPose:
+    put:
+      summary: Get the current pose
+      description: Get the current pose
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: []
+            example: []
+      responses:
+        "200":
+          description: Current pose object
+    get:
+      summary: Fetch information for getCurrentPose
+      description: HTTP GET for getCurrentPose
+      parameters: []
+      responses:
+        "200":
+          description: Current pose object
+  
+  /addServoPosition:
+    put:
+      summary: Add a servo position to the current pose
+      description: Add a servo position to the current pose
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+                - type: string
+                - type: string
+                - type: number
+                - type: number
+            example:
+              - servoId
+              - servoName
+              - pin
+              - degrees
+              - speed
+      responses:
+        "200":
+          description: Boolean indicating success
+    get:
+      summary: Fetch information for addServoPosition
+      description: HTTP GET for addServoPosition
+      parameters:
+        - name: servoId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: ID of the servo
+        - name: servoName
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Name of the servo
+        - name: pin
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Pin used by the servo
+        - name: degrees
+          in: query
+          required: true
+          schema:
+            type: number
+          description: Degrees for the servo position
+        - name: speed
+          in: query
+          required: true
+          schema:
+            type: number
+          description: Speed for the servo movement
+      responses:
+        "200":
+          description: Boolean indicating success
+  
+  /removeServoPosition:
+    put:
+      summary: Remove a servo position from the current pose
+      description: Remove a servo position from the current pose
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - servoId
+      responses:
+        "200":
+          description: Boolean indicating success
+    get:
+      summary: Fetch information for removeServoPosition
+      description: HTTP GET for removeServoPosition
+      parameters:
+        - name: servoId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: ID of the servo position to remove
+      responses:
+        "200":
+          description: Boolean indicating success
+  
+  /applyPose:
+    put:
+      summary: Apply a pose - move all servos to their positions in the pose
+      description: Apply a pose - move all servos to their positions in the pose
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - poseName
+      responses:
+        "200":
+          description: Boolean indicating success
+    get:
+      summary: Fetch information for applyPose
+      description: HTTP GET for applyPose
+      parameters:
+        - name: poseName
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Name of the pose to apply
+      responses:
+        "200":
+          description: Boolean indicating success
+  
+  /playSequence:
+    put:
+      summary: Play a sequence - move through all poses in order
+      description: Play a sequence - move through all poses in order
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+                - type: number
+            example:
+              - sequenceName
+              - delayMs
+      responses:
+        "200":
+          description: Boolean indicating success
+    get:
+      summary: Fetch information for playSequence
+      description: HTTP GET for playSequence
+      parameters:
+        - name: sequenceName
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Name of the sequence to play
+        - name: delayMs
+          in: query
+          required: false
+          schema:
+            type: number
+          description: Delay between poses in milliseconds
+      responses:
+        "200":
+          description: Boolean indicating success
+  
+  /capturePose:
+    put:
+      summary: Capture the current positions of all servos and save as a new pose
+      description: Capture the current positions of all servos and save as a new pose
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: string
+            example:
+              - poseName
+      responses:
+        "200":
+          description: Boolean indicating success
+    get:
+      summary: Fetch information for capturePose
+      description: HTTP GET for capturePose
+      parameters:
+        - name: poseName
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Name for the captured pose
+      responses:
+        "200":
+          description: Boolean indicating success
+  
+  /publishState:
+    put:
+      summary: Publish the current state to subscribers
+      description: Publish the current state to subscribers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                - type: object
+            example:
+              - state
+      responses:
+        "200":
+          description: State object
+    get:
+      summary: Fetch information for publishState
+      description: HTTP GET for publishState is not supported
+      parameters: []
+      responses:
+        "405":
+          description: Method not allowed - use PUT instead
+tags: []

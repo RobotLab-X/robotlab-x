@@ -1,5 +1,6 @@
 import { getLogger } from "../framework/LocalLog"
 import Service from "../framework/Service"
+import RobotLabXRuntime from "./RobotLabXRuntime"
 
 const log = getLogger("NeoPixel")
 
@@ -19,10 +20,8 @@ export default class NeoPixel extends Service {
    * @property {NeoPixelConfig} config - The configuration for the neopixel service.
    */
   config = {
-    pin: number | null,
     controller: "",
-    intervalMs: 1000,
-    start: false
+    pin: ""
   }
 
   /**
@@ -44,60 +43,11 @@ export default class NeoPixel extends Service {
   }
 
   /**
-   * Publishes the current epoch time.
-   * @returns {number} The current epoch time.
+   * Get the current set of possible controllers
+   * @returns names of the controllers
    */
-  publishEpoch(): number {
-    const epoch = Date.now()
-    log.info(`NeoPixel.publishEpoch: ${epoch}`)
-    return epoch
-  }
-
-  /**
-   * Handles the tick event, invoking the publishEpoch method.
-   */
-  onTick(): void {
-    this.invoke("publishEpoch")
-  }
-
-  stopService(): void {
-    this.stopNeoPixel()
-    super.stopService()
-  }
-
-  /**
-   * Starts the neopixel timer.
-   * @param {number} [intervalMs] - The interval in milliseconds. If not provided, the existing intervalMs from the config is used.
-   * @example [ 1000 ]
-   */
-  public startNeoPixel(intervalMs?: number): void {
-    this.config.start = true
-
-    if (intervalMs) {
-      this.config.intervalMs = intervalMs
-    }
-
-    // Ensure no other timer is running before starting a new one
-    if (this.intervalId === null) {
-      log.info(`NeoPixel.startNeoPixel: Starting timer with interval ${this.config.intervalMs} ms`)
-      this.intervalId = setInterval(() => this.onTick(), this.config.intervalMs)
-    } else {
-      log.warn("NeoPixel.startNeoPixel: Timer is already running")
-    }
-  }
-
-  /**
-   * Stops the neopixel timer.
-   */
-  public stopNeoPixel(): void {
-    this.config.start = false
-    if (this.intervalId !== null) {
-      log.info("NeoPixel.stopNeoPixel: Stopping timer")
-      clearInterval(this.intervalId)
-      this.intervalId = null
-    } else {
-      log.warn("NeoPixel.stopNeoPixel: Timer is not running")
-    }
+  getServoControllers(): string[] {
+    return RobotLabXRuntime.getInstance().getServicesFromInterface("onServoMoveTo")
   }
 
   /**
