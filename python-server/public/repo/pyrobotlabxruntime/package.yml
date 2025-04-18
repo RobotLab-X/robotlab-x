@@ -1,0 +1,7 @@
+name: PyRobotLabXRuntime
+id: runtime1
+type_key: runtime
+version: 1.0.0
+hostname: localhost
+description: Python implementation of the main runtime service for RobotLabX, responsible for service orchestration, registry, and lifecycle management.
+author: RobotLabX Team

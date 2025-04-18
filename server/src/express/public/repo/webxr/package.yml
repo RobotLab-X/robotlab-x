@@ -7,8 +7,8 @@ categories:
 dependencies: null
 description: "WebXR interface for virtual reality and augmented reality."
 license: "MIT"
-platform: "browser"
-platformVersion: null
+platform: "node"
+platformVersion: "v20.9.0"
 title: "WebXR Interface"
 typeKey: "WebXR"
 version: "0.0.1"

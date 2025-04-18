@@ -1,0 +1,7 @@
+name: Clock
+id: clock1
+type_key: clock
+version: 1.0.0
+hostname: localhost
+description: Simple clock service for RobotLabX, emits time events and supports scheduling.
+author: RobotLabX Team

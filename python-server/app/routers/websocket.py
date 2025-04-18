@@ -37,4 +37,5 @@ async def websocket_endpoint(websocket: WebSocket, id: str):
 @router.get("/api/v1/services/runtime/getId")
 async def get_runtime_id():
     runtime = PyRobotLabXRuntime.get_instance()
-    return {"runtime_id": runtime.id}
+    # return {"runtime_id": runtime.id}
+    return runtime.id
