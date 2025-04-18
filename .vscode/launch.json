@@ -36,6 +36,17 @@
         "env": {
           "NODE_ENV": "test"
         }
+      },
+      {
+        "name": "Python: FastAPI Server",
+        "type": "debugpy",
+        "request": "launch",
+        "program": "${workspaceFolder}/python-server/app/main.py",
+        "console": "integratedTerminal",
+        "args": [],
+        "env": {
+            "PYTHONPATH": "${workspaceFolder}/python-server"
+        }
       }
     ]
   }
