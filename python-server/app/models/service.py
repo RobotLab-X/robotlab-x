@@ -2,6 +2,7 @@ from typing import Optional, Dict, List, Any, Callable
 import os
 import logging
 from .message import Message
+from utils.lang_util import convert_to_snake
 
 logger = logging.getLogger("Service")
 
@@ -147,21 +148,42 @@ class Service:
         return self.invoke_msg(msg)
 
     def invoke_msg(self, msg: Message) -> Any:
-        # Placeholder: implement routing and invocation logic as needed
-        logger.debug(f"invoke_msg called with: {msg}")
-        from app.utils.lang_util import convert_to_snake
-
-        method_name = convert_to_snake(msg.method)
-
-        # Simulate local method invocation
-        if hasattr(self, method_name):
-            method = getattr(self, method_name)
-            if callable(method):
+        """
+        Invokes the method on this service as described by msg.method, passing in msg.data as arguments.
+        Notifies listeners if present, and returns the result. Mirrors Service.ts invokeMsg.
+        """
+        import logging
+        logger = logging.getLogger("service")
+        ret = None
+        try:
+            method_name = convert_to_snake(msg.method)
+            if hasattr(self, method_name):
+                method = getattr(self, method_name)
+                args = msg.data if hasattr(msg, 'data') and msg.data else []
                 try:
-                    return method(*msg.data) if msg.data else method()
+                    ret = method(*args)
                 except Exception as e:
-                    logger.error(f"failed to invoke {self.name}.{method_name} because {e}")
-        return None
+                    logger.error(f"failed to invoke {self.name}.{msg.method} because {e}")
+            else:
+                logger.error(f"Method {method_name} not found on {self.name}")
+
+            # normalize None to None (Python's null)
+
+            # Notify listeners if any
+            if hasattr(self, 'notify_list') and self.notify_list and msg.method in self.notify_list:
+                for listener in self.notify_list[msg.method]:
+                    # Construct a Message for the subscriber
+                    from app.models.message import Message
+                    sub_msg = Message()
+                    sub_msg.name = listener.callbackName
+                    sub_msg.method = listener.callbackMethod
+                    sub_msg.data = [ret]
+                    sub_msg.sender = getattr(self, 'fullname', None)
+                    self.invoke_msg(sub_msg)
+            return ret
+        except Exception as e:
+            logger.error(f"general catch failed to invoke {self.name}.{msg.method} because {e}")
+            return None
 
     def is_ready(self) -> bool:
         return self.ready

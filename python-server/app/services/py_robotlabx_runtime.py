@@ -198,3 +198,24 @@ class PyRobotLabXRuntime(Service):
             self.processes[key] = process_data
             return key
         return None
+
+    def register(self, service: Service):
+        # Log registration
+        import logging
+        logger = logging.getLogger("PyRobotLabXRuntime")
+        logger.info(f"==== registering service: {service.name}@{service.id} ====")
+
+        key = f"{service.name}@{service.id}"
+        # Prevent overwriting the local runtime with a proxy or duplicate
+        existing_service = self.get_service(key)
+        if existing_service is not None and self.id == service.id:
+            logger.info(f"service {service.name}@{service.id} already exists")
+            return service
+
+        # Register the service in the registry
+        self.register_service(service)
+
+        # Notify listeners about the registration
+        self.invoke_msg(Message(self.fullname, "registered", [service]))
+        self.invoke_msg(Message(self.fullname, "getRegistry", []))
+        return service
