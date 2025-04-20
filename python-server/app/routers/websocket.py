@@ -2,6 +2,7 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from app.services.websocket_manager import WebSocketManager
 from app.models.message import Message
 from app.services.py_robotlabx_runtime import PyRobotLabXRuntime
+import inspect
 
 router = APIRouter()
 
@@ -21,14 +22,9 @@ async def websocket_endpoint(websocket: WebSocket, id: str):
                 await websocket.send_text(f"{{'error': 'Invalid message format: {str(e)}'}}")
                 continue
             # Route message to runtime for handling
-            response = await runtime.handle_websocket_message(msg, websocket, id)
-            if response is not None:
-                if isinstance(response, Message):
-                    await websocket.send_text(response.json())
-                elif isinstance(response, dict):
-                    await websocket.send_json(response)
-                elif isinstance(response, str):
-                    await websocket.send_text(response)
+            result = runtime.handle_message(msg, websocket, id)
+            if inspect.iscoroutine(result):
+                await result
     except WebSocketDisconnect:
         manager.disconnect(websocket)
         del runtime.connections[id]

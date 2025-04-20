@@ -26,7 +26,7 @@ def start_runtime():
     # Initialize the singleton runtime instance
     runtime = PyRobotLabXRuntime.get_instance(
         id="runtime1",
-        name="PyRobotLabXRuntime",
+        name="runtime",
         type_key="runtime",
         version="1.0.0",
         hostname="localhost"

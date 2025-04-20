@@ -69,18 +69,29 @@ class Service:
         logger.info(f"subscribeTo {name} {method}")
         # Placeholder: actual implementation would add to notify_list
 
-    def add_listener(self, method: str, remote_name: str, remote_method: str):
+    def add_listener(self, method: str, remote_name: str, remote_method: str = None):
+        """
+        Add a listener to the notify_list for a given method.
+        remote_name will be ensured to be a fullname (e.g. name@id).
+        remote_method will default to the callback topic name if not provided.
+        Mirrors Service.addListener from TypeScript.
+        """
+        from app.utils.codec_util import CodecUtil
+        # Ensure remote_name is a fullname
+        if '@' not in remote_name:
+            remote_name = CodecUtil.get_full_name(remote_name)
+        # Set remote_method to callback topic if not provided
+        if not remote_method:
+            remote_method = CodecUtil.get_callback_topic_name(method)
         if not hasattr(self, 'notify_list') or self.notify_list is None:
             self.notify_list = {}
         if method not in self.notify_list:
             self.notify_list[method] = []
-        listeners = self.notify_list[method]
-        for listener in listeners:
-            if listener.callbackName == remote_name and listener.callbackMethod == remote_method:
-                return listener
-        listener = SubscriptionListener(method, remote_name, remote_method)
-        self.notify_list[method].append(listener)
-        return listener
+        # Add or update listener entry
+        listener_entry = type('Listener', (), {})()
+        listener_entry.callbackName = remote_name
+        listener_entry.callbackMethod = remote_method
+        self.notify_list[method].append(listener_entry)
 
     def broadcast_state(self):
         return self
@@ -138,14 +149,18 @@ class Service:
     def invoke_msg(self, msg: Message) -> Any:
         # Placeholder: implement routing and invocation logic as needed
         logger.debug(f"invoke_msg called with: {msg}")
+        from app.utils.lang_util import convert_to_snake
+
+        method_name = convert_to_snake(msg.method)
+
         # Simulate local method invocation
-        if hasattr(self, msg.method):
-            method = getattr(self, msg.method)
+        if hasattr(self, method_name):
+            method = getattr(self, method_name)
             if callable(method):
                 try:
                     return method(*msg.data) if msg.data else method()
                 except Exception as e:
-                    logger.error(f"failed to invoke {self.name}.{msg.method} because {e}")
+                    logger.error(f"failed to invoke {self.name}.{method_name} because {e}")
         return None
 
     def is_ready(self) -> bool:
@@ -212,16 +227,22 @@ class Service:
 
     def to_json(self):
         return {
-            "config": self.config,
-            "fullname": self.fullname,
-            "hostname": self.hostname,
-            "id": self.id,
-            "installed": self.installed,
-            "name": self.name,
-            "notifyList": self.notify_list,
-            "pkg": self.pkg,
-            "ready": self.ready,
-            "typeKey": self.type_key,
-            "version": self.version,
-            "startTime": self.start_time,
+            "config": getattr(self, "config", {}),
+            "fullname": getattr(self, "fullname", None),
+            "hostname": getattr(self, "hostname", None),
+            "id": getattr(self, "id", None),
+            "installed": getattr(self, "installed", False),
+            "name": getattr(self, "name", None),
+            "notifyList": getattr(self, "notify_list", {}),
+            "pkg": getattr(self, "pkg", None),
+            "ready": getattr(self, "ready", False),
+            "typeKey": getattr(self, "type_key", None),
+            "version": getattr(self, "version", None),
+            "startTime": getattr(self, "start_time", None)
         }
+
+    def __json__(self):
+        return self.to_json()
+
+    def __repr__(self):
+        return str(self.to_json())
