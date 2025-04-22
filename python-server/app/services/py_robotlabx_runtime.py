@@ -1,33 +1,59 @@
 from typing import Optional, Dict, Any
-import threading
 import yaml
 import os
 import sys
+from pydantic import model_validator, Field
 from app.models.service import Service
 from app.models.message import Message
 from fastapi import WebSocket
 from app.services.repo import Repo
 from app.registry.in_memory_registry import InMemoryRegistry
+from threading import Lock
+from typing import ClassVar
 
 class PyRobotLabXRuntime(Service):
-    _instance = None
-    _lock = threading.Lock()
+    # Inherit arbitrary_types_allowed
+    model_config = {"arbitrary_types_allowed": True}
 
-    def __init__(self, id: str, name: str, type_key: str, version: str, hostname: str, config_dir: str = "./config", repo_dir: str = "./repo"):
-        super().__init__(id, name, type_key, version, hostname)
-        self.config_dir = config_dir
-        self.config_name = f"{name}_runtime.yaml"
-        self.data_dir = "./data"
-        self.debug = True
-        self.processes: Dict[str, Any] = {}
-        self.hosts: Dict[str, Any] = {}
-        self.connections: Dict[str, WebSocket] = {}
-        self.types: Dict[str, Any] = {}
-        self.route_table: Dict[str, Any] = {}
-        self.default_route: Optional[Dict[str, Any]] = None
-        self.repo = Repo(repo_dir)
-        # Register itself in the global registry
+    # Singleton control
+    _instance: ClassVar[Optional["PyRobotLabXRuntime"]] = None
+    _lock:     ClassVar[Lock]                            = Lock()
+
+    # New fields specific to runtime
+    config_dir:    str                    = "./config"
+    config_name:   Optional[str]          = None
+    data_dir:      str                    = "./data"
+    debug:         bool                   = True
+    processes:     Dict[str, Any]         = Field(default_factory=dict)
+    hosts:         Dict[str, Any]         = Field(default_factory=dict)
+    connections:   Dict[str, WebSocket]   = Field(default_factory=dict)
+    types:         Dict[str, Any]         = Field(default_factory=dict)
+    route_table:   Dict[str, Any]         = Field(default_factory=dict)
+    default_route: Optional[Dict[str, Any]] = None
+    repo_dir:      str                    = "./repo"
+    repo:          Optional[Repo]         = None  # Now optional
+
+    @classmethod
+    def get_instance(cls, **kwargs) -> "PyRobotLabXRuntime":
+        with cls._lock:
+            if cls._instance is None:
+                cls._instance = cls(**kwargs)
+            return cls._instance
+
+    @model_validator(mode="before")
+    def set_runtime_defaults(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        name = values.get("name")
+        if name:
+            values.setdefault("config_name", f"{name}_runtime.yaml")
+        repo_dir = values.get("repo_dir", "./repo")
+        # Always set repo if not already set
+        if "repo" not in values or values["repo"] is None:
+            values["repo"] = Repo(repo_dir)
+        return values
+
+    def model_post_init(self, __context: Any) -> None:
         InMemoryRegistry.get_instance().register(self.fullname, self)
+
 
     @classmethod
     def get_instance(cls, *args, **kwargs):
@@ -98,7 +124,7 @@ class PyRobotLabXRuntime(Service):
         if msg_id != self.get_id():
             gateway = self.get_gateway(msg_id)
             if not gateway:
-                print(f"NO GATEWAY for remoteId {msg_id}")
+                self.error(f"NO GATEWAY for remoteId {msg_id}")
                 return None
             # sendRemote should be implemented on gateway
             return gateway.send_remote(msg)
@@ -106,7 +132,7 @@ class PyRobotLabXRuntime(Service):
         # Local service invoke
         service = self.get_service(full_name)
         if not service:
-            print(f"service {full_name} not found")
+            self.error(f"service {full_name} not found")
             return None
         # Use invoke_msg for message dispatch
         if hasattr(service, "invoke_msg"):
@@ -154,7 +180,7 @@ class PyRobotLabXRuntime(Service):
 
     def exit(self, exit_code: int = 0):
         """Exit the Python process with the given exit code."""
-        print("Exiting PyRobotLabXRuntime")
+        self.info("Exiting PyRobotLabXRuntime")
         sys.exit(exit_code)
 
     def get_repo(self):
@@ -199,23 +225,42 @@ class PyRobotLabXRuntime(Service):
             return key
         return None
 
-    def register(self, service: Service):
+    def register(self, service: dict[str, Any]):
         # Log registration
-        import logging
-        logger = logging.getLogger("PyRobotLabXRuntime")
-        logger.info(f"==== registering service: {service.name}@{service.id} ====")
-
+        self.info(f"==== registering service: {service.name}@{service.id} ====")
         key = f"{service.name}@{service.id}"
-        # Prevent overwriting the local runtime with a proxy or duplicate
         existing_service = self.get_service(key)
         if existing_service is not None and self.id == service.id:
-            logger.info(f"service {service.name}@{service.id} already exists")
+            self.info(f"service {service.name}@{service.id} already exists")
             return service
-
-        # Register the service in the registry
         self.register_service(service)
-
-        # Notify listeners about the registration
         self.invoke_msg(Message(self.fullname, "registered", [service]))
         self.invoke_msg(Message(self.fullname, "getRegistry", []))
         return service
+
+    def send_remote(self, msg):
+        """
+        Sends a message to a remote process using the correct WebSocket connection.
+        Mirrors RobotLabXRuntime.sendRemote.
+        """
+        from app.utils.codec_util import CodecUtil
+        msg_id = CodecUtil.get_id(msg.name)
+        gateway_route_id = self.get_route_id(msg_id) if hasattr(self, 'get_route_id') else msg_id
+        ws = self.connections.get(gateway_route_id)
+        if not ws:
+            self.error(f"No websocket connection from runtime to remote, gateway should probably be handling this {gateway_route_id} for remoteId {msg_id}")
+            return None
+        try:
+            import json
+            json_msg = msg.json() if hasattr(msg, 'json') else json.dumps(msg)
+            if hasattr(ws, 'send_text'):
+                import asyncio
+                if asyncio.iscoroutinefunction(ws.send_text):
+                    asyncio.create_task(ws.send_text(json_msg))
+                else:
+                    ws.send_text(json_msg)
+            else:
+                self.error(f"WebSocket object does not support send_text for {gateway_route_id}")
+        except Exception as e:
+            self.error(f"Failed to send remote message: {e}")
+        return None

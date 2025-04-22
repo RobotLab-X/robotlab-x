@@ -31,6 +31,8 @@ def start_runtime():
         version="1.0.0",
         hostname="localhost"
     )
+    # runtime.register(runtime.to_dict())
+    # runtime.register_service(runtime)
     return runtime
 
 # Ensure runtime is started at module load (for dependency injection and endpoint access)

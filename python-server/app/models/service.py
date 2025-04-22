@@ -1,4 +1,5 @@
-from typing import Optional, Dict, List, Any, Callable
+from typing import Optional, Dict, List, Any
+from pydantic import BaseModel, model_validator, Field
 import os
 import logging
 from .message import Message
@@ -24,29 +25,40 @@ class InstallStatus:
         self.status = status
         self.detail = detail
 
-class Service:
-    def __init__(
-        self,
-        id: str,
-        name: str,
-        type_key: str,
-        version: str,
-        hostname: Optional[str] = None,
-        public_root: Optional[str] = None
-    ):
-        self.start_time: Optional[float] = None
-        self.id: Optional[str] = id
-        self.name: Optional[str] = name
-        self.type_key: Optional[str] = type_key
-        self.version: Optional[str] = version
-        self.hostname: Optional[str] = hostname
-        self.fullname: Optional[str] = f"{self.name}@{self.id}" if self.name and self.id else None
-        self.data_path: Optional[str] = os.path.join(public_root, f"service/{self.name}") if public_root else None
-        self.notify_list: Dict[str, List[SubscriptionListener]] = {}
-        self.pkg: Optional[Any] = None
-        self.ready: bool = False
-        self.installed: bool = False
-        self.config: dict = {}
+class Service(BaseModel):
+    # allow arbitrary types if needed
+    model_config = {"arbitrary_types_allowed": True}
+
+    # Field declarations
+    id:            Optional[str]        = None
+    name:          Optional[str]        = None
+    type_key:      Optional[str]        = None
+    version:       Optional[str]        = None
+    hostname:      Optional[str]        = None
+    public_root:   Optional[str]        = None
+    start_time:    Optional[float]      = None
+
+    fullname:      Optional[str]        = None
+    data_path:     Optional[str]        = None
+    notify_list:   Dict[str, List[Any]] = Field(default_factory=dict)
+    pkg:           Optional[Any]        = None
+    config:        Dict[str, Any]       = Field(default_factory=dict)
+    ready:         bool                 = False
+    installed:     bool                 = False
+
+    @model_validator(mode="before")
+    def build_derived(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        name = values.get("name")
+        _id = values.get("id")
+        if name and _id:
+            values.setdefault("fullname", f"{name}@{_id}")
+        public_root = values.get("public_root")
+        if public_root and name:
+            values.setdefault(
+                "data_path",
+                os.path.join(public_root, f"service/{name}")
+            )
+        return values
 
     def get_subscribers_for_method(self, method: str) -> List[str]:
         listeners = self.notify_list.get(method, [])
@@ -150,12 +162,41 @@ class Service:
     def invoke_msg(self, msg: Message) -> Any:
         """
         Invokes the method on this service as described by msg.method, passing in msg.data as arguments.
-        Notifies listeners if present, and returns the result. Mirrors Service.ts invokeMsg.
+        Handles local, remote, and subscription notification logic. Mirrors Service.ts invokeMsg.
         """
-        import logging
-        logger = logging.getLogger("service")
         ret = None
         try:
+            # Determine fullName and id for this service and message
+            my_fullname = getattr(self, "fullname", None)
+            my_id = getattr(self, "id", None)
+            msg_fullname = getattr(msg, "name", None)
+            msg_id = None
+            if msg_fullname and "@" in msg_fullname:
+                msg_id = msg_fullname.split("@")[-1]
+
+            # REMOTE MESSAGE HANDLING
+            # If the message is not for this process, forward it to the correct gateway
+            if msg_id and msg_id != my_id:
+                from services.py_robotlabx_runtime import PyRobotLabXRuntime
+                runtime = PyRobotLabXRuntime.get_instance()
+                gateway = None
+                if hasattr(runtime, "get_gateway"):
+                    gateway = runtime.get_gateway(msg_id)
+                else:
+                    # fallback: try to get the connection directly
+                    gateway = runtime.connections.get(msg_id)
+                if not gateway:
+                    logger.error(f"NO GATEWAY for remoteId {msg_id}")
+                    return None
+                if hasattr(gateway, "send_remote"):
+                    return gateway.send_remote(msg)
+                elif hasattr(gateway, "send"):
+                    return gateway.send(msg)
+                else:
+                    logger.error(f"Gateway for {msg_id} does not support send_remote/send")
+                    return None
+
+            # LOCAL MESSAGE HANDLING
             method_name = convert_to_snake(msg.method)
             if hasattr(self, method_name):
                 method = getattr(self, method_name)
@@ -163,16 +204,13 @@ class Service:
                 try:
                     ret = method(*args)
                 except Exception as e:
-                    logger.error(f"failed to invoke {self.name}.{msg.method} because {e}")
+                    self.error(f"failed to invoke {self.name}.{msg.method} because {e}")
             else:
-                logger.error(f"Method {method_name} not found on {self.name}")
-
-            # normalize None to None (Python's null)
+                self.error(f"Method {method_name} not found on {self.name}")
 
             # Notify listeners if any
             if hasattr(self, 'notify_list') and self.notify_list and msg.method in self.notify_list:
                 for listener in self.notify_list[msg.method]:
-                    # Construct a Message for the subscriber
                     from app.models.message import Message
                     sub_msg = Message()
                     sub_msg.name = listener.callbackName
@@ -238,8 +276,8 @@ class Service:
         self.invoke("publish_status", Status("error", msg or "", self.name))
 
     def send_remote(self, msg: Message):
-        # Placeholder for RobotLabXRuntime.sendRemote
-        pass
+        from services.py_robotlabx_runtime import PyRobotLabXRuntime
+        PyRobotLabXRuntime.get_instance().send_remote(msg)
 
     def set_installed(self, installed: bool):
         self.installed = installed
