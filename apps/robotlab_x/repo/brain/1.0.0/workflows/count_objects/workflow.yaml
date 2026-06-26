@@ -1,0 +1,43 @@
+name: count_objects
+description: |
+  Answer "how many of a given object class are around me right now" by
+  sweeping the head/pan servo across evenly spaced bearings, capturing a
+  frame and running detection at each pose, and deduplicating matching
+  detections across overlapping bearings. Speaks the final count out loud
+  and appends a structured observation to memory. No driving — head sweep
+  only; locomotion is blocked.
+
+preferred_backend: mock
+max_steps: 16
+timeout_seconds: 240
+requires_human_approval: false
+
+inputs:
+  target_class:
+    type: string
+    required: true
+    description: |
+      Object class label to count (e.g. 'cup', 'person', 'chair').
+      Compared against detector labels case-insensitively.
+  min_confidence:
+    type: number
+    required: false
+    default: 0.5
+    description: |
+      Minimum detector confidence (0..1) for a box to be counted.
+  sweep_steps:
+    type: integer
+    required: false
+    default: 8
+    description: |
+      Number of bearings to sample around the sweep range (1..8).
+
+steps:
+  - id: default
+    prompt: prompt.md
+    on_success: success.md
+    on_failure: failure.md
+
+context:
+  - memory/observations.md
+  - memory/known_objects.md

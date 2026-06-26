@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "echo_http"
+version = "1.0.0"
+description = "Tiny FastAPI echo service. Bundled with robotlab_x as a Phase 6 demo of the real pip installer + process manager — install it from the catalog, start it, watch logs stream over the bus."
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi>=0.115,<1.0",
+    "uvicorn[standard]>=0.30,<1.0",
+]
+
+[project.scripts]
+echo_http = "echo_http.__main__:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

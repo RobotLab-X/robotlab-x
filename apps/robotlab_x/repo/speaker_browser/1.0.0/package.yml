@@ -1,0 +1,57 @@
+name: speaker_browser
+title: Speaker (browser)
+description: |
+  Browser speaker. Audio is played in the operator's web browser (Web
+  Audio), driven by this backend relay service which owns the control
+  interface and state.
+
+  Implements the SAME ``speaker`` capability as the local speaker —
+  identical control interface (list_devices / select_device / connect /
+  disconnect / mute / unmute) and identical state shape — so a producer is
+  agnostic to where audio comes out. The browser subscribes to
+  ``/speaker/{id}/audio`` (and any configured source_topic) and plays it;
+  control is relayed to the browser.
+
+  No host audio hardware is used. NOTE: a browser speaker only works while
+  an authorized browser tab with this service's view is open.
+
+  Subprocess service — a lightweight relay; the browser does playback.
+
+language: python
+status: development
+author: CloudSeeder
+tags: [audio, speaker, browser, output]
+icon: icon.svg
+
+ui:
+  entry: ui/dist/ui.js
+  sdk: "^1.0"
+
+implements: [speaker]
+
+bundled: true
+publish: true
+
+install:
+  kind: pip
+  package_spec: "-e ${APP_ROOT}/repo/speaker_browser/1.0.0"
+
+entry:
+  argv: [python, -m, speaker_browser_service]
+
+wizard_config:
+  - id: defaults
+    title: Playback settings
+    fields:
+      - id: sample_rate
+        type: integer
+        title: Sample rate (Hz)
+        default: 16000
+      - id: input_kind
+        type: string
+        title: Input kind (optional)
+        description: "Where audio comes from: blank (sink), topic, file, or url. The view also sets this live."
+      - id: input_ref
+        type: string
+        title: Input reference (optional)
+        description: A bus topic, a browser-picked file, or a URL. The view also sets this live.

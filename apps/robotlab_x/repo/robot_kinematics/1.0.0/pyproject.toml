@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "robot_kinematics_service"
+version = "1.0.0"
+description = "robotlab_x whole-body multi-chain IK service — Pinocchio + Pink task-based inverse kinematics over a full URDF (multiple end-effectors, shared joints, look-at). Subprocess service; solver deps in its own venv, no ROS required."
+requires-python = ">=3.10"
+dependencies = [
+    # Pinocchio (rigid-body kinematics, URDF loader) + Pink (task-based
+    # differential IK) — the standard pip-installable, ROS-free stack for
+    # multi-chain humanoid IK. pin-pink pulls pinocchio (`pin`).
+    "pin-pink>=3.1",
+    # QP backend for Pink's solver (validated in the P0 spike).
+    "quadprog>=0.1.11",
+    # Declared by pink's tasks but not always pulled transitively.
+    "typing_extensions>=4.0",
+    "numpy>=1.24",
+]
+
+[project.scripts]
+robot_kinematics_service = "robot_kinematics_service.__main__:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

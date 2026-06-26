@@ -1,0 +1,30 @@
+allowed:
+  # Vision probe: grab a frame and optionally tag objects in it.
+  - topic: /video/*/control
+    actions: [capture_frame, detect_objects]
+  # Speech probe: utter a short diagnostic phrase.
+  - topic: /speech/*/control
+    actions: [speak]
+  # Servo probe: small +/- nudge on the head, no sweeping motion.
+  - topic: /servo/*/control
+    actions: [move]
+  # Movement probe: in-place turn only; drive/move_to/follow are explicitly blocked below.
+  - topic: /movement/*/control
+    actions: [turn]
+  # Brain memory probe: write a tiny diagnostic row.
+  - topic: /brain/*/control
+    actions: [write_memory]
+
+blocked:
+  # Anything that translates the robot through space is off-limits during a self-test.
+  - topic: /movement/*/control
+    actions: [drive, move_to, follow, stop]
+  # No arm manipulation during diagnostics.
+  - topic: /arm/*/control
+    actions: ["*"]
+  # No system-level calls (shutdown/reboot/etc.).
+  - topic: /system/*/control
+    actions: ["*"]
+  # `@**` is the federation opt-in suffix; explicitly forbid cross-runtime fan-out during a local self-test.
+  - topic: /*/@**
+    actions: ["*"]

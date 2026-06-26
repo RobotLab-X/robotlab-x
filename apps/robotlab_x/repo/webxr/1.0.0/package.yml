@@ -1,0 +1,43 @@
+name: webxr
+title: WebXR Teleop
+description: |
+  Turn a WebXR headset (Meta Quest 3 + Touch controllers) into a
+  bidirectional teleop console.
+
+  Inbound: the headset streams head + controller pose, buttons and
+  thumbsticks to this service, which frame-converts (WebXR Y-up/m →
+  robot Z-up/mm), recenters, and republishes on the bus so any actuator
+  (servo, robot_kinematics IK target, motor) can be driven. A mapping
+  table can route signals straight to actuators — e.g. right-controller
+  pose → robot_kinematics set_target(right_hand) → InMoov arm follows
+  your hand.
+
+  Outbound: an immersive in-headset "view" renders camera feeds,
+  telemetry HUDs and live 3-D scene so the operator can fly the robot
+  first-person.
+
+  Open the immersive view ON THE HEADSET (separate xr.js bundle). For
+  dev, `adb reverse tcp:8998 tcp:8998` makes the runtime reachable at
+  localhost (a WebXR secure context) over USB — no TLS setup.
+language: python
+status: development
+author: CloudSeeder
+tags: [webxr, vr, quest, teleop, robotics, inmoov]
+icon: icon.svg
+
+# Desktop control panel (status, feed manager, mappings, calibration).
+# The immersive headset client is a SECOND bundle (ui/xr → xr.js),
+# opened full-page on the headset via /r/<runtime>/xr/<proxy>.
+ui:
+  entry: ui/dist/ui.js
+  sdk: "^1.0"
+
+# Heavy WebXR/3-D libs are bundled into the UI only → install on demand.
+bundled: false
+
+install:
+  kind: pip
+  package_spec: "-e ${APP_ROOT}/repo/webxr/1.0.0"
+
+entry:
+  argv: [python, -m, webxr_service]

@@ -1,0 +1,60 @@
+name: joystick
+title: Joystick
+description: |
+  Cross-platform joystick / gamepad reader. Enumerates the host's
+  joystick devices (Windows, macOS, Linux) and attaches to one,
+  streaming its live control values over the bus: axes (analog sticks
+  + triggers), buttons (digital), hats (d-pads), and balls
+  (trackballs).
+
+  Different controllers expose different component layouts, so the wire
+  shape is fully dynamic — the service publishes how many of each
+  component the attached device has, and the UI builds itself from
+  that. Idle sticks are silent on the bus (deadzone-filtered); values
+  stream only on change at the configured poll rate.
+
+  Backed by pygame, whose wheels bundle SDL2 for all three platforms —
+  the joystick backend is fully self-contained, no system input libs
+  to install. Runs headless (SDL dummy video driver) so it works on a
+  server with no display.
+
+  Subprocess service — SDL's event pump + blocking device reads run in
+  a child process, isolated from the backend.
+
+language: python
+status: development
+author: CloudSeeder
+tags: [hardware, input, joystick, gamepad]
+icon: icon.svg
+
+# Modular service UI (Option B — docs/TODO_SERVICE_UI_BUNDLES.md).
+ui:
+  entry: ui/dist/ui.js
+  sdk: "^1.0"
+
+# Source ships bundled, but the pygame dependency is installed on
+# demand when the user creates a joystick@1.0.0 instance.
+bundled: true
+publish: true   # available in the remote registry (see master_template for docs)
+
+install:
+  kind: pip
+  package_spec: "-e ${APP_ROOT}/repo/joystick/1.0.0"
+
+entry:
+  argv: [python, -m, joystick_service]
+
+wizard_config:
+  - id: defaults
+    title: Joystick polling
+    fields:
+      - id: poll_hz
+        type: integer
+        title: Poll rate (Hz)
+        description: How often to sample control values. 60 matches typical controller report rates.
+        default: 60
+      - id: deadzone
+        type: number
+        title: Axis deadzone
+        description: Axis values within this magnitude of center read as 0, killing resting-stick jitter.
+        default: 0.05

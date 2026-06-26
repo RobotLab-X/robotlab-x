@@ -1,0 +1,22 @@
+allowed:
+  - topic: /video/*/control
+    actions: [capture_frame, detect_objects]
+  # Head/pan servo sweep — move to each bearing, or sweep across a range.
+  - topic: /servo/*/control
+    actions: [move, sweep]
+  - topic: /speech/*/control
+    actions: [speak]
+  - topic: /brain/*/control
+    actions: [write_memory]
+
+blocked:
+  # No driving — this workflow is perception-only.
+  - topic: /movement/*/control
+    actions: ["*"]
+  - topic: /arm/*/control
+    actions: ["*"]
+  - topic: /system/*/control
+    actions: ["*"]
+  # Block all federated/remote peer topics (any topic addressed @<peer-id>).
+  - topic: /*/@**
+    actions: ["*"]

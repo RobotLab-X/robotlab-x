@@ -1,0 +1,24 @@
+{
+  "name": "webxr-service-ui",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "webxr modular UI (Option B). Two entries: View.tsx → ui.js (desktop control panel) and xr/View.tsx → xr.js (immersive in-headset client). react / react-dom / @rlx/ui are host-provided EXTERNALS — never list them here.",
+  "dependencies": {
+    "@react-three/drei": "^9.92.0",
+    "@react-three/fiber": "^8.15.0",
+    "@react-three/xr": "^6.6.0",
+    "html2canvas": "^1.4.1",
+    "lucide-react": "^0.344.0",
+    "three": "^0.160.0"
+  },
+  "rlx": {
+    "entry": "View.tsx",
+    "sdk": "^1.0",
+    "aliases": {
+      "iwer": "./xr/iwer-stub.ts",
+      "@iwer/devui": "./xr/iwer-stub.ts",
+      "@iwer/sem": "./xr/iwer-stub.ts"
+    }
+  }
+}

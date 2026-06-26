@@ -1,0 +1,19 @@
+allowed:
+  - topic: /video/*/control
+    actions: [capture_frame, detect_objects]
+  - topic: /servo/*/control
+    actions: [move]            # head servo only — small look-at-operator nicety
+  - topic: /speech/*/control
+    actions: [speak, listen]   # listen used only when the label input is empty
+  - topic: /brain/*/control
+    actions: [read_memory, write_memory]
+
+blocked:
+  - topic: /movement/*/control
+    actions: ["*"]
+  - topic: /arm/*/control
+    actions: ["*"]
+  - topic: /system/*/control
+    actions: ["*"]
+  - topic: /*/@**              # any federated peer topic — teaching is local-runtime only
+    actions: ["*"]

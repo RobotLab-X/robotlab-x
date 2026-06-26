@@ -1,0 +1,37 @@
+name: arduino
+title: Arduino
+description: |
+  Arduino board interface, backed by pymata4 (Firmata over serial). On
+  install, a per-type venv is created and pymata4 is pip-installed there;
+  on start, the service scans /dev/ttyACM* and /dev/ttyUSB* and logs any
+  detected boards.
+
+  Subprocess service — runs in a child process so the serial port and
+  pymata4's background threads stay isolated from the backend.
+language: python
+status: development
+author: CloudSeeder
+tags: [hardware, arduino, firmata]
+# Capability interfaces. Servo (and any other "needs a controller"
+# service) discovers arduino through ``implements`` — they don't depend
+# on arduino directly, only on the abstract capability.
+implements: [servo_controller]
+icon: icon.svg
+
+# Modular service UI (Option B — docs/TODO_SERVICE_UI_BUNDLES.md).
+ui:
+  entry: ui/dist/ui.js
+  sdk: "^1.0"
+
+# Source ships with the base install (bundled), but the dependency tree
+# (pymata4 + pyserial) is NOT — install is explicit, triggered by the
+# user creating an arduino@1.0.0 instance from the catalog.
+bundled: true
+publish: true   # available in the remote registry (see master_template for docs)
+
+install:
+  kind: pip
+  package_spec: "-e ${APP_ROOT}/repo/arduino/1.0.0"
+
+entry:
+  argv: [python, -m, arduino_service]

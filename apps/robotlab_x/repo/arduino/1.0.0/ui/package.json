@@ -1,0 +1,9 @@
+{
+  "name": "arduino-service-ui",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Modular UI bundle for the arduino service (Option B). lucide-react is bundled (tree-shaken); react/@rlx/ui are host externals.",
+  "dependencies": { "lucide-react": "^0.344.0" },
+  "rlx": { "entry": "View.tsx", "sdk": "^1.0" }
+}

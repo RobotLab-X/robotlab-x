@@ -1,0 +1,48 @@
+name: echo
+title: Echo
+description: |
+  Subscribes to /echo/{instance}/inbox and republishes every message to
+  /echo/{instance}/outbox. Runs in-process inside the robotlab_x backend
+  — no subprocess, no install required. Useful for validating wiring
+  between two proxies on the canvas.
+language: builtin
+status: released
+author: CloudSeeder
+tags: [demo, smoke-test, builtin]
+icon: icon.svg
+
+bundled: true
+
+# Published to the remote registry too (bundled AND published are
+# independent — see master_template's package.yml). The in-process
+# example in the build+publish smoke set.
+publish: true
+
+# Modular service UI (Option B — docs/TODO_SERVICE_UI_BUNDLES.md). The
+# host dynamically imports ui/dist/ui.js instead of a built-in
+# serviceViews component. (Spike: ui.js is hand-written; a Vite lib build
+# replaces it later.)
+ui:
+  entry: ui/dist/ui.js
+  sdk: "^1.0"
+
+install:
+  kind: builtin
+
+entry:
+  in_process:
+    module: echo
+    class: EchoService
+
+wizard_config:
+  - id: topics
+    title: Echo instance
+    fields:
+      - id: inbox
+        type: string
+        title: Inbox topic
+        default: "/echo/${name}/inbox"
+      - id: outbox
+        type: string
+        title: Outbox topic
+        default: "/echo/${name}/outbox"

@@ -1,0 +1,67 @@
+name: video
+title: Video
+description: |
+  Cross-platform video capture + streaming. Sits between hardware
+  (webcams, IP cameras, files, RTSP) and downstream CV/ML/UI consumers.
+
+  Subprocess service — runs in a child process so OpenCV's capture
+  threads + the camera device handle stay isolated from the backend.
+
+  Phase 1 transports:
+    * MJPEG over HTTP — browser-native via <img src>, ~300ms latency
+    * Low-rate JPEG frame samples on the bus — for CV consumers
+
+  Frame data flows producer → runtime via /v1/stream/<id>/upload (binary
+  WS), then runtime → consumers via /v1/stream/<id>/mjpeg
+  (multipart/x-mixed-replace). Discovery + control over the bus.
+
+  Future phases: WebRTC for low-latency UI, shared-memory for same-host
+  CV consumers.
+language: python
+status: development
+author: CloudSeeder
+tags: [video, camera, streaming]
+icon: icon.svg
+
+bundled: true
+publish: true   # available in the remote registry (see master_template for docs)
+
+# Modular service UI (Option B — docs/TODO_SERVICE_UI_BUNDLES.md). The
+# host dynamically imports ui/dist/ui.js (compiled from ui/View.tsx by
+# robotlab_x_ui/scripts/build-service-ui.mjs) instead of a built-in
+# serviceViews component.
+ui:
+  entry: ui/dist/ui.js
+  sdk: "^1.0"
+
+install:
+  kind: pip
+  package_spec: "-e ${APP_ROOT}/repo/video/1.0.0"
+
+# Shown by the install wizard before the one-time dependency install.
+# This is a heavy install (OpenCV + numpy, plus ultralytics/torch if the
+# detection extras are pulled), so the operator should opt in knowingly.
+license: |
+  Video service — third-party dependency notice.
+
+  Installing this service downloads OpenCV (opencv-contrib-python-headless,
+  Apache-2.0) and, if object detection is enabled, the Ultralytics YOLO
+  stack which is licensed under AGPL-3.0. AGPL-3.0 imposes source-disclosure
+  obligations on networked use. By proceeding you confirm you have reviewed
+  and accept these third-party licenses for your deployment.
+
+# Install-time inputs collected before dependencies are installed. These
+# are recorded with the install and forwarded as the instance's initial
+# config. (Per-instance settings live in wizard_config / M4.)
+wizard_install:
+  - id: capabilities
+    title: Capabilities
+    description: Choose which optional dependencies to install for this video service type.
+    fields:
+      - id: enable_detection
+        type: boolean
+        title: Enable object detection (downloads the YOLO/Ultralytics stack, AGPL-3.0)
+        default: false
+
+entry:
+  argv: [python, -m, video_service]

@@ -1,0 +1,8 @@
+{
+  "name": "speech-local-service-ui",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Modular UI bundle for the local speech (TTS) service. Built by robotlab_x_ui/scripts/build-service-ui.mjs.",
+  "rlx": { "entry": "View.tsx", "sdk": "^1.0" }
+}

@@ -1,0 +1,17 @@
+allowed:
+  # The brain's own write_memory action — the ONLY tool this
+  # workflow uses. No external services, no hardware, no peers.
+  - topic: /brain/*/control
+    actions: [write_memory]
+
+blocked:
+  # Defense-in-depth: even though the allow list only grants
+  # write_memory, the standard blocked set keeps motion + arm + system
+  # actions off the table in case a model hallucinates an unrelated
+  # tool call.
+  - topic: /movement/*/control
+    actions: ["*"]
+  - topic: /arm/*/control
+    actions: ["*"]
+  - topic: /system/*/control
+    actions: ["*"]

@@ -1,0 +1,99 @@
+description: |
+  Turn the brain into a conversation partner. Runs a continuous
+  listen-respond-speak loop against whichever conversation service is
+  running — the chat service (text-in/text-out, ships in repo/chat/) or
+  a future speech service (audio). The flow is identical: get the
+  operator's utterance, reply in one to three sentences grounded in
+  loaded memory, send the reply, then listen again — for as many turns
+  as the operator wants.
+
+  The session ends ONLY when the operator says the exit keyword
+  ("goodbye"). That termination is engine-enforced: ``exit_on_phrase``
+  watches the chat inbox directly and ends the run the moment the
+  keyword is heard, bypassing the model (exit latency is bus-RTT, not
+  inference). Idle gaps between messages do NOT end the session —
+  ``loop_on_timeout`` silently re-listens. ``max_steps`` and
+  ``timeout_seconds`` are safety backstops only, sized so a normal
+  conversation never trips them. Notable exchanges are appended to
+  memory/conversations.md; routine chatter is not. No motion, no arms,
+  no system actions — the head servo may turn only to face the speaker
+  when the service reports a bearing.
+
+  Setup: install + start a ``chat`` (or future speech) instance, set
+  the brain's preferred_backend to a real adapter (ollama, anthropic),
+  and ``start_workflow conversation_session``. The operator interacts
+  via the chat service's inbox (UI text box or
+  ``rlx call /chat/chat-1/control send text="hello"``).
+
+# Default to ollama + a model validated end-to-end on a tool-calling
+# workflow (see TESTING_RESULTS.md). qwen3:8b chosen over llama3.2:3b —
+# the smaller model emits the first ``listen`` call correctly but on
+# turn 1 falls back to a text reply instead of calling ``speak``
+# (classic multi-turn tool-use slip). qwen3:8b emits ``speak`` reliably
+# across turns. MockAdapter has no real conversation behaviour.
+# Operators override at start time via ``start_workflow(backend=...,
+# model=...)`` or by editing this file in their workspace copy.
+preferred_backend: ollama
+preferred_model: qwen3:8b
+
+# Backstops only — the exit keyword terminates the session, not these.
+# Sized generously so a long conversation never trips them: idle
+# re-listens (loop_on_timeout) don't consume steps, so max_steps bounds
+# only real exchanges (~2 steps each → ~250 exchanges). timeout_seconds
+# is the wall-clock ceiling for the whole session (24h).
+max_steps: 500
+timeout_seconds: 86400
+requires_human_approval: false
+
+# THE terminator. The watcher subscribes to the chat inbox (where the
+# operator's utterances are published) and matches every incoming
+# ``text`` against the keyword as a case-insensitive substring. On
+# match it cancels the in-flight run; the engine converts that cancel
+# into status=success. ``/chat/+/inbox`` wildcards over the live chat
+# proxy-id (chat-1, chat-2, ...). This is the single source of truth
+# for how the session ends — edit the keyword here and nowhere else.
+exit_on_phrase:
+  matches:
+    - goodbye
+  case_insensitive: true
+  whole_message: false
+  listen_topic: /chat/+/inbox
+
+# Keep the session alive across silence. When ``listen`` returns
+# ``{timeout: true}`` (its wait window elapsed with no operator
+# message), the engine silently re-dispatches the same ``listen`` call
+# — no LLM round-trip, no step consumed — so the brain waits patiently
+# instead of ending or burning a turn. The model therefore only ever
+# sees real (non-empty) utterances.
+loop_on_timeout:
+  tool: listen
+  field: timeout
+  value: true
+
+inputs:
+  listen_window_seconds:
+    type: integer
+    required: false
+    default: 8
+    description: |
+      How long the conversation service listens for each operator turn
+      before returning a timeout (which the engine handles by
+      re-listening — see loop_on_timeout).
+  remember_notable:
+    type: boolean
+    required: false
+    default: true
+    description: |
+      When true, the brain appends notable exchanges to
+      memory/conversations.md; when false, nothing is written.
+
+steps:
+  - id: default
+    prompt: prompt.md
+    on_success: success.md
+    on_failure: failure.md
+
+context:
+  - memory/conversations.md
+  - memory/known_objects.md
+  - memory/observations.md

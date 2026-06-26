@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "arduino_service"
+version = "1.0.0"
+description = "robotlab_x arduino service — Firmata over serial via pymata4. Runs as a subprocess service so pymata4's background threads + the serial port stay isolated from the backend."
+requires-python = ">=3.10"
+dependencies = [
+    # pymata4 owns the firmata protocol + serial I/O. It pulls pyserial
+    # in transitively, so we don't need to list it ourselves.
+    "pymata4>=1.10,<2.0",
+    # rlx_bus (WebSocket bus client) is pre-installed into every venv
+    # by runtime/installer.py so it doesn't have to be listed here. It
+    # brings websockets along as a transitive dep.
+]
+
+[project.scripts]
+arduino_service = "arduino_service.__main__:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

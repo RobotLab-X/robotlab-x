@@ -1,0 +1,1 @@
+Object was not taught. See the failure reason on the run record — typical causes are the operator rejecting the proposal, the human-approval gate timing out, no detector boxes available, or the speech service failing to capture a spoken label.

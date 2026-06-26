@@ -1,0 +1,28 @@
+allowed:
+  - topic: /video/*/control
+    actions: [capture_frame, detect_objects]
+  - topic: /servo/*/control
+    actions: [move, sweep, read_proximity]
+  - topic: /movement/*/control
+    # Highest-blast-radius surface in the bundle. emergency_stop is
+    # always available; drive/turn/move_to are gated by
+    # requires_human_approval on the workflow.
+    actions: [drive, turn, move_to, emergency_stop]
+  - topic: /speech/*/control
+    actions: [speak]
+  - topic: /brain/*/control
+    actions: [read_memory, write_memory]
+
+blocked:
+  - topic: /movement/*/control
+    # `follow` is an open-ended pursuit behaviour that bypasses the
+    # small proportional-step contract this workflow enforces.
+    actions: [follow]
+  - topic: /arm/*/control
+    actions: ["*"]
+  - topic: /system/*/control
+    actions: ["*"]
+  - topic: /*/@**
+    # Federation peer topics — never reach across runtimes from a
+    # motion-bearing workflow.
+    actions: ["*"]

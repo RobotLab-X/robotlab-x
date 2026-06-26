@@ -1,0 +1,37 @@
+name: greet_person
+description: |
+  Greet whoever just walked up. Capture a frame, find the closest
+  person, turn-in-place to face them if needed, and speak a
+  time-of-day-aware greeting in the requested style. Logs the
+  interaction to memory. No driving, no arm motion, no system
+  actions — turn-in-place and head-servo only.
+
+preferred_backend: mock
+max_steps: 12
+timeout_seconds: 90
+requires_human_approval: false
+
+inputs:
+  greeting_style:
+    type: string
+    required: false
+    default: casual
+    description: |
+      Greeting tone: casual, formal, or playful.
+  hour_local:
+    type: integer
+    required: false
+    default: 12
+    description: |
+      Local hour 0..23 used to pick morning/afternoon/evening phrasing.
+
+steps:
+  - id: default
+    prompt: prompt.md
+    on_success: success.md
+    on_failure: failure.md
+
+context:
+  - memory/observations.md
+  - memory/known_objects.md
+  - memory/interactions.md

@@ -1,0 +1,15 @@
+{
+  "name": "cli-service-ui",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Modular UI bundle for the cli service (Option B). The dependency-axis case: bundles its own third-party libs (@xterm/xterm, @xterm/addon-fit) and ships their CSS as ui.css. react / react-dom / @rlx/ui are host-provided externals.",
+  "dependencies": {
+    "@xterm/xterm": "^5.5.0",
+    "@xterm/addon-fit": "^0.11.0"
+  },
+  "rlx": {
+    "entry": "View.tsx",
+    "sdk": "^1.0"
+  }
+}

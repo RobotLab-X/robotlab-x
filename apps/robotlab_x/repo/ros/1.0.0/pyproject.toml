@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ros_service"
+version = "1.0.0"
+description = "robotlab_x ros service — ROS/ROS2 bridge + robot-description toolbox. v1 converts URDF/xacro robot descriptions into ik_solver kinematic-chain models without requiring a sourced ROS install. Subprocess service; the ROS-flavoured deps live in its own venv."
+requires-python = ">=3.10"
+dependencies = [
+    # xacro is the genuinely awkward ROS dependency we house here instead
+    # of in throwaway script code: it expands .xacro macros + load_yaml.
+    # We resolve its $(find <pkg>) from a local package.xml scan (see
+    # pkg_resolver.py) so NO sourced ROS workspace is needed.
+    "xacro>=2.0",
+    # Transform math for joint origins (xyz/rpy → link lengths, rad→deg).
+    "numpy>=1.24",
+    # Visual-mesh baking: load STL/DAE, transform to link-local, decimate,
+    # export a web-ready GLB for the robot_kinematics "skinned" viewer.
+    "trimesh>=4.0",
+    "fast-simplification>=0.1.7",   # quadric-decimation backend for trimesh
+    # NOTE: rlx_bus (the WebSocket bus client) is pre-installed into every
+    # subprocess venv by runtime/installer.py — do NOT list it here.
+    #
+    # FUTURE (ROS bridge phase): rclpy / tf2 / message packages are NOT
+    # pip-installable standalone; they'll arrive via a sourced ROS2 distro
+    # detected at runtime, mirroring raspi's mock-vs-hardware split.
+]
+
+[project.scripts]
+ros_service = "ros_service.__main__:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

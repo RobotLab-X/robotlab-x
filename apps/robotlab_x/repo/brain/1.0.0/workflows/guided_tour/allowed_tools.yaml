@@ -1,0 +1,24 @@
+allowed:
+  - topic: /video/*/control
+    actions: [capture_frame, detect_objects]
+  # head servo only — locomotion topics are blocked below
+  - topic: /servo/*/control
+    actions: [move, sweep]
+  - topic: /speech/*/control
+    actions: [speak]
+  # read_memory pulls known_objects; write_memory is allowed but the
+  # prompt only writes on confirmed matches, never on misses.
+  - topic: /brain/*/control
+    actions: [read_memory, write_memory]
+
+blocked:
+  - topic: /movement/*/control
+    actions: ["*"]
+  - topic: /arm/*/control
+    actions: ["*"]
+  - topic: /system/*/control
+    actions: ["*"]
+  # federated peer topics (any id ending in @<peer>) are off-limits for
+  # this workflow — tour stays on the local runtime.
+  - topic: /*/@**
+    actions: ["*"]

@@ -1,0 +1,23 @@
+allowed:
+  # Stop is allowed across the board — this is the one workflow that
+  # CAN call motion-stop actions. Anything else is blocked.
+  - topic: /movement/*/control
+    actions: [stop]
+  - topic: /arm/*/control
+    actions: [stop]
+  - topic: /servo/*/control
+    actions: [stop, stop_sweep]
+  - topic: /speech/*/control
+    actions: [speak]
+  - topic: /brain/*/control
+    actions: [write_memory]
+
+blocked:
+  # Belt + suspenders — make explicit that nothing else on motion is
+  # allowed even if a future operator broadens the allow list.
+  - topic: /movement/*/control
+    actions: [drive, turn, move_to, follow]
+  - topic: /arm/*/control
+    actions: [grasp, release, move_to, lift]
+  - topic: /system/*/control
+    actions: ["*"]

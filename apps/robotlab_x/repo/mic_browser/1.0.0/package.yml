@@ -1,0 +1,60 @@
+name: mic_browser
+title: Microphone (browser)
+description: |
+  Browser microphone. The audio is captured in the operator's web browser
+  (Web Audio / getUserMedia) and streamed to this backend service, which
+  owns the control interface and republishes a canonical state.
+
+  Implements the SAME ``microphone`` capability as the local microphone —
+  identical control interface (list_devices / select_device / start / stop)
+  and identical published shape (``/microphone/{id}/state`` +
+  ``/microphone/{id}/audio``) — so any consumer that ``requires:
+  [microphone]`` works with either. Only the data path differs: control is
+  relayed to the browser, and the browser streams PCM frames up.
+
+  No host audio hardware or libraries are used. NOTE: a browser microphone
+  only works while an authorized browser tab with this service's view is
+  open, and the browser requires a secure context (https or localhost) to
+  grant microphone access.
+
+  Subprocess service — a lightweight relay; the browser does the I/O.
+
+language: python
+status: development
+author: CloudSeeder
+tags: [audio, microphone, browser, input]
+icon: icon.svg
+
+ui:
+  entry: ui/dist/ui.js
+  sdk: "^1.0"
+
+implements: [microphone]
+
+bundled: true
+publish: true
+
+install:
+  kind: pip
+  package_spec: "-e ${APP_ROOT}/repo/mic_browser/1.0.0"
+
+entry:
+  argv: [python, -m, mic_browser_service]
+
+wizard_config:
+  - id: defaults
+    title: Capture settings
+    fields:
+      - id: sample_rate
+        type: integer
+        title: Sample rate (Hz)
+        description: 16000 is the speech default; 48000 for full-band audio.
+        default: 16000
+      - id: channels
+        type: integer
+        title: Channels (1=mono, 2=stereo)
+        default: 1
+      - id: frame_ms
+        type: integer
+        title: Frame size (ms)
+        default: 20

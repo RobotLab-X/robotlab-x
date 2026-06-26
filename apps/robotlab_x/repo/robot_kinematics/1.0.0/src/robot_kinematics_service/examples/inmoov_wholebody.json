@@ -1,0 +1,342 @@
+{
+  "schema_version": 1,
+  "rig_id": "inmoov_wholebody",
+  "title": "InMoov \u2014 Whole Body",
+  "source": "inmoov_ros (URDF) -> ros + robot_kinematics",
+  "urdf": "inmoov.urdf",
+  "visual": "assets/inmoov.glb",
+  "base_link": "world",
+  "end_effectors": [
+    {
+      "name": "right_hand",
+      "link": "r_hand_link",
+      "mode": "position",
+      "position_cost": 1.0,
+      "orientation_cost": 0.0,
+      "forward_axis": [
+        0,
+        0,
+        1
+      ],
+      "enabled": true
+    },
+    {
+      "name": "left_hand",
+      "link": "l_hand_link",
+      "mode": "position",
+      "position_cost": 0.1,
+      "orientation_cost": 0.0,
+      "forward_axis": [
+        0,
+        0,
+        1
+      ],
+      "enabled": true
+    },
+    {
+      "name": "head",
+      "link": "head_link",
+      "mode": "look_at",
+      "position_cost": 0.0,
+      "orientation_cost": 0.1,
+      "forward_axis": [
+        0,
+        0,
+        1
+      ],
+      "enabled": true
+    }
+  ],
+  "posture_cost": 0.01,
+  "calibration": [
+    {
+      "joint": "eyes_pan_joint",
+      "servo_proxy_id": null,
+      "zero_offset_deg": 0.0,
+      "direction": 1,
+      "scale": 1.0,
+      "servo_min_deg": -30.0,
+      "servo_max_deg": 30.0
+    },
+    {
+      "joint": "eyes_tilt_joint",
+      "servo_proxy_id": null,
+      "zero_offset_deg": 0.0,
+      "direction": 1,
+      "scale": 1.0,
+      "servo_min_deg": -15.0,
+      "servo_max_deg": 15.0
+    },
+    {
+      "joint": "head_pan_joint",
+      "servo_proxy_id": null,
+      "zero_offset_deg": 0.0,
+      "direction": 1,
+      "scale": 1.0,
+      "servo_min_deg": -100.0,
+      "servo_max_deg": 90.0
+    },
+    {
+      "joint": "head_roll_joint",
+      "servo_proxy_id": null,
+      "zero_offset_deg": 0.0,
+      "direction": 1,
+      "scale": 1.0,
+      "servo_min_deg": -15.0,
+      "servo_max_deg": 15.0
+    },
+    {
+      "joint": "head_tilt_joint",
+      "servo_proxy_id": null,
+      "zero_offset_deg": 0.0,
+      "direction": 1,
+      "scale": 1.0,
+      "servo_min_deg": -20.0,
+      "servo_max_deg": 20.0
+    },
+    {
+      "joint": "jaw_joint",
+      "servo_proxy_id": null,
+      "zero_offset_deg": 0.0,
+      "direction": 1,
+      "scale": 1.0,
+      "servo_min_deg": 0.0,
+      "servo_max_deg": 5.0
+    },
+    {
+      "joint": "l_elbow_flex_joint",
+      "servo_proxy_id": null,
+      "zero_offset_deg": 0.0,
+      "direction": 1,
+      "scale": 1.0,
+      "servo_min_deg": -85.0,
+      "servo_max_deg": -15.0
+    },
+    {
+      "joint": "l_index_joint",
+      "servo_proxy_id": null,
+      "zero_offset_deg": 0.0,
+      "direction": 1,
+      "scale": 1.0,
+      "servo_min_deg": -5.0,
+      "servo_max_deg": 85.0
+    },
+    {
+      "joint": "l_middle_joint",
+      "servo_proxy_id": null,
+      "zero_offset_deg": 0.0,
+      "direction": 1,
+      "scale": 1.0,
+      "servo_min_deg": -5.0,
+      "servo_max_deg": 85.0
+    },
+    {
+      "joint": "l_pinky_joint",
+      "servo_proxy_id": null,
+      "zero_offset_deg": 0.0,
+      "direction": 1,
+      "scale": 1.0,
+      "servo_min_deg": -5.0,
+      "servo_max_deg": 85.0
+    },
+    {
+      "joint": "l_ring_joint",
+      "servo_proxy_id": null,
+      "zero_offset_deg": 0.0,
+      "direction": 1,
+      "scale": 1.0,
+      "servo_min_deg": -5.0,
+      "servo_max_deg": 85.0
+    },
+    {
+      "joint": "l_shoulder_lift_joint",
+      "servo_proxy_id": null,
+      "zero_offset_deg": 0.0,
+      "direction": 1,
+      "scale": 1.0,
+      "servo_min_deg": -135.0,
+      "servo_max_deg": 45.0
+    },
+    {
+      "joint": "l_shoulder_out_joint",
+      "servo_proxy_id": null,
+      "zero_offset_deg": 0.0,
+      "direction": 1,
+      "scale": 1.0,
+      "servo_min_deg": 5.0,
+      "servo_max_deg": 60.0
+    },
+    {
+      "joint": "l_thumb_joint",
+      "servo_proxy_id": null,
+      "zero_offset_deg": 0.0,
+      "direction": 1,
+      "scale": 1.0,
+      "servo_min_deg": -5.0,
+      "servo_max_deg": 65.0
+    },
+    {
+      "joint": "l_upper_arm_roll_joint",
+      "servo_proxy_id": null,
+      "zero_offset_deg": 0.0,
+      "direction": 1,
+      "scale": 1.0,
+      "servo_min_deg": -90.0,
+      "servo_max_deg": 90.0
+    },
+    {
+      "joint": "l_wrist_roll_joint",
+      "servo_proxy_id": null,
+      "zero_offset_deg": 0.0,
+      "direction": 1,
+      "scale": 1.0,
+      "servo_min_deg": 0.0,
+      "servo_max_deg": 180.0
+    },
+    {
+      "joint": "r_elbow_flex_joint",
+      "servo_proxy_id": null,
+      "zero_offset_deg": 0.0,
+      "direction": 1,
+      "scale": 1.0,
+      "servo_min_deg": -80.0,
+      "servo_max_deg": -15.0
+    },
+    {
+      "joint": "r_index_joint",
+      "servo_proxy_id": null,
+      "zero_offset_deg": 0.0,
+      "direction": 1,
+      "scale": 1.0,
+      "servo_min_deg": -5.0,
+      "servo_max_deg": 85.0
+    },
+    {
+      "joint": "r_middle_joint",
+      "servo_proxy_id": null,
+      "zero_offset_deg": 0.0,
+      "direction": 1,
+      "scale": 1.0,
+      "servo_min_deg": -5.0,
+      "servo_max_deg": 85.0
+    },
+    {
+      "joint": "r_pinky_joint",
+      "servo_proxy_id": null,
+      "zero_offset_deg": 0.0,
+      "direction": 1,
+      "scale": 1.0,
+      "servo_min_deg": -5.0,
+      "servo_max_deg": 85.0
+    },
+    {
+      "joint": "r_ring_joint",
+      "servo_proxy_id": null,
+      "zero_offset_deg": 0.0,
+      "direction": 1,
+      "scale": 1.0,
+      "servo_min_deg": -5.0,
+      "servo_max_deg": 85.0
+    },
+    {
+      "joint": "r_shoulder_lift_joint",
+      "servo_proxy_id": null,
+      "zero_offset_deg": 0.0,
+      "direction": 1,
+      "scale": 1.0,
+      "servo_min_deg": -135.0,
+      "servo_max_deg": 45.0
+    },
+    {
+      "joint": "r_shoulder_out_joint",
+      "servo_proxy_id": null,
+      "zero_offset_deg": 0.0,
+      "direction": 1,
+      "scale": 1.0,
+      "servo_min_deg": -60.0,
+      "servo_max_deg": -5.0
+    },
+    {
+      "joint": "r_thumb_joint",
+      "servo_proxy_id": null,
+      "zero_offset_deg": 0.0,
+      "direction": 1,
+      "scale": 1.0,
+      "servo_min_deg": -5.0,
+      "servo_max_deg": 65.0
+    },
+    {
+      "joint": "r_upper_arm_roll_joint",
+      "servo_proxy_id": null,
+      "zero_offset_deg": 0.0,
+      "direction": 1,
+      "scale": 1.0,
+      "servo_min_deg": -90.0,
+      "servo_max_deg": 90.0
+    },
+    {
+      "joint": "r_wrist_roll_joint",
+      "servo_proxy_id": null,
+      "zero_offset_deg": 0.0,
+      "direction": 1,
+      "scale": 1.0,
+      "servo_min_deg": -180.0,
+      "servo_max_deg": 0.0
+    },
+    {
+      "joint": "waist_pan_joint",
+      "servo_proxy_id": null,
+      "zero_offset_deg": 0.0,
+      "direction": 1,
+      "scale": 1.0,
+      "servo_min_deg": -90.0,
+      "servo_max_deg": 90.0
+    },
+    {
+      "joint": "waist_roll_joint",
+      "servo_proxy_id": null,
+      "zero_offset_deg": 0.0,
+      "direction": 1,
+      "scale": 1.0,
+      "servo_min_deg": -15.0,
+      "servo_max_deg": 15.0
+    }
+  ],
+  "props": [
+    {
+      "id": "bar_table",
+      "type": "bar_table",
+      "pose": {
+        "x": 300.0,
+        "y": -150.0,
+        "z": 0.0
+      },
+      "dims": {
+        "top_d": 480.0,
+        "height": 1050.0,
+        "pole_d": 60.0,
+        "top_thickness": 36.0
+      },
+      "color": "#3b3b46",
+      "graspable": false,
+      "grasp_link": ""
+    },
+    {
+      "id": "cup",
+      "type": "cup",
+      "pose": {
+        "x": 300.0,
+        "y": -150.0,
+        "z": 1050.0
+      },
+      "dims": {
+        "d": 72.0,
+        "height": 95.0,
+        "wall": 4.0
+      },
+      "color": "#d97757",
+      "graspable": true,
+      "grasp_link": "r_hand_link"
+    }
+  ]
+}

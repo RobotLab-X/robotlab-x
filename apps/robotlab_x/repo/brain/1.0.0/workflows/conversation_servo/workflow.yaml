@@ -1,0 +1,82 @@
+name: conversation_servo
+description: |
+  Natural-language servo control. The operator types commands like
+  "rotate left", "move to 90 degrees", "sweep", "stop", "slower",
+  "faster" into the chat service; the brain translates each to the
+  matching servo tool call on the selected servo. At the start of
+  every run the loader injects ``memory/conversation_servo_config.md``
+  into the prompt; if it names a servo, that's the one controlled.
+  If empty/missing, the model asks the operator to pick from the live
+  tool catalog and persists the choice with ``write_memory`` for next
+  run.
+
+  Long-running by design — terminates ONLY when the operator says
+  exactly "terminate" or "terminate workflow" (case-insensitive,
+  whole message). The engine watches the chat inbox directly and
+  cancels the run task on match, so exit latency is bus-RTT (~10 ms),
+  not the next LLM inference. Servo commands like "stop" or
+  "stop sweep" are deliberately NOT exit phrases — they're commands.
+
+# Anthropic Opus 4.8 — lowest end-to-end latency that still handles
+# casual paraphrases ("can you turn it back the other way" →
+# rotate-reverse) reliably. Operators can override at
+# start_workflow time or via a named configuration.
+preferred_backend: anthropic
+preferred_model: claude-opus-4-8
+
+# Effectively unbounded — runs end via exit_on_phrase (operator) or
+# operator cancel, not step exhaustion. loop_on_timeout collapses
+# idle listen-timeout turns so max_steps tracks only real LLM
+# round-trips.
+max_steps: 10000
+timeout_seconds: 86400
+requires_human_approval: false
+
+# E1 — engine-enforced exit. Matches every text payload published
+# to any chat inbox against these phrases; on match the engine
+# cancels the run task immediately with status=success and a
+# result_summary naming the matched phrase. "stop" / "stop sweep"
+# are deliberately NOT here.
+exit_on_phrase:
+  matches:
+    - terminate
+    - terminate workflow
+  case_insensitive: true
+  whole_message: true
+  listen_topic: /chat/+/inbox
+
+# E2 — short-circuit re-dispatch of chat.listen when it times out
+# without an utterance. The engine re-listens silently until the
+# operator actually speaks, instead of burning an LLM round-trip
+# per idle interval.
+loop_on_timeout:
+  tool: listen
+  field: timeout
+  value: true
+
+# E3 — sliding conversation window. System prompt + initial
+# context_body (workflow's prompt.md + memory injection) are always
+# retained; only the conversational tail is trimmed to the last N
+# messages. 12 = roughly 6 listen→speak exchanges of recent history,
+# enough for the model to track multi-turn refinements like
+# "a bit slower" → "even slower" without context bloat.
+message_window_size: 12
+
+inputs:
+  listen_window_seconds:
+    type: integer
+    required: false
+    default: 30
+    description: |
+      Per-turn listen budget passed to chat.listen. The engine re-
+      dispatches automatically on timeout (see loop_on_timeout), so
+      this is a polling cadence, not a session deadline.
+
+steps:
+  - id: default
+    prompt: prompt.md
+    on_success: success.md
+    on_failure: failure.md
+
+context:
+  - memory/conversation_servo_config.md

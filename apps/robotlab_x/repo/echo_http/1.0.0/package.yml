@@ -1,0 +1,29 @@
+name: echo_http
+title: Echo (HTTP)
+description: |
+  Tiny FastAPI echo service. Demonstrates the real Phase 6 pip installer
+  + process manager: a per-type venv is created and this dir is installed
+  editable; the Start action launches uvicorn on a dynamically allocated
+  port and streams logs over the bus.
+language: python
+status: released
+author: CloudSeeder
+tags: [demo, http, phase-6]
+icon: icon.svg
+
+# Bundled with the base robotlab_x install — the source is on disk; the
+# user still has to run Install to create the venv + pip-install.
+bundled: false
+
+# Published to the remote registry (see master_template's package.yml
+# for the field's full docs). The canonical pip/subprocess example in
+# the build+publish smoke set.
+publish: true
+
+install:
+  kind: pip
+  # Path relative to robotlab_x app root substituted by the installer.
+  package_spec: "-e ${APP_ROOT}/repo/echo_http/1.0.0"
+
+entry:
+  argv: [python, -m, echo_http, --host, "127.0.0.1", --port, "${PORT}"]

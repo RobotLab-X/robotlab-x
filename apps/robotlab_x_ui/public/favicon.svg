@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!--
+    RobotLab-X favicon. Minimal robot head — antenna, eyes, mouth slot.
+    Designed for 16×16 tab legibility: bold silhouette, no gradients,
+    sky-400 fill against the slate-950 app background so it stays visible
+    on both light and dark browser chrome.
+  -->
+  <title>RobotLab-X</title>
+
+  <!-- Antenna -->
+  <rect x="30" y="4" width="4" height="8" rx="1" fill="#38bdf8"/>
+  <circle cx="32" cy="4" r="3" fill="#38bdf8"/>
+
+  <!-- Head body -->
+  <rect x="8" y="12" width="48" height="40" rx="8" fill="#38bdf8"/>
+
+  <!-- Ears -->
+  <rect x="2" y="24" width="6" height="16" rx="2" fill="#0284c7"/>
+  <rect x="56" y="24" width="6" height="16" rx="2" fill="#0284c7"/>
+
+  <!-- Eyes -->
+  <circle cx="22" cy="28" r="5" fill="#0f172a"/>
+  <circle cx="42" cy="28" r="5" fill="#0f172a"/>
+  <circle cx="23" cy="27" r="1.5" fill="#38bdf8"/>
+  <circle cx="43" cy="27" r="1.5" fill="#38bdf8"/>
+
+  <!-- Mouth slot -->
+  <rect x="18" y="40" width="28" height="5" rx="2" fill="#0f172a"/>
+  <rect x="22" y="41" width="2" height="3" fill="#38bdf8"/>
+  <rect x="28" y="41" width="2" height="3" fill="#38bdf8"/>
+  <rect x="34" y="41" width="2" height="3" fill="#38bdf8"/>
+  <rect x="40" y="41" width="2" height="3" fill="#38bdf8"/>
+
+  <!-- Neck stub -->
+  <rect x="26" y="52" width="12" height="6" rx="1" fill="#0284c7"/>
+</svg>

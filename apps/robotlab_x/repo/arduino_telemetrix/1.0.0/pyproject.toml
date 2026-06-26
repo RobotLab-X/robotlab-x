@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "arduino_telemetrix_service"
+version = "1.0.0"
+description = "robotlab_x arduino service — Telemetrix over serial via telemetrix-aio. Adds addressable NeoPixel/WS2812 (pixel_strip) support on top of the usual servo/digital/analog/i2c/sonar primitives. Runs as a subprocess service so Telemetrix's background reader thread + the serial port stay isolated from the backend."
+requires-python = ">=3.10"
+dependencies = [
+    # telemetrix-aio owns the Telemetrix protocol + serial I/O (asyncio
+    # native — no executor bridging needed). It pulls pyserial-asyncio /
+    # pyserial in transitively, so we don't list them ourselves.
+    "telemetrix-aio>=1.0,<2.0",
+    # rlx_bus (WebSocket bus client) is pre-installed into every venv
+    # by runtime/installer.py so it doesn't have to be listed here. It
+    # brings websockets along as a transitive dep.
+]
+
+[project.scripts]
+arduino_telemetrix_service = "arduino_telemetrix_service.__main__:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

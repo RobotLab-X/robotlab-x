@@ -1,0 +1,15 @@
+allowed:
+  - topic: /video/*/control
+    actions: [capture_frame, detect_objects]
+  - topic: /speech/*/control
+    actions: [speak]
+  - topic: /brain/*/control
+    actions: [write_memory]
+
+blocked:
+  - topic: /movement/*/control
+    actions: ["*"]
+  - topic: /arm/*/control
+    actions: ["*"]
+  - topic: /system/*/control
+    actions: ["*"]

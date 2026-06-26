@@ -1,0 +1,43 @@
+# Root .gitignore for the RobotLab-X public repo.
+#
+# This is a PUBLIC-ONLY file (authored here, not mirrored from upstream). It is
+# the standalone-repo safety net: the upstream monorepo relies on ITS root
+# .gitignore to keep secrets + build artifacts out of git, and that root file
+# isn't published — so this reproduces the necessary coverage for the whole
+# tree (apps/ + packages/), including anything `uv sync` / running the app
+# generates. The per-app .gitignore files (apps/*/.gitignore) add finer rules.
+
+# Python envs + build artifacts
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.coverage
+.coverage*
+htmlcov/
+
+# Node
+node_modules/
+
+# Secrets + generated credentials / certs (NEVER commit)
+.env
+.env.*
+!.env.example
+admin_password.txt
+ssl/
+*.pem
+*.key
+
+# Runtime state + logs
+data/
+repo-data/
+logs/
+version.json
+
+# Editor / OS
+.DS_Store
+*.swp
+*.bak
+.idea/
+.vscode/

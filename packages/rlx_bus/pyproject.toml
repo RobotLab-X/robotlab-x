@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rlx_bus"
+version = "0.1.0"
+description = "WebSocket bus client for robotlab_x subprocess services. Provides BusClient for connecting back to the parent backend's /v1/ws endpoint, subscribing to topics, and publishing messages — with auto-reconnect and a bounded outbound queue that buffers publishes while disconnected."
+requires-python = ">=3.10"
+dependencies = [
+    "websockets>=12,<14",
+    # ServiceConfig is a Pydantic BaseModel. Every subprocess needs
+    # pydantic in its venv to import rlx_bus.
+    "pydantic>=2.0,<3.0",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

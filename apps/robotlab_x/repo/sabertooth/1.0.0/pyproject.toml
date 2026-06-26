@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sabertooth_service"
+version = "1.0.0"
+description = "robotlab_x sabertooth service — Dimension Engineering Sabertooth 2x25 motor driver over Packetized Serial. Implements the motor_controller interface."
+requires-python = ">=3.10"
+dependencies = [
+    # pyserial owns the actual port I/O. Pinned loose — pyserial is an
+    # old, stable lib and we only use its long-stable surface.
+    "pyserial>=3.5,<4.0",
+    # rlx_bus is pre-installed into every venv by runtime/installer.py
+    # so it doesn't appear here. It brings websockets along.
+]
+
+[project.scripts]
+sabertooth_service = "sabertooth_service.__main__:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

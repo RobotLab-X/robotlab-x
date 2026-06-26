@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "stt_local_service"
+version = "1.0.0"
+description = "robotlab_x local speech-to-text service — fully-offline streaming ASR (sherpa-onnx). Implements the transcription capability."
+requires-python = ">=3.10"
+dependencies = [
+    # sherpa-onnx: fast, fully-offline streaming ASR. The wheel bundles
+    # onnxruntime + the endpoint detector and ships for Linux/macOS/Windows +
+    # Raspberry Pi (aarch64/armv7l) — no torch, no ffmpeg, no system audio
+    # libraries. Models download on first use into the service's data cache.
+    # (numpy comes in transitively.)
+    "sherpa-onnx>=1.13,<2.0",
+]
+
+[project.scripts]
+stt_local_service = "stt_local_service.__main__:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

@@ -1,0 +1,33 @@
+name: raspi
+title: Raspberry Pi
+description: |
+  Raspberry Pi GPIO + I2C interface. On Start the service detects the
+  host board (Pi 3 / Pi 4 / Pi 5 / Zero / mock) and exposes per-pin
+  read/write/PWM plus an I2C scan + read/write surface. Continuous
+  polling of an input pin is supported — values stream on
+  /raspi/{id}/pin/{N}.
+
+  Subprocess service — runs in its own venv so the GPIO backend
+  (gpiozero + lgpio) stays isolated from the backend, and so it can
+  cleanly degrade to a mock mode when started on non-Pi hardware (for
+  development without a board attached).
+language: python
+status: development
+author: CloudSeeder
+tags: [hardware, raspberrypi, gpio, i2c]
+icon: icon.svg
+
+# Modular service UI (Option B — docs/TODO_SERVICE_UI_BUNDLES.md).
+ui:
+  entry: ui/dist/ui.js
+  sdk: "^1.0"
+
+bundled: true
+publish: true   # available in the remote registry (see master_template for docs)
+
+install:
+  kind: pip
+  package_spec: "-e ${APP_ROOT}/repo/raspi/1.0.0"
+
+entry:
+  argv: [python, -m, raspi_service]

@@ -1,0 +1,68 @@
+name: brain
+title: Brain
+description: |
+  Folder-defined, AI-agnostic workflow brain. Loads workflows from
+  the bundled defaults + per-instance overrides; uses pluggable model
+  adapters (Mock / Ollama / Anthropic / OpenAI) to drive a step-based
+  loop that proposes tool calls, the brain validates against
+  topic-pattern allow/deny rules, then executes via the bus.
+
+  AI proposes. Brain validates. Services execute. Folders define
+  behaviour. Run logs preserve memory + auditability.
+
+  In-process service — runs inside the rlx backend. Per-instance
+  state (workflows, memory, runs) lives under
+  ``<data_dir>/brain/<proxy-id>/``. See docs/TODO_BRAIN.md for the
+  full spec.
+language: builtin
+status: development
+author: CloudSeeder
+tags: [ai, workflow, agent, llm]
+icon: icon.svg
+
+# Modular service UI (Option B — docs/TODO_SERVICE_UI_BUNDLES.md).
+ui:
+  entry: ui/dist/ui.js
+  sdk: "^1.0"
+
+bundled: true
+publish: true   # available in the remote registry (see master_template for docs)
+
+install:
+  kind: builtin
+
+entry:
+  in_process:
+    module: brain
+    class: BrainService
+
+wizard_config:
+  - id: model
+    title: Default model
+    fields:
+      - id: default_model
+        type: enum
+        title: Adapter
+        options: [mock, ollama, anthropic, openai]
+        default: mock
+        description: |
+          Per-workflow overrides via ``workflow.yaml: model: <name>``
+          take precedence over this.
+      - id: ollama_base_url
+        type: string
+        title: Ollama base URL
+        default: "http://localhost:11434"
+      - id: anthropic_api_key
+        type: string
+        title: Anthropic API key
+        description: |
+          Optional. Falls back to BRAIN_ANTHROPIC_API_KEY env var.
+      - id: openai_api_key
+        type: string
+        title: OpenAI API key
+        description: |
+          Optional. Falls back to BRAIN_OPENAI_API_KEY env var.
+      - id: max_concurrent_runs
+        type: integer
+        title: Max concurrent workflow runs
+        default: 4

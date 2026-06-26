@@ -1,0 +1,1 @@
+Docking did not complete. The workflow has called emergency_stop and the robot is halted. See the failure reason on the run record — typical causes are the dock not being visible, the operator declining the human-approval gate, the proximity sensor disconnecting, or a drive command being rejected by the movement service.

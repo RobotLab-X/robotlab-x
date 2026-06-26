@@ -1,0 +1,9 @@
+{
+  "name": "keyboard-browser-service-ui",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Modular UI bundle for the keyboard_browser service (Option B). Captures DOM keydown/keyup and relays canonical key events to the backend. lucide-react is bundled (tree-shaken); react/@rlx/ui are host externals.",
+  "dependencies": { "lucide-react": "^0.344.0" },
+  "rlx": { "entry": "View.tsx", "sdk": "^1.0" }
+}

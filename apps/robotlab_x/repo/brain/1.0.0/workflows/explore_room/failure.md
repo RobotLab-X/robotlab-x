@@ -1,0 +1,1 @@
+Explore aborted. See the run record for the failing step — likely a turn or servo fault. Robot has been left at whatever pose the failing step ended in; consider running observe_room or emergency_stop next.

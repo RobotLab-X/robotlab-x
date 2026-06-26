@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "speaker_browser_service"
+version = "1.0.0"
+description = "robotlab_x browser speaker service — backend relay for browser audio playback. Implements the speaker capability."
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+speaker_browser_service = "speaker_browser_service.__main__:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

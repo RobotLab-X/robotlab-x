@@ -1,0 +1,1 @@
+Robot is docked. The dock was detected, approached in proportional steps, and the proximity / visual-contact threshold was met. Motion stopped cleanly and a docking event was written to memory/observations.md.

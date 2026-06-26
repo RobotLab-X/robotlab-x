@@ -1,0 +1,47 @@
+name: arduino_telemetrix
+title: Arduino (Telemetrix)
+description: |
+  Arduino board interface, backed by Telemetrix (Alan Yorinks' modern
+  Firmata successor). Unlike classic Firmata/pymata4, the Telemetrix
+  sketch (Telemetrix4Arduino) can drive addressable NeoPixel/WS2812
+  strips and matrices on-MCU, alongside the usual servo / digital /
+  analog / PWM / i2c / sonar primitives.
+
+  This service exposes TWO capability interfaces:
+    * servo_controller — drop-in for the pymata4 ``arduino`` service, so
+      a ``servo`` consumer can drive either backend.
+    * pixel_strip — addressable-LED control (configure/set/fill/clear/
+      show/brightness, with optional x/y matrix addressing).
+
+  On install, a per-type venv is created and telemetrix-aio is
+  pip-installed there. Subprocess service — runs in a child process so
+  the serial port and Telemetrix's background reader stay isolated from
+  the backend.
+language: python
+status: development
+author: CloudSeeder
+tags: [hardware, arduino, telemetrix, neopixel, firmata]
+# Capability interfaces. A servo consumer discovers this board through
+# ``servo_controller``; a (future) pixel/LED consumer through
+# ``pixel_strip``. Neither consumer depends on this service directly —
+# only on the abstract capability. See AGENTS.md "Capability interfaces".
+implements: [servo_controller, pixel_strip]
+icon: icon.svg
+
+# Modular service UI (Option B — docs/TODO_SERVICE_UI_BUNDLES.md).
+ui:
+  entry: ui/dist/ui.js
+  sdk: "^1.0"
+
+# Source ships with the base install (bundled), but the dependency tree
+# (telemetrix-aio + pyserial) is NOT — install is explicit, triggered by
+# the user creating an arduino_telemetrix@1.0.0 instance from the catalog.
+bundled: true
+publish: true   # available in the remote registry (see master_template for docs)
+
+install:
+  kind: pip
+  package_spec: "-e ${APP_ROOT}/repo/arduino_telemetrix/1.0.0"
+
+entry:
+  argv: [python, -m, arduino_telemetrix_service]

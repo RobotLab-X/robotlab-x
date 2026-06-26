@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
+  <title>motor_control</title>
+  <circle cx="12" cy="12" r="3"/>
+  <path d="M12 2 v3"/>
+  <path d="M12 19 v3"/>
+  <path d="M2 12 h3"/>
+  <path d="M19 12 h3"/>
+  <path d="M5 5 l2 2"/>
+  <path d="M17 17 l2 2"/>
+  <path d="M19 5 l-2 2"/>
+  <path d="M7 17 l-2 2"/>
+</svg>

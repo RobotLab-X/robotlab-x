@@ -1,0 +1,41 @@
+name: ik_solver
+title: Inverse Kinematics Solver
+description: |
+  Inverse-kinematics microservice — converts a target end-effector
+  position ``(x, y, z)`` into joint angles for a servo-driven robot
+  arm. Pure math, no hardware: the solver doesn't drive servos, it
+  publishes computed angles + optional fan-out to linked
+  ``servo@1.0.0`` proxies via their ``write`` actions.
+
+  Capability ``ik_provider`` lets future planners (brain workflows,
+  vision pipelines) discover any IK solver by capability rather than
+  by service-type name. The ``servo_controller`` requirement is
+  soft — the solver runs without any servos attached and still
+  returns angles; the requirement is documentational so the catalog
+  filter shows "needs a servo controller to send results to".
+
+  See ``docs/TODO_IK_SOLVER.md`` for the full PRD + design notes.
+
+language: python
+status: development
+author: CloudSeeder
+tags: [kinematics, robotics, math]
+icon: icon.svg
+
+# Modular service UI (Option B — docs/TODO_SERVICE_UI_BUNDLES.md).
+ui:
+  entry: ui/dist/ui.js
+  sdk: "^1.0"
+
+implements: [ik_provider, servo_controller]
+requires: [servo_controller]
+
+bundled: true
+publish: true   # available in the remote registry (see master_template for docs)
+
+install:
+  kind: pip
+  package_spec: "-e ${APP_ROOT}/repo/ik_solver/1.0.0"
+
+entry:
+  argv: [python, -m, ik_solver_service]

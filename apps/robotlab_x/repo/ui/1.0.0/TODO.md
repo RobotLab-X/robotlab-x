@@ -1,0 +1,1 @@
+1. make a min, max right top corner icons to maximize and minimize and back to original size position for windows

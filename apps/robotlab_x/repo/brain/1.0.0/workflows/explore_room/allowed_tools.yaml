@@ -1,0 +1,30 @@
+allowed:
+  # Vision: per-pose frame capture + object detection.
+  - topic: /video/*/control
+    actions: [capture_frame, detect_objects]
+  # Head/camera servo: centre + sweep for the +/- pan_degrees pattern.
+  - topic: /servo/*/control
+    actions: [move, sweep]
+  # Locomotion: turn only — drive/move_to/follow are explicitly blocked below.
+  - topic: /movement/*/control
+    actions: [turn]
+  # Speech: announce sweep + new-object callouts + final summary.
+  - topic: /speech/*/control
+    actions: [speak]
+  # Memory: append to known_objects + observations.
+  - topic: /brain/*/control
+    actions: [write_memory]
+
+blocked:
+  # Locomotion is turn-only; everything else on /movement/* is denied (blocked wins ties).
+  - topic: /movement/*/control
+    actions: [drive, move_to, follow]
+  # No manipulation at all.
+  - topic: /arm/*/control
+    actions: ["*"]
+  # No system-level actions (reboot/shutdown/etc).
+  - topic: /system/*/control
+    actions: ["*"]
+  # Federation opt-in: deny any "@**" peer-suffixed topic across the board.
+  - topic: /*/@**
+    actions: ["*"]

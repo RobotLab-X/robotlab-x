@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "database"
+version = "0.1.0"
+description = "A database library for managing data in CloudSeeder"
+authors = [{ name = "GroGBot", email = "grogbot@robotlab-x.com" }]
+license = { file = "LICENSE" }
+readme = "README.md"
+requires-python = ">=3.12"
+
+dependencies = [
+    "tinydb",
+    "psycopg2-binary",
+    "pymongo",
+    "boto3",
+    "botocore"
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"} 
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+database = ["*.json"]
+
+[project.optional-dependencies]
+dev = ["pytest", "black", "mypy"]

@@ -1,0 +1,32 @@
+name: inspect_object
+description: |
+  Inspect ONE specific object — capture, identify, describe its
+  properties (colour, size, orientation), save the result to known
+  objects memory. Strictly read-only — no movement, no manipulation.
+
+  Useful when the operator wants the brain to focus on a single
+  item rather than survey the whole room.
+
+preferred_backend: mock
+max_steps: 6
+timeout_seconds: 90
+max_tokens_per_run: 15000
+requires_human_approval: false
+
+inputs:
+  target_hint:
+    type: string
+    required: true
+    description: |
+      A short hint identifying which object to inspect, e.g.
+      "the red cube on the left" or "the object closest to the camera".
+
+steps:
+  - id: default
+    prompt: prompt.md
+    on_success: success.md
+    on_failure: failure.md
+
+context:
+  - memory/observations.md
+  - memory/known_objects.md

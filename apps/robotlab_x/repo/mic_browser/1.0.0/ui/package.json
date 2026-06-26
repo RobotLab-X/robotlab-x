@@ -1,0 +1,11 @@
+{
+  "name": "mic-browser-service-ui",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Modular UI bundle for the browser microphone service — the capture engine (getUserMedia + AudioWorklet) plus the shared microphone control view. Built by robotlab_x_ui/scripts/build-service-ui.mjs; react / react-dom / @rlx/ui externalized.",
+  "rlx": {
+    "entry": "View.tsx",
+    "sdk": "^1.0"
+  }
+}

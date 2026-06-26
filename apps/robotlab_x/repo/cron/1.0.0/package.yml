@@ -1,0 +1,34 @@
+name: cron
+title: Cron Scheduler
+description: |
+  Scheduled message publisher. Each cron job pairs a 5-field cron
+  expression with a user-defined topic + payload — when the expression
+  fires, the payload is published to the topic. Compose this with any
+  other service to drive periodic actions: "every 10 minutes publish
+  servo_write{angle=90} to /servo/servo-1/control" etc.
+
+  In-process builtin — runs inside the robotlab_x backend. Honours
+  topic_remap like every service, so the destination topic can be
+  redirected at the cron-service level (e.g. wire a single cron's
+  output to "/canary/topic" during testing).
+language: builtin
+status: development
+author: CloudSeeder
+tags: [scheduler, utility, builtin]
+icon: icon.svg
+
+# Modular service UI (Option B — docs/TODO_SERVICE_UI_BUNDLES.md).
+ui:
+  entry: ui/dist/ui.js
+  sdk: "^1.0"
+
+bundled: true
+publish: true   # available in the remote registry (see master_template for docs)
+
+install:
+  kind: builtin
+
+entry:
+  in_process:
+    module: cron
+    class: CronService

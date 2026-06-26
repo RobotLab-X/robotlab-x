@@ -1,0 +1,23 @@
+name: observe_room
+description: |
+  Look around, identify what's in the room, summarise it out loud,
+  and append the observation to memory. No movement, no arms, no
+  system actions — read-only by design.
+
+preferred_backend: mock
+max_steps: 8
+timeout_seconds: 60
+max_tokens_per_run: 20000
+requires_human_approval: false
+
+inputs: {}
+
+steps:
+  - id: default
+    prompt: prompt.md
+    on_success: success.md
+    on_failure: failure.md
+
+context:
+  - memory/observations.md
+  - memory/known_objects.md

@@ -1,0 +1,11 @@
+{
+  "name": "echo-service-ui",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Modular UI bundle for the echo service (Option B). Built by robotlab_x_ui/scripts/build-service-ui.mjs; react + @rlx/ui are host-provided externals, so this view declares no runtime deps of its own.",
+  "rlx": {
+    "entry": "View.tsx",
+    "sdk": "^1.0"
+  }
+}

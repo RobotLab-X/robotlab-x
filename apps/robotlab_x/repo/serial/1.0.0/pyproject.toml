@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "serial_service"
+version = "1.0.0"
+description = "robotlab_x serial service — owns one OS serial port, publishes RX bytes + accepts write_bytes/send_file actions over the bus. Doubles as a virtual port other services can consume."
+requires-python = ">=3.10"
+dependencies = [
+    # pyserial owns the actual port I/O. ``list_ports`` for enumeration,
+    # ``Serial`` for the connection. Pinned loose because pyserial is
+    # an old, stable lib and we only use its long-stable surface.
+    "pyserial>=3.5,<4.0",
+    # rlx_bus is pre-installed into every venv by runtime/installer.py
+    # so it doesn't appear here. It brings websockets along.
+]
+
+[project.scripts]
+serial_service = "serial_service.__main__:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

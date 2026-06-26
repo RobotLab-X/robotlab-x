@@ -1,0 +1,22 @@
+allowed:
+  - topic: /video/*/control
+    actions: [capture_frame, detect_objects]
+  - topic: /servo/*/control
+    # head/pan servo only — sweep across bearings, no body movement
+    actions: [move, sweep]
+  - topic: /speech/*/control
+    actions: [speak]
+  - topic: /brain/*/control
+    # read_memory to load prior map context, write_memory to persist room_map.json
+    actions: [read_memory, write_memory]
+
+blocked:
+  - topic: /movement/*/control
+    actions: ["*"]
+  - topic: /arm/*/control
+    actions: ["*"]
+  - topic: /system/*/control
+    actions: ["*"]
+  # federated/remote peer topics are out of scope for a local room map
+  - topic: /*/@**
+    actions: ["*"]

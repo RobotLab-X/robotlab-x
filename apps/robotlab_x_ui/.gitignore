@@ -1,0 +1,14 @@
+node_modules
+dist
+dist-ssr
+*.local
+.env
+.env.local
+.env.*.local
+.vite
+*.log
+.DS_Store
+
+# Stray lowdb/admin artifacts if the backend ever boots with cwd=robotlab_x_ui.
+data/
+admin_password.txt

@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "speaker_local_service"
+version = "1.0.0"
+description = "robotlab_x local speaker service — cross-platform host audio playback (PortAudio). Implements the speaker capability."
+requires-python = ">=3.10"
+dependencies = [
+    "sounddevice>=0.4,<0.6",
+    # Generic-player decoding for non-WAV files/urls (mp3/ogg/flac). WAV is
+    # handled by the stdlib; miniaudio bundles cross-platform decoders.
+    "miniaudio>=1.59,<2.0",
+]
+
+[project.scripts]
+speaker_local_service = "speaker_local_service.__main__:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

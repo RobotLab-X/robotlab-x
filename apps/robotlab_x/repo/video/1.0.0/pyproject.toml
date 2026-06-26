@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "video_service"
+version = "1.0.0"
+description = "robotlab_x video service — OpenCV-backed cross-platform capture + MJPEG streaming."
+requires-python = ">=3.10"
+dependencies = [
+    # opencv-contrib-python-headless: pip wheels for Linux x86/aarch64
+    # (RasPi 4/5), macOS, Windows. Headless skips GUI deps a server
+    # doesn't need. The "contrib" variant adds the extras modules —
+    # required for cv2.TrackerCSRT/KCF/MIL and cv2.legacy.Tracker*
+    # (MOSSE/MedianFlow/TLD/Boosting) used by box_tracker. cv2.VideoCapture
+    # handles webcams, files, RTSP, HTTP streams uniformly; frames are
+    # numpy arrays (BGR by default).
+    "opencv-contrib-python-headless>=4.8,<5.0",
+    # numpy comes via opencv but pin minimum for typing safety.
+    "numpy>=1.24",
+    # YOLO inference for the ``yolo`` filter. ultralytics pulls torch +
+    # torchvision (~300 MB on first install). The filter is opt-in
+    # (operator adds it to the pipeline) and the model weights file
+    # auto-downloads from the Ultralytics hub on first inference.
+    "ultralytics>=8.0",
+]
+
+[project.scripts]
+video_service = "video_service.__main__:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

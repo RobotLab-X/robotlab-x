@@ -1,0 +1,97 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+.venv/
+.conda/
+
+# Pip and Poetry files
+pip-log.txt
+pip-delete-this-directory.txt
+poetry.lock
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.installed.cfg
+.eggs/
+MANIFEST
+
+# Testing
+.tox/
+.nox/
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+.pyre/
+
+# Coverage reports
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# Logs and debug files
+logs/
+*.log
+*.out
+*.err
+debug.log
+
+# IDEs and editors
+.vscode/
+.idea/
+*.sublime-workspace
+
+# Docker
+docker-compose.override.yml
+
+# Pyenv
+.python-version
+
+# Local environment variables
+.env
+.env.local
+.env.*.local
+
+# Django & Flask
+instance/
+db.sqlite3
+*.sqlite3
+*.db
+
+# AWS and Cloud
+.aws/
+.terraform/
+*.tfstate
+.terraform.lock.hcl
+
+# Jupyter Notebook metadata
+.ipynb_checkpoints/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+*.lnk
+
+# Ansible
+*.retry
+
+# CloudSeeder-specific (if needed)
+cloudseeder/

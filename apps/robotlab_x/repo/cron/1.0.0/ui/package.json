@@ -1,0 +1,8 @@
+{
+  "name": "cron-service-ui",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Modular UI bundle for the cron service (Option B).",
+  "rlx": { "entry": "View.tsx", "sdk": "^1.0" }
+}

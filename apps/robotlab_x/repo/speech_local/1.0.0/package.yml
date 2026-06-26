@@ -1,0 +1,67 @@
+name: speech_local
+title: Speech (local)
+description: |
+  Host-side, fully-offline text-to-speech. Synthesizes spoken audio with
+  Piper (a fast neural TTS that bundles onnxruntime + espeak-ng — no cloud
+  provider, no system audio libraries) and streams it as the canonical PCM
+  audio frames on ``/speech/{id}/audio``.
+
+  Because it publishes the SAME frame shape a microphone does, any speaker
+  plays it with no special handling: point a speaker at
+  ``input_kind: topic`` / ``input_ref: /speech/{id}/audio`` (or play the
+  cached WAV directly via ``input_kind: file``).
+
+  Implements the ``speech`` capability — the shared control interface
+  (say / stop / mute / unmute / set_voice / list_voices / set_volume /
+  set_rate / clear_cache) every speech service type will expose, so a
+  consumer is agnostic to the synthesis backend.
+
+  Each utterance is rendered once to a WAV cache under
+  ``<data>/speech_local/`` keyed by text+voice+rate+format, so re-saying the
+  same line is instant. Speech is interruptible — ``stop`` aborts the current
+  utterance and clears the queue within a frame.
+
+  The first use of a voice downloads its model (~25–60 MB) into
+  ``<data>/speech_local/voices/``; subsequent runs are offline.
+
+  Subprocess service — synthesis runs in a child process, isolated from the
+  backend.
+
+language: python
+status: development
+author: CloudSeeder
+tags: [audio, speech, tts, output]
+icon: icon.svg
+
+ui:
+  entry: ui/dist/ui.js
+  sdk: "^1.0"
+
+implements: [speech]
+
+bundled: true
+publish: true
+
+install:
+  kind: pip
+  package_spec: "-e ${APP_ROOT}/repo/speech_local/1.0.0"
+
+entry:
+  argv: [python, -m, speech_local_service]
+
+wizard_config:
+  - id: defaults
+    title: Speech settings
+    fields:
+      - id: voice
+        type: string
+        title: Voice (optional)
+        description: "Piper voice id, e.g. en_US-lessac-medium. Blank = the default voice (downloaded on first use)."
+      - id: sample_rate
+        type: integer
+        title: Output sample rate (Hz)
+        default: 16000
+      - id: rate
+        type: string
+        title: Speaking rate
+        description: "Rate multiplier 0.5–2.0 (1.0 normal, >1 faster). The view also sets this live."

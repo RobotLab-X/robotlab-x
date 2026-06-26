@@ -1,0 +1,34 @@
+allowed:
+  # Conversation I/O. Three service families can provide it; whichever is
+  # running gets used (the tool catalog only surfaces actions on live
+  # services):
+  #   chat        — text-only stand-in (speak + listen), ships in repo/chat/
+  #   speech_local — audio OUTPUT (speak) via Piper TTS, topic root /speech/
+  #   stt_local    — audio INPUT (listen) via sherpa-onnx STT, topic root /stt/
+  # The audio loop is mic -> stt_local.listen -> brain -> speech_local.speak
+  # -> speaker. Each root needs its own rule: single-segment '*' matches
+  # /speech/spk-1/control but never crosses into /stt/.
+  - topic: /speech/*/control
+    actions: [speak, listen]
+  - topic: /stt/*/control
+    actions: [listen]
+  - topic: /chat/*/control
+    actions: [speak, listen]
+  # Head servo only — used to face the speaker when a bearing is reported.
+  - topic: /servo/*/control
+    actions: [move]
+  - topic: /brain/*/control
+    actions: [read_memory, write_memory]
+
+blocked:
+  - topic: /movement/*/control
+    actions: ["*"]
+  - topic: /arm/*/control
+    actions: ["*"]
+  - topic: /system/*/control
+    actions: ["*"]
+  - topic: /video/*/control
+    actions: ["*"]
+  # Federation suffix — never address peer runtimes from a conversation session.
+  - topic: /*/@**
+    actions: ["*"]

@@ -1,0 +1,65 @@
+name: mic_local
+title: Microphone (local)
+description: |
+  Host-side microphone capture. Enumerates the operating system's audio
+  input devices (Linux / Windows / macOS), opens one, and streams live
+  PCM audio frames over the bus.
+
+  Implements the ``microphone`` capability — the same control interface
+  (list_devices / select_device / start / stop / set_params) and the same
+  published shape (``/microphone/{id}/state`` + ``/microphone/{id}/audio``)
+  as the browser microphone, so any consumer that ``requires: [microphone]``
+  works with either without code changes. Only the data path differs: here
+  the audio is captured in this process.
+
+  Backed by ``sounddevice`` (PortAudio), whose wheels bundle PortAudio for
+  all three platforms — no system audio libraries to install. Uses a raw
+  int16 input stream so no numpy is required.
+
+  Subprocess service — PortAudio's blocking device callbacks run in a child
+  process, isolated from the backend.
+
+language: python
+status: development
+author: CloudSeeder
+tags: [hardware, audio, microphone, input]
+icon: icon.svg
+
+# Modular service UI (Option B — docs/TODO_SERVICE_UI_BUNDLES.md).
+ui:
+  entry: ui/dist/ui.js
+  sdk: "^1.0"
+
+# Capability interface this service implements. A consumer that declares
+# ``requires: [microphone]`` discovers this through the tag — it depends
+# only on the abstract capability, not on this concrete type.
+implements: [microphone]
+
+bundled: true
+publish: true
+
+install:
+  kind: pip
+  package_spec: "-e ${APP_ROOT}/repo/mic_local/1.0.0"
+
+entry:
+  argv: [python, -m, mic_local_service]
+
+wizard_config:
+  - id: defaults
+    title: Capture settings
+    fields:
+      - id: sample_rate
+        type: integer
+        title: Sample rate (Hz)
+        description: 16000 is the speech default; 48000 for full-band audio.
+        default: 16000
+      - id: channels
+        type: integer
+        title: Channels (1=mono, 2=stereo)
+        default: 1
+      - id: frame_ms
+        type: integer
+        title: Frame size (ms)
+        description: Audio is published in chunks of this many milliseconds.
+        default: 20

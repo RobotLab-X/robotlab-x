@@ -1,0 +1,74 @@
+name: sabertooth
+title: Sabertooth Motor Driver
+description: |
+  Dimension Engineering Sabertooth 2x25 motor driver, controlled over
+  its "Packetized Serial" protocol on an OS serial port
+  (``/dev/ttyUSB*`` / ``/dev/ttyACM*`` / ``COM*``). Drives two motor
+  channels; signed throttle ``-1.0..+1.0`` per channel.
+
+  Implements the ``motor_controller`` capability interface — a
+  ``motor_control`` (or any other consumer) discovers it through
+  ``implements`` and drives it with the standard
+  ``motor_set`` / ``motor_stop`` / ``motor_stop_all`` actions without
+  knowing the Sabertooth protocol. This is the reference
+  motor_controller implementation.
+
+  Safety: a driver-side ``max_output`` magnitude clamp, the
+  Sabertooth's hardware serial-timeout failsafe, and a host keepalive
+  loop together ensure a runaway or a comms stall stops the motors.
+
+  Subprocess service — pyserial does blocking I/O cleanly in its own
+  process, port handle isolated from the backend.
+
+language: python
+status: development
+author: CloudSeeder
+tags: [hardware, motor, serial, actuator]
+icon: icon.svg
+
+# Modular service UI (Option B — docs/TODO_SERVICE_UI_BUNDLES.md).
+ui:
+  entry: ui/dist/ui.js
+  sdk: "^1.0"
+
+# Capability interfaces. motor_control (and any other consumer)
+# discovers sabertooth through ``implements`` — they depend only on
+# the abstract motor_controller capability, not on this concrete type.
+implements: [motor_controller]
+
+# Source ships bundled, but the pyserial dependency is installed on
+# demand when the user creates a sabertooth@1.0.0 instance.
+bundled: true
+publish: true   # available in the remote registry (see master_template for docs)
+
+install:
+  kind: pip
+  package_spec: "-e ${APP_ROOT}/repo/sabertooth/1.0.0"
+
+entry:
+  argv: [python, -m, sabertooth_service]
+
+wizard_config:
+  - id: connection
+    title: Sabertooth connection
+    fields:
+      - id: last_baud
+        type: integer
+        title: Baud rate
+        description: Packetized Serial supports 2400 / 9600 / 19200 / 38400 / 115200. 9600 is the safe default.
+        default: 9600
+      - id: address
+        type: integer
+        title: Packet address
+        description: Address byte 128-135, set by the driver's DIP switches 1-3. Factory default is 128.
+        default: 128
+      - id: serial_timeout_ms
+        type: integer
+        title: Serial timeout (ms)
+        description: Hardware failsafe — motors stop if no packet arrives within this window. 0 disables.
+        default: 1000
+      - id: max_output
+        type: number
+        title: Max output (0-1)
+        description: Driver-side safety clamp on output magnitude. Lower it to cap motor power regardless of what a consumer commands.
+        default: 1.0

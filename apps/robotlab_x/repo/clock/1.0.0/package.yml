@@ -1,0 +1,40 @@
+name: clock
+title: Clock
+description: |
+  Publishes a tick payload on /clock/{instance}/tick at a configurable
+  interval. Runs in-process inside the robotlab_x backend — no subprocess,
+  no install required. Useful as a steady stream for dashboard widgets
+  + as the simplest possible publisher when verifying bus plumbing.
+language: builtin
+status: released
+author: CloudSeeder
+tags: [demo, telemetry, builtin]
+icon: icon.svg
+
+# Modular service UI (Option B — docs/TODO_SERVICE_UI_BUNDLES.md).
+ui:
+  entry: ui/dist/ui.js
+  sdk: "^1.0"
+
+bundled: true
+publish: true   # available in the remote registry (see master_template for docs)
+
+install:
+  kind: builtin
+
+# In-process services declare the Python module + class the framework
+# should load. The file lives alongside this manifest in the repo, so
+# stock services and user-installed services follow the same convention.
+entry:
+  in_process:
+    module: clock
+    class: ClockService
+
+wizard_config:
+  - id: timing
+    title: Clock instance
+    fields:
+      - id: interval_ms
+        type: integer
+        title: Tick interval (ms)
+        default: 1000

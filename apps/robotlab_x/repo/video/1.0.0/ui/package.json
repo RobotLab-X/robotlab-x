@@ -1,0 +1,11 @@
+{
+  "name": "video-service-ui",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Modular UI bundle for the video service (Option B). Built by robotlab_x_ui/scripts/build-service-ui.mjs; react / react-dom / @rlx/ui are host-provided externals.",
+  "rlx": {
+    "entry": "View.tsx",
+    "sdk": "^1.0"
+  }
+}

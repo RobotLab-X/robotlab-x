@@ -1,0 +1,53 @@
+name: servo
+title: Servo
+description: |
+  Position a servo motor by sending standardized control messages to a
+  servo_controller — typically an Arduino, but the servo service has no
+  hardware dependencies of its own. Attach to any service whose
+  package.yml declares ``implements: [servo_controller]`` and the
+  contract is the same: ``servo_attach(pin)``, ``servo_write(pin, angle)``,
+  ``servo_detach(pin)``.
+
+  In-process builtin — runs inside the robotlab_x backend, no
+  install needed.
+language: builtin
+status: development
+author: CloudSeeder
+tags: [hardware, actuator, builtin]
+# This service consumes the servo_controller interface — the UI uses
+# ``requires`` to filter the attach-target dropdown.
+requires: [servo_controller]
+icon: icon.svg
+
+# Modular service UI (Option B — docs/TODO_SERVICE_UI_BUNDLES.md).
+ui:
+  entry: ui/dist/ui.js
+  sdk: "^1.0"
+
+bundled: true
+publish: true   # available in the remote registry (see master_template for docs)
+
+install:
+  kind: builtin
+
+entry:
+  in_process:
+    module: servo
+    class: ServoService
+
+wizard_config:
+  - id: attach
+    title: Attach to controller
+    fields:
+      - id: controller_type
+        type: string
+        title: Controller type
+        description: e.g. "arduino" — pick any service whose package.yml lists servo_controller under implements.
+      - id: controller_id
+        type: string
+        title: Controller instance
+        description: e.g. "arduino-1"
+      - id: pin
+        type: integer
+        title: Pin number
+        default: 9

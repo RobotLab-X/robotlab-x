@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ik_solver_service"
+version = "1.0.0"
+description = "robotlab_x inverse-kinematics microservice — analytic closed-form for 3-DOF arms with scipy least-squares fallback for everything else."
+requires-python = ">=3.10"
+dependencies = [
+    # numpy for matrix math + scipy.optimize for the numerical IK
+    # fallback. Both are heavy enough on their own that running this
+    # service in a subprocess (not in-process) keeps the backend's
+    # import footprint sane.
+    "numpy>=1.24",
+    "scipy>=1.10",
+]
+
+[project.scripts]
+ik_solver_service = "ik_solver_service.__main__:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

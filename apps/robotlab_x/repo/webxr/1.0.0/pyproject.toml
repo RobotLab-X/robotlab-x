@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "webxr_service"
+version = "1.0.0"
+description = "robotlab_x WebXR teleop bridge — consumes head/controller telemetry from a WebXR headset (Quest 3) over the bus, frame-converts + republishes it for actuators, and serves an immersive in-headset client (feeds + telemetry). Heavy WebXR/3-D libraries live only in the UI bundle; the Python side is light bus routing + frame math."
+requires-python = ">=3.10"
+# No heavy deps — coordinate math is pure-Python (frames.py); rlx_bus +
+# pydantic are pre-installed into every service venv by the installer.
+dependencies = []
+
+[project.scripts]
+webxr_service = "webxr_service.__main__:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

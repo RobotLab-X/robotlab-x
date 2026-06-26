@@ -1,0 +1,52 @@
+name: take_a_note
+description: |
+  Minimal LLM-adapter smoke test. Needs no robot hardware, no
+  sensors, no movement — uses only the brain's own write_memory
+  action as a tool.
+
+  Flow: operator supplies a topic; the brain forms one short
+  reflective paragraph about it; calls write_memory(kind="reflection",
+  content=<paragraph>) to save it. The engine terminates as success
+  on that call (``terminate_on`` — no done emission required from
+  the model).
+
+  Use this to confirm a freshly-configured ollama/anthropic/openai
+  adapter actually round-trips tool calls end-to-end. If this
+  works, every richer workflow that adds vision/speech/movement
+  is incremental work on top.
+
+preferred_backend: ollama
+# llama3.2:3b is the validated working model for this workflow —
+# smallest + fastest pass in TESTING_RESULTS.md. llama3.1:8b emits
+# ``content: "{"`` here (schema-literal interpretation bug). Pin
+# the known-good model so a fresh ollama install on the operator's
+# box runs the workflow correctly out of the gate.
+preferred_model: llama3.2:3b
+max_steps: 2
+timeout_seconds: 90
+requires_human_approval: false
+
+# Engine-driven termination — success as soon as write_memory is
+# called successfully. The model never needs to emit ``done``.
+# Independent of model convergence quirks (loops, verbose done
+# emission, etc.). See repo/brain/1.0.0/TODO.md for the
+# rationale.
+terminate_on:
+  - action: write_memory
+
+inputs:
+  topic:
+    type: string
+    required: true
+    description: |
+      What should the brain take a note about? Free-form text — a
+      question, a thought, a fact, an observation. The brain will
+      reflect on it briefly and save the reflection to memory.
+
+steps:
+  - id: default
+    prompt: prompt.md
+    on_success: success.md
+    on_failure: failure.md
+
+context: []

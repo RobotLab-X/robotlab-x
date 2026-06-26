@@ -1,0 +1,39 @@
+name: patrol_waypoints
+description: |
+  You are running an autonomous patrol. Each waypoint is a named pose
+  the robot will drive to and observe. Visits waypoints in order,
+  observes at each, logs results to memory/patrol.md, and ends in stop
+  state. Requires human approval before any tool call — this is the
+  only workflow in the bundle that drives translation (move_to + stop).
+
+preferred_backend: mock
+max_steps: 16
+timeout_seconds: 600
+requires_human_approval: true
+
+inputs:
+  waypoint_list:
+    type: string
+    required: true
+    description: Comma-separated list of named waypoints to visit in order (1..6).
+  dwell_seconds:
+    type: integer
+    required: false
+    default: 5
+    description: Seconds to dwell + observe at each waypoint (2..30).
+  abort_on_unknown:
+    type: boolean
+    required: false
+    default: true
+    description: If true, an unrecognised waypoint name aborts the patrol before any motion.
+
+steps:
+  - id: default
+    prompt: prompt.md
+    on_success: success.md
+    on_failure: failure.md
+
+context:
+  - memory/waypoints.md
+  - memory/known_objects.md
+  - memory/observations.md

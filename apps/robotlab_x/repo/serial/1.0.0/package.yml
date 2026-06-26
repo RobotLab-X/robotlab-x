@@ -1,0 +1,44 @@
+name: serial
+title: Serial Port
+description: |
+  Diagnostic serial port service. Connects to a single OS serial port
+  (``/dev/ttyACM*`` / ``/dev/ttyUSB*`` / ``COM*``), publishes received
+  bytes on ``/serial/{id}/rx`` (base64), accepts ``write_bytes`` and
+  ``send_file`` actions on ``/serial/{id}/control``.
+
+  Two main use cases:
+
+    * Standalone serial console — operator picks a port, watches bytes
+      stream in, sends commands. The UI offers hex / hexdump / ASCII /
+      decimal / line-decoded views, autoscroll, file send, etc.
+    * Proxy / virtual port for other services. Other services (e.g.
+      arduino with ``serial_proxy_id="serial-1"``) consume the serial
+      stream through this service's bus topics instead of opening the
+      OS port themselves. Lets you observe firmata-style traffic mid-
+      flow without forfeiting the protocol.
+
+  Subprocess service — pyserial does blocking I/O cleanly in its own
+  process, port handle stays isolated from the backend.
+
+language: python
+status: development
+author: CloudSeeder
+tags: [hardware, serial, diagnostic]
+icon: icon.svg
+
+# Modular service UI (Option B — docs/TODO_SERVICE_UI_BUNDLES.md).
+ui:
+  entry: ui/dist/ui.js
+  sdk: "^1.0"
+
+# Source ships bundled, but the pyserial dependency is installed
+# on demand when the user creates a serial@1.0.0 instance.
+bundled: true
+publish: true   # available in the remote registry (see master_template for docs)
+
+install:
+  kind: pip
+  package_spec: "-e ${APP_ROOT}/repo/serial/1.0.0"
+
+entry:
+  argv: [python, -m, serial_service]

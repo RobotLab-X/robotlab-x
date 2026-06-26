@@ -1,0 +1,24 @@
+allowed:
+  - topic: /video/*/control
+    actions: [capture_frame, detect_objects]
+  # move_to + stop drive translation; turn allowed for in-place reorient at a waypoint
+  - topic: /movement/*/control
+    actions: [move_to, stop, turn]
+  - topic: /servo/*/control
+    actions: [move]
+  - topic: /speech/*/control
+    actions: [speak]
+  - topic: /brain/*/control
+    actions: [write_memory]
+
+blocked:
+  # raw drive/follow are blocked — patrol must use move_to to named poses only
+  - topic: /movement/*/control
+    actions: [drive, follow]
+  - topic: /arm/*/control
+    actions: ["*"]
+  - topic: /system/*/control
+    actions: ["*"]
+  # @** = federation opt-in suffix; block all cross-peer tool calls from this workflow
+  - topic: /*/@**
+    actions: ["*"]

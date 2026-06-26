@@ -1,0 +1,70 @@
+name: stt_local
+title: Speech-to-text (local)
+description: |
+  Host-side, fully-offline speech-to-text. Consumes a microphone's PCM audio
+  frames off the bus and transcribes them in real time with sherpa-onnx (a
+  streaming Zipformer recognizer — no cloud, no system audio libraries). The
+  input counterpart to the speech_local (Piper TTS) service.
+
+  Implements the ``transcription`` capability — the shared control interface
+  (listen / start / stop / select_input / set_model / list_models / mute /
+  unmute) every speech-to-text service type exposes. ``listen(timeout?, bearing?)
+  -> {text, bearing, timeout}`` is the SAME verb + shape the brain's
+  conversation workflows use, so this is a drop-in audio ``listen`` provider
+  (the chat service is the text stand-in).
+
+  Pick which microphone to transcribe with ``select_input`` /
+  ``input_kind: topic`` + ``input_ref: /microphone/{id}/audio``. Streaming
+  partials + finalized utterances are published on ``/stt/{id}/text``; a
+  retained snapshot lives on ``/stt/{id}/state``.
+
+  The first use of a model downloads it (~70 MB streaming Zipformer, int8)
+  into ``<data>/stt/models/``; subsequent runs are offline.
+
+  Backed by ``sherpa-onnx``, whose wheel bundles onnxruntime + the endpoint
+  detector for all platforms (Linux / macOS / Windows / Raspberry Pi) — no
+  torch, no ffmpeg. Subprocess service: the recognizer runs in a child
+  process, isolated from the backend.
+
+language: python
+status: development
+author: CloudSeeder
+tags: [audio, stt, asr, input]
+icon: icon.svg
+
+ui:
+  entry: ui/dist/ui.js
+  sdk: "^1.0"
+
+implements: [transcription]
+
+bundled: true
+publish: true
+
+install:
+  kind: pip
+  package_spec: "-e ${APP_ROOT}/repo/stt_local/1.0.0"
+
+entry:
+  argv: [python, -m, stt_local_service]
+
+wizard_config:
+  - id: defaults
+    title: Transcription settings
+    fields:
+      - id: input_ref
+        type: string
+        title: Microphone audio topic
+        description: "The mic audio topic to transcribe, e.g. /microphone/mic_local-1/audio. The view also sets this live."
+      - id: model
+        type: string
+        title: Model (optional)
+        description: "sherpa-onnx model id, e.g. streaming-zipformer-en. Blank = the default (downloaded on first use)."
+      - id: sample_rate
+        type: integer
+        title: Source sample rate (Hz)
+        default: 16000
+      - id: continuous
+        type: boolean
+        title: Transcribe on start
+        default: false

@@ -1,0 +1,33 @@
+name: runtime
+title: Runtime
+description: |
+  The robotlab_x runtime itself — the FastAPI server, its WebSocket
+  endpoint, and the in-process pub/sub bus, packaged as a single
+  service. Singleton per process. There is exactly one instance of
+  this type per backend, and that instance IS the backend you're
+  connected to.
+
+  From the canvas's perspective the runtime is a service like any
+  other — it appears in the workspace, has a status pill, can be
+  inspected. Install/start/stop/uninstall operations are accepted via
+  the same lifecycle endpoints as every other type, but the singleton
+  constraint means a second install is refused and uninstalling the
+  one instance would tear down the backend itself.
+language: builtin
+status: released
+author: CloudSeeder
+tags: [core, builtin, singleton]
+icon: icon.svg
+
+# Modular service UI (Option B — docs/TODO_SERVICE_UI_BUNDLES.md).
+ui:
+  entry: ui/dist/ui.js
+  sdk: "^1.0"
+
+bundled: true
+# Exactly one instance allowed per backend process. The catalog seeder
+# auto-creates it on startup if one doesn't already exist.
+singleton: true
+
+install:
+  kind: builtin

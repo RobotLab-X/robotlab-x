@@ -1,0 +1,21 @@
+{
+  "//": "Type-checks modular service-UI bundles (Option B — docs/TODO_SERVICE_UI_BUNDLES.md). The CI vetting gate: a service author's repo/<svc>/<ver>/ui/View.tsx is checked against the REAL @rlx/ui surface (mapped to the host SDK) + the host's React types. The vite build that produces ui.js only transpiles (esbuild) and would not catch type errors. Run: npx tsc -p tsconfig.service-ui.json",
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@rlx/ui": ["./src/rlx-ui"],
+      "react": ["./node_modules/@types/react"],
+      "react-dom": ["./node_modules/@types/react-dom"],
+      "react/jsx-runtime": ["./node_modules/@types/react/jsx-runtime"]
+    },
+    "noEmit": true
+  },
+  "include": [
+    "src/vite-env.d.ts",
+    "src/rlx-ui",
+    "../robotlab_x/repo/*/*/ui/**/*.ts",
+    "../robotlab_x/repo/*/*/ui/**/*.tsx"
+  ],
+  "exclude": ["**/dist/**", "**/node_modules/**"]
+}

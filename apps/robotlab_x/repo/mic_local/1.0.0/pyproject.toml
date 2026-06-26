@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mic_local_service"
+version = "1.0.0"
+description = "robotlab_x local microphone service — cross-platform host audio capture (PortAudio) streaming PCM frames over the bus. Implements the microphone capability."
+requires-python = ">=3.10"
+dependencies = [
+    # sounddevice ships PortAudio in its wheels for Windows / macOS / Linux,
+    # so host capture is self-contained. We use RawInputStream (int16) so
+    # numpy is NOT required. rlx_bus + rlx_audio are pre-installed into the
+    # venv by runtime/installer.py.
+    "sounddevice>=0.4,<0.6",
+]
+
+[project.scripts]
+mic_local_service = "mic_local_service.__main__:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

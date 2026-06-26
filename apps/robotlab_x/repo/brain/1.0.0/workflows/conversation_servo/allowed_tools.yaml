@@ -1,0 +1,36 @@
+allowed:
+  # Conversation I/O — the operator's channel into this workflow. Text via
+  # chat, or audio via stt_local.listen (in) + speech_local.speak (out);
+  # whichever is running is surfaced. Each topic root needs its own rule.
+  - topic: /chat/*/control
+    actions: [listen, speak]
+  - topic: /speech/*/control
+    actions: [speak]
+  - topic: /stt/*/control
+    actions: [listen]
+  # Every servo on every id — operator picked which one at run start
+  # and that selection is persisted to memory/conversation_servo_config.md.
+  # The model is constrained to a single servo by the prompt, not by
+  # this allowlist (which is intentionally permissive so the same
+  # workflow works against any servo without operator-edits to yaml).
+  - topic: /servo/*/control
+    actions: ["*"]
+  # Persist the servo selection across runs.
+  - topic: /brain/*/control
+    actions: [read_memory, write_memory]
+
+blocked:
+  # Hard-blocked categories — out of scope for a conversational
+  # servo controller. Defensive against the model wandering into
+  # unrelated capabilities mid-conversation.
+  - topic: /movement/*/control
+    actions: ["*"]
+  - topic: /arm/*/control
+    actions: ["*"]
+  - topic: /system/*/control
+    actions: ["*"]
+  - topic: /video/*/control
+    actions: ["*"]
+  # Federation suffix — peer runtimes are out of scope.
+  - topic: /*/@**
+    actions: ["*"]

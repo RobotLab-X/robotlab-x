@@ -1,0 +1,30 @@
+allowed:
+  # Vision: capture a frame and run detection on it.
+  - topic: /video/*/control
+    actions: [capture_frame, detect_objects]
+  # Head servo: pan/tilt sweeps and fine-centring. Body movement is separate.
+  - topic: /servo/*/control
+    actions: [move]
+  # Movement: turn-in-place only — driving / move_to / follow are blocked below.
+  - topic: /movement/*/control
+    actions: [turn]
+  # Speech: deliver the greeting line.
+  - topic: /speech/*/control
+    actions: [speak]
+  # Memory: append the interaction record.
+  - topic: /brain/*/control
+    actions: [write_memory]
+
+blocked:
+  # Locomotion beyond turn-in-place is forbidden for greeting flow.
+  - topic: /movement/*/control
+    actions: [drive, move_to, follow]
+  # No arm manipulation at all.
+  - topic: /arm/*/control
+    actions: ["*"]
+  # No system-level actions (shutdown, reboot, config, etc.).
+  - topic: /system/*/control
+    actions: ["*"]
+  # Federation opt-in (@**) is denied — keep this workflow local-only.
+  - topic: /*/@**
+    actions: ["*"]

@@ -1,0 +1,1 @@
+Room map was not written. See the failure reason on the run record — typical causes are detector unavailable, head servo failing to reach all bearings, or the memory writer rejecting the JSON payload.

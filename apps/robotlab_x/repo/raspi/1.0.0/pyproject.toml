@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "raspi_service"
+version = "1.0.0"
+description = "robotlab_x raspi service — Raspberry Pi GPIO + I2C interface via gpiozero / lgpio / smbus2. Subprocess service; mocks GPIO on non-Pi hosts so development without hardware still works."
+requires-python = ">=3.10"
+dependencies = [
+    # gpiozero is the high-level GPIO abstraction. It auto-picks
+    # lgpio (Pi 5), RPi.GPIO (Pi 3/4 fallback), or pigpio at runtime
+    # and falls back to a mock factory when no backend can talk to
+    # /dev/gpiomem (i.e. when running on non-Pi hardware).
+    "gpiozero>=2.0,<3.0",
+    "lgpio; platform_machine == 'aarch64' or platform_machine == 'armv7l'",
+    # I2C surface. smbus2 is pure-Python on top of the i2c-dev ioctl.
+    "smbus2>=0.4,<1.0",
+    # rlx_bus (WebSocket bus client) is pre-installed into every
+    # subprocess venv by runtime/installer.py.
+]
+
+[project.scripts]
+raspi_service = "raspi_service.__main__:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

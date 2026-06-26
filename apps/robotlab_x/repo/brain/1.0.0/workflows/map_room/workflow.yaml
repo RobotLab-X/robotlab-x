@@ -1,0 +1,46 @@
+name: map_room
+description: |
+  Produce a coarse spatial map of the robot's current surroundings as a
+  JSON file. One-shot and chunky — no SLAM, no fine-grained navigation,
+  just an inventory of what is roughly where. Sweep the head/pan servo
+  across evenly spaced bearings, capture + detect at each, and serialise
+  the result to memory/room_map.json. Read-only on the world — head
+  servo plus camera plus speech only, no movement, no arms.
+
+preferred_backend: mock
+max_steps: 14
+timeout_seconds: 240
+requires_human_approval: false
+
+inputs:
+  sweep_steps:
+    type: integer
+    required: false
+    default: 8
+    description: |
+      Number of bearings to sample (1..8). Lower values produce a coarser
+      map faster.
+  min_confidence:
+    type: number
+    required: false
+    default: 0.4
+    description: |
+      Minimum detector confidence to include a detection in the room map.
+  overwrite:
+    type: boolean
+    required: false
+    default: true
+    description: |
+      When true, room_map.json is fully replaced; when false, this run is
+      appended as a new snapshot.
+
+steps:
+  - id: default
+    prompt: prompt.md
+    on_success: success.md
+    on_failure: failure.md
+
+context:
+  - memory/room_map.json
+  - memory/known_objects.md
+  - memory/observations.md

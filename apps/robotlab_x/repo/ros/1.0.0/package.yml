@@ -1,0 +1,58 @@
+name: ros
+title: ROS
+description: |
+  ROS / ROS2 bridge + robot-description toolbox. v1 ships ONE capability:
+  converting a robot description (URDF, or xacro expanded without a ROS
+  install) into an ik_solver kinematic-chain model — so dimensions, joint
+  axes and limits from an existing ROS robot (e.g. InMoov) can be imported
+  and driven by robotlab_x without standing up ROS.
+
+  Subprocess service — runs in its own venv so the ROS-flavoured deps
+  (xacro and, later, rclpy / tf / message packages) stay isolated from the
+  backend. xacro's ``$(find <pkg>)`` is resolved from a local package.xml
+  scan, so no sourced ROS workspace is required for the export feature.
+
+  This is the durable home for future ROS work (live joint_states, tf,
+  sim bridges); today it only exposes the URDF→chain export actions.
+language: python
+status: development
+author: CloudSeeder
+tags: [ros, ros2, urdf, xacro, kinematics, import]
+icon: icon.svg
+
+# Modular service UI (Option B — docs/TODO_SERVICE_UI_BUNDLES.md). Add a
+# ui/ bundle later; the export actions are bus-callable without one.
+
+# Heavy/optional deps + niche use → not shipped in the base binary. Install
+# from the catalog when you need to import a robot description.
+bundled: false
+
+install:
+  kind: pip
+  package_spec: "-e ${APP_ROOT}/repo/ros/1.0.0"
+
+entry:
+  argv: [python, -m, ros_service]
+
+wizard_config:
+  - id: defaults
+    title: ros instance
+    fields:
+      - id: package_root
+        type: string
+        title: ROS package root
+        description: >-
+          Filesystem path scanned (recursively) for package.xml so xacro's
+          $(find <pkg>) resolves without a sourced ROS workspace. Point this
+          at the checkout that holds the robot's description packages, e.g.
+          /home/me/github/inmoov_ros. Leave blank to pass absolute paths per
+          call instead.
+        default: ""
+      - id: output_dir
+        type: string
+        title: Export output directory
+        description: >-
+          Directory where expanded URDFs and exported chain JSON are written.
+          Created if missing. Blank = return results over the bus only,
+          writing nothing to disk.
+        default: ""

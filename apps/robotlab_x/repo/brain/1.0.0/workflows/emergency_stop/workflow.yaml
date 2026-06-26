@@ -1,0 +1,32 @@
+name: emergency_stop
+description: |
+  Halt all motion immediately. Calls every ``.stop`` action on
+  movement + arm services in scope, speaks a confirmation, logs the
+  event to memory. The ONE workflow that gets to call motion-stop
+  actions (everything else has them blocked).
+
+  Use when something has gone wrong on the floor and you need the
+  robot to freeze. Idempotent — running it on an already-stopped
+  robot is harmless.
+
+preferred_backend: mock
+max_steps: 6
+timeout_seconds: 30
+max_tokens_per_run: 5000
+# No approval required — emergency stop is the one operation that
+# MUST go through without a human gate. Time-to-stop matters.
+requires_human_approval: false
+
+inputs:
+  reason:
+    type: string
+    required: false
+    default: "operator triggered"
+    description: |
+      Short note logged with the stop event — what prompted it.
+
+steps:
+  - id: default
+    prompt: prompt.md
+    on_success: success.md
+    on_failure: failure.md

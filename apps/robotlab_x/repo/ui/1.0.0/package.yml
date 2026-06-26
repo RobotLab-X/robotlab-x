@@ -1,0 +1,38 @@
+name: ui
+title: Canvas UI
+description: |
+  Browser canvas state — node positions, edges, viewport, per-node view
+  choices. Stone 6 of the config-sets spec promotes this from a passive
+  presence-marker into a real in-process service so canvas layout
+  persists, swaps, and ships through the same loader every other
+  service config uses.
+
+  Browser drag/zoom events publish to /ui/{id}/control with the
+  framework-mounted ``set_config`` action. The service validates +
+  publishes /ui/{id}/state retained. Mutations debounce on the UI
+  side (~500ms idle) before flushing — drag operations don't spam
+  the wire.
+
+  Canvas data shipped via this service is COSMETIC: which side of the
+  screen a node sits on, viewport zoom, whether a node renders in its
+  full view or just its name. It does NOT define what services run
+  (runtime.yml::start_order owns that) nor their configs (each
+  per-proxy yml owns its own).
+
+language: builtin
+status: development
+author: CloudSeeder
+tags: [ui, canvas, framework]
+icon: icon.svg
+
+bundled: true
+
+implements: [canvas_state]
+
+install:
+  kind: builtin
+
+entry:
+  in_process:
+    module: ui
+    class: UIService

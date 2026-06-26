@@ -1,0 +1,9 @@
+{
+  "name": "keyboard-local-service-ui",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Modular UI bundle for the keyboard_local service (Option B). Controls + displays host keyboard capture (backend/device/grab/scope) and the live key readout. lucide-react is bundled (tree-shaken); react/@rlx/ui are host externals.",
+  "dependencies": { "lucide-react": "^0.344.0" },
+  "rlx": { "entry": "View.tsx", "sdk": "^1.0" }
+}

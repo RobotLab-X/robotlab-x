@@ -1,0 +1,47 @@
+name: motor_control
+title: Motor Control
+description: |
+  Protocol-agnostic, UI-facing motor commander. Manages a set of motor
+  *channels*, each bound to a ``motor_controller``-implementing service
+  (e.g. a Sabertooth) and one of its motor channels. A single
+  motor_control can drive many channels across many different
+  controllers at once — that's the point of the abstraction.
+
+  Per channel: a signed throttle (-1..+1), safety output limits
+  (min/max), host-side slew-rate ramp limiting, invert, and a live
+  output readout. A latching emergency stop (the UI's big STOP button,
+  also space/enter) forces every output to 0 until cleared.
+
+  Consumes the ``motor_controller`` interface
+  (``motor_set`` / ``motor_stop`` / ``motor_stop_all``) and promotes a
+  ``motor_control`` interface of its own so a brain or other surface
+  can drive it.
+
+  In-process builtin — runs inside the robotlab_x backend, no install.
+
+language: builtin
+status: development
+author: CloudSeeder
+tags: [hardware, motor, actuator, builtin]
+icon: icon.svg
+
+# Modular service UI (Option B — docs/TODO_SERVICE_UI_BUNDLES.md).
+ui:
+  entry: ui/dist/ui.js
+  sdk: "^1.0"
+
+# Consumes motor_controller (the UI filters the attach dropdown by
+# this) and promotes motor_control for higher-level consumers.
+requires: [motor_controller]
+implements: [motor_control]
+
+bundled: true
+publish: true   # available in the remote registry (see master_template for docs)
+
+install:
+  kind: builtin
+
+entry:
+  in_process:
+    module: motor_control
+    class: MotorControlService

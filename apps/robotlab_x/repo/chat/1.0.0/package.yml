@@ -1,0 +1,38 @@
+name: chat
+title: Chat
+description: |
+  Text-only conversation bridge between an operator and a brain
+  workflow. Exposes the same shape the speech service would (``listen``
+  + ``speak``) but transports plain text via the bus — useful for
+  developing + testing conversation workflows without speech hardware.
+
+  Operator publishes utterances to ``/chat/{id}/inbox`` (via UI text
+  box or ``rlx publish``). The brain workflow calls ``listen()`` to
+  pull one — it blocks until a message arrives or the timeout fires
+  — and ``speak(text)`` to emit a reply on ``/chat/{id}/spoken``,
+  which the UI renders. The conversation_session bundled workflow
+  is the canonical consumer.
+
+language: builtin
+status: development
+author: CloudSeeder
+tags: [chat, conversation, builtin, brain]
+icon: icon.svg
+
+# Modular service UI (Option B — docs/TODO_SERVICE_UI_BUNDLES.md).
+ui:
+  entry: ui/dist/ui.js
+  sdk: "^1.0"
+
+bundled: true
+publish: true   # available in the remote registry (see master_template for docs)
+
+install:
+  kind: builtin
+
+# In-process — no subprocess, no install. Same convention as clock,
+# cron, ui, security.
+entry:
+  in_process:
+    module: chat
+    class: ChatService

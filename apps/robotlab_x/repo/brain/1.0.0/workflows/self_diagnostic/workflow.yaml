@@ -1,0 +1,42 @@
+name: self_diagnostic
+description: |
+  Run a non-invasive self-diagnostic across the brain's neighbour
+  services — video, speech, servo, optional movement, and brain
+  memory — collect per-probe pass/fail with elapsed timings, speak
+  a verdict, and append a structured row to diagnostics memory.
+
+  A failing probe never aborts the run; the diagnostic itself is
+  the artifact, so the workflow always emits `done`. If five
+  consecutive probes fail it short-circuits with a `critical: bus
+  appears down` verdict.
+
+preferred_backend: mock
+max_steps: 14
+timeout_seconds: 120
+# max_tokens_per_run: <unset — leave default>
+requires_human_approval: false
+
+inputs:
+  include_movement:
+    type: boolean
+    required: false
+    default: true
+    description: |
+      Include in-place turn probe. Set false if the robot is on a
+      table edge.
+  verbose_speech:
+    type: boolean
+    required: false
+    default: false
+    description: |
+      If true, spoken verdict lists every probe; otherwise just the
+      summary.
+
+steps:
+  - id: default
+    prompt: prompt.md
+    on_success: success.md
+    on_failure: failure.md
+
+context:
+  - memory/diagnostics.md

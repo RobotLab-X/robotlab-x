@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
+  <title>servo_mixer</title>
+  <!-- Lucide-style mixing-board faders: three vertical tracks with knobs
+       at different heights. Plain SVG so the repo-served icon endpoint can
+       stream it directly without a build step. -->
+  <line x1="5" y1="3" x2="5" y2="21"/>
+  <line x1="12" y1="3" x2="12" y2="21"/>
+  <line x1="19" y1="3" x2="19" y2="21"/>
+  <rect x="3" y="7" width="4" height="3" rx="1" fill="currentColor"/>
+  <rect x="10" y="13" width="4" height="3" rx="1" fill="currentColor"/>
+  <rect x="17" y="9" width="4" height="3" rx="1" fill="currentColor"/>
+</svg>

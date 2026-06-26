@@ -1,0 +1,67 @@
+name: keyboard_local
+title: Keyboard (host)
+description: |
+  Host keyboard. Captures the operator's physical keyboard at the OS level
+  and publishes the SAME ``keyboard`` capability as the browser keyboard —
+  identical control interface + published shape (``/keyboard/{id}/state`` +
+  ``/keyboard/{id}/event``) and the same keymap (key → bus action) layer, so
+  any consumer that ``requires: [keyboard]`` works with either.
+
+  Two backends, auto-selected:
+    * evdev — Linux / Raspberry Pi. Reads /dev/input BELOW the compositor, so
+      it works under Wayland AND headless, and supports exclusive **grab**
+      (captured keys do not reach other apps — teleop). Requires the user to
+      be in the ``input`` group (or root).
+    * pynput — Windows / macOS / X11-Linux. Global low-level hook. macOS needs
+      Input Monitoring + Accessibility granted to the host process. No native-
+      Wayland global capture, and no exclusive grab.
+
+  SECURITY: a host keyboard hook is keylogger-class. It is OFF until armed
+  (start_capture), surfaces a clear capturing indicator, and stop_capture
+  fires every keymap on_up as an all-stop so a robot can't be left driving.
+
+  On install a per-type venv is built and pynput (+ evdev on Linux) is
+  pip-installed. Subprocess service — the capture library's threads + the
+  input devices stay isolated from the backend.
+
+language: python
+status: development
+author: CloudSeeder
+tags: [input, keyboard, host, teleop, hotkey]
+icon: icon.svg
+
+ui:
+  entry: ui/dist/ui.js
+  sdk: "^1.0"
+
+implements: [keyboard]
+
+bundled: true
+publish: true
+
+install:
+  kind: pip
+  package_spec: "-e ${APP_ROOT}/repo/keyboard_local/1.0.0"
+
+entry:
+  argv: [python, -m, keyboard_local_service]
+
+wizard_config:
+  - id: defaults
+    title: Capture settings
+    fields:
+      - id: backend
+        type: string
+        title: Backend (auto | evdev | pynput)
+        description: "'auto' picks evdev on Linux (Wayland/headless/grab) else pynput."
+        default: auto
+      - id: scope
+        type: string
+        title: Capture scope (global | focused)
+        description: "'global' captures everywhere; 'focused' is best-effort window-filtered (X11/Win/mac)."
+        default: global
+      - id: grab
+        type: boolean
+        title: Exclusive grab (evdev only)
+        description: When on, captured keys do NOT reach other apps. Use for teleop. evdev/Linux only.
+        default: false

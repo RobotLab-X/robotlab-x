@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rlx_servo_cal"
+version = "0.1.0"
+description = "Shared servo↔joint calibration for robotlab_x: the JointCalibration model + the affine math°↔servo° map (math_to_servo/servo_to_math) + auto_calibrate (fit a joint's math range onto a servo's usable range), so the ik_solver and robot_kinematics services use ONE calibration primitive that can't drift."
+requires-python = ">=3.10"
+# Only depends on pydantic, which rlx_bus already installs into every
+# service venv before this package. Listing it here would make pip try
+# PyPI; leave it implicit (same convention as rlx_audio).
+dependencies = []
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

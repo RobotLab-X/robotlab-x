@@ -1,0 +1,301 @@
+# ─────────────────────────────────────────────────────────────────────
+# master_template — reference manifest for new robotlab_x services.
+#
+# This is NOT a real service — the runtime treats it as one (loads
+# metadata, lists it in the catalog) but it does nothing useful when
+# started. Its job is to be the canonical, heavily-commented example
+# of every field a service author can declare in package.yml.
+#
+# HOW TO USE
+#   1. Copy this whole directory to ``repo/<your-name>/1.0.0/``.
+#   2. Rename the python module / class to match your service.
+#   3. Strip the commentary; keep only the fields you need.
+#   4. Run rlx — your service appears in the type catalog
+#      immediately, no install required (in-process variant; see
+#      ``install.kind`` notes below for the subprocess flavor).
+#
+# DESIGN PRINCIPLE
+#   Every field that isn't strictly required is OPTIONAL and has a
+#   sensible default. A minimal package.yml for an in-process service
+#   is ~10 lines (see ``clock/1.0.0/package.yml`` for the real-world
+#   minimal example).
+# ─────────────────────────────────────────────────────────────────────
+
+
+# ─── IDENTITY (required) ─────────────────────────────────────────────
+
+# Service type name. Becomes:
+#   * the topic root         /<name>/<proxy_id>/...
+#   * the python module hint (subprocess services: ``argv: [python, -m, <name>_service]``)
+#   * the directory name in repo/<name>/<version>/
+# Must be lowercase, alphanumeric + underscore, no hyphens. No
+# collisions with another service type. The runtime keys its type
+# registry by this string.
+name: master_template
+title: Master Template
+
+# Free-text description. Markdown allowed but won't be rendered
+# anywhere yet — show up as a string in the Catalog UI's tooltip and
+# in the catalog.yml the registry publishes. Multi-line via YAML's
+# ``|`` is preferred over ``>`` so paragraph breaks survive.
+description: |
+  Reference implementation showing every package.yml field. Copy this
+  directory to start a new service. Doesn't do anything useful when
+  started — see ``clock`` or ``echo`` for actual minimal services.
+
+
+# ─── DISCOVERY METADATA (optional, but useful) ───────────────────────
+
+# Implementation language. Used by the catalog UI to flag "this needs
+# python" / "this needs node" prereqs to the user. ``builtin`` means
+# "no separate runtime — code runs inside the robotlab_x process";
+# ``python`` means the install path is uv venv + pip install.
+#
+# Today the only fully-supported values are ``builtin`` and
+# ``python``. ``javascript`` / ``typescript`` / ``rust`` are reserved
+# for future subprocess-via-stdio service support.
+language: builtin
+
+# Lifecycle status — purely informational, surfaces in the catalog UI
+# as a chip. Conventional values:
+#   development  — in flux; expect breakage
+#   alpha        — feature-complete, narrow user base
+#   beta         — broader user testing, API stabilising
+#   released     — stable, semantically versioned
+#   deprecated   — superseded by another service; eventual removal
+status: development
+
+# Who maintains this service. Free-text. For services that ship in
+# the bundle this is conventionally ``CloudSeeder``; community
+# services should put the author's handle or org.
+author: CloudSeeder
+
+# Tag list — drives the catalog UI's filter chips. Use existing tags
+# where possible (browse the other repo/*/package.yml files) so the
+# filter dropdown doesn't become a long-tail mess. Suggested
+# categories: hardware, sensor, actuator, vision, ml, demo,
+# telemetry, scheduler, utility, builtin, phase-N.
+tags: [example, template, documentation]
+
+# Path (relative to this package.yml) to a square SVG icon shown in
+# the Catalog UI. Keep it ≤ 256×256 and ≤ 8 KB. Optional — services
+# without an icon fall back to a generic shape.
+icon: icon.svg
+
+
+# ─── CAPABILITY DECLARATIONS (optional) ──────────────────────────────
+
+# Capability interfaces this service IMPLEMENTS. Other services can
+# discover this one as a binding target without depending on the
+# concrete type. Example: ``arduino`` implements ``servo_controller``
+# so the ``servo`` service can attach to any Firmata-compatible board
+# without naming arduino directly. Format is a flat list of
+# capability strings — there's no central registry of capability
+# names, so coordinate via documentation when introducing a new one.
+implements: []
+
+# Capability interfaces this service REQUIRES. The UI uses this to
+# filter the "attach to controller" dropdown so the user only sees
+# compatible peers. Example: ``servo`` requires ``servo_controller``.
+requires: []
+
+
+# ─── BUNDLE PARTICIPATION (required) ─────────────────────────────────
+
+# Does this service's source ship inside the robotlab_x binary
+# bundle? The packaging tooling (``apps/robotlab_x/packaging/build.sh``)
+# walks repo/ and copies every directory with ``bundled: true`` into
+# ``<bundle>/repo/``. Anything ``bundled: false`` is excluded.
+#
+# Pick true for:
+#   * core services every operator needs (cli, clock, runtime)
+#   * common hardware adapters worth pre-shipping
+#   * any service whose source is small + dep-light
+# Pick false for:
+#   * heavy deps that bloat the bundle (e.g. opencv > 80 MB)
+#   * platform-specific code that doesn't apply to every install
+#   * private / WIP services not yet ready for distribution
+#
+# IMPORTANT: this is INDEPENDENT of whether the service is available
+# remotely. A service can be ``bundled: true`` AND published to the
+# registry — operators on stripped-down bundles can still install it.
+# And ``bundled: false`` services MUST be published (or sideloaded)
+# to be reachable. The separate ``publish`` field below decides remote
+# availability; ``bundled`` only controls whether the source ships in
+# the binary.
+#
+# Operational consequence: a service with ``bundled: true`` cannot
+# be fully removed by Uninstall — its files come back when the
+# bundle is re-extracted. Uninstall on a bundled service drops it to
+# LOADED (clears venv + wizard config). Uninstall on a non-bundled
+# service can also Remove (drops to ABSENT, deletes the dir).
+bundled: false
+
+
+# ─── REGISTRY PUBLICATION (optional, default false) ──────────────────
+
+# Should this service version be published to a remote registry? This
+# is the SINGLE source of truth for "available remotely" — there is no
+# central registry.yml. The build/publish tooling
+# (``tools/build_services.py`` / ``tools/publish_services.py``) walks
+# ``repo/`` and acts on every version with ``publish: true``.
+#
+#   * Independent of ``bundled`` — a service can be bundled, published,
+#     both, or neither.
+#   * Maturity is the ``status`` field above. ``publish_services.py
+#     --status released`` publishes only mature-enough versions, so you
+#     can flag a beta service ``publish: true`` without it landing in a
+#     released-only channel.
+#   * WHERE it ships (a file:// mirror, an HTTP host, GitHub Releases)
+#     is NOT declared here — that's a transport concern, chosen by
+#     ``publish_services.py``'s ``--kind`` / ``--repo`` / ``--base-url``
+#     flags + defaults.
+#
+# Default is false (omit the field). A new service usually stays
+# unpublished until it's worth distributing.
+publish: false
+
+
+# ─── INSTALL HOOK (required) ─────────────────────────────────────────
+
+# How the runtime takes this service from LOADED → INSTALLED. The
+# install path runs once per (type, version) on first Start, and is
+# explicitly re-triggered by a Reinstall action.
+install:
+  # The installer dispatch key. Supported today:
+  #
+  #   builtin  — no install step. Used for in-process services with
+  #              zero deps beyond what the rlx runtime already has
+  #              (clock, echo, cli). LOADED == INSTALLED for these.
+  #
+  #   pip      — create a per-type venv at
+  #              ``repo/<name>/<version>/.venv/`` and run
+  #              ``uv pip install <package_spec>`` into it. Used for
+  #              subprocess services that have their own dep tree.
+  #              The venv is reused across Start/Stop cycles and
+  #              wiped on Uninstall.
+  #
+  # Future kinds reserved: ``npm``, ``cargo``, ``docker``.
+  kind: builtin
+
+  # When kind: pip — what to install. Conventionally
+  # ``-e ${APP_ROOT}/repo/<name>/<version>`` so changes to the source
+  # are picked up live during dev. ${APP_ROOT} is substituted by the
+  # installer to the running rlx app root (where ``repo/`` lives).
+  # Plain pypi package specs (e.g. ``pandas>=2``) also work for
+  # services that don't have their own source tree.
+  #
+  # package_spec: "-e ${APP_ROOT}/repo/master_template/1.0.0"
+
+
+# ─── ENTRY POINT (required, shape depends on language/install) ───────
+
+# How the runtime starts an instance of this service. Two flavors —
+# pick exactly one, leave the other commented.
+entry:
+
+  # ── In-process variant (language: builtin) ───────────────────────
+  # The framework imports the module + instantiates the class via
+  # importlib. Module is relative to this package.yml's directory
+  # (``repo/<name>/<version>/``). Class must inherit from
+  # ``robotlab_x.framework.Service`` (the in-process variant).
+  in_process:
+    module: master_template
+    class: MasterTemplateService
+
+  # ── Subprocess variant (language: python, install.kind: pip) ─────
+  # The runtime spawns this argv as a child process. ${PORT} (only)
+  # is substituted to a dynamically allocated port; everything else
+  # is verbatim. The child gets the rlx auth token in its env and is
+  # expected to use ``rlx_bus`` to publish its hello + topics.
+  # See ``echo_http/1.0.0/`` for the canonical example.
+  #
+  # argv: [python, -m, master_template_service]
+
+
+# ─── WIZARD CONFIG (optional, but recommended for non-trivial svcs) ──
+
+# Drives the "Configure" panel the UI shows after the user picks
+# this type from the catalog but before they Start an instance. Each
+# step is a screen; each field is a control on that screen. The
+# values are stored on the service_proxy row's ``service_config`` and
+# made available to the service as its config object.
+#
+# Field types: ``string``, ``integer``, ``boolean``, ``enum``
+# (with ``options: [...]``).
+#
+# Skip this section entirely for services with no user-configurable
+# state (e.g. echo, where the topics are derived from the proxy id).
+wizard_config:
+  - id: defaults
+    title: master_template instance
+    fields:
+      - id: example_message
+        type: string
+        title: A string field
+        description: Free-text shown to the user under the input.
+        default: "hello from master_template"
+
+      - id: tick_count
+        type: integer
+        title: Tick count
+        default: 5
+
+      - id: enabled
+        type: boolean
+        title: Enabled by default
+        default: true
+
+
+# ─── FRONTEND UI (optional, Option B) ────────────────────────────────
+
+# A modular service UI shipped with this service. When present, the host
+# dynamically imports ``ui/dist/ui.js`` (compiled from ``ui/View.tsx`` by
+# apps/robotlab_x_ui/scripts/build-service-ui.mjs) instead of a built-in
+# serviceViews component — so a service owns its frontend the same way it
+# owns its Python. See apps/robotlab_x/docs/TODO_SERVICE_UI_BUNDLES.md and
+# the heavily-commented ``ui/View.tsx`` next to this file.
+#
+# Omit this whole block for a service with no custom UI (the host shows a
+# generic placeholder node).
+#
+#   entry — the built ES module the host imports (commit it; it's the
+#           shipped artifact, like icon.svg / a model weight file).
+#   sdk   — the @rlx/ui semver range View.tsx was built against; the host
+#           refuses to load a view built for an incompatible SDK.
+ui:
+  entry: ui/dist/ui.js
+  sdk: "^1.0"
+
+
+# ─── PLATFORM / RUNTIME COMPAT (optional, for registry filtering) ────
+
+# OS allow-list. The Catalog UI hides this service on hosts that
+# aren't listed. Use the conventional lowercase short names:
+# ``linux``, ``windows``, ``macos``, or ``any`` to express "all".
+# Omitting the field is equivalent to ``[any]``.
+os: [any]
+
+# Architecture allow-list. Same shape as ``os``. Use ``x86``,
+# ``x86_64``, ``arm`` (32-bit), ``arm64`` / ``aarch64``, or ``any``.
+arch: [any]
+
+# Minimum rlx version this service requires. The registry refuses to
+# install if the operator's rlx is older. Use semver; ``0.1.0`` is
+# the current floor.
+min_runtime: "0.1.0"
+
+
+# ─── CLOUD / DEPLOYMENT METADATA (optional) ──────────────────────────
+
+# Whether this service can run in a cloud container, or whether it
+# requires local hardware (serial port, GPIO, USB cam, …). The
+# Catalog UI uses this to warn before installing on a host that
+# can't actually run it.
+is_cloud: true
+
+# Whether the service ships as a Docker image (alternative to the
+# pip/builtin install paths). When true, the install path pulls the
+# image instead of running the package manager. Reserved for future
+# work.
+is_dockerized: false

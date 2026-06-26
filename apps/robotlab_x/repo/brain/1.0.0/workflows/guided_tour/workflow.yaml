@@ -1,0 +1,40 @@
+name: guided_tour
+description: |
+  Turn the brain into a museum docent for whatever lives in
+  memory/known_objects.md. Iterate the remembered objects one at a time,
+  aim the head servo at each stored bearing, capture a fresh frame, run
+  detection, and speak a one-sentence description on a match or a short
+  skip note on a miss. Locomotion is fully blocked — only the head servo
+  and the camera move. Closes with a spoken summary line and a clean
+  done.
+
+preferred_backend: mock
+max_steps: 18
+timeout_seconds: 300
+requires_human_approval: false
+
+inputs:
+  max_objects:
+    type: integer
+    required: false
+    default: 8
+    description: |
+      Maximum number of remembered objects to visit before wrapping up
+      the tour.
+  tour_style:
+    type: string
+    required: false
+    default: casual
+    description: |
+      Narration tone — casual, formal, or playful — used when phrasing
+      each object's description.
+
+steps:
+  - id: default
+    prompt: prompt.md
+    on_success: success.md
+    on_failure: failure.md
+
+context:
+  - memory/known_objects.md
+  - memory/observations.md

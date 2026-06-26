@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "keyboard_local_service"
+version = "1.0.0"
+description = "robotlab_x host-keyboard service — OS keyboard capture for the `keyboard` capability. evdev on Linux/RasPi (works under Wayland + headless, exclusive grab); pynput on Windows/macOS/X11. rlx_bus + rlx_input are pre-installed into the venv by runtime/installer.py."
+requires-python = ">=3.10"
+dependencies = [
+    # pynput — Windows / macOS / X11-Linux global hook.
+    "pynput>=1.7,<2.0",
+    # evdev — Linux/RasPi only (reads /dev/input below the compositor, so it
+    # works under Wayland + headless and supports exclusive grab). The
+    # environment marker keeps pip from trying to build it on Win/macOS.
+    "evdev>=1.6; sys_platform == 'linux'",
+]
+
+[project.scripts]
+keyboard_local_service = "keyboard_local_service.__main__:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

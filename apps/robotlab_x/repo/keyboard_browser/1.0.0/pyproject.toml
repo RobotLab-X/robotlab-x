@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "keyboard_browser_service"
+version = "1.0.0"
+description = "robotlab_x browser-keyboard service — a lightweight relay for the `keyboard` capability. Keys are captured in the browser (DOM keydown/keyup) and streamed up; this backend owns the control interface + keymap (key→bus-action) layer. No host input libraries. rlx_bus + rlx_input are pre-installed into the venv by runtime/installer.py."
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+keyboard_browser_service = "keyboard_browser_service.__main__:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

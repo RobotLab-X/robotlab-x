@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "invoker"
+version = "0.1.0"
+description = "Shared dynamic function invocation package for cloudseeder FastAPI applications."
+authors = [
+    { name = "CloudSeeder Team", email = "team@cloudseeder.com" }
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/your-org/cloudseeder"
+
+[tool.setuptools.packages.find]
+where = ["src"]

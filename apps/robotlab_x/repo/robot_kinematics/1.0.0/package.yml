@@ -1,0 +1,37 @@
+name: robot_kinematics
+title: Whole-Body IK
+description: |
+  Whole-body, multi-chain inverse kinematics for a full robot model (e.g.
+  InMoov: two arms + head over a shared torso). Loads a URDF and solves all
+  end-effectors at once with Pinocchio + Pink task-based IK, so shared joints
+  (the waist) coordinate and joint limits are respected.
+
+  Each end-effector has a "pendant" — a draggable world-space target point.
+  Arms reach for it; the head looks at it. Point both at the same target for
+  "look at what you're grabbing". Position-primary for InMoov's <6-DOF arms.
+
+  Subprocess service — the heavy solver deps (pinocchio, pink, a QP solver)
+  live in its own venv; no ROS install required. For a single planar arm,
+  use ik_solver@1.0.0 instead. Import a robot from a URDF via ros@1.0.0.
+language: python
+status: development
+author: CloudSeeder
+tags: [kinematics, robotics, wholebody, humanoid, inmoov, ik]
+icon: icon.svg
+
+ui:
+  entry: ui/dist/ui.js
+  sdk: "^1.0"
+
+implements: [ik_provider, servo_controller]
+requires: [servo_controller]
+
+# Heavy solver deps + niche use → install from the catalog on demand.
+bundled: false
+
+install:
+  kind: pip
+  package_spec: "-e ${APP_ROOT}/repo/robot_kinematics/1.0.0"
+
+entry:
+  argv: [python, -m, robot_kinematics_service]

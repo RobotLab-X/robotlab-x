@@ -1,0 +1,63 @@
+name: speaker_local
+title: Speaker (local)
+description: |
+  Host-side audio playback. Enumerates the operating system's audio output
+  devices (Linux / Windows / macOS), opens one, and plays PCM audio frames
+  arriving on the bus.
+
+  Implements the ``speaker`` capability — the same control interface
+  (list_devices / select_device / connect / disconnect / mute / unmute) and
+  the same state shape as the browser speaker, so a producer is agnostic to
+  where the audio comes out. Plays frames published to
+  ``/speaker/{id}/audio`` (or a configured ``source_topic``, e.g. a
+  microphone's audio topic).
+
+  Backed by ``sounddevice`` (PortAudio), whose wheels bundle PortAudio for
+  all three platforms — no system audio libraries to install. Uses a raw
+  int16 output stream (no numpy).
+
+  Subprocess service — PortAudio's blocking output callback runs in a child
+  process, isolated from the backend.
+
+language: python
+status: development
+author: CloudSeeder
+tags: [hardware, audio, speaker, output]
+icon: icon.svg
+
+ui:
+  entry: ui/dist/ui.js
+  sdk: "^1.0"
+
+implements: [speaker]
+
+bundled: true
+publish: true
+
+install:
+  kind: pip
+  package_spec: "-e ${APP_ROOT}/repo/speaker_local/1.0.0"
+
+entry:
+  argv: [python, -m, speaker_local_service]
+
+wizard_config:
+  - id: defaults
+    title: Playback settings
+    fields:
+      - id: sample_rate
+        type: integer
+        title: Sample rate (Hz)
+        default: 16000
+      - id: channels
+        type: integer
+        title: Channels (1=mono, 2=stereo)
+        default: 1
+      - id: input_kind
+        type: string
+        title: Input kind (optional)
+        description: "Where audio comes from: blank (sink), topic, file, or url. The view also sets this live."
+      - id: input_ref
+        type: string
+        title: Input reference (optional)
+        description: A bus topic (e.g. /microphone/mic_local-1/audio), a server file path, or a URL — matching input kind.

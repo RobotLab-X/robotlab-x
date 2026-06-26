@@ -1,0 +1,253 @@
+{
+  "schema_version": 1,
+  "id": "inmoov_left_arm",
+  "title": "InMoov \u2014 Left Arm",
+  "source": "inmoov_ros (URDF) -> ros.convert",
+  "units": {
+    "length": "mm",
+    "angle": "deg"
+  },
+  "ik_model": {
+    "joints": [
+      {
+        "name": "l_shoulder_out_joint",
+        "type": "revolute",
+        "min_deg": 5.0,
+        "max_deg": 60.0
+      },
+      {
+        "name": "l_shoulder_lift_joint",
+        "type": "revolute",
+        "min_deg": -135.0,
+        "max_deg": 45.0
+      },
+      {
+        "name": "l_upper_arm_roll_joint",
+        "type": "revolute",
+        "min_deg": -90.0,
+        "max_deg": 90.0
+      },
+      {
+        "name": "l_elbow_flex_joint",
+        "type": "revolute",
+        "min_deg": -85.0,
+        "max_deg": -15.0
+      },
+      {
+        "name": "l_wrist_roll_joint",
+        "type": "revolute",
+        "min_deg": 0.0,
+        "max_deg": 180.0
+      }
+    ],
+    "links": [
+      {
+        "length_mm": 41.76
+      },
+      {
+        "length_mm": 89.2
+      },
+      {
+        "length_mm": 225.22
+      },
+      {
+        "length_mm": 289.03
+      }
+    ]
+  },
+  "chain": [
+    {
+      "name": "l_shoulder_out_joint",
+      "type": "revolute",
+      "parent": "torso_link",
+      "child": "l_shoulder_base_link",
+      "origin_xyz_m": [
+        0.0,
+        0.143,
+        0.298
+      ],
+      "origin_rpy_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "axis": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "lower_deg": 5.0,
+      "upper_deg": 60.0,
+      "home_pos_mm": [
+        0.0,
+        143.0,
+        298.0
+      ]
+    },
+    {
+      "name": "l_shoulder_lift_joint",
+      "type": "revolute",
+      "parent": "l_shoulder_base_link",
+      "child": "l_shoulder_link",
+      "origin_xyz_m": [
+        0.0,
+        0.012,
+        -0.04
+      ],
+      "origin_rpy_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "axis": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "lower_deg": -135.0,
+      "upper_deg": 45.0,
+      "home_pos_mm": [
+        0.0,
+        155.0,
+        258.0
+      ]
+    },
+    {
+      "name": "l_upper_arm_roll_joint",
+      "type": "revolute",
+      "parent": "l_shoulder_link",
+      "child": "l_bicep_link",
+      "origin_xyz_m": [
+        0.0,
+        0.066,
+        -0.06
+      ],
+      "origin_rpy_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "axis": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "lower_deg": -90.0,
+      "upper_deg": 90.0,
+      "home_pos_mm": [
+        0.0,
+        221.0,
+        198.0
+      ]
+    },
+    {
+      "name": "l_elbow_flex_joint",
+      "type": "revolute",
+      "parent": "l_bicep_link",
+      "child": "l_forearm_link",
+      "origin_xyz_m": [
+        -0.0278,
+        0.0,
+        -0.2235
+      ],
+      "origin_rpy_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "axis": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "lower_deg": -85.0,
+      "upper_deg": -15.0,
+      "home_pos_mm": [
+        -27.8,
+        221.0,
+        -25.5
+      ]
+    },
+    {
+      "name": "l_wrist_roll_joint",
+      "type": "revolute",
+      "parent": "l_forearm_link",
+      "child": "l_hand_link",
+      "origin_xyz_m": [
+        -0.0144,
+        -0.01,
+        -0.2885
+      ],
+      "origin_rpy_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "axis": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "lower_deg": 0.0,
+      "upper_deg": 180.0,
+      "home_pos_mm": [
+        -42.2,
+        211.0,
+        -314.0
+      ]
+    }
+  ],
+  "calibration_template": [
+    {
+      "joint": "l_shoulder_out_joint",
+      "servo_proxy_id": null,
+      "zero_offset_deg": 0.0,
+      "direction": 1,
+      "scale": 1.0,
+      "servo_min_deg": 5.0,
+      "servo_max_deg": 60.0
+    },
+    {
+      "joint": "l_shoulder_lift_joint",
+      "servo_proxy_id": null,
+      "zero_offset_deg": 0.0,
+      "direction": 1,
+      "scale": 1.0,
+      "servo_min_deg": -135.0,
+      "servo_max_deg": 45.0
+    },
+    {
+      "joint": "l_upper_arm_roll_joint",
+      "servo_proxy_id": null,
+      "zero_offset_deg": 0.0,
+      "direction": 1,
+      "scale": 1.0,
+      "servo_min_deg": -90.0,
+      "servo_max_deg": 90.0
+    },
+    {
+      "joint": "l_elbow_flex_joint",
+      "servo_proxy_id": null,
+      "zero_offset_deg": 0.0,
+      "direction": 1,
+      "scale": 1.0,
+      "servo_min_deg": -85.0,
+      "servo_max_deg": -15.0
+    },
+    {
+      "joint": "l_wrist_roll_joint",
+      "servo_proxy_id": null,
+      "zero_offset_deg": 0.0,
+      "direction": 1,
+      "scale": 1.0,
+      "servo_min_deg": 0.0,
+      "servo_max_deg": 180.0
+    }
+  ],
+  "poses": [],
+  "warnings": [
+    "actuated joints rotate about 3 distinct axes [(0.0, 0.0, 1.0), (0.0, 1.0, 0.0), (1.0, 0.0, 0.0)] \u2014 the flat joints/links model is a planar approximation; use the rich 'chain' with a general 3-D solver for accurate results.",
+    "ik_solver expects the first joint named 'base'; first actuated joint here is 'l_shoulder_out_joint' \u2014 rename on import or map in the solver config."
+  ],
+  "description": "InMoov Left Arm kinematic chain (torso_link -> l_hand_link), imported from inmoov_ros. The flat ik_model is a planar approximation; see 'chain' + 'warnings'."
+}

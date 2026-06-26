@@ -1,0 +1,27 @@
+allowed:
+  # Capture + detect from any video service instance
+  - topic: /video/*/control
+    actions: [capture_frame, detect_objects]
+  # Head servo sweep — pan/tilt only, no arm joints
+  - topic: /servo/*/control
+    actions: [move, sweep]
+  # Turn-in-place only; translation (drive/move_to/follow) is blocked below
+  - topic: /movement/*/control
+    actions: [turn]
+  - topic: /speech/*/control
+    actions: [speak]
+  # Brain persists hits to known_objects and misses to observations
+  - topic: /brain/*/control
+    actions: [write_memory]
+
+blocked:
+  # Explicitly forbid any translation — find_object never drives
+  - topic: /movement/*/control
+    actions: [drive, move_to, follow]
+  - topic: /arm/*/control
+    actions: ["*"]
+  - topic: /system/*/control
+    actions: ["*"]
+  # Block all federated-peer topics (@** = federation opt-in suffix)
+  - topic: /*/@**
+    actions: ["*"]

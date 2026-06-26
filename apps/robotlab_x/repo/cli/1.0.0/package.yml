@@ -1,0 +1,48 @@
+name: cli
+title: Terminal
+description: |
+  Interactive terminal for inspecting + driving a robotlab_x runtime.
+  Mounts an xterm-based shell on the canvas card. The shell speaks a
+  filesystem-style grammar over the bus: ``cd`` / ``ls`` / ``cat`` /
+  ``tail`` walk the topic tree; ``call`` invokes a service method
+  validated against the type descriptor; ``@<peer-id>`` reaches across
+  federated runtimes. See AGENTS.md "Discovery" + AGENTS.md "CLI" for
+  the wire grammar.
+
+  Runs in-process — the heavy lifting is browser-side, the service is a
+  thin presence marker so the type appears in the catalog like any other.
+language: builtin
+status: development
+author: CloudSeeder
+tags: [cli, terminal, introspection, builtin]
+icon: icon.svg
+
+# Modular service UI (Option B — docs/TODO_SERVICE_UI_BUNDLES.md). Bundles
+# its own third-party deps (xterm); their CSS is inlined into ui.js.
+ui:
+  entry: ui/dist/ui.js
+  sdk: "^1.0"
+
+bundled: true
+publish: true   # available in the remote registry (see master_template for docs)
+
+install:
+  kind: builtin
+
+entry:
+  in_process:
+    module: cli
+    class: CliService
+
+wizard_config:
+  - id: defaults
+    title: CLI defaults
+    fields:
+      - id: history_size
+        type: integer
+        title: History buffer (lines)
+        default: 500
+      - id: prompt
+        type: string
+        title: Prompt
+        default: "rlx> "

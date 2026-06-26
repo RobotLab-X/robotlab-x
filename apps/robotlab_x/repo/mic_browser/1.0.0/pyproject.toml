@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mic_browser_service"
+version = "1.0.0"
+description = "robotlab_x browser microphone service — backend relay for a browser-captured microphone. Implements the microphone capability; the browser streams PCM frames, this service owns the control interface + state."
+requires-python = ">=3.10"
+# No deps: pure relay. rlx_bus + rlx_audio are pre-installed into the venv
+# by runtime/installer.py; the browser does all audio I/O.
+dependencies = []
+
+[project.scripts]
+mic_browser_service = "mic_browser_service.__main__:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

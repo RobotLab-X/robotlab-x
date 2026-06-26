@@ -1,0 +1,49 @@
+name: servo_mixer
+title: Servo Mixer
+description: |
+  Orchestrate a collection of servos. A choreography surface built on the
+  standard servo bus contract — no hardware, no install:
+
+    * Mixing board — a live fader per member servo for hands-on multi-servo
+      control, plus a group ALL STOP.
+    * Poses — named snapshots of member angles. Capture the current pose;
+      Apply moves every member toward it with SYNCHRONIZED ARRIVAL (each
+      servo's speed is scaled to the move distance so they finish together).
+    * Sequences — ordered poses with per-step transition + hold time and an
+      optional loop, played back by a built-in player (play / pause / stop).
+
+  Add any running ``servo`` instance as a member; the mixer discovers servos
+  on the bus and persists its roster, poses and sequences across restarts.
+
+  In-process builtin — runs inside the robotlab_x backend, no install needed.
+language: builtin
+status: development
+author: CloudSeeder
+tags: [actuator, orchestration, choreography, builtin]
+icon: icon.svg
+
+# Modular service UI (Option B — docs/TODO_SERVICE_UI_BUNDLES.md).
+ui:
+  entry: ui/dist/ui.js
+  sdk: "^1.0"
+
+bundled: true
+publish: true   # available in the remote registry
+
+install:
+  kind: builtin
+
+entry:
+  in_process:
+    module: servo_mixer
+    class: ServoMixerService
+
+wizard_config:
+  - id: defaults
+    title: Playback
+    fields:
+      - id: default_transition_ms
+        type: integer
+        title: Default transition (ms)
+        description: Default move time when a pose or sequence step doesn't specify one.
+        default: 1000

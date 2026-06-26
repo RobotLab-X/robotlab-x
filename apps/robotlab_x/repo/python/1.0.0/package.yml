@@ -1,0 +1,33 @@
+name: python
+title: Python Scripts
+description: |
+  Run Python scripts on demand. Each instance maintains its own
+  library of scripts (or shares the global Script table) and exposes
+  bus methods so other services — cron, UI, anyone — can trigger
+  execution by name or with an inline body.
+
+  Output streams on /python/{id}/output line by line; the final
+  exit status lands on /python/{id}/result so callers can await
+  completion or be informed of failures.
+
+  In-process builtin — runs inside the backend, no install. Uses the
+  same subprocess + setsid + group-kill execution path as the
+  Script Editor page (runtime/script_runner.py), so the same
+  security caveats apply: scripts run with the backend's full
+  privileges. Admin-gated like every service.
+language: builtin
+status: development
+author: CloudSeeder
+tags: [scripting, automation, builtin]
+icon: icon.svg
+
+bundled: true
+publish: true   # available in the remote registry (see master_template for docs)
+
+install:
+  kind: builtin
+
+entry:
+  in_process:
+    module: python_svc
+    class: PythonService

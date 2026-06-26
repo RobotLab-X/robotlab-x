@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "joystick_service"
+version = "1.0.0"
+description = "robotlab_x joystick service — cross-platform joystick/gamepad reader. Enumerates devices and streams axes/buttons/hats/balls over the bus."
+requires-python = ">=3.10"
+dependencies = [
+    # pygame bundles SDL2 in its wheels for Windows / macOS / Linux, so
+    # the joystick backend is fully self-contained — no system SDL or
+    # platform-specific input libs to install. We use only the
+    # long-stable pygame.joystick surface. Pinned to the 2.x series.
+    "pygame>=2.5,<3.0",
+    # rlx_bus is pre-installed into every venv by runtime/installer.py.
+]
+
+[project.scripts]
+joystick_service = "joystick_service.__main__:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

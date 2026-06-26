@@ -1,0 +1,45 @@
+# managed
+.venv
+__pycache__
+.pytest_cache
+.env
+.coverage
+htmlcov
+dist
+build
+# Generated at build time by build.py / the deploy workflow (version + commit),
+# COPYed into the image, then read by GET /v1/version. Never commit it.
+version.json
+# Runtime data (tinydb/sqlite, mounted as the ./data bind volume). Must stay
+# untracked: the deploy host is a git checkout pulled with --ff-only, and
+# runtime writes to tracked data files would dirty it and block the pull.
+data/
+# extra persistent mount host dir (from `app.volumes`) — same untracked
+# rationale as data/: docker creates it at runtime on the deploy checkout.
+repo-data/
+# Auto-generated bootstrap secret for the legacy admin_seed auth mode. robotlab_x
+# uses first_user_claim and never writes this — ignored as a safety net so it can
+# never be committed if any code path generates it.
+admin_password.txt
+# Self-signed TLS certs generated at runtime. Never commit private keys.
+ssl/
+*.pem
+*.egg-info
+*.pyc
+*.pyo
+*.pyd
+.DS_Store
+*.swp
+*.bak
+
+# Modular service-UI bundle deps (Option B) — installed per bundle at build time
+repo/*/*/ui/node_modules/
+
+# Modular service-UI bundles ship their pre-built ui.js as a COMMITTED artifact
+# (like the YOLO .pt weights): it is COPYed into the image and served by GET
+# /repo/<name>/<version>/ui.js. Re-include it despite the blanket `dist` rule
+# above — without this the bundles never reach the deploy image and the views
+# 404 on the server. Only ui.js is tracked; the rest of dist/ stays ignored.
+!repo/*/*/ui/dist/
+repo/*/*/ui/dist/*
+!repo/*/*/ui/dist/ui.js

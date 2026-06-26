@@ -1,0 +1,11 @@
+{
+  "name": "mic-local-service-ui",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Modular UI bundle for the local microphone service. Built by robotlab_x_ui/scripts/build-service-ui.mjs; react / react-dom / @rlx/ui are host-provided externals.",
+  "rlx": {
+    "entry": "View.tsx",
+    "sdk": "^1.0"
+  }
+}

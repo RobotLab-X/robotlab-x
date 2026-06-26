@@ -1,0 +1,36 @@
+name: security
+title: Security
+description: |
+  Singleton crypto service. Handles symmetric encrypt/decrypt for the
+  config-set loader (and any other service that needs crypto on the bus).
+  One per backend process; always the second service to boot (after
+  runtime, before everything else) so configs with Encrypted-- fields
+  can be decrypted before the services that need them start.
+
+  Key material lives at <data_dir>/security/key.bin (mode 0o600) or
+  is overridden via the $ROBOTLAB_X_SECURITY_KEY env var. Generated on
+  first start if neither source is present. Lose the key file =
+  lose every Encrypted-- value in every config set; back it up.
+
+  Wire format: operator types Encrypt--myplaintext into a yml; the
+  next save round-trips it to Encrypted--<fernet-token>. Decrypt
+  always requires the Encrypted-- prefix.
+
+language: builtin
+status: development
+author: CloudSeeder
+tags: [singleton, crypto, framework]
+icon: icon.svg
+
+bundled: true
+singleton: true
+
+implements: [crypto]
+
+install:
+  kind: builtin
+
+entry:
+  in_process:
+    module: security
+    class: SecurityService

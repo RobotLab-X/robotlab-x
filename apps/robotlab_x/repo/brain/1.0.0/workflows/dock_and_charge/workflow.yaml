@@ -1,0 +1,60 @@
+name: dock_and_charge
+description: |
+  Locate the charging dock and drive the robot onto it in small,
+  proportional steps. This is the highest-blast-radius brain workflow
+  in this bundle — it is the only one allowed to call
+  /movement/*/control drive, turn, and move_to alongside the
+  always-available emergency_stop. Because of that it sets
+  requires_human_approval=true and the brain runner will hold on the
+  first motion-tool call for operator approval through the UI. On
+  success the robot is parked at the dock with a docking event
+  appended to memory/observations.md. On any unexpected failure the
+  workflow calls emergency_stop, apologises out loud, and emits done
+  with a failure summary.
+
+preferred_backend: mock
+max_steps: 20
+timeout_seconds: 600
+# max_tokens_per_run unset — uses adapter default
+requires_human_approval: true
+
+inputs:
+  charger_distance_cm:
+    type: integer
+    required: false
+    default: 10
+    description: |
+      Proximity-sensor distance (cm) below which the robot is
+      considered docked and motion stops.
+  max_drive_step_cm:
+    type: integer
+    required: false
+    default: 20
+    description: |
+      Maximum forward distance per proportional drive step (cm).
+      Smaller values are safer but slower.
+  min_confidence:
+    type: number
+    required: false
+    default: 0.6
+    description: |
+      Minimum detector confidence to accept a 'dock' or 'charger'
+      detection.
+  lost_dock_tolerance:
+    type: integer
+    required: false
+    default: 3
+    description: |
+      Number of consecutive frames the dock may be missing before the
+      workflow aborts with emergency_stop.
+
+steps:
+  - id: default
+    prompt: prompt.md
+    on_success: success.md
+    on_failure: failure.md
+
+context:
+  - memory/observations.md
+  - memory/known_objects.md
+  - memory/room_map.json

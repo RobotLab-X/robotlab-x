@@ -1,0 +1,36 @@
+name: explore_room
+description: |
+  Actively explore the room from multiple vantage points. The robot turns
+  in place and pans its head/camera servo across several bearings to build
+  a richer picture than a single observe_room pass. New objects are spoken
+  aloud and written to known_objects memory; confirmations of already-seen
+  objects are logged silently to observations. Best-effort returns to the
+  original heading when the sweep completes.
+
+preferred_backend: mock
+max_steps: 16
+timeout_seconds: 240
+# max_tokens_per_run: <unset — leave default>
+requires_human_approval: false
+
+inputs:
+  sweep_count:
+    type: integer
+    required: false
+    default: 4
+    description: Number of bearings to sample around the robot (clamped to 2..8).
+  pan_degrees:
+    type: integer
+    required: false
+    default: 30
+    description: Per-pose head servo pan amplitude in degrees (clamped to 0..60).
+
+steps:
+  - id: default
+    prompt: prompt.md
+    on_success: success.md
+    on_failure: failure.md
+
+context:
+  - memory/known_objects.md
+  - memory/observations.md

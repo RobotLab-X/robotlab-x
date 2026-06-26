@@ -1,0 +1,1 @@
+Count complete. The sweep captured frames at each bearing, detection ran on each, duplicates were collapsed across overlapping bearings, the final count was spoken, and a structured observation was appended to memory.

@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Default to dark. `color-scheme: dark` tells the browser to render its
+ * native widgets (scrollbars, form controls, autofill) in dark mode so
+ * they stop fighting the app's slate palette.
+ */
+:root {
+  color-scheme: dark;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+/*
+ * Dual-thumb range slider. Two <input type="range"> are stacked on top
+ * of each other; this CSS hides each input's own track so only the
+ * shared visual track + filled segment behind them shows, then makes
+ * just the thumb interactive (pointer-events). Thumbs are styled in
+ * sky-500 to match the position slider's accent.
+ */
+.dual-range {
+  position: relative;
+}
+.dual-range > input.dual-thumb {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  background: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+  pointer-events: none;
+  z-index: 2;
+}
+.dual-range > input.dual-thumb::-webkit-slider-runnable-track {
+  background: transparent;
+  border: none;
+}
+.dual-range > input.dual-thumb::-moz-range-track {
+  background: transparent;
+  border: none;
+}
+.dual-range > input.dual-thumb::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 9999px;
+  background: #0ea5e9;
+  border: 2px solid #0c4a6e;
+  cursor: grab;
+  pointer-events: auto;
+}
+.dual-range > input.dual-thumb::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 9999px;
+  background: #0ea5e9;
+  border: 2px solid #0c4a6e;
+  cursor: grab;
+  pointer-events: auto;
+}
+.dual-range > input.dual-thumb:active::-webkit-slider-thumb { cursor: grabbing; }
+.dual-range > input.dual-thumb:active::-moz-range-thumb { cursor: grabbing; }

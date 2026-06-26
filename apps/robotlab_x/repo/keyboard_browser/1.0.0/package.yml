@@ -1,0 +1,60 @@
+name: keyboard_browser
+title: Keyboard (browser)
+description: |
+  Browser keyboard. Keys are captured in the operator's web browser (DOM
+  keydown/keyup) while the service card — or the whole tab — has focus, and
+  streamed to this backend service, which owns the control interface, the
+  keymap (key → bus action) layer, and a canonical published state.
+
+  Implements the SAME ``keyboard`` capability as the (Phase 2) host keyboard:
+  identical control interface (start_capture / stop_capture / set_scope /
+  set_suppress / bind / unbind) and identical published shape
+  (``/keyboard/{id}/state`` + ``/keyboard/{id}/event``) so any consumer that
+  ``requires: [keyboard]`` works with either. Only the capture path differs.
+
+  This is the zero-permission capture level (Level C): no OS hooks, no host
+  libraries, works on every platform with a browser. NOTE: a browser keyboard
+  only captures while an authorized tab with this service's view is open and
+  focused.
+
+  Keymap bindings turn keys into bus messages (e.g. hold W → drive a motor;
+  release → stop). stop_capture fires every binding's on_up as an all-stop.
+
+  Subprocess service — a lightweight relay; the browser does the capture.
+
+language: python
+status: development
+author: CloudSeeder
+tags: [input, keyboard, browser, teleop, hotkey]
+icon: icon.svg
+
+ui:
+  entry: ui/dist/ui.js
+  sdk: "^1.0"
+
+implements: [keyboard]
+
+bundled: true
+publish: true
+
+install:
+  kind: pip
+  package_spec: "-e ${APP_ROOT}/repo/keyboard_browser/1.0.0"
+
+entry:
+  argv: [python, -m, keyboard_browser_service]
+
+wizard_config:
+  - id: defaults
+    title: Capture settings
+    fields:
+      - id: scope
+        type: string
+        title: Capture scope (card | document)
+        description: "'card' captures only while the service card is focused; 'document' while the browser tab is focused."
+        default: card
+      - id: suppress
+        type: boolean
+        title: Suppress (preventDefault captured keys)
+        description: When on, captured keys don't also reach the page/canvas — use for teleop.
+        default: false

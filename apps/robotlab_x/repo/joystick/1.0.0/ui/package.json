@@ -1,0 +1,8 @@
+{
+  "name": "joystick-service-ui",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Modular UI bundle for the joystick service (Option B). react / @rlx/ui are host-provided externals.",
+  "rlx": { "entry": "View.tsx", "sdk": "^1.0" }
+}

@@ -1,0 +1,42 @@
+name: find_object
+description: |
+  Search for one specific object the operator named. Turn in place,
+  sweep the head servo, and capture + detect at each pose until a
+  confident match is found or the bearing budget is exhausted. On a
+  hit, record bearing + confidence to known_objects; on a miss, log
+  the attempt to observations. Never translates — turning only, no
+  arms, no system actions.
+
+preferred_backend: mock
+max_steps: 14
+timeout_seconds: 180
+requires_human_approval: false
+
+inputs:
+  target_label:
+    type: string
+    required: true
+    description: |
+      Object label or short phrase to search for (e.g. "red mug", "laptop").
+  min_confidence:
+    type: number
+    required: false
+    default: 0.55
+    description: |
+      Minimum detector confidence (0..1) to count as a hit.
+  max_bearings:
+    type: integer
+    required: false
+    default: 6
+    description: |
+      Maximum number of turn-in-place bearings to attempt (1..8).
+
+steps:
+  - id: default
+    prompt: prompt.md
+    on_success: success.md
+    on_failure: failure.md
+
+context:
+  - memory/known_objects.md
+  - memory/observations.md

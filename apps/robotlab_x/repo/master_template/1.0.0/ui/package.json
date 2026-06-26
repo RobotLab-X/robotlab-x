@@ -1,0 +1,12 @@
+{
+  "name": "master_template-service-ui",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Template modular UI bundle (Option B). Copy this ui/ dir alongside your service. react / react-dom / @rlx/ui are host-provided EXTERNALS — never list them here. Add ONLY your own third-party runtime deps below (they bundle in, tree-shaken); leave dependencies empty if your view needs none.",
+  "dependencies": {},
+  "rlx": {
+    "entry": "View.tsx",
+    "sdk": "^1.0"
+  }
+}

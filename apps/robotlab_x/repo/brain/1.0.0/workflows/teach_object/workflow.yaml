@@ -1,0 +1,46 @@
+name: teach_object
+description: |
+  Supervised-learning loop: the operator supplies a label (typed input
+  or spoken), the brain captures a frame, detects the most prominent
+  object, asks for confirmation, and on human approval binds that
+  label to the observed position in memory/known_objects.md. Locomotion
+  and arms are blocked — a small head-servo "look at operator" nicety
+  is the only motion permitted.
+
+preferred_backend: mock
+max_steps: 10
+timeout_seconds: 240
+requires_human_approval: true
+
+inputs:
+  label:
+    type: string
+    required: false
+    default: ""
+    description: |
+      Object label to bind. If empty, the brain listens for a spoken
+      label via the speech service.
+  selection_strategy:
+    type: string
+    required: false
+    default: largest
+    description: |
+      Which detected box to propose: 'largest' (biggest area) or
+      'highest_confidence' (top detector score).
+  listen_window_seconds:
+    type: integer
+    required: false
+    default: 6
+    description: |
+      Only used when label is empty — how long the speech service
+      listens for the operator to say the label.
+
+steps:
+  - id: default
+    prompt: prompt.md
+    on_success: success.md
+    on_failure: failure.md
+
+context:
+  - memory/known_objects.md
+  - memory/observations.md

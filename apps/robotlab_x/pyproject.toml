@@ -1,0 +1,101 @@
+# semi-managed
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "robotlab_x"
+version = "0.1.0"
+description = "A FastAPI application in a monorepo"
+authors = [{ name = "GroG Bot", email = "grogbot@robotlab-x.com" }]
+requires-python = ">=3.12"
+dependencies = [
+
+    # Internal packages
+    "auth",
+    "config",
+    "database",
+    "invoker",
+    "messages",
+    "models",
+    "monitor",
+    "queues",
+    "rlx_bus",
+    "rlx_audio",
+    # Shared keyboard capability (KeyboardServiceBase + key-event schema +
+    # keymap layer). The keyboard service tests import it directly, so it
+    # must resolve in the app venv too, not just the per-service venvs the
+    # installer builds. Pure-Python.
+    "rlx_input",
+    # Shared servo↔joint calibration primitive. The robot_kinematics +
+    # ik_solver service modules import it (rig.py / model.py), and the
+    # test suite imports those modules directly — so it must resolve in
+    # the app venv too, not just the per-service venvs the installer
+    # builds. Pure-Python, depends only on pydantic.
+    "rlx_servo_cal",
+
+    # Common package
+    "fastapi",
+    "uvicorn",
+    "pydantic",
+    "pydantic-settings",
+    "python-dotenv",
+    "python-multipart",
+    "PyJWT",
+    "pyyaml",
+    # Comment-preserving YAML reader/writer used by the brain service's
+    # ``save_workflow_preferences`` action — round-trips a workflow.yaml
+    # while keeping its inline comments + key order intact. PyYAML
+    # alone would lose both on rewrite.
+    "ruamel.yaml",
+    "requests",
+    "psutil",
+    # Used by the in-process cron service (repo/cron/1.0.0). Standard
+    # 5-field cron expressions + next-run computation. Tiny pure-Python
+    # dep, ships with no extras.
+    "croniter",
+    # mDNS auto-discovery for multi-runtime federation. Announces this
+    # runtime on the LAN as ``_robotlabx._tcp.local.`` and browses for
+    # peers. Pure Python, no system avahi/Bonjour dependency.
+    "zeroconf>=0.140,<1.0",
+    # Markdown is a first-class file format in the brain workspace
+    # (prompts, success/failure copy, run results, memory notes).
+    # The browser renders for display via react-markdown; this Python
+    # dep covers backend-side concerns: extracting frontmatter from
+    # workflow.yaml siblings, syntax-checking edits before they hit
+    # disk via the file API, and any future server-rendered HTML
+    # (e.g. RSS, exports). See docs/TODO_BRAIN_VIEWER.md.
+    "markdown-it-py>=3.0,<4.0"
+]
+
+[tool.uv.sources]
+auth = { path = "../../packages/auth", editable = true }
+config = { path = "../../packages/config", editable = true }
+database = { path = "../../packages/database", editable = true }
+invoker = { path = "../../packages/invoker", editable = true }
+messages = { path = "../../packages/messages", editable = true }
+models = { path = "../../packages/models", editable = true }
+monitor = { path = "../../packages/monitor", editable = true }
+queues = { path = "../../packages/queues", editable = true }
+rlx_bus = { path = "../../packages/rlx_bus", editable = true }
+rlx_audio = { path = "../../packages/rlx_audio", editable = true }
+rlx_input = { path = "../../packages/rlx_input", editable = true }
+rlx_servo_cal = { path = "../../packages/rlx_servo_cal", editable = true }
+
+[project.optional-dependencies]
+dev = [
+        "pytest",
+        "pytest-mock",
+        "pytest-cov",
+        "pytest-asyncio",
+        "pip-tools",
+        "coverage",
+        "httpx"
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = [
+    "ignore:PydanticDeprecatedSince20:UserWarning",
+    "ignore::pydantic.warnings.PydanticDeprecatedSince20",
+]
